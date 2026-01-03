@@ -15,7 +15,7 @@ if (hasDb) {
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
         connectionLimit: 10,
-        dateStrings: true,
+        dateStrings: true
     });
 }
 

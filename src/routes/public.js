@@ -1,9 +1,34 @@
 const express = require("express");
-const { pool } = require("../db");
+const { pool, hasDb } = require("../db");
 const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 
 const router = express.Router();
+
+function requireDb(req, res, next) {
+    if (hasDb) return next();
+    return res.status(503).render("maintenance", {
+        title: "Sitio en configuración",
+        message:
+            "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
+    });
+}
+
+function safe(handler) {
+    return async (req, res, next) => {
+        try {
+            await handler(req, res, next);
+        } catch (e) {
+            console.error(e);
+            // Si ya se envió respuesta, solo delego
+            if (res.headersSent) return next(e);
+            return res.status(500).render("maintenance", {
+                title: "Error",
+                message: "Ocurrió un error temporal. Intenta más tarde.",
+            });
+        }
+    };
+}
 
 function directionLabel(direction) {
     return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
@@ -15,7 +40,7 @@ function pad(n, width) {
 }
 
 function folioFromReservationId(id, dateStr) {
-    const ymd = dateStr.replaceAll("-", "");
+    const ymd = String(dateStr || "").replaceAll("-", "");
     return `RES-${ymd}-${pad(id, 6)}`;
 }
 
@@ -44,488 +69,539 @@ async function getOrCreateTrip(conn, templateId, tripDate) {
 async function computeAvailable(conn, tripId) {
     const [[row]] = await conn.query(
         `
-            SELECT dt.capacity_passengers - COALESCE(SUM(r.seats), 0) AS available
-            FROM transporte_trips t
-                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
-                     LEFT JOIN transporte_reservations r
-                               ON r.trip_id = t.id
-                                   AND r.type = 'PASSENGER'
-                                   AND r.status IN ('PENDING_PAYMENT', 'PAID')
-            WHERE t.id = ?
-            GROUP BY dt.capacity_passengers
-        `,
+      SELECT dt.capacity_passengers - COALESCE(SUM(r.seats), 0) AS available
+      FROM transporte_trips t
+      JOIN transporte_departure_templates dt ON dt.id = t.template_id
+      LEFT JOIN transporte_reservations r
+        ON r.trip_id = t.id
+        AND r.type = 'PASSENGER'
+        AND r.status IN ('PENDING_PAYMENT', 'PAID')
+      WHERE t.id = ?
+      GROUP BY dt.capacity_passengers
+    `,
         [tripId]
     );
     return Number(row?.available ?? 0);
 }
 
-router.get("/", async (req, res) => {
-    const [templates] = await pool.query(`
-        SELECT direction, depart_time
-        FROM transporte_departure_templates
-        WHERE active = 1
-        ORDER BY depart_time
+/**
+ * Home
+ */
+router.get(
+    "/",
+    requireDb,
+    safe(async (req, res) => {
+        const [templates] = await pool.query(`
+      SELECT direction, depart_time
+      FROM transporte_departure_templates
+      WHERE active = 1
+      ORDER BY depart_time
     `);
 
-    res.render("index", { templates });
-});
+        res.render("index", { templates });
+    })
+);
 
-// pantalla de reservar
-router.get("/reserve", async (req, res) => {
-    res.render("reserve", { error: null });
-});
+/**
+ * Pantalla de reservar
+ * (si quieres permitir ver la pantalla aunque no haya DB, quita requireDb aquí)
+ */
+router.get(
+    "/reserve",
+    requireDb,
+    safe(async (req, res) => {
+        res.render("reserve", { error: null });
+    })
+);
 
-// availability por fecha/ruta
-router.get("/availability", async (req, res) => {
-    const { date, direction } = req.query;
-    const seatsWanted = Math.max(0, Math.min(7, Number(req.query.seats || 1)));
+/**
+ * Availability por fecha/ruta
+ */
+router.get(
+    "/availability",
+    requireDb,
+    safe(async (req, res) => {
+        const { date, direction } = req.query;
+        const seatsWanted = Math.max(0, Math.min(7, Number(req.query.seats || 1)));
 
-    const conn = await pool.getConnection();
-    try {
-        const [templates] = await conn.query(
-            `
-                SELECT id, direction, depart_time, capacity_passengers
-                FROM transporte_departure_templates
-                WHERE active = 1
-                  AND direction = ?
-                ORDER BY depart_time
-            `,
-            [direction]
-        );
-
-        const results = [];
-        for (const t of templates) {
-            const tripId = await getOrCreateTrip(conn, t.id, date);
-            const available = await computeAvailable(conn, tripId);
-            results.push({ time: t.depart_time, available });
-        }
-
-        res.json({ date, direction, results });
-    } finally {
-        conn.release();
-    }
-});
-
-// crear reserva (anti-sobreventa)
-router.post("/reserve", async (req, res) => {
-    let { trip_date, direction, depart_time, customer_name, phone, type, package_details } = req.body;
-
-    let seats = 0;
-    if (type === "PASSENGER") {
-        const wanted = Number(req.body.seats || 1);
-        seats = Math.max(1, Math.min(7, wanted));
-    }
-
-    let passengerNames = req.body.passenger_names || [];
-    if (typeof passengerNames === "string") passengerNames = [passengerNames];
-
-    passengerNames = passengerNames.map(s => String(s).trim()).filter(Boolean);
-
-    const conn = await pool.getConnection();
-    try {
-        await conn.beginTransaction();
-
-        const [[template]] = await conn.query(
-            `
-                SELECT id
-                FROM transporte_departure_templates
-                WHERE active = 1
-                  AND direction = ?
-                  AND depart_time = ?
-            `,
-            [direction, depart_time]
-        );
-        if (!template) throw new Error("Horario no válido.");
-
-        const tripId = await getOrCreateTrip(conn, template.id, trip_date);
-
-        await conn.query("SELECT id FROM transporte_trips WHERE id=? FOR UPDATE", [tripId]);
-
-        const available = await computeAvailable(conn, tripId);
-        if (type === "PASSENGER" && available < seats) {
-            await conn.rollback();
-            return res.status(409).render("reserve", { error: "Ya no hay cupo para esa salida. Elige otra hora." });
-        }
-
-        if (type === "PASSENGER") {
-            if (passengerNames.length !== seats) {
-                await conn.rollback();
-                return res.status(400).render("reserve", { error: `Debes capturar ${seats} nombre(s) de pasajero.` });
-            }
-            // contacto = primer pasajero
-            customer_name = passengerNames[0];
-        } else {
-            passengerNames = [];
-        }
-
-        const [ins] = await conn.query(
-            `
-      INSERT INTO transporte_reservations(trip_id, type, seats, customer_name, phone, package_details)
-      VALUES (?, ?, ?, ?, ?, ?)
-      `,
-            [tripId, type, seats, customer_name, phone, package_details || null]
-        );
-
-        const reservationId = ins.insertId;
-
-        if (type === "PASSENGER" && passengerNames.length) {
-            const placeholders = passengerNames.map(() => "(?, ?)").join(",");
-            const params = passengerNames.flatMap(n => [reservationId, n]);
-
-            await conn.query(
-                `INSERT INTO transporte_reservation_passengers(reservation_id, passenger_name) VALUES ${placeholders}`,
-                params
+        const conn = await pool.getConnection();
+        try {
+            const [templates] = await conn.query(
+                `
+          SELECT id, direction, depart_time, capacity_passengers
+          FROM transporte_departure_templates
+          WHERE active = 1
+            AND direction = ?
+          ORDER BY depart_time
+        `,
+                [direction]
             );
+
+            const results = [];
+            for (const t of templates) {
+                const tripId = await getOrCreateTrip(conn, t.id, date);
+                const available = await computeAvailable(conn, tripId);
+                results.push({ time: t.depart_time, available });
+            }
+
+            res.json({ date, direction, seatsWanted, results });
+        } finally {
+            conn.release();
+        }
+    })
+);
+
+/**
+ * Crear reserva (anti-sobreventa)
+ */
+router.post(
+    "/reserve",
+    requireDb,
+    safe(async (req, res) => {
+        let {
+            trip_date,
+            direction,
+            depart_time,
+            customer_name,
+            phone,
+            type,
+            package_details,
+        } = req.body;
+
+        let seats = 0;
+        if (type === "PASSENGER") {
+            const wanted = Number(req.body.seats || 1);
+            seats = Math.max(1, Math.min(7, wanted));
         }
 
-        await conn.commit();
-        res.redirect(`/pay/${reservationId}`);
+        let passengerNames = req.body.passenger_names || [];
+        if (typeof passengerNames === "string") passengerNames = [passengerNames];
 
-    } catch (e) {
-        await conn.rollback();
-        res.status(500).render("reserve", { error: e.message });
-    } finally {
-        conn.release();
-    }
-});
+        passengerNames = passengerNames
+            .map((s) => String(s).trim())
+            .filter(Boolean);
 
-// confirmación (pendiente de pago)
-router.get("/pay/:reservationId", async (req, res) => {
-    const { reservationId } = req.params;
+        const conn = await pool.getConnection();
+        try {
+            await conn.beginTransaction();
 
-    const [[r]] = await pool.query(
-        `
-            SELECT r.*, t.trip_date, dt.direction, dt.depart_time
-            FROM transporte_reservations r
-                     JOIN transporte_trips t ON t.id = r.trip_id
-                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
-            WHERE r.id = ?
+            const [[template]] = await conn.query(
+                `
+          SELECT id
+          FROM transporte_departure_templates
+          WHERE active = 1
+            AND direction = ?
+            AND depart_time = ?
         `,
-        [reservationId]
-    );
-    if (!r) return res.status(404).send("Reserva no encontrada.");
+                [direction, depart_time]
+            );
+            if (!template) throw new Error("Horario no válido.");
 
-    const folio = folioFromReservationId(r.id, r.trip_date);
-    res.render("pay", { r, folio, directionLabel });
-});
+            const tripId = await getOrCreateTrip(conn, template.id, trip_date);
 
-// Ver ticket (público) + ✅ returnUrl
-router.get("/ticket/:code", async (req, res) => {
-    const { code } = req.params;
+            await conn.query("SELECT id FROM transporte_trips WHERE id=? FOR UPDATE", [
+                tripId,
+            ]);
 
-    const [[row]] = await pool.query(
-        `
-            SELECT tk.code,
-                   tk.issued_at,
-                   r.id AS reservation_id,
-                   r.customer_name,
-                   r.phone,
-                   r.type,
-                   r.package_details,
-                   t.trip_date,
-                   dt.direction,
-                   dt.depart_time,
-                   GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
-            FROM transporte_tickets tk
-                     JOIN transporte_reservations r ON r.id = tk.reservation_id
-                     JOIN transporte_trips t ON t.id = r.trip_id
-                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
-                     LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
-            WHERE tk.code = ?
-            GROUP BY tk.code, tk.issued_at, r.id, r.customer_name, r.phone, r.type, r.package_details,
-                     t.trip_date, dt.direction, dt.depart_time
+            const available = await computeAvailable(conn, tripId);
+            if (type === "PASSENGER" && available < seats) {
+                await conn.rollback();
+                return res
+                    .status(409)
+                    .render("reserve", {
+                        error: "Ya no hay cupo para esa salida. Elige otra hora.",
+                    });
+            }
+
+            if (type === "PASSENGER") {
+                if (passengerNames.length !== seats) {
+                    await conn.rollback();
+                    return res
+                        .status(400)
+                        .render("reserve", {
+                            error: `Debes capturar ${seats} nombre(s) de pasajero.`,
+                        });
+                }
+                // contacto = primer pasajero
+                customer_name = passengerNames[0];
+            } else {
+                passengerNames = [];
+            }
+
+            const [ins] = await conn.query(
+                `
+          INSERT INTO transporte_reservations(trip_id, type, seats, customer_name, phone, package_details)
+          VALUES (?, ?, ?, ?, ?, ?)
         `,
-        [code]
-    );
+                [
+                    tripId,
+                    type,
+                    seats,
+                    customer_name,
+                    phone,
+                    package_details || null,
+                ]
+            );
 
-    if (!row) return res.status(404).send("Ticket no encontrado.");
+            const reservationId = ins.insertId;
 
-    const url = `${process.env.BASE_URL}/ticket/${row.code}`;
-    const qrDataUrl = await QRCode.toDataURL(url);
-    const folio = folioFromReservationId(row.reservation_id, row.trip_date);
+            if (type === "PASSENGER" && passengerNames.length) {
+                const placeholders = passengerNames.map(() => "(?, ?)").join(",");
+                const params = passengerNames.flatMap((n) => [reservationId, n]);
 
-    // ✅ returnUrl seguro (solo rutas internas)
-    const returnUrl =
-        (req.query.return && String(req.query.return).startsWith("/"))
-            ? String(req.query.return)
-            : "/";
+                await conn.query(
+                    `INSERT INTO transporte_reservation_passengers(reservation_id, passenger_name) VALUES ${placeholders}`,
+                    params
+                );
+            }
 
-    res.render("ticket", { row, folio, qrDataUrl, directionLabel, url, returnUrl });
-});
-
-// PDF del ticket (1 página por pasajero si aplica) — SIN EMPALMES + sin Contacto
-router.get("/ticket/:code/pdf", async (req, res) => {
-    const { code } = req.params;
-
-    const [[row]] = await pool.query(
-        `
-            SELECT tk.code,
-                   tk.issued_at,
-                   r.id AS reservation_id,
-                   r.customer_name,
-                   r.phone,
-                   r.type,
-                   r.seats,
-                   r.package_details,
-                   t.trip_date,
-                   dt.direction,
-                   dt.depart_time
-            FROM transporte_tickets tk
-                     JOIN transporte_reservations r ON r.id = tk.reservation_id
-                     JOIN transporte_trips t ON t.id = r.trip_id
-                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
-            WHERE tk.code = ?
-        `,
-        [code]
-    );
-
-    if (!row) return res.status(404).send("Ticket no encontrado.");
-
-    // Pasajeros (para 1 página por pasajero)
-    const [pRows] = await pool.query(
-        `SELECT passenger_name FROM transporte_reservation_passengers WHERE reservation_id=? ORDER BY id`,
-        [row.reservation_id]
-    );
-
-    let passengers = pRows.map(x => String(x.passenger_name || "").trim()).filter(Boolean);
-    if (row.type === "PASSENGER" && passengers.length === 0) {
-        passengers = [row.customer_name || "Pasajero"];
-    }
-
-    const url = `${process.env.BASE_URL}/ticket/${row.code}`;
-    const qrPng = await QRCode.toBuffer(url);
-    const folio = folioFromReservationId(row.reservation_id, row.trip_date);
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${folio}.pdf"`);
-
-    const doc = new PDFDocument({ size: "A6", margin: 20 });
-    doc.pipe(res);
-
-    const WINE = "#6a0f1f";
-    const INK = "#0b0b0f";
-    const MUTED = "#6b7280";
-    const BORDER = "#e5e7eb";
-
-    function dirLabelSafe(direction) {
-        return direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
-    }
-
-    function ellipsize(str, maxWidth, font = "Helvetica", fontSize = 9.5) {
-        const s = String(str ?? "");
-        doc.font(font).fontSize(fontSize);
-        if (doc.widthOfString(s) <= maxWidth) return s;
-
-        let out = s;
-        while (out.length > 0 && doc.widthOfString(out + "…") > maxWidth) {
-            out = out.slice(0, -1);
+            await conn.commit();
+            res.redirect(`/pay/${reservationId}`);
+        } catch (e) {
+            await conn.rollback();
+            res.status(500).render("reserve", { error: e.message });
+        } finally {
+            conn.release();
         }
-        return (out.length ? out : "") + "…";
-    }
+    })
+);
 
-    function drawHeader(pageW) {
-        const headerH = 58;
+/**
+ * Confirmación (pendiente de pago)
+ */
+router.get(
+    "/pay/:reservationId",
+    requireDb,
+    safe(async (req, res) => {
+        const { reservationId } = req.params;
 
-        doc.save();
-        doc.rect(0, 0, pageW, headerH).fill(WINE);
-        doc.restore();
+        const [[r]] = await pool.query(
+            `
+        SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+        FROM transporte_reservations r
+        JOIN transporte_trips t ON t.id = r.trip_id
+        JOIN transporte_departure_templates dt ON dt.id = t.template_id
+        WHERE r.id = ?
+      `,
+            [reservationId]
+        );
+        if (!r) return res.status(404).send("Reserva no encontrada.");
 
-        doc.fillColor("#fff").font("Helvetica-Bold").fontSize(14)
-            .text("TransportApp", 20, 16);
+        const folio = folioFromReservationId(r.id, r.trip_date);
+        res.render("pay", { r, folio, directionLabel });
+    })
+);
 
-        doc.fillColor("#f3f4f6").font("Helvetica").fontSize(9)
-            .text("Ticket de servicio", 20, 36);
+/**
+ * Ver ticket (público)
+ */
+router.get(
+    "/ticket/:code",
+    requireDb,
+    safe(async (req, res) => {
+        const { code } = req.params;
 
-        const badgeText = "PAGADO";
-        doc.font("Helvetica-Bold").fontSize(9);
-        const bw = doc.widthOfString(badgeText) + 18;
-        const bx = pageW - 20 - bw;
-        const by = 18;
+        const [[row]] = await pool.query(
+            `
+        SELECT tk.code,
+               tk.issued_at,
+               r.id AS reservation_id,
+               r.customer_name,
+               r.phone,
+               r.type,
+               r.package_details,
+               t.trip_date,
+               dt.direction,
+               dt.depart_time,
+               GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
+        FROM transporte_tickets tk
+        JOIN transporte_reservations r ON r.id = tk.reservation_id
+        JOIN transporte_trips t ON t.id = r.trip_id
+        JOIN transporte_departure_templates dt ON dt.id = t.template_id
+        LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
+        WHERE tk.code = ?
+        GROUP BY tk.code, tk.issued_at, r.id, r.customer_name, r.phone, r.type, r.package_details,
+                 t.trip_date, dt.direction, dt.depart_time
+      `,
+            [code]
+        );
 
-        doc.roundedRect(bx, by, bw, 22, 10).fill(INK);
-        doc.fillColor("#fff").text(badgeText, bx, by + 6, { width: bw, align: "center" });
+        if (!row) return res.status(404).send("Ticket no encontrado.");
 
-        return headerH;
-    }
+        const baseUrl = process.env.BASE_URL || "";
+        const url = `${baseUrl}/ticket/${row.code}`;
+        const qrDataUrl = await QRCode.toDataURL(url);
+        const folio = folioFromReservationId(row.reservation_id, row.trip_date);
 
-    function hr(y, pageW) {
-        doc.moveTo(20, y).lineTo(pageW - 20, y).lineWidth(1).strokeColor(BORDER).stroke();
-    }
+        const returnUrl =
+            req.query.return && String(req.query.return).startsWith("/")
+                ? String(req.query.return)
+                : "/";
 
-    // --- Layout helpers (clave para NO empalmar) ---
-    function qrLayout(pageW, pageH, qrSize) {
-        // Bloque QR y footer se dibujan a posición absoluta (no generan páginas extra)
-        const footerH = 14;
-        const labelH = 14;
+        res.render("ticket", {
+            row,
+            folio,
+            qrDataUrl,
+            directionLabel,
+            url,
+            returnUrl,
+        });
+    })
+);
 
-        const framePad = 10;      // padding del marco del QR
-        const frameExtra = 20;    // extra del marco (10 arriba + 10 abajo)
+/**
+ * PDF del ticket
+ */
+router.get(
+    "/ticket/:code/pdf",
+    requireDb,
+    safe(async (req, res) => {
+        const { code } = req.params;
 
-        const qrX = (pageW - qrSize) / 2;
+        const [[row]] = await pool.query(
+            `
+        SELECT tk.code,
+               tk.issued_at,
+               r.id AS reservation_id,
+               r.customer_name,
+               r.phone,
+               r.type,
+               r.seats,
+               r.package_details,
+               t.trip_date,
+               dt.direction,
+               dt.depart_time
+        FROM transporte_tickets tk
+        JOIN transporte_reservations r ON r.id = tk.reservation_id
+        JOIN transporte_trips t ON t.id = r.trip_id
+        JOIN transporte_departure_templates dt ON dt.id = t.template_id
+        WHERE tk.code = ?
+      `,
+            [code]
+        );
 
-        // bloque desde abajo:
-        const footerY = pageH - 20 - footerH;
-        const labelY = footerY - 6 - labelH;
-        const frameY = labelY - 12 - (qrSize + frameExtra);
+        if (!row) return res.status(404).send("Ticket no encontrado.");
 
-        const safeBottomY = frameY - 12; // nada debe cruzar aquí
-        return { qrX, frameY, labelY, footerY, safeBottomY };
-    }
+        const [pRows] = await pool.query(
+            `SELECT passenger_name FROM transporte_reservation_passengers WHERE reservation_id=? ORDER BY id`,
+            [row.reservation_id]
+        );
 
-    // Fila kv compacta
-    function kvRow(label, value, y, pageW) {
-        const x = 20;
-        const w = pageW - 40;
-        const h = 20;
-        const nextY = y + 25;
+        let passengers = pRows
+            .map((x) => String(x.passenger_name || "").trim())
+            .filter(Boolean);
 
-        doc.roundedRect(x, y, w, h, 8)
-            .lineWidth(1)
-            .strokeColor(BORDER)
-            .fillColor("#fafafa")
-            .fillAndStroke();
-
-        doc.fillColor(MUTED).font("Helvetica").fontSize(8.7)
-            .text(label, x + 10, y + 5.5, { width: w * 0.55 });
-
-        const maxValueWidth = w - 20;
-        const safeValue = ellipsize(value, maxValueWidth, "Helvetica", 9.5);
-
-        doc.fillColor(INK).font("Helvetica").fontSize(9.5)
-            .text(safeValue, x + 10, y + 5.2, { width: w - 20, align: "right", lineBreak: false });
-
-        return nextY;
-    }
-
-    function drawQR(pageW, pageH, qrSize) {
-        const { qrX, frameY, labelY, footerY } = qrLayout(pageW, pageH, qrSize);
-
-        // marco
-        doc.roundedRect(qrX - 10, frameY, qrSize + 20, qrSize + 20, 16)
-            .lineWidth(1)
-            .strokeColor(BORDER)
-            .fillColor("#ffffff")
-            .fillAndStroke();
-
-        // qr (centrado dentro del marco)
-        doc.image(qrPng, qrX, frameY + 10, { fit: [qrSize, qrSize] });
-
-        doc.fillColor(MUTED).font("Helvetica").fontSize(9)
-            .text("Escanea para validar", 20, labelY, { width: pageW - 40, align: "center" });
-
-        doc.fillColor(MUTED).font("Helvetica").fontSize(9)
-            .text("Presenta este ticket al abordar.", 20, footerY, { width: pageW - 40, align: "center" });
-    }
-
-    // ✅ calcula QR size dinámico para que SIEMPRE quepa la fila “Pasajero”
-    function pickQrSize(pageW, pageH, headerH, rowsCount) {
-        const topBase =
-            headerH + 12 +   // margen después header
-            18 +             // folio
-            14 +             // código
-            12 +             // pasajero x/y
-            16 +             // hr + aire
-            (rowsCount * 25); // filas kv (compactas)
-
-        // probamos tamaños del QR hasta que safeBottomY quede debajo del contenido
-        const candidates = [110, 105, 100, 95, 90, 85, 80, 75, 70];
-        for (const s of candidates) {
-            const { safeBottomY } = qrLayout(pageW, pageH, s);
-            if (topBase <= safeBottomY) return s;
-        }
-        return 70; // mínimo
-    }
-
-    function drawPage(passengerName, idx, total) {
-        const pageW = doc.page.width;
-        const pageH = doc.page.height;
-
-        const headerH = drawHeader(pageW);
-
-        // Para pasajeros: mostramos estas filas (incluye PASAJERO SI O SI)
-        const rowsCount = (row.type === "PASSENGER")
-            ? 6 // Ruta, Fecha, Hora, Contacto, Teléfono, Pasajero
-            : 6; // Ruta, Fecha, Hora, Contacto, Teléfono, Detalle
-
-        const qrSize = pickQrSize(pageW, pageH, headerH, rowsCount);
-        const { safeBottomY } = qrLayout(pageW, pageH, qrSize);
-
-        // dibujar QR al final (posición absoluta), pero ya tenemos safeBottomY calculado
-        drawQR(pageW, pageH, qrSize);
-
-        let y = headerH + 12;
-
-        doc.fillColor(INK).font("Helvetica-Bold").fontSize(12)
-            .text(`Folio: ${folio}`, 20, y);
-        y += 18;
-
-        doc.fillColor(MUTED).font("Helvetica").fontSize(9)
-            .text(`Código: ${row.code}`, 20, y);
-        y += 14;
-
-        if (row.type === "PASSENGER") {
-            doc.fillColor(MUTED).font("Helvetica").fontSize(9)
-                .text(`Pasajero ${idx}/${total}`, 20, y);
-            y += 12;
+        if (row.type === "PASSENGER" && passengers.length === 0) {
+            passengers = [row.customer_name || "Pasajero"];
         }
 
-        hr(y + 6, pageW);
-        y += 16;
+        const baseUrl = process.env.BASE_URL || "";
+        const url = `${baseUrl}/ticket/${row.code}`;
+        const qrPng = await QRCode.toBuffer(url);
+        const folio = folioFromReservationId(row.reservation_id, row.trip_date);
 
-        // Si por algo el contenido se acercara demasiado, compactamos un pelín (último recurso)
-        function ensureRoom(nextY) {
-            // nunca invadir el QR
-            return nextY <= safeBottomY;
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `inline; filename="${folio}.pdf"`);
+
+        const doc = new PDFDocument({ size: "A6", margin: 20 });
+        doc.pipe(res);
+
+        const WINE = "#6a0f1f";
+        const INK = "#0b0b0f";
+        const MUTED = "#6b7280";
+        const BORDER = "#e5e7eb";
+
+        function dirLabelSafe(direction) {
+            return direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
         }
 
-        // filas principales
-        let ny;
+        function ellipsize(str, maxWidth, font = "Helvetica", fontSize = 9.5) {
+            const s = String(str ?? "");
+            doc.font(font).fontSize(fontSize);
+            if (doc.widthOfString(s) <= maxWidth) return s;
 
-        ny = y; y = kvRow("Ruta", dirLabelSafe(row.direction), y, pageW);
-        if (!ensureRoom(y)) y = ny; // no debería pasar por pickQrSize, pero por seguridad
-
-        ny = y; y = kvRow("Fecha", String(row.trip_date), y, pageW);
-        if (!ensureRoom(y)) y = ny;
-
-        ny = y; y = kvRow("Hora", String(row.depart_time), y, pageW);
-        if (!ensureRoom(y)) y = ny;
-
-        ny = y; y = kvRow("Contacto", String(row.customer_name || "-"), y, pageW);
-        if (!ensureRoom(y)) y = ny;
-
-        ny = y; y = kvRow("Teléfono", String(row.phone || "-"), y, pageW);
-        if (!ensureRoom(y)) y = ny;
-
-        // ✅ ESTA FILA SIEMPRE VA
-        if (row.type === "PASSENGER") {
-            // si estuviera demasiado justo, hacemos el valor todavía más corto
-            const v = String(passengerName || "-");
-            const tight = ellipsize(v, (pageW - 40) - 20, "Helvetica", 9.5);
-            // y la dibujamos sí o sí; pickQrSize ya aseguró espacio
-            y = kvRow("Pasajero", tight, y, pageW);
-        } else {
-            const d = String(row.package_details || "-");
-            const tight = ellipsize(d, (pageW - 40) - 20, "Helvetica", 9.5);
-            y = kvRow("Detalle", tight, y, pageW);
+            let out = s;
+            while (out.length > 0 && doc.widthOfString(out + "…") > maxWidth) {
+                out = out.slice(0, -1);
+            }
+            return (out.length ? out : "") + "…";
         }
-    }
 
-    try {
-        if (row.type === "PASSENGER") {
-            const total = passengers.length;
-            passengers.forEach((p, i) => {
-                if (i > 0) doc.addPage({ size: "A6", margin: 20 });
-                drawPage(p, i + 1, total);
+        function drawHeader(pageW) {
+            const headerH = 58;
+
+            doc.save();
+            doc.rect(0, 0, pageW, headerH).fill(WINE);
+            doc.restore();
+
+            doc.fillColor("#fff").font("Helvetica-Bold").fontSize(14).text("TransportApp", 20, 16);
+
+            doc.fillColor("#f3f4f6").font("Helvetica").fontSize(9).text("Ticket de servicio", 20, 36);
+
+            const badgeText = "PAGADO";
+            doc.font("Helvetica-Bold").fontSize(9);
+            const bw = doc.widthOfString(badgeText) + 18;
+            const bx = pageW - 20 - bw;
+            const by = 18;
+
+            doc.roundedRect(bx, by, bw, 22, 10).fill(INK);
+            doc.fillColor("#fff").text(badgeText, bx, by + 6, { width: bw, align: "center" });
+
+            return headerH;
+        }
+
+        function hr(y, pageW) {
+            doc.moveTo(20, y).lineTo(pageW - 20, y).lineWidth(1).strokeColor(BORDER).stroke();
+        }
+
+        function qrLayout(pageW, pageH, qrSize) {
+            const footerH = 14;
+            const labelH = 14;
+            const frameExtra = 20;
+
+            const qrX = (pageW - qrSize) / 2;
+
+            const footerY = pageH - 20 - footerH;
+            const labelY = footerY - 6 - labelH;
+            const frameY = labelY - 12 - (qrSize + frameExtra);
+
+            const safeBottomY = frameY - 12;
+            return { qrX, frameY, labelY, footerY, safeBottomY };
+        }
+
+        function kvRow(label, value, y, pageW) {
+            const x = 20;
+            const w = pageW - 40;
+            const h = 20;
+
+            doc.roundedRect(x, y, w, h, 8)
+                .lineWidth(1)
+                .strokeColor(BORDER)
+                .fillColor("#fafafa")
+                .fillAndStroke();
+
+            doc.fillColor(MUTED).font("Helvetica").fontSize(8.7).text(label, x + 10, y + 5.5, {
+                width: w * 0.55,
             });
-        } else {
-            drawPage(null, 1, 1);
+
+            const maxValueWidth = w - 20;
+            const safeValue = ellipsize(value, maxValueWidth, "Helvetica", 9.5);
+
+            doc.fillColor(INK).font("Helvetica").fontSize(9.5).text(safeValue, x + 10, y + 5.2, {
+                width: w - 20,
+                align: "right",
+                lineBreak: false,
+            });
+
+            return y + 25;
         }
 
-        doc.end();
-    } catch (e) {
-        try { doc.end(); } catch {}
-        return res.status(500).send(e.message);
-    }
-});
+        function drawQR(pageW, pageH, qrSize) {
+            const { qrX, frameY, labelY, footerY } = qrLayout(pageW, pageH, qrSize);
+
+            doc.roundedRect(qrX - 10, frameY, qrSize + 20, qrSize + 20, 16)
+                .lineWidth(1)
+                .strokeColor(BORDER)
+                .fillColor("#ffffff")
+                .fillAndStroke();
+
+            doc.image(qrPng, qrX, frameY + 10, { fit: [qrSize, qrSize] });
+
+            doc.fillColor(MUTED).font("Helvetica").fontSize(9).text("Escanea para validar", 20, labelY, {
+                width: pageW - 40,
+                align: "center",
+            });
+
+            doc.fillColor(MUTED).font("Helvetica").fontSize(9).text("Presenta este ticket al abordar.", 20, footerY, {
+                width: pageW - 40,
+                align: "center",
+            });
+        }
+
+        function pickQrSize(pageW, pageH, headerH, rowsCount) {
+            const topBase =
+                headerH + 12 +
+                18 +
+                14 +
+                12 +
+                16 +
+                rowsCount * 25;
+
+            const candidates = [110, 105, 100, 95, 90, 85, 80, 75, 70];
+            for (const s of candidates) {
+                const { safeBottomY } = qrLayout(pageW, pageH, s);
+                if (topBase <= safeBottomY) return s;
+            }
+            return 70;
+        }
+
+        function drawPage(passengerName, idx, total) {
+            const pageW = doc.page.width;
+            const pageH = doc.page.height;
+
+            const headerH = drawHeader(pageW);
+
+            const rowsCount = 6;
+            const qrSize = pickQrSize(pageW, pageH, headerH, rowsCount);
+
+            const { safeBottomY } = qrLayout(pageW, pageH, qrSize);
+            drawQR(pageW, pageH, qrSize);
+
+            let y = headerH + 12;
+
+            doc.fillColor(INK).font("Helvetica-Bold").fontSize(12).text(`Folio: ${folio}`, 20, y);
+            y += 18;
+
+            doc.fillColor(MUTED).font("Helvetica").fontSize(9).text(`Código: ${row.code}`, 20, y);
+            y += 14;
+
+            if (row.type === "PASSENGER") {
+                doc.fillColor(MUTED).font("Helvetica").fontSize(9).text(`Pasajero ${idx}/${total}`, 20, y);
+                y += 12;
+            }
+
+            hr(y + 6, pageW);
+            y += 16;
+
+            y = kvRow("Ruta", dirLabelSafe(row.direction), y, pageW);
+            y = kvRow("Fecha", String(row.trip_date), y, pageW);
+            y = kvRow("Hora", String(row.depart_time), y, pageW);
+            y = kvRow("Contacto", String(row.customer_name || "-"), y, pageW);
+            y = kvRow("Teléfono", String(row.phone || "-"), y, pageW);
+
+            if (row.type === "PASSENGER") {
+                const v = String(passengerName || "-");
+                const tight = ellipsize(v, pageW - 80, "Helvetica", 9.5);
+                y = kvRow("Pasajero", tight, y, pageW);
+            } else {
+                const d = String(row.package_details || "-");
+                const tight = ellipsize(d, pageW - 80, "Helvetica", 9.5);
+                y = kvRow("Detalle", tight, y, pageW);
+            }
+
+            // Protección extra por si algo cambia
+            if (y > safeBottomY) {
+                // No hacemos nada aquí; pickQrSize debería evitarlo
+            }
+        }
+
+        try {
+            if (row.type === "PASSENGER") {
+                const total = passengers.length;
+                passengers.forEach((p, i) => {
+                    if (i > 0) doc.addPage({ size: "A6", margin: 20 });
+                    drawPage(p, i + 1, total);
+                });
+            } else {
+                drawPage(null, 1, 1);
+            }
+
+            doc.end();
+        } catch (e) {
+            try { doc.end(); } catch {}
+            return res.status(500).send(e.message);
+        }
+    })
+);
 
 module.exports = router;
