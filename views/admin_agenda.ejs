@@ -119,13 +119,14 @@
                     <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">
                     <input type="hidden" name="onlyWithTrip" id="onlyWithTripInput" value="0">
                     <button class="btn btn-wine rounded-4 px-4 fw-semibold">Ver</button>
+                    <!-- Toggle filtro (JS ajusta texto y href) -->
+                    <a id="onlyToggleBtn" class="btn btn-ghost px-3 fw-semibold"
+                       href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1">
+                        Solo con viaje
+                    </a>
                 </form>
 
-                <!-- Toggle filtro (JS ajusta texto y href) -->
-                <a id="onlyToggleBtn" class="btn btn-ghost px-3 fw-semibold"
-                   href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1">
-                    Solo con viaje
-                </a>
+
             </div>
         </div>
     </div>

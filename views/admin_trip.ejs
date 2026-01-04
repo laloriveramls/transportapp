@@ -194,18 +194,30 @@
 <main class="container py-4">
 
     <%
-    const used = reservations
-            .filter(x => x.type === 'PASSENGER' && (x.status === 'PENDING_PAYMENT' || x.status === 'PAID'))
-            .reduce((acc, x) => acc + Number(x.seats || 0), 0);
+    const isActive = (x) => x.status !== 'CANCELLED';
+
+    // I prefer counting real passenger rows from passenger_names if available; fallback to seats; then 1.
+    const countPassengers = (x) => {
+        const names = String(x.passenger_names || '').trim();
+        const byNames = names ? names.split(',').map(s => s.trim()).filter(Boolean).length : 0;
+        const seats = Number(x.seats || 0);
+        return byNames || seats || 1;
+    };
+
+    const used = (reservations || [])
+            .filter(x => x.type === 'PASSENGER' && isActive(x))
+            .reduce((acc, x) => acc + countPassengers(x), 0);
 
     const cap = Number(trip.capacity_passengers || 0);
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     const libres = Math.max(0, cap - used);
 
-    const mandados = reservations
-            .filter(x => x.type === 'PACKAGE' && (x.status === 'PENDING_PAYMENT' || x.status === 'PAID'))
-            .length;
+    // Packages: count active ones; if someday you store quantity in seats, it will respect it.
+    const mandados = (reservations || [])
+            .filter(x => x.type === 'PACKAGE' && isActive(x))
+            .reduce((acc, x) => acc + (Number(x.seats || 0) || 1), 0);
     %>
+
 
     <div class="trip-card mb-3">
         <div class="top">
@@ -288,7 +300,13 @@
                             <td class="td-wrap">
                                 <% if (r.type === "PASSENGER") { %>
                                     <div class="small">
-                                        <div class="subtle"><%= r.seats %> pasajero(s)</div>
+                                        <%
+                                            const names = String(r.passenger_names || '').trim();
+                                            const pcount = names ? names.split(',').map(s => s.trim()).filter(Boolean).length : 0;
+                                            const shown = pcount || Number(r.seats || 0) || 1;
+                                        %>
+                                        <div class="subtle"><%= shown %> pasajero(s)</div>
+
                                         <div class="subtle"><%= r.passenger_names || "-" %></div>
                                     </div>
                                 <% } else { %>

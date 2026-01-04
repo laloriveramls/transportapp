@@ -89,22 +89,39 @@ async function getOrCreateTrip(conn, templateId, tripDate) {
 }
 
 async function computeAvailable(conn, tripId) {
+    // I compute availability using passenger_count when available, falling back to r.seats, then 1.
     const [[row]] = await conn.query(
         `
-            SELECT dt.capacity_passengers - COALESCE(SUM(r.seats), 0) AS available
+            SELECT
+                GREATEST(
+                        dt.capacity_passengers - COALESCE(SUM(
+                                                                  CASE
+                                                                      WHEN r.type = 'PASSENGER'
+                                                                          AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
+                                                                          THEN COALESCE(NULLIF(r.seats,0), rp.passenger_count, 1)
+                                                                      ELSE 0
+                                                                      END
+                                                          ), 0),
+                        0
+                ) AS available
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
                      LEFT JOIN transporte_reservations r
                                ON r.trip_id = t.id
-                                   AND r.type = 'PASSENGER'
-                                   AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
+                     LEFT JOIN (
+                SELECT reservation_id, COUNT(*) AS passenger_count
+                FROM transporte_reservation_passengers
+                GROUP BY reservation_id
+            ) rp ON rp.reservation_id = r.id
             WHERE t.id = ?
             GROUP BY dt.capacity_passengers
         `,
         [tripId]
     );
+
     return Number(row?.available ?? 0);
 }
+
 
 /**
  * Home

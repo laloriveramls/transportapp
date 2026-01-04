@@ -75,18 +75,54 @@ router.post("/logout", (req, res) => {
 
 // AGENDA (por día)
 router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
-    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    // I use Monterrey timezone so the "day" doesn't shift by UTC.
+    const date =
+        req.query.date ||
+        new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" }); // YYYY-MM-DD
 
     const [trips] = await pool.query(
         `
-            SELECT t.id AS trip_id, t.trip_date, dt.direction, dt.depart_time, dt.capacity_passengers,
-                   COALESCE(SUM(CASE WHEN r.type='PASSENGER' AND r.status IN ('PENDING_PAYMENT','PAID') THEN r.seats ELSE 0 END), 0) AS used_seats,
-                   COALESCE(SUM(CASE WHEN r.type='PACKAGE' AND r.status IN ('PENDING_PAYMENT','PAID') THEN 1 ELSE 0 END), 0) AS packages
+            SELECT
+                t.id AS trip_id,
+                t.trip_date,
+                dt.direction,
+                dt.depart_time,
+                dt.capacity_passengers,
+                COALESCE(agg.used_seats, 0) AS used_seats,
+                COALESCE(agg.packages, 0)   AS packages
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
-                     LEFT JOIN transporte_reservations r ON r.trip_id = t.id
+                     LEFT JOIN (
+                SELECT
+                    r.trip_id,
+
+                    -- I count active passenger seats (paid or not), excluding cancelled.
+                    SUM(
+                            CASE
+                                WHEN r.type = 'PASSENGER' AND r.status <> 'CANCELLED'
+                                    THEN COALESCE(rp.passenger_count, NULLIF(r.seats,0), 1)
+                                ELSE 0
+                                END
+                    ) AS used_seats,
+
+                    -- I count active packages (paid or not), excluding cancelled.
+                    SUM(
+                            CASE
+                                WHEN r.type = 'PACKAGE' AND r.status <> 'CANCELLED'
+                                    THEN COALESCE(NULLIF(r.seats,0), 1)
+                                ELSE 0
+                                END
+                    ) AS packages
+
+                FROM transporte_reservations r
+                         LEFT JOIN (
+                    SELECT reservation_id, COUNT(*) AS passenger_count
+                    FROM transporte_reservation_passengers
+                    GROUP BY reservation_id
+                ) rp ON rp.reservation_id = r.id
+                GROUP BY r.trip_id
+            ) agg ON agg.trip_id = t.id
             WHERE t.trip_date = ?
-            GROUP BY t.id, t.trip_date, dt.direction, dt.depart_time, dt.capacity_passengers
             ORDER BY dt.depart_time
         `,
         [date]
@@ -113,18 +149,21 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
 
     const [reservations] = await pool.query(
         `
-            SELECT r.*,
-                   (SELECT tk.code FROM transporte_tickets tk WHERE tk.reservation_id = r.id LIMIT 1) AS ticket_code,
-             GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
+            SELECT
+                r.*,
+                (SELECT tk.code FROM transporte_tickets tk WHERE tk.reservation_id = r.id LIMIT 1) AS ticket_code,
+            GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names,
+            COUNT(p.id) AS passenger_count
             FROM transporte_reservations r
                 LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
             WHERE r.trip_id = ?
-              AND (? = 0 OR r.status <> 'PAID')
+              AND (? = 0 OR (r.status <> 'PAID' AND r.status <> 'CANCELLED'))
             GROUP BY r.id
             ORDER BY r.created_at
         `,
         [tripId, onlyPending ? 1 : 0]
     );
+
 
     res.render("admin_trip", {
         trip,

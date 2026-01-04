@@ -306,7 +306,8 @@
             <!-- Teléfono (siempre) -->
             <div class="col-md-6">
                 <label class="form-label">Teléfono</label>
-                <input id="phone" name="phone" class="form-control" required placeholder="Ej: 8341234567" />
+                <input id="phone" name="phone" class="form-control" required
+                       inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376" />
             </div>
 
             <!-- MÉTODO DE PAGO -->
@@ -485,12 +486,9 @@
 
 
     function todayISO(){
-        const d = new Date();
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const dd = String(d.getDate()).padStart(2,"0");
-        return `${yyyy}-${mm}-${dd}`;
+        return new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" }); // YYYY-MM-DD
     }
+
 
     function toHHMM(t){
         // remove seconds if present: "08:30:00" -> "08:30"
@@ -611,40 +609,56 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "slot-pill";
+
         const hhmm = toHHMM(time);
         btn.dataset.time = hhmm;
         btn.setAttribute("aria-selected","false");
 
-        if (available <= 2) btn.classList.add("is-warning");
-        if (available <= 0) btn.classList.add("is-danger");
+        const isPassenger = seatsNeeded > 0;
 
-        const extra = (seatsNeeded > 0)
+        // I only disable pills for passengers when there is not enough capacity.
+        if (isPassenger && available < seatsNeeded) {
+            btn.classList.add("is-danger"); // keeps your disabled style
+        } else {
+            // I warn when low/zero availability (packages can still be selected)
+            if (available <= 2) btn.classList.add("is-warning");
+        }
+
+        const extra = isPassenger
             ? `<span class="mini">para ${seatsNeeded}</span>`
-            : `<span class="mini">Paquetería</span>`;
+            : (available <= 0
+                ? `<span class="mini">A revisión</span>`
+                : `<span class="mini">Paquetería</span>`);
 
         btn.innerHTML = `
-    <span class="time">🕒 ${hhmm}</span>
-    <span class="mini">👥 ${available} libres</span>
-    ${extra}
-  `;
+        <span class="time">🕒 ${hhmm}</span>
+        <span class="mini">👥 ${available} libres</span>
+        ${extra}
+    `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));
         return btn;
     }
 
 
+
     function renderSlotsGrouped(results, seatsNeeded){
+        // I treat seatsNeeded>0 as "passenger capacity required".
+        const requiresCapacity = seatsNeeded > 0;
+
         const items = (results || [])
             .map(x => ({ time: toHHMM(x.time), available: Number(x.available || 0) }))
-            .filter(x => x.available >= seatsNeeded)
+            // I only filter by capacity for passengers. For packages I show all times.
+            .filter(x => requiresCapacity ? (x.available >= seatsNeeded) : true)
             .sort((a,b) => a.time.localeCompare(b.time));
 
         if (!items.length){
-            clearSlotsUI("No hay horarios con cupo suficiente para tu selección.");
+            clearSlotsUI(requiresCapacity
+                ? "No hay horarios con cupo suficiente para tu selección."
+                : "No hay horarios para esta fecha/ruta.");
             return;
         }
 
-        // split morning/afternoon
         const morning = items.filter(x => hourFromTime(x.time) < 12);
         const afternoon = items.filter(x => hourFromTime(x.time) >= 12);
 
@@ -661,6 +675,7 @@
         slotsLoading.textContent = "Selecciona un horario:";
         setSelectedTime((morning[0] || afternoon[0]).time);
     }
+
 
     async function loadAvailability() {
         const date = tripDate.value;
@@ -794,6 +809,14 @@
         renderPassengerInputs();
         loadAvailability();
     });
+
+    document.getElementById("reserveForm")?.addEventListener("submit", (e) => {
+        if (!departTimeHidden.value) {
+            e.preventDefault();
+            alert("Selecciona un horario disponible antes de confirmar.");
+        }
+    });
+
 
     paymentMethod.addEventListener("change", updateUIByPayment);
 
