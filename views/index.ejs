@@ -282,6 +282,35 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             font-size: .9rem;
         }
+
+        .brand-logo{
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            border-radius: 8px; /* si lo quieres suavizado */
+        }
+
+        .hero-brand{
+            display:flex;
+            justify-content:center;
+            margin-bottom: 10px;
+        }
+        .hero-logo{
+            width: min(320px, 85%);
+            height: auto;
+            object-fit: contain;
+            border-radius: 16px; /* si quieres que se vea suave */
+        }
+        @media (min-width: 992px){
+            .hero-brand{
+                justify-content:flex-start;
+            }
+            .hero-logo{
+                width: 260px;
+            }
+        }
+
+
     </style>
 </head>
 
@@ -305,6 +334,9 @@
 
     <!-- HERO (clean) -->
     <div class="hero-min">
+        <div class="hero-brand">
+            <img src="/assets/logo.png" class="hero-logo" alt="Servicio de transporte">
+        </div>
         <h1 class="h3 title">Servicio de Transporte</h1>
         <div class="sub">Ciudad Victoria ↔ Llera · 7 pasajeros · Paquetería / Mandados</div>
 
