@@ -1,9 +1,10 @@
 const mysql = require("mysql2/promise");
 
 const hasDb =
-    process.env.DB_HOST &&
-    process.env.DB_USER &&
-    process.env.DB_NAME;
+    !!process.env.DB_HOST &&
+    !!process.env.DB_USER &&
+    !!process.env.DB_NAME &&
+    !!process.env.DB_PASS; // 👈 agrega esto
 
 let pool = null;
 
@@ -15,7 +16,7 @@ if (hasDb) {
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
         connectionLimit: 10,
-        dateStrings: true
+        dateStrings: true,
     });
 }
 

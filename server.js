@@ -4,7 +4,7 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 
-const { pool } = require("./src/db");
+const { pool, hasDb } = require("./src/db");
 const publicRoutes = require("./src/routes/public");
 const adminRoutes = require("./src/routes/admin");
 
@@ -41,8 +41,7 @@ app.get("/health", async (req, res) => {
     const uptimeSec = Math.round(process.uptime());
     const nodeVersion = process.version;
 
-    const dbConfigured =
-        !!process.env.DB_HOST && !!process.env.DB_USER && !!process.env.DB_NAME;
+    const dbConfigured = hasDb;
 
     const base = {
         ok: true,
