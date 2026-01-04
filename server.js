@@ -1,7 +1,31 @@
-require("dotenv").config();
+// server.js
+const path = require("path");
+const fs = require("fs");
+
+// I try to load .env from common Hostinger locations (first match wins).
+function loadEnv() {
+    const candidates = [
+        path.join(process.cwd(), ".env"),
+        path.join(__dirname, ".env"),
+        path.join(process.cwd(), ".builds", "config", ".env"),
+        path.join(__dirname, ".builds", "config", ".env"),
+    ];
+
+    for (const p of candidates) {
+        if (fs.existsSync(p)) {
+            require("dotenv").config({ path: p });
+            return { loaded: true, path: p };
+        }
+    }
+
+    // I still call dotenv with default behavior just in case.
+    require("dotenv").config();
+    return { loaded: false, path: null };
+}
+
+const envInfo = loadEnv();
 
 const express = require("express");
-const path = require("path");
 const session = require("express-session");
 
 const { pool, hasDb } = require("./src/db");
@@ -21,7 +45,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Sessions (ANTES de /admin)
+// Sessions (before /admin)
 app.use(
     session({
         secret: process.env.SESSION_SECRET || "dev_secret_change_me",
@@ -39,12 +63,17 @@ app.get("/health", async (req, res) => {
     const now = new Date();
     const uptimeSec = Math.round(process.uptime());
 
+    // I only expose safe debugging info (no secrets).
     const envCheck = {
+        NODE_ENV: { present: !!process.env.NODE_ENV, len: (process.env.NODE_ENV || "").length },
+        BASE_URL: { present: !!process.env.BASE_URL, len: (process.env.BASE_URL || "").length },
+        SESSION_SECRET: { present: !!process.env.SESSION_SECRET, len: (process.env.SESSION_SECRET || "").length },
+
         DB_HOST: { present: !!process.env.DB_HOST, len: (process.env.DB_HOST || "").length },
         DB_PORT: { present: !!process.env.DB_PORT, len: (process.env.DB_PORT || "").length },
         DB_USER: { present: !!process.env.DB_USER, len: (process.env.DB_USER || "").length },
         DB_NAME: { present: !!process.env.DB_NAME, len: (process.env.DB_NAME || "").length },
-        DB_PASS: { present: !!process.env.DB_PASS, len: (process.env.DB_PASS || "").length }, // solo len
+        DB_PASS: { present: !!process.env.DB_PASS, len: (process.env.DB_PASS || "").length }, // only len
     };
 
     const base = {
@@ -57,8 +86,16 @@ app.get("/health", async (req, res) => {
         app: {
             pid: process.pid,
             node: process.version,
+            cwd: process.cwd(),
+            dir: __dirname,
+
+            envFile: {
+                loaded: envInfo.loaded,
+                path: envInfo.path,
+            },
+
             hasPool: !!pool,
-            envKeysDb: Object.keys(process.env).filter(k => k.startsWith("DB_")).sort(),
+            envKeysDb: Object.keys(process.env).filter((k) => k.startsWith("DB_")).sort(),
             envCheck,
         },
 
@@ -96,7 +133,6 @@ app.get("/health", async (req, res) => {
         return res.status(500).json(base);
     }
 });
-
 
 // Start
 const PORT = process.env.PORT || 3000;
