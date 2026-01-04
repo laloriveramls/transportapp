@@ -1,10 +1,7 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/theme.css" rel="stylesheet">
+    <%- include('partials/head') %>
     <title>Reserva creada</title>
 
     <style>
@@ -79,6 +76,14 @@
             color: var(--muted);
         }
 
+        .note-strong{
+            border:1px solid color-mix(in srgb, var(--wine) 35%, var(--border));
+            background: color-mix(in srgb, var(--card) 86%, transparent);
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: var(--text);
+        }
+
         .mono{
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
             font-size: .95rem;
@@ -104,6 +109,67 @@
 
 <main class="container py-4">
 
+    <%
+    const type = (r.type || "").toUpperCase();
+    const isPassenger = type === "PASSENGER";
+    const isPackage = type === "PACKAGE";
+
+    const payment = (r.payment_method || "TAQUILLA").toUpperCase();
+    const status = (r.status || "").toUpperCase();
+
+    const isOnline = payment === "ONLINE";
+    const isPendingOnline = isOnline && (status === "PENDING_PAYMENT" || !status);
+    const isPaid = status === "PAID";
+
+    // I keep a safe fallback in case old rows don't have these columns yet.
+    const unit = Number(r.unit_price_mxn || 120);
+    const seats = Number(r.seats || 0);
+
+    const total =
+            (r.amount_total_mxn != null && r.amount_total_mxn !== "")
+                    ? Number(r.amount_total_mxn)
+                    : (isPassenger ? unit * Math.max(1, seats) : unit);
+
+    function fmtMXN(n){
+        const v = Number(n || 0);
+        return `$${v.toFixed(2)} MXN`;
+    }
+
+    function typeLabel(){
+        return isPassenger ? "Pasaje" : "Paquetería";
+    }
+
+    function paymentLabel(){
+        if (payment === "TAQUILLA") return "Taquilla";
+        if (payment === "TRANSFERENCIA") return "Transferencia";
+        if (payment === "ONLINE") return "Pago en línea";
+        return payment;
+    }
+
+    function statusText(){
+        // I map status if present; otherwise I fallback to the old text.
+        if (!status) return "Pendiente de confirmación";
+        if (status === "PAY_AT_BOARDING") return "Pago en taquilla";
+        if (status === "PENDING_PAYMENT") return "Pendiente de pago";
+        if (status === "PAID") return "Pagado";
+        return status;
+    }
+
+    function noteText(){
+        if (payment === "TAQUILLA"){
+            return "Tu reserva quedó registrada. El pago se realiza en taquilla. Puedes enviar el folio por WhatsApp para agilizar.";
+        }
+        if (payment === "TRANSFERENCIA"){
+            return "Tu reserva quedó registrada. Envía el comprobante de transferencia junto con tu folio por WhatsApp para confirmar más rápido.";
+        }
+        if (payment === "ONLINE"){
+            if (status === "PAID") return "Tu pago en línea fue confirmado. Conserva tu folio para cualquier aclaración.";
+            return "Para confirmar tu reserva, completa el pago en línea. Si lo prefieres, también puedes escribirnos por WhatsApp.";
+        }
+        return "Tu reserva quedó registrada. Puedes enviar el folio por WhatsApp para agilizar.";
+    }
+    %>
+
     <div class="card-soft">
         <div class="top">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
@@ -122,7 +188,41 @@
         </div>
 
         <div class="body">
+
+            <% if (isPendingOnline) { %>
+                <div class="note-strong mb-3">
+                    <div class="fw-semibold">Pago en línea pendiente</div>
+                    <div class="mt-1" style="color: var(--muted);">
+                        Total a pagar: <span class="fw-semibold" style="color: var(--text);"><%= fmtMXN(total) %></span>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <a class="btn btn-wine btn-xs" href="/checkout/<%= r.id %>">Pagar ahora</a>
+                        <a class="btn btn-ghost btn-xs" href="/reserve">Nueva reserva</a>
+                    </div>
+                </div>
+            <% } %>
+
             <ul class="kv mb-3">
+                <li>
+                    <span class="k">Tipo</span>
+                    <span class="v"><%= typeLabel() %></span>
+                </li>
+
+                <% if (isPassenger) { %>
+                    <li>
+                        <span class="k">Pasajeros</span>
+                        <span class="v"><%= Math.max(1, Number(r.seats || 1)) %></span>
+                    </li>
+                <% } %>
+
+                <% if (isPackage) { %>
+                    <li>
+                        <span class="k">Detalle</span>
+                        <span class="v"><%= (r.package_details || "-") %></span>
+                    </li>
+                <% } %>
+
                 <li>
                     <span class="k">Ruta</span>
                     <span class="v"><%= r.direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria" %></span>
@@ -131,11 +231,29 @@
                 <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
                 <li><span class="k">Contacto</span><span class="v"><%= r.customer_name %></span></li>
                 <li><span class="k">Teléfono</span><span class="v" id="phoneText"><%= r.phone %></span></li>
-                <li><span class="k">Estado</span><span class="v">Pendiente de confirmación</span></li>
+
+                <li>
+                    <span class="k">Método de pago</span>
+                    <span class="v"><%= paymentLabel() %></span>
+                </li>
+
+                <% if (payment === "TRANSFERENCIA" && r.transfer_ref) { %>
+                    <li>
+                        <span class="k">Referencia</span>
+                        <span class="v"><%= r.transfer_ref %></span>
+                    </li>
+                <% } %>
+
+                <li>
+                    <span class="k">Total a pagar</span>
+                    <span class="v"><%= fmtMXN(total) %></span>
+                </li>
+
+                <li><span class="k">Estado</span><span class="v"><%= statusText() %></span></li>
             </ul>
 
             <div class="note">
-                El ticket se emite cuando el administrador confirma el pago. Puedes enviar el folio por WhatsApp para agilizar.
+                <%= noteText() %>
             </div>
 
             <div class="mt-3 d-flex gap-2 flex-wrap">
@@ -149,36 +267,43 @@
 
 <script src="/js/theme.js"></script>
 
-<!-- Datos del servidor en JSON para evitar errores de "Expression expected" en el editor -->
+<!-- Datos del servidor en JSON -->
 <script type="application/json" id="reservationData">
 <%- JSON.stringify({
-        folio: folio,
+        folio,
+        reservation_id: r.id,
         direction: r.direction,
         trip_date: r.trip_date,
         depart_time: r.depart_time,
         customer_name: r.customer_name,
         phone: r.phone,
 
-        // Ajusta si tus campos se llaman distinto:
-        reservation_type: r.reservation_type || r.type || r.booking_type || r.service_type || "",
-        passengers: r.passengers || r.pax || r.num_passengers || r.seats || "",
-        package_details: r.package_details || r.package_info || r.details || r.notes || ""
+        type: r.type || "",
+        seats: r.seats || 0,
+        package_details: r.package_details || "",
+
+        payment_method: r.payment_method || "TAQUILLA",
+        transfer_ref: r.transfer_ref || null,
+        status: r.status || "",
+
+        unit_price_mxn: r.unit_price_mxn || 120,
+        amount_total_mxn: r.amount_total_mxn || null
     }) %>
 </script>
 
 <script>
-    const copyBtn = document.getElementById('copyBtn');
-    const waBtn = document.getElementById('waBtn');
+    const copyBtn = document.getElementById("copyBtn");
+    const waBtn = document.getElementById("waBtn");
 
-    // Numero del admin/servicio (a quien le llega el WhatsApp)
+    // Admin/service number (receiver of WhatsApp message).
     const adminWa = "8344756376";
 
-    function digitsOnly(s){ return String(s || '').replace(/\D/g,''); }
+    function digitsOnly(s){ return String(s || "").replace(/\D/g, ""); }
 
-    // Parsear datos del servidor
+    // I parse server data safely.
     let data = {};
     try {
-        const raw = document.getElementById('reservationData')?.textContent || "{}";
+        const raw = document.getElementById("reservationData")?.textContent || "{}";
         data = JSON.parse(raw);
     } catch {
         data = {};
@@ -189,57 +314,97 @@
     }
 
     function niceType(t){
-        const x = String(t || '').toLowerCase();
-        if (x.includes('paq') || x.includes('pack')) return 'Paqueteria';
-        if (x.includes('pas')) return 'Pasaje';
-        return t ? t : 'No especificado';
+        const x = String(t || "").toUpperCase();
+        if (x === "PACKAGE") return "Paquetería";
+        if (x === "PASSENGER") return "Pasaje";
+        return t ? t : "No especificado";
     }
 
-    const typeLabel = niceType(data.reservation_type);
-    const isPackage = typeLabel.toLowerCase().includes("paqu");
-    const isPassenger = typeLabel.toLowerCase().includes("pas");
+    function nicePayment(m){
+        const x = String(m || "TAQUILLA").toUpperCase();
+        if (x === "TAQUILLA") return "Taquilla";
+        if (x === "TRANSFERENCIA") return "Transferencia";
+        if (x === "ONLINE") return "Pago en línea";
+        return x;
+    }
 
-    const pax = Number(String(data.passengers || "").trim());
-    const paxValid = !Number.isNaN(pax) && pax > 0;
+    function niceStatus(st){
+        const x = String(st || "").toUpperCase();
+        if (!x) return "Pendiente de confirmación";
+        if (x === "PAY_AT_BOARDING") return "Pago en taquilla";
+        if (x === "PENDING_PAYMENT") return "Pendiente de pago";
+        if (x === "PAID") return "Pagado";
+        return x;
+    }
 
-    // Mensaje como cliente, sin emojis
+    function formatMXN(n){
+        const v = Number(n || 0);
+        return `$${v.toFixed(2)} MXN`;
+    }
+
+    const typeLabel = niceType(data.type);
+    const isPassenger = String(data.type || "").toUpperCase() === "PASSENGER";
+    const isPackage = String(data.type || "").toUpperCase() === "PACKAGE";
+
+    const seats = Number(data.seats || 0);
+    const unit = Number(data.unit_price_mxn || 120);
+
+    // I fallback compute total if it was not stored yet.
+    const total =
+        (data.amount_total_mxn != null && data.amount_total_mxn !== "")
+            ? Number(data.amount_total_mxn)
+            : (isPassenger ? unit * Math.max(1, seats) : unit);
+
+    const payLabel = nicePayment(data.payment_method);
+    const transferRef = data.transfer_ref ? String(data.transfer_ref) : "";
+    const statusLabel = niceStatus(data.status);
+
+    // Client message, clean format.
     const lines = [
         "Hola, acabo de realizar una reserva y me gustaría que me ayuden a confirmarla.",
         "",
+        "Datos de la reserva",
+        "-------------------",
         `Folio: ${data.folio || "-"}`,
         `Nombre: ${data.customer_name || "-"}`,
         `Telefono: ${data.phone || "-"}`,
         `Tipo: ${typeLabel}`,
+        isPassenger ? `Pasajeros: ${Math.max(1, Number(seats || 1))}` : null,
         `Ruta: ${niceRoute(data.direction)}`,
         `Fecha: ${data.trip_date || "-"}`,
         `Hora: ${data.depart_time || "-"}`,
-        (isPassenger && paxValid) ? `Pasajeros: ${pax}` : null,
-        "Estado: Pendiente de confirmacion",
+        `Metodo de pago: ${payLabel}`,
+        (String(data.payment_method || "").toUpperCase() === "TRANSFERENCIA" && transferRef)
+            ? `Referencia: ${transferRef}`
+            : null,
+        `Total a pagar: ${formatMXN(total)}`,
+        `Estado: ${statusLabel}`,
         isPackage ? "" : null,
-        isPackage ? "Detalles de paqueteria:" : null,
+        isPackage ? "Detalles de paqueteria" : null,
+        isPackage ? "---------------------" : null,
         isPackage ? (data.package_details ? String(data.package_details) : "-") : null
     ].filter(Boolean);
 
     const msg = lines.join("\n");
 
-    // Link WhatsApp al admin
+    // WhatsApp link to admin.
     const adminDigits = digitsOnly(adminWa);
     if (adminDigits.length >= 10) {
         waBtn.href = `https://wa.me/52${adminDigits}?text=${encodeURIComponent(msg)}`;
     } else {
-        waBtn.classList.add('disabled');
-        waBtn.setAttribute('aria-disabled','true');
+        waBtn.classList.add("disabled");
+        waBtn.setAttribute("aria-disabled","true");
     }
 
-    // Copiar folio
-    copyBtn?.addEventListener('click', async () => {
+    // Copy folio.
+    copyBtn?.addEventListener("click", async () => {
         try{
-            await navigator.clipboard.writeText(String(data.folio || ''));
+            await navigator.clipboard.writeText(String(data.folio || ""));
             const old = copyBtn.textContent;
-            copyBtn.textContent = 'Copiado';
+            copyBtn.textContent = "Copiado";
             setTimeout(() => copyBtn.textContent = old, 1200);
         } catch {
-            alert('No pude copiar. Selecciona el folio manualmente.');
+            alert("No pude copiar. Selecciona el folio manualmente.");
         }
     });
 </script>

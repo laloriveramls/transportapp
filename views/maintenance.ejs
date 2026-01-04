@@ -1,14 +1,25 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <%- include('partials/head') %>
     <title><%= title || "Mantenimiento" %></title>
+
     <style>
-        body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:40px; max-width:720px; margin:auto;}
-        .box{border:1px solid #ddd; border-radius:14px; padding:24px;}
+        body{
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            padding:40px;
+            max-width:720px;
+            margin:auto;
+        }
+        .box{
+            border:1px solid var(--border, #ddd);
+            border-radius:14px;
+            padding:24px;
+            background: var(--card, #fff);
+            box-shadow: var(--shadow, none);
+        }
         h1{margin:0 0 10px;}
-        p{margin:0;}
+        p{margin:0; color: var(--muted, #555);}
     </style>
 </head>
 <body>
@@ -16,5 +27,7 @@
     <h1><%= title || "Mantenimiento" %></h1>
     <p><%= message || "Estamos preparando el sitio." %></p>
 </div>
+
+<script src="/js/theme.js"></script>
 </body>
 </html>

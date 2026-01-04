@@ -1,9 +1,17 @@
+"use strict";
+
 const express = require("express");
 const { pool, hasDb } = require("../db");
 const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 
 const router = express.Router();
+
+const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
+const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
+
+// I keep pricing on the server as the source of truth.
+const PRICE_MXN = 120.0;
 
 function requireDb(req, res, next) {
     if (hasDb) return next();
@@ -20,7 +28,6 @@ function safe(handler) {
             await handler(req, res, next);
         } catch (e) {
             console.error(e);
-            // Si ya se envió respuesta, solo delego
             if (res.headersSent) return next(e);
             return res.status(500).render("maintenance", {
                 title: "Error",
@@ -42,6 +49,21 @@ function pad(n, width) {
 function folioFromReservationId(id, dateStr) {
     const ymd = String(dateStr || "").replaceAll("-", "");
     return `RES-${ymd}-${pad(id, 6)}`;
+}
+
+function moneyMXN(n) {
+    const v = Number(n || 0);
+    return Math.round(v * 100) / 100;
+}
+
+function computeTotals(type, seats) {
+    // I calculate server totals consistently (PACKAGE is fixed and does not consume seats).
+    const unit = moneyMXN(PRICE_MXN);
+    const t = String(type || "").toUpperCase();
+    const s = Math.max(1, Number(seats || 1));
+
+    const total = t === "PASSENGER" ? moneyMXN(unit * s) : moneyMXN(unit);
+    return { unit_price_mxn: unit, amount_total_mxn: total };
 }
 
 async function getOrCreateTrip(conn, templateId, tripDate) {
@@ -69,16 +91,16 @@ async function getOrCreateTrip(conn, templateId, tripDate) {
 async function computeAvailable(conn, tripId) {
     const [[row]] = await conn.query(
         `
-      SELECT dt.capacity_passengers - COALESCE(SUM(r.seats), 0) AS available
-      FROM transporte_trips t
-      JOIN transporte_departure_templates dt ON dt.id = t.template_id
-      LEFT JOIN transporte_reservations r
-        ON r.trip_id = t.id
-        AND r.type = 'PASSENGER'
-        AND r.status IN ('PENDING_PAYMENT', 'PAID')
-      WHERE t.id = ?
-      GROUP BY dt.capacity_passengers
-    `,
+            SELECT dt.capacity_passengers - COALESCE(SUM(r.seats), 0) AS available
+            FROM transporte_trips t
+                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                     LEFT JOIN transporte_reservations r
+                               ON r.trip_id = t.id
+                                   AND r.type = 'PASSENGER'
+                                   AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
+            WHERE t.id = ?
+            GROUP BY dt.capacity_passengers
+        `,
         [tripId]
     );
     return Number(row?.available ?? 0);
@@ -92,11 +114,11 @@ router.get(
     requireDb,
     safe(async (req, res) => {
         const [templates] = await pool.query(`
-      SELECT direction, depart_time
-      FROM transporte_departure_templates
-      WHERE active = 1
-      ORDER BY depart_time
-    `);
+            SELECT direction, depart_time
+            FROM transporte_departure_templates
+            WHERE active = 1
+            ORDER BY depart_time
+        `);
 
         res.render("index", { templates });
     })
@@ -104,7 +126,6 @@ router.get(
 
 /**
  * Pantalla de reservar
- * (si quieres permitir ver la pantalla aunque no haya DB, quita requireDb aquí)
  */
 router.get(
     "/reserve",
@@ -128,12 +149,12 @@ router.get(
         try {
             const [templates] = await conn.query(
                 `
-          SELECT id, direction, depart_time, capacity_passengers
-          FROM transporte_departure_templates
-          WHERE active = 1
-            AND direction = ?
-          ORDER BY depart_time
-        `,
+                    SELECT id, direction, depart_time, capacity_passengers
+                    FROM transporte_departure_templates
+                    WHERE active = 1
+                      AND direction = ?
+                    ORDER BY depart_time
+                `,
                 [direction]
             );
 
@@ -166,12 +187,35 @@ router.post(
             phone,
             type,
             package_details,
+            payment_method,
+            transfer_ref,
         } = req.body;
+
+        // I normalize and validate the reservation type.
+        type = String(type || "PASSENGER").trim().toUpperCase();
+        if (!ALLOWED_TYPES.has(type)) {
+            return res.status(400).render("reserve", { error: "Tipo de reserva no válido." });
+        }
+
+        // I normalize and validate the payment method.
+        payment_method = String(payment_method || "TAQUILLA").trim().toUpperCase();
+        if (!ALLOWED_PAYMENT_METHODS.has(payment_method)) {
+            return res.status(400).render("reserve", { error: "Método de pago no válido." });
+        }
+
+        transfer_ref = String(transfer_ref || "").trim();
+        if (!transfer_ref) transfer_ref = null;
+
+        // I map a status that keeps seats reserved correctly.
+        const status = payment_method === "TAQUILLA" ? "PAY_AT_BOARDING" : "PENDING_PAYMENT";
 
         let seats = 0;
         if (type === "PASSENGER") {
             const wanted = Number(req.body.seats || 1);
             seats = Math.max(1, Math.min(7, wanted));
+        } else {
+            // I keep PACKAGE without consuming seats.
+            seats = 0;
         }
 
         let passengerNames = req.body.passenger_names || [];
@@ -181,46 +225,43 @@ router.post(
             .map((s) => String(s).trim())
             .filter(Boolean);
 
+        // I compute pricing on the server (source of truth).
+        const { unit_price_mxn, amount_total_mxn } = computeTotals(type, seats);
+
         const conn = await pool.getConnection();
         try {
             await conn.beginTransaction();
 
             const [[template]] = await conn.query(
                 `
-          SELECT id
-          FROM transporte_departure_templates
-          WHERE active = 1
-            AND direction = ?
-            AND depart_time = ?
-        `,
+                    SELECT id
+                    FROM transporte_departure_templates
+                    WHERE active = 1
+                      AND direction = ?
+                      AND depart_time = ?
+                `,
                 [direction, depart_time]
             );
             if (!template) throw new Error("Horario no válido.");
 
             const tripId = await getOrCreateTrip(conn, template.id, trip_date);
 
-            await conn.query("SELECT id FROM transporte_trips WHERE id=? FOR UPDATE", [
-                tripId,
-            ]);
+            await conn.query("SELECT id FROM transporte_trips WHERE id=? FOR UPDATE", [tripId]);
 
             const available = await computeAvailable(conn, tripId);
             if (type === "PASSENGER" && available < seats) {
                 await conn.rollback();
-                return res
-                    .status(409)
-                    .render("reserve", {
-                        error: "Ya no hay cupo para esa salida. Elige otra hora.",
-                    });
+                return res.status(409).render("reserve", {
+                    error: "Ya no hay cupo para esa salida. Elige otra hora.",
+                });
             }
 
             if (type === "PASSENGER") {
                 if (passengerNames.length !== seats) {
                     await conn.rollback();
-                    return res
-                        .status(400)
-                        .render("reserve", {
-                            error: `Debes capturar ${seats} nombre(s) de pasajero.`,
-                        });
+                    return res.status(400).render("reserve", {
+                        error: `Debes capturar ${seats} nombre(s) de pasajero.`,
+                    });
                 }
                 // contacto = primer pasajero
                 customer_name = passengerNames[0];
@@ -230,9 +271,13 @@ router.post(
 
             const [ins] = await conn.query(
                 `
-          INSERT INTO transporte_reservations(trip_id, type, seats, customer_name, phone, package_details)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `,
+                    INSERT INTO transporte_reservations(
+                        trip_id, type, seats, customer_name, phone, package_details,
+                        payment_method, transfer_ref, status,
+                        unit_price_mxn, amount_total_mxn
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `,
                 [
                     tripId,
                     type,
@@ -240,6 +285,11 @@ router.post(
                     customer_name,
                     phone,
                     package_details || null,
+                    payment_method,
+                    transfer_ref,
+                    status,
+                    unit_price_mxn,
+                    amount_total_mxn,
                 ]
             );
 
@@ -256,7 +306,13 @@ router.post(
             }
 
             await conn.commit();
-            res.redirect(`/pay/${reservationId}`);
+
+            // ✅ ONLINE -> checkout first, then /pay
+            if (payment_method === "ONLINE") {
+                return res.redirect(`/checkout/${reservationId}`);
+            }
+
+            return res.redirect(`/pay/${reservationId}`);
         } catch (e) {
             await conn.rollback();
             res.status(500).render("reserve", { error: e.message });
@@ -265,6 +321,75 @@ router.post(
         }
     })
 );
+
+/**
+ * Checkout (ONLINE payment screen)
+ * Replace this with Stripe/MercadoPago session creation later.
+ */
+router.get(
+    "/checkout/:reservationId",
+    requireDb,
+    safe(async (req, res) => {
+        const { reservationId } = req.params;
+
+        const [[r]] = await pool.query(
+            `
+            SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+            FROM transporte_reservations r
+            JOIN transporte_trips t ON t.id = r.trip_id
+            JOIN transporte_departure_templates dt ON dt.id = t.template_id
+            WHERE r.id = ?
+            `,
+            [reservationId]
+        );
+        if (!r) return res.status(404).send("Reserva no encontrada.");
+
+        const pm = String(r.payment_method || "").toUpperCase();
+        if (pm !== "ONLINE") {
+            return res.redirect(`/pay/${reservationId}`);
+        }
+
+        const folio = folioFromReservationId(r.id, r.trip_date);
+
+        // I trust DB totals if present.
+        const total =
+            r.amount_total_mxn != null && r.amount_total_mxn !== ""
+                ? Number(r.amount_total_mxn)
+                : computeTotals(r.type, r.seats).amount_total_mxn;
+
+        res.render("checkout", { r, folio, total, directionLabel });
+    })
+);
+
+router.post(
+    "/checkout/:reservationId/complete",
+    requireDb,
+    safe(async (req, res) => {
+        const { reservationId } = req.params;
+
+        const [[r]] = await pool.query(
+            `SELECT id, payment_method, status FROM transporte_reservations WHERE id=?`,
+            [reservationId]
+        );
+        if (!r) return res.status(404).send("Reserva no encontrada.");
+
+        const pm = String(r.payment_method || "").toUpperCase();
+        if (pm !== "ONLINE") {
+            return res.redirect(`/pay/${reservationId}`);
+        }
+
+        // I mark as PAID after a successful online payment.
+        await pool.query(
+            `UPDATE transporte_reservations
+             SET status='PAID', paid_at=NOW()
+             WHERE id=?`,
+            [reservationId]
+        );
+
+        return res.redirect(`/pay/${reservationId}`);
+    })
+);
+
 
 /**
  * Confirmación (pendiente de pago)
@@ -277,15 +402,24 @@ router.get(
 
         const [[r]] = await pool.query(
             `
-        SELECT r.*, t.trip_date, dt.direction, dt.depart_time
-        FROM transporte_reservations r
-        JOIN transporte_trips t ON t.id = r.trip_id
-        JOIN transporte_departure_templates dt ON dt.id = t.template_id
-        WHERE r.id = ?
-      `,
+                SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+                FROM transporte_reservations r
+                         JOIN transporte_trips t ON t.id = r.trip_id
+                         JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                WHERE r.id = ?
+            `,
             [reservationId]
         );
         if (!r) return res.status(404).send("Reserva no encontrada.");
+
+        // ✅ If ONLINE and still unpaid, I force checkout first.
+        const pm = String(r.payment_method || "").toUpperCase();
+        const st = String(r.status || "").toUpperCase();
+
+        // if it's online and NOT paid yet -> go checkout
+        if (pm === "ONLINE" && st !== "PAID") {
+            return res.redirect(`/checkout/${reservationId}`);
+        }
 
         const folio = folioFromReservationId(r.id, r.trip_date);
         res.render("pay", { r, folio, directionLabel });
@@ -303,26 +437,31 @@ router.get(
 
         const [[row]] = await pool.query(
             `
-        SELECT tk.code,
-               tk.issued_at,
-               r.id AS reservation_id,
-               r.customer_name,
-               r.phone,
-               r.type,
-               r.package_details,
-               t.trip_date,
-               dt.direction,
-               dt.depart_time,
-               GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
-        FROM transporte_tickets tk
-        JOIN transporte_reservations r ON r.id = tk.reservation_id
-        JOIN transporte_trips t ON t.id = r.trip_id
-        JOIN transporte_departure_templates dt ON dt.id = t.template_id
-        LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
-        WHERE tk.code = ?
-        GROUP BY tk.code, tk.issued_at, r.id, r.customer_name, r.phone, r.type, r.package_details,
-                 t.trip_date, dt.direction, dt.depart_time
-      `,
+                SELECT tk.code,
+                       tk.issued_at,
+                       r.id AS reservation_id,
+                       r.customer_name,
+                       r.phone,
+                       r.type,
+                       r.seats,
+                       r.package_details,
+                       r.payment_method,
+                       r.unit_price_mxn,
+                       r.amount_total_mxn,
+                       t.trip_date,
+                       dt.direction,
+                       dt.depart_time,
+                       GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
+                FROM transporte_tickets tk
+                         JOIN transporte_reservations r ON r.id = tk.reservation_id
+                         JOIN transporte_trips t ON t.id = r.trip_id
+                         JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                         LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
+                WHERE tk.code = ?
+                GROUP BY tk.code, tk.issued_at, r.id, r.customer_name, r.phone, r.type, r.seats, r.package_details,
+                         r.payment_method, r.unit_price_mxn, r.amount_total_mxn,
+                         t.trip_date, dt.direction, dt.depart_time
+            `,
             [code]
         );
 
@@ -360,23 +499,26 @@ router.get(
 
         const [[row]] = await pool.query(
             `
-        SELECT tk.code,
-               tk.issued_at,
-               r.id AS reservation_id,
-               r.customer_name,
-               r.phone,
-               r.type,
-               r.seats,
-               r.package_details,
-               t.trip_date,
-               dt.direction,
-               dt.depart_time
-        FROM transporte_tickets tk
-        JOIN transporte_reservations r ON r.id = tk.reservation_id
-        JOIN transporte_trips t ON t.id = r.trip_id
-        JOIN transporte_departure_templates dt ON dt.id = t.template_id
-        WHERE tk.code = ?
-      `,
+                SELECT tk.code,
+                       tk.issued_at,
+                       r.id AS reservation_id,
+                       r.customer_name,
+                       r.phone,
+                       r.type,
+                       r.seats,
+                       r.package_details,
+                       r.payment_method,
+                       r.unit_price_mxn,
+                       r.amount_total_mxn,
+                       t.trip_date,
+                       dt.direction,
+                       dt.depart_time
+                FROM transporte_tickets tk
+                         JOIN transporte_reservations r ON r.id = tk.reservation_id
+                         JOIN transporte_trips t ON t.id = r.trip_id
+                         JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                WHERE tk.code = ?
+            `,
             [code]
         );
 
@@ -435,7 +577,6 @@ router.get(
             doc.restore();
 
             doc.fillColor("#fff").font("Helvetica-Bold").fontSize(14).text("TransportApp", 20, 16);
-
             doc.fillColor("#f3f4f6").font("Helvetica").fontSize(9).text("Ticket de servicio", 20, 36);
 
             const badgeText = "PAGADO";
@@ -519,13 +660,7 @@ router.get(
         }
 
         function pickQrSize(pageW, pageH, headerH, rowsCount) {
-            const topBase =
-                headerH + 12 +
-                18 +
-                14 +
-                12 +
-                16 +
-                rowsCount * 25;
+            const topBase = headerH + 12 + 18 + 14 + 12 + 16 + rowsCount * 25;
 
             const candidates = [110, 105, 100, 95, 90, 85, 80, 75, 70];
             for (const s of candidates) {
@@ -579,9 +714,8 @@ router.get(
                 y = kvRow("Detalle", tight, y, pageW);
             }
 
-            // Protección extra por si algo cambia
             if (y > safeBottomY) {
-                // No hacemos nada aquí; pickQrSize debería evitarlo
+                // I keep this as a final safety check; pickQrSize should prevent overflow.
             }
         }
 
@@ -603,5 +737,7 @@ router.get(
         }
     })
 );
+
+
 
 module.exports = router;

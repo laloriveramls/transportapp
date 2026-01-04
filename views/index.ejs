@@ -1,22 +1,8 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/theme.css" rel="stylesheet">
+    <%- include('partials/head') %>
     <title>TransportApp</title>
-
-    <link rel="icon" href="/assets/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/assets/android-chrome-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/assets/android-chrome-512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-
-    <link rel="manifest" href="/assets/site.webmanifest">
-    <meta name="theme-color" content="#6a0f1f">
-
 
     <meta property="og:locale" content="es_MX"/>
     <meta property="og:type" content="website"/>
@@ -26,7 +12,6 @@
     <meta property="og:description"
           content="Horarios, reservas y ubicación de salidas. 6 pasajeros · Paquetería"/>
 
-    <!-- IMPORTANT: These must be absolute, public HTTPS URLs -->
     <meta property="og:url" content="https://serviciodetransportevic.com/"/>
     <meta property="og:image" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
     <meta property="og:image:secure_url" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
@@ -35,7 +20,6 @@
 
     <link rel="canonical" href="https://serviciodetransportevic.com/"/>
 
-    <!-- Extra (a veces ayuda en otras apps) -->
     <meta name="twitter:card" content="summary_large_image"/>
     <meta name="twitter:title" content="Servicio de Transporte | Victoria ↔ Llera"/>
     <meta name="twitter:description" content="Horarios, reservas y ubicación de salidas."/>
@@ -261,7 +245,6 @@
             }
         }
 
-        /* Footer contacto (minimal) */
         .app-footer {
             margin-top: 18px;
             border-top: 1px solid var(--border);
@@ -314,13 +297,12 @@
         }
 
         .hero-logo-big{
-            width: 280px;      /* <- ajusta si lo quieres más grande/chico */
+            width: 280px;
             max-width: 34vw;
             height: auto;
             object-fit: contain;
         }
 
-        /* Mobile: logo abajo centrado */
         @media (max-width: 992px){
             .hero-split{
                 flex-direction:column;
@@ -336,8 +318,6 @@
                 max-width: 90%;
             }
         }
-
-
     </style>
 </head>
 
@@ -349,7 +329,6 @@
             <span class="fw-bold">TransportApp</span>
         </a>
 
-
         <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
 
         <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
@@ -360,7 +339,6 @@
 
 <main class="container py-4">
 
-    <!-- HERO (clean) -->
     <div class="hero-min hero-split">
         <div class="hero-left">
             <h1 class="h3 title">Servicio de Transporte</h1>
@@ -380,7 +358,6 @@
         </div>
     </div>
 
-    <!-- TABS -->
     <div class="tabs-card">
         <ul class="nav nav-tabs" id="homeTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -398,8 +375,6 @@
         </ul>
 
         <div class="tab-content" id="homeTabsContent">
-
-            <!-- Horarios -->
             <div class="tab-pane fade show active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
                 <div class="routes">
 
@@ -415,7 +390,7 @@
                         <div class="chips">
                             <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <span class="chip-time">🕒 <%= hhmm %></span>
+                            <span class="chip-time"><%= hhmm %></span>
                             <% }) %>
                             <% if (v2l.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
@@ -435,7 +410,7 @@
                         <div class="chips">
                             <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
                             <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <span class="chip-time">🕒 <%= hhmm %></span>
+                            <span class="chip-time"><%= hhmm %></span>
                             <% }) %>
                             <% if (l2v.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
@@ -446,12 +421,10 @@
                 </div>
             </div>
 
-            <!-- Mapa -->
             <div class="tab-pane fade" id="pane-mapa" role="tabpanel" aria-labelledby="tab-mapa">
                 <div class="map-grid">
                     <div class="map-card">
                         <p class="map-title">Salida Victoria</p>
-
                         <iframe class="map-frame" loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
                                 src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
@@ -460,30 +433,25 @@
                             <a class="btn btn-wine btn-sm rounded-4" target="_blank"
                                href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir</a>
                             <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
-                               href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo
-                                llegar</a>
+                               href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo llegar</a>
                         </div>
                     </div>
 
                     <div class="map-card">
                         <p class="map-title">Salida Llera</p>
-
                         <iframe class="map-frame" loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
                                 src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
+
                         <div class="map-actions">
                             <a class="btn btn-wine btn-sm rounded-4" target="_blank"
                                href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir</a>
                             <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
                                href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">Cómo llegar</a>
                         </div>
-
                     </div>
-
-
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -491,7 +459,6 @@
         <a class="btn btn-wine w-100 py-3 fw-bold rounded-4" href="/reserve">Reservar ahora</a>
     </div>
 
-    <!-- ✅ Footer contacto -->
     <footer class="app-footer">
         <div class="footer-row">
             <div class="footer-phone">
@@ -515,7 +482,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Admin oculto: 3 taps en 1.2s
     (function () {
         const hotspot = document.getElementById("adminHotspot");
         let taps = 0;
@@ -537,7 +503,6 @@
         });
     })();
 
-    // Copiar teléfono
     (function () {
         const btn = document.getElementById("copyPhoneBtn");
         const phone = "8344756376";
@@ -545,7 +510,7 @@
             try {
                 await navigator.clipboard.writeText(phone);
                 const old = btn.textContent;
-                btn.textContent = "Copiado ✅";
+                btn.textContent = "Copiado";
                 setTimeout(() => btn.textContent = old, 1400);
             } catch {
                 alert("No pude copiar. Número: " + phone);
@@ -556,5 +521,3 @@
 
 </body>
 </html>
-
-
