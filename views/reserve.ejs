@@ -609,37 +609,29 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "slot-pill";
-
         const hhmm = toHHMM(time);
         btn.dataset.time = hhmm;
         btn.setAttribute("aria-selected","false");
 
-        const isPassenger = seatsNeeded > 0;
-
-        // I only disable pills for passengers when there is not enough capacity.
-        if (isPassenger && available < seatsNeeded) {
-            btn.classList.add("is-danger"); // keeps your disabled style
-        } else {
-            // I warn when low/zero availability (packages can still be selected)
+        // ✅ Only enforce "full" for PASSENGER. PACKAGE can still be selected.
+        if (seatsNeeded > 0) {
             if (available <= 2) btn.classList.add("is-warning");
+            if (available <= 0) btn.classList.add("is-danger");
         }
 
-        const extra = isPassenger
+        const extra = (seatsNeeded > 0)
             ? `<span class="mini">para ${seatsNeeded}</span>`
-            : (available <= 0
-                ? `<span class="mini">A revisión</span>`
-                : `<span class="mini">Paquetería</span>`);
+            : `<span class="mini">Paquetería (admin valida)</span>`;
 
         btn.innerHTML = `
-        <span class="time">🕒 ${hhmm}</span>
-        <span class="mini">👥 ${available} libres</span>
-        ${extra}
-    `;
+    <span class="time">🕒 ${hhmm}</span>
+    <span class="mini">👥 ${available} libres</span>
+    ${extra}
+  `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));
         return btn;
     }
-
 
 
     function renderSlotsGrouped(results, seatsNeeded){

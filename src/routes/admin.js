@@ -157,7 +157,7 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
             FROM transporte_reservations r
                 LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
             WHERE r.trip_id = ?
-              AND (? = 0 OR (r.status <> 'PAID' AND r.status <> 'CANCELLED'))
+              AND (? = 0 OR r.status IN ('PENDING_PAYMENT','PAY_AT_BOARDING'))
             GROUP BY r.id
             ORDER BY r.created_at
         `,

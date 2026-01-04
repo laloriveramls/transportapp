@@ -5,16 +5,16 @@
     <title>Salida</title>
 
     <style>
-        .page-title{
+        .page-title {
             letter-spacing: -.02em;
             font-weight: 800; /* menos pesado */
             margin: 0;
         }
 
-        .pill{
-            display:inline-flex;
-            align-items:center;
-            gap:.45rem;
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
             padding: .42rem .7rem;
             border-radius: 999px;
             border: 1px solid var(--border);
@@ -25,7 +25,7 @@
             white-space: nowrap;
         }
 
-        .trip-card{
+        .trip-card {
             background: var(--card);
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
@@ -33,22 +33,26 @@
             overflow: hidden;
         }
 
-        .trip-card .top{ padding: 16px 16px 12px; }
-        .trip-card .bottom{
+        .trip-card .top {
+            padding: 16px 16px 12px;
+        }
+
+        .trip-card .bottom {
             padding: 12px 16px 16px;
             border-top: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 88%, transparent);
         }
 
-        .progress-soft{
+        .progress-soft {
             height: 10px;
             border-radius: 999px;
             background: color-mix(in srgb, var(--muted) 18%, transparent);
             overflow: hidden;
             border: 1px solid var(--border);
         }
-        .progress-soft > span{
-            display:block;
+
+        .progress-soft > span {
+            display: block;
             height: 100%;
             width: var(--w, 0%);
             background: linear-gradient(90deg, var(--wine), var(--wine-2));
@@ -56,16 +60,16 @@
         }
 
         /* ✅ padding general alrededor de la tabla para que no quede pegada al borde */
-        .table-wrap-pad{
+        .table-wrap-pad {
             padding: 10px 12px;
         }
 
-        .table-pro{
+        .table-pro {
             --bs-table-bg: transparent;
             border-color: var(--border);
         }
 
-        .table-pro thead th{
+        .table-pro thead th {
             font-size: .85rem;
             color: var(--muted);
             font-weight: 700;
@@ -73,7 +77,7 @@
             white-space: nowrap;
         }
 
-        .table-pro td{
+        .table-pro td {
             vertical-align: middle;
             border-bottom: 1px solid var(--border);
             color: var(--text);
@@ -81,30 +85,35 @@
 
         /* ✅ más aire dentro de celdas */
         .table-pro thead th,
-        .table-pro tbody td{
+        .table-pro tbody td {
             padding: .75rem .9rem !important;
         }
 
         /* móvil: un poco menos */
-        @media (max-width: 576px){
+        @media (max-width: 576px) {
             .table-pro thead th,
-            .table-pro tbody td{
+            .table-pro tbody td {
                 padding: .65rem .7rem !important;
             }
         }
 
         /* un poquito más en bordes izquierdo/derecho */
         .table-pro thead th:first-child,
-        .table-pro tbody td:first-child{ padding-left: 1.1rem !important; }
-        .table-pro thead th:last-child,
-        .table-pro tbody td:last-child{ padding-right: 1.1rem !important; }
+        .table-pro tbody td:first-child {
+            padding-left: 1.1rem !important;
+        }
 
-        .td-wrap{
+        .table-pro thead th:last-child,
+        .table-pro tbody td:last-child {
+            padding-right: 1.1rem !important;
+        }
+
+        .td-wrap {
             max-width: 360px;
             word-break: break-word;
         }
 
-        .badge-soft{
+        .badge-soft {
             border: 1px solid var(--border);
             padding: .33rem .55rem;
             border-radius: 999px;
@@ -115,57 +124,62 @@
             gap: .4rem;
             white-space: nowrap;
         }
-        .badge-paid{
-            background: rgba(16,216,143,.12);
+
+        .badge-paid {
+            background: rgba(16, 216, 143, .12);
             color: color-mix(in srgb, #10D88F 70%, var(--text));
         }
-        .badge-pending{
-            background: rgba(241,220,33,.14);
+
+        .badge-pending {
+            background: rgba(241, 220, 33, .14);
             color: color-mix(in srgb, #f1dc21 60%, var(--text));
         }
-        .badge-cancel{
-            background: rgba(148,163,184,.18);
+
+        .badge-cancel {
+            background: rgba(148, 163, 184, .18);
             color: var(--muted);
         }
 
-        .btn-xs{
+        .btn-xs {
             padding: .35rem .55rem;
             border-radius: 12px;
             font-weight: 700; /* menos pesado */
             font-size: .82rem;
         }
 
-        .btn-ghost{
+        .btn-ghost {
             border: 1px solid var(--border);
             background: transparent;
             color: var(--text);
         }
-        .btn-ghost:hover{
+
+        .btn-ghost:hover {
             border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
             background: color-mix(in srgb, var(--card) 70%, transparent);
             color: var(--text);
         }
 
-        .btn-wa{
+        .btn-wa {
             background: #25D366;
             border-color: #25D366;
             color: #fff;
         }
-        .btn-wa:hover{
+
+        .btn-wa:hover {
             background: #1fb85a;
             border-color: #1fb85a;
-            color:#fff;
+            color: #fff;
         }
 
-        .actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:.4rem;
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: .4rem;
             flex-wrap: wrap;
         }
 
         /* opcional: hover suave (se ve más moderno) */
-        .table-pro tbody tr:hover{
+        .table-pro tbody tr:hover {
             background: color-mix(in srgb, var(--card) 80%, var(--wine) 4%);
         }
     </style>
@@ -196,12 +210,11 @@
     <%
     const isActive = (x) => x.status !== 'CANCELLED';
 
-    // I prefer counting real passenger rows from passenger_names if available; fallback to seats; then 1.
+    // Usa passenger_count (del SQL) como fuente principal
     const countPassengers = (x) => {
-        const names = String(x.passenger_names || '').trim();
-        const byNames = names ? names.split(',').map(s => s.trim()).filter(Boolean).length : 0;
+        const byCount = Number(x.passenger_count || 0);
         const seats = Number(x.seats || 0);
-        return byNames || seats || 1;
+        return byCount || seats || 1;
     };
 
     const used = (reservations || [])
@@ -212,7 +225,7 @@
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     const libres = Math.max(0, cap - used);
 
-    // Packages: count active ones; if someday you store quantity in seats, it will respect it.
+    // Paquetes: en tu DB seats=0 para PACKAGE, entonces cuenta 1 por registro
     const mandados = (reservations || [])
             .filter(x => x.type === 'PACKAGE' && isActive(x))
             .reduce((acc, x) => acc + (Number(x.seats || 0) || 1), 0);
@@ -225,7 +238,8 @@
                 <div>
                     <div class="pill">🚌 Salida</div>
                     <h1 class="h3 page-title mt-2">
-                        <%= directionLabel(trip.direction) %> — <span style="color: var(--wine);"><%= trip.depart_time %></span>
+                        <%= directionLabel(trip.direction) %> — <span
+                                style="color: var(--wine);"><%= trip.depart_time %></span>
                     </h1>
                     <div class="subtle">Fecha: <%= trip.trip_date %></div>
                 </div>
@@ -301,9 +315,7 @@
                                 <% if (r.type === "PASSENGER") { %>
                                     <div class="small">
                                         <%
-                                            const names = String(r.passenger_names || '').trim();
-                                            const pcount = names ? names.split(',').map(s => s.trim()).filter(Boolean).length : 0;
-                                            const shown = pcount || Number(r.seats || 0) || 1;
+                                            const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
                                         %>
                                         <div class="subtle"><%= shown %> pasajero(s)</div>
 
@@ -323,11 +335,17 @@
                                     <span class="badge-soft badge-cancel">⛔ Cancelado</span>
                                 <% } else if (r.status === 'PENDING_PAYMENT') { %>
                                     <span class="badge-soft badge-pending">⏳ Pendiente</span>
+                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                    <span class="badge-soft"
+                                          style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
+                                            💵 Pagar en taquilla
+                                    </span>
                                 <% } else { %>
                                     <span class="badge-soft" style="background: transparent; color: var(--muted);">
                                         <%= r.status %>
                                     </span>
                                 <% } %>
+
                             </td>
 
                             <td>
@@ -355,12 +373,14 @@
                             <td class="text-end">
                                 <div class="actions">
                                     <% if (!r.ticket_code && r.status !== 'CANCELLED') { %>
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                              class="m-0">
                                             <input type="hidden" name="method" value="CASH">
                                             <button class="btn btn-wine btn-xs" type="submit">Efectivo</button>
                                         </form>
 
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                              class="m-0">
                                             <input type="hidden" name="method" value="TRANSFER">
                                             <button class="btn btn-ghost btn-xs" type="submit">Transfer</button>
                                         </form>
@@ -373,7 +393,8 @@
                                     <% if (r.status !== 'CANCELLED') { %>
                                         <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
                                               onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
-                                            <button class="btn btn-outline-danger btn-xs" type="submit">Cancelar</button>
+                                            <button class="btn btn-outline-danger btn-xs" type="submit">Cancelar
+                                            </button>
                                         </form>
                                     <% } %>
                                 </div>
