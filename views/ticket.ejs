@@ -120,38 +120,32 @@
         }
 
         /* =========================
-           PRINT: Xprinter 58mm (diseño para ancho imprimible real)
-           - Página: 58mm
-           - Contenido: 48mm (típico 384 dots)
-           - Casi sin grises (negro para legibilidad)
-           ========================= */
-        :root{
-            --pageW: 58mm;     /* ancho del rollo */
-            --printW: 48mm;    /* ancho imprimible real */
-            --pad: 1.8mm;      /* padding interno */
-        }
-
+       PRINT: Ticket 58mm x 210mm (GRANDE, NEGRO, RECIBO)
+       ========================= */
         @media print{
             @page{
-                size: 58mm;
+                size: 58mm 210mm;   /* ✅ ancho x alto (fijo) */
                 margin: 0;
             }
 
             *{
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                box-shadow: none !important;
+                text-shadow: none !important;
             }
 
             html, body{
-                width: var(--pageW) !important;
+                width: 58mm !important;
+                height: 210mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
                 color: #000 !important;
 
                 /* ✅ MÁS GRANDE */
-                font-size: 16px !important;
-                line-height: 1.18 !important;
+                font-size: 17px !important;
+                line-height: 1.15 !important;
             }
 
             /* Ocultar UI de pantalla */
@@ -163,68 +157,72 @@
                 display: none !important;
             }
 
+            /* Quitar container bootstrap */
             main.container{
-                width: var(--pageW) !important;
-                max-width: var(--pageW) !important;
+                width: 58mm !important;
+                max-width: 58mm !important;
+                height: 210mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
 
-            /* ✅ Haz el contenido más ancho (prueba 52mm).
-               Si llega a recortar, baja a 50mm. */
+            /* El “papel” completo */
             .ticket-card{
-                width: 52mm !important;
-                max-width: 52mm !important;
-                margin: 0 auto !important;
+                width: 58mm !important;
+                max-width: 58mm !important;
+                height: 210mm !important;
+                margin: 0 !important;
 
                 border: 0 !important;
-                box-shadow: none !important;
                 border-radius: 0 !important;
                 background: #fff !important;
-                overflow: visible !important;
+                overflow: hidden !important; /* para que no se salga del 210mm */
             }
 
+            /* Header + body como recibo */
             .ticket-top,
             .ticket-body{
-                padding: 2mm !important;
-                background: transparent !important;
+                padding: 2mm 2mm !important;
                 border: 0 !important;
+                background: transparent !important;
             }
 
-            /* Header en columna */
+            /* Header en una columna */
             .ticket-top .d-flex{
                 display: block !important;
             }
 
-            /* ✅ pill más grande */
+            /* “Pill” estilo sello (negro) */
             .pill{
+                display: inline-block !important;
                 font-size: 14px !important;
                 font-weight: 900 !important;
                 color: #000 !important;
                 background: transparent !important;
                 border: 2px solid #000 !important;
-                padding: 2mm 3mm !important;
-                margin-bottom: 2.5mm !important;
+                border-radius: 0 !important;
+                padding: 2mm 2.5mm !important;
+                margin: 0 0 2mm 0 !important;
             }
 
-            /* ✅ título gigante */
+            /* Folio grande */
             .title{
-                font-size: 22px !important;
+                font-size: 24px !important;
                 font-weight: 950 !important;
-                margin: 0 0 1.5mm !important;
+                margin: 0 0 1mm 0 !important;
                 color: #000 !important;
-                letter-spacing: -.01em !important;
+                letter-spacing: 0 !important;
             }
 
-            /* ✅ meta en negro y grande */
+            /* Meta en negro (sin gris) */
             .meta{
                 font-size: 14px !important;
+                font-weight: 800 !important;
                 color: #000 !important;
                 opacity: 1 !important;
-                font-weight: 800 !important;
             }
 
-            /* 1 columna */
+            /* Layout: 1 columna */
             .ticket-body .row.g-4{
                 display: block !important;
                 margin: 0 !important;
@@ -235,18 +233,22 @@
                 padding: 0 !important;
             }
 
-            /* ✅ KV más grande */
+            /* Lista KV tipo recibo */
             .kv{
-                gap: 2.2mm !important;
-                margin: 2.5mm 0 0 !important;
+                margin: 2mm 0 0 0 !important;
+                gap: 0 !important;
             }
             .kv li{
-                padding: 2.2mm 2.4mm !important;
+                border: 0 !important;
                 border-radius: 0 !important;
                 background: transparent !important;
-                border: 0 !important;
+
+                /* separador de recibo */
                 border-bottom: 2px dashed #000 !important;
+
+                padding: 2mm 0 !important;
             }
+
             .kv .k{
                 color: #000 !important;
                 font-weight: 900 !important;
@@ -258,23 +260,22 @@
                 font-size: 14px !important;
                 text-align: right !important;
 
-                /* ✅ más ancho para el valor */
-                max-width: 30mm !important;
+                /* evita que se “coma” el ancho */
+                max-width: 32mm !important;
                 word-break: break-word !important;
             }
 
-            /* ✅ QR más grande */
+            /* QR: grande y centrado (usa casi todo el ancho) */
             .qr-wrap{
                 margin-top: 3mm !important;
                 padding: 2mm !important;
-                border-radius: 0 !important;
                 border: 2px solid #000 !important;
+                border-radius: 0 !important;
                 background: transparent !important;
             }
             .qr-wrap img{
-                /* usa casi todo el ancho del ticket */
-                width: 46mm !important;
-                max-width: 46mm !important;
+                width: 52mm !important;     /* ✅ grande en 58mm */
+                max-width: 52mm !important;
                 height: auto !important;
                 display: block !important;
                 margin: 0 auto !important;
@@ -287,12 +288,12 @@
                 bottom: 2mm !important;
                 border-radius: 0 !important;
                 font-size: 16px !important;
-                box-shadow: none !important;
                 background: #fff !important;
                 border: 2px solid #000 !important;
+                box-shadow: none !important;
             }
 
-            /* Link: legible */
+            /* Link: solo texto, negro y legible */
             .url-box{
                 margin-top: 3mm !important;
                 padding: 0 !important;
@@ -309,6 +310,7 @@
                 word-break: break-word !important;
             }
         }
+
 
     </style>
 </head>

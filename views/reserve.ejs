@@ -10,41 +10,33 @@
            Reserva - mejoras UI
            ========================= */
 
-        .form-label {
-            font-weight: 600;
-        }
+        .form-label { font-weight: 600; }
 
-        .help {
-            color: var(--muted);
-            font-size: .9rem;
-        }
+        .help { color: var(--muted); font-size: .9rem; }
 
         /* Stepper estilo "lista desplegable" (form-select) pero con + / - */
-        .stepper {
+        .stepper{
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
 
-            /* look de form-select */
-            height: calc(2.375rem + 2px); /* altura Bootstrap */
+            height: calc(2.375rem + 2px);
             padding: .375rem .75rem;
             border: 1px solid var(--border);
-            border-radius: .375rem; /* como select */
-            background: var(--card); /* o #fff si quieres fijo */
+            border-radius: .375rem;
+            background: var(--card);
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06);
             gap: 10px;
         }
 
-        /* focus como input/select */
-        .stepper:focus-within {
+        .stepper:focus-within{
             border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06),
             0 0 0 .25rem color-mix(in srgb, var(--wine) 22%, transparent);
         }
 
-        /* botones tipo “control” interno */
-        .stepper .btn-step {
+        .stepper .btn-step{
             width: 34px;
             height: 30px;
             border-radius: .375rem;
@@ -58,18 +50,17 @@
             justify-content: center;
         }
 
-        .stepper .btn-step:hover {
+        .stepper .btn-step:hover{
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
             background: color-mix(in srgb, var(--card) 75%, transparent);
         }
 
-        .stepper .btn-step:disabled {
+        .stepper .btn-step:disabled{
             opacity: .45;
             cursor: not-allowed;
         }
 
-        /* número centrado como valor del select */
-        .stepper .count {
+        .stepper .count{
             flex: 1;
             text-align: center;
             font-weight: 650;
@@ -78,15 +69,14 @@
             user-select: none;
         }
 
-        /* Horarios como pills + secciones */
-        .slots-wrap {
+        .slots-wrap{
             border: 1px solid var(--border);
             border-radius: 18px;
             padding: 14px;
             background: color-mix(in srgb, var(--card) 90%, transparent);
         }
 
-        .slots-head {
+        .slots-head{
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
@@ -95,26 +85,18 @@
             margin-bottom: 10px;
         }
 
-        .slots-title {
+        .slots-title{
             font-weight: 650;
             letter-spacing: -.01em;
             margin: 0;
         }
 
-        .slots-sub {
-            color: var(--muted);
-            font-size: .9rem;
-        }
+        .slots-sub{ color: var(--muted); font-size: .9rem; }
 
-        .slot-section {
-            margin-top: 12px;
-        }
+        .slot-section{ margin-top: 12px; }
+        .slot-section:first-child{ margin-top: 0; }
 
-        .slot-section:first-child {
-            margin-top: 0;
-        }
-
-        .section-label {
+        .section-label{
             display: flex;
             align-items: center;
             gap: 8px;
@@ -124,13 +106,13 @@
             margin-bottom: 8px;
         }
 
-        .slots {
+        .slots{
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
 
-        .slot-pill {
+        .slot-pill{
             border: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 92%, transparent);
             border-radius: 999px;
@@ -146,24 +128,21 @@
             line-height: 1;
         }
 
-        .slot-pill:hover {
+        .slot-pill:hover{
             transform: translateY(-1px);
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
             background: color-mix(in srgb, var(--card) 78%, transparent);
         }
 
-        .slot-pill[aria-selected="true"] {
+        .slot-pill[aria-selected="true"]{
             border-color: color-mix(in srgb, var(--wine) 75%, var(--border));
             background: color-mix(in srgb, var(--chip-bg) 70%, var(--card));
             box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
         }
 
-        .slot-pill .time {
-            font-weight: 650;
-            white-space: nowrap;
-        }
+        .slot-pill .time{ font-weight: 650; white-space: nowrap; }
 
-        .slot-pill .mini {
+        .slot-pill .mini{
             display: inline-flex;
             align-items: center;
             gap: .35rem;
@@ -176,28 +155,24 @@
             white-space: nowrap;
         }
 
-        .slot-pill.is-warning .mini {
+        .slot-pill.is-warning .mini{
             background: rgba(241, 220, 33, .14);
             color: color-mix(in srgb, #f1dc21 60%, var(--text));
         }
 
-        .slot-pill.is-danger {
+        .slot-pill.is-danger{
             opacity: .55;
             pointer-events: none;
         }
 
-        /* separaciones internas */
-        .card-soft .row.g-3 > [class*="col-"] {
-            padding-top: 2px;
-        }
+        .card-soft .row.g-3 > [class*="col-"]{ padding-top: 2px; }
 
-        /* Payment blocks */
-        #onlineWrap .alert {
+        #onlineWrap .alert{
             border-radius: 16px;
             border: 1px solid var(--border);
         }
 
-        .pill {
+        .pill{
             display: inline-flex;
             align-items: center;
             gap: .5rem;
@@ -211,15 +186,14 @@
             white-space: nowrap;
         }
 
-        /* Transfer actions (copy buttons) */
-        .transfer-actions {
+        .transfer-actions{
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             margin-bottom: .5rem;
         }
 
-        .tbtn {
+        .tbtn{
             display: inline-flex;
             align-items: center;
             gap: .55rem;
@@ -239,24 +213,22 @@
             user-select: none;
         }
 
-        .tbtn:hover {
+        .tbtn:hover{
             transform: translateY(-1px);
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
             background: color-mix(in srgb, var(--card) 78%, transparent);
             box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
         }
 
-        .tbtn:active {
-            transform: translateY(0);
-        }
+        .tbtn:active{ transform: translateY(0); }
 
-        .tbtn:focus-visible {
+        .tbtn:focus-visible{
             outline: none;
             border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
             box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--wine) 22%, transparent);
         }
 
-        .tbtn-ic {
+        .tbtn-ic{
             width: 28px;
             height: 28px;
             border-radius: 999px;
@@ -270,10 +242,8 @@
             font-size: .95rem;
         }
 
-        .tbtn-txt {
-            font-size: .92rem;
-        }
-        /* Validación bonita (Bootstrap-ish pero con tus tokens) */
+        .tbtn-txt{ font-size: .92rem; }
+
         .form-control.is-invalid,
         .form-select.is-invalid{
             border-color: color-mix(in srgb, var(--wine) 60%, #dc3545);
@@ -287,14 +257,9 @@
             color: color-mix(in srgb, var(--wine) 65%, #dc3545);
         }
 
-        .is-invalid + .invalid-feedback{
-            display: block;
-        }
-
-
+        .is-invalid + .invalid-feedback{ display: block; }
     </style>
 </head>
-
 
 <body>
 <nav class="navbar navbar-dark app-navbar">
@@ -347,10 +312,9 @@
                 </select>
             </div>
 
-            <!-- direction REAL que se manda al backend -->
             <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
 
-            <!-- 3) Fecha (default: hoy) -->
+            <!-- 3) Fecha -->
             <div class="col-md-4">
                 <label class="form-label">¿Cuándo viajas?</label>
                 <input id="trip_date" name="trip_date" type="date" class="form-control" required/>
@@ -366,7 +330,7 @@
                 </select>
             </div>
 
-            <!-- 4) Cuántos viajan (stepper + hidden select para backend) -->
+            <!-- 5) Cuántos viajan -->
             <div class="col-md-4" id="seatsWrap">
                 <label class="form-label">¿Cuántos viajan?</label>
 
@@ -375,7 +339,7 @@
                     <div class="count"><span id="seatsText">1</span></div>
                     <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar">+</button>
 
-                    <!-- Backend espera "seats" -->
+                    <!-- ✅ SOLO 1–6 -->
                     <select id="seats" name="seats" class="d-none">
                         <option value="1" selected>1</option>
                         <option value="2">2</option>
@@ -383,14 +347,13 @@
                         <option value="4">4</option>
                         <option value="5">5</option>
                         <option value="6">6</option>
-                        <option value="7">7</option>
                     </select>
                 </div>
 
                 <div class="form-text subtle">Máximo 6 pasajeros por salida.</div>
             </div>
 
-            <!-- 5) Nombres (solo pasajeros) -->
+            <!-- 6) Nombres -->
             <div class="col-12" id="passengerNamesWrap">
                 <label class="form-label">Nombres de los pasajeros</label>
                 <div id="passengerNames" class="row g-2"></div>
@@ -399,7 +362,7 @@
                 </div>
             </div>
 
-            <!-- PAQUETERÍA: Nombre de contacto (solo si es PACKAGE) -->
+            <!-- PAQUETERÍA: Nombre de contacto -->
             <div class="col-md-6" id="packageContactWrap">
                 <label class="form-label">Nombre de contacto</label>
                 <input id="package_contact_name" name="customer_name" class="form-control"
@@ -407,7 +370,7 @@
                 <div class="form-text subtle">Solo aplica para paquetería.</div>
             </div>
 
-            <!-- Teléfono (siempre) -->
+            <!-- Teléfono -->
             <div class="col-md-6">
                 <label class="form-label">Teléfono</label>
                 <input id="phone" name="phone" class="form-control" required
@@ -421,7 +384,6 @@
                 <select id="payment_method" name="payment_method" class="form-select" required>
                     <option value="TAQUILLA" selected>Taquilla</option>
                     <option value="TRANSFERENCIA">Transferencia</option>
-                    <!-- <option value="ONLINE">Pago en línea</option> -->
                 </select>
                 <div class="form-text subtle">Elige cómo deseas pagar tu reserva.</div>
             </div>
@@ -435,18 +397,14 @@
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center gap-2">
-      <span class="pill">
-        💰 <span id="priceTotal">$0</span>
-      </span>
+                        <span class="pill">💰 <span id="priceTotal">$0</span></span>
                         <span class="help" id="priceBreakdown"></span>
                     </div>
                 </div>
             </div>
 
-
-            <!-- TRANSFERENCIA: datos bancarios + referencia opcional -->
+            <!-- TRANSFERENCIA -->
             <div class="col-12 d-none" id="transferWrap">
-
                 <div class="slots-wrap">
                     <div class="slots-head">
                         <p class="slots-title mb-0">Datos para transferencia</p>
@@ -468,16 +426,15 @@
                             <span class="tbtn-txt">Copiar tarjeta</span>
                         </button>
 
-                        <button type="button" class="tbtn" id="copyTransferMsgBtn"
-                                aria-label="Copiar mensaje de transferencia">
+                        <button type="button" class="tbtn" id="copyTransferMsgBtn" aria-label="Copiar mensaje de transferencia">
                             <span class="tbtn-ic">💬</span>
                             <span class="tbtn-txt">Copiar mensaje</span>
                         </button>
                     </div>
 
-
                     <div class="note mb-3">
-                        <strong>Concepto sugerido:</strong> “Servicio de transporte” <span class="subtle">(tu folio se genera al finalizar)</span>.
+                        <strong>Concepto sugerido:</strong> “Servicio de transporte”
+                        <span class="subtle">(tu folio se genera al finalizar)</span>.
                         <br>
                         Después, envíanos el comprobante por WhatsApp para confirmar.
                     </div>
@@ -489,9 +446,7 @@
                         Si ya hiciste la transferencia, pega aquí la referencia. Si no, puedes dejarlo vacío.
                     </div>
                 </div>
-
             </div>
-
 
             <!-- ONLINE: aviso -->
             <div class="col-12 d-none" id="onlineWrap">
@@ -500,19 +455,16 @@
                 </div>
             </div>
 
-
-            <!-- PAQUETERÍA: detalle (solo si es PACKAGE) -->
+            <!-- PAQUETERÍA -->
             <div class="col-12" id="packageWrap">
                 <label class="form-label">Detalle paquetería (obligatorio)</label>
                 <input id="package_details" name="package_details" class="form-control"
                        placeholder="Ej: sobre, refacciones, etc."/>
             </div>
 
-            <!-- Horarios pill (divididos: mañana/tarde) -->
+            <!-- Horarios -->
             <div class="col-12">
                 <label class="form-label">Hora (según cupo)</label>
-
-                <!-- backend sigue esperando depart_time -->
                 <input type="hidden" id="depart_time" name="depart_time" value="">
 
                 <div class="slots-wrap">
@@ -579,7 +531,6 @@
     const transferRef = document.getElementById("transfer_ref");
     const onlineWrap = document.getElementById("onlineWrap");
 
-
     const packageWrap = document.getElementById("packageWrap");
     const packageDetails = document.getElementById("package_details");
 
@@ -606,12 +557,10 @@
     const formEl = document.getElementById("reserveForm");
 
     function todayISO() {
-        return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"}); // YYYY-MM-DD
+        return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
     }
 
-
     function toHHMM(t) {
-        // remove seconds if present: "08:30:00" -> "08:30"
         const s = String(t || "").trim();
         const parts = s.split(":");
         if (parts.length >= 2) return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
@@ -625,6 +574,7 @@
     }
 
     function setSeats(n) {
+        /* ✅ máximo 6 */
         const value = Math.max(1, Math.min(6, Number(n || 1)));
         seatsSel.value = String(value);
         seatsText.textContent = String(value);
@@ -633,16 +583,13 @@
         plusBtn.disabled = value >= 6;
 
         updatePriceUI();
-
     }
 
     function syncDirection() {
         const f = fromCity.value;
         const t = toCity.value;
 
-        if (f === t) {
-            toCity.value = (f === "VIC") ? "LLE" : "VIC";
-        }
+        if (f === t) toCity.value = (f === "VIC") ? "LLE" : "VIC";
 
         const from = fromCity.value;
         const to = toCity.value;
@@ -672,21 +619,13 @@
     }
 
     function updateUIByPayment() {
-        // I show/hide payment-related fields depending on the selected method.
         const m = paymentMethod.value;
-
         const isTransfer = m === "TRANSFERENCIA";
         const isOnline = m === "ONLINE";
 
         transferWrap.classList.toggle("d-none", !isTransfer);
         onlineWrap.classList.toggle("d-none", !isOnline);
-
-        // I keep transfer reference optional for now.
-        // If later you want it required, uncomment:
-        // if (isTransfer) transferRef.setAttribute("required", "required");
-        // else transferRef.removeAttribute("required");
     }
-
 
     function renderPassengerInputs() {
         const isPassenger = typeSel.value === "PASSENGER";
@@ -699,9 +638,9 @@
             const col = document.createElement("div");
             col.className = "col-md-4";
             col.innerHTML = `
-        <input class="form-control" name="passenger_names[]" required
-               placeholder="Pasajero ${i} (Nombre completo)" />
-      `;
+                <input class="form-control" name="passenger_names[]" required
+                       placeholder="Pasajero ${i} (Nombre completo)" />
+            `;
             passengerNames.appendChild(col);
         }
     }
@@ -733,7 +672,6 @@
         btn.dataset.time = hhmm;
         btn.setAttribute("aria-selected", "false");
 
-        // ✅ Only enforce "full" for PASSENGER. PACKAGE can still be selected.
         if (seatsNeeded > 0) {
             if (available <= 2) btn.classList.add("is-warning");
             if (available <= 0) btn.classList.add("is-danger");
@@ -744,23 +682,20 @@
             : `<span class="mini">Paquetería</span>`;
 
         btn.innerHTML = `
-    <span class="time">🕒 ${hhmm}</span>
-    <span class="mini">👥 ${available} libres</span>
-    ${extra}
-  `;
+            <span class="time">🕒 ${hhmm}</span>
+            <span class="mini">👥 ${available} libres</span>
+            ${extra}
+        `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));
         return btn;
     }
 
-
     function renderSlotsGrouped(results, seatsNeeded) {
-        // I treat seatsNeeded>0 as "passenger capacity required".
         const requiresCapacity = seatsNeeded > 0;
 
         const items = (results || [])
             .map(x => ({time: toHHMM(x.time), available: Number(x.available || 0)}))
-            // I only filter by capacity for passengers. For packages I show all times.
             .filter(x => requiresCapacity ? (x.available >= seatsNeeded) : true)
             .sort((a, b) => a.time.localeCompare(b.time));
 
@@ -787,7 +722,6 @@
         slotsLoading.textContent = "Selecciona un horario:";
         setSelectedTime((morning[0] || afternoon[0]).time);
     }
-
 
     async function loadAvailability() {
         const date = tripDate.value;
@@ -859,13 +793,11 @@
             const rawCard = bankClabeEl?.textContent?.trim() || "";
             const cardNoSpaces = rawCard.replace(/\s+/g, "").replace(/-/g, "");
             await navigator.clipboard.writeText(cardNoSpaces);
-
             notify("Número de tarjeta copiado", {variant: "success"});
         } catch {
             notify("No pude copiar el número. Selecciónalo manualmente.", {variant: "danger", delay: 2500});
         }
     });
-
 
     copyTransferMsgBtn?.addEventListener("click", async () => {
         try {
@@ -876,9 +808,7 @@
         }
     });
 
-
     function updatePriceUI() {
-        // I calculate the price on the UI for clarity, but the backend is the source of truth.
         const isPassenger = typeSel.value === "PASSENGER";
         const seats = Number(seatsSel.value || 1);
 
@@ -897,45 +827,32 @@
     }
 
     function fieldLabel(el){
-        // 1) label[for=id]
         if (el.id) {
             const lf = formEl.querySelector(`label[for="${el.id}"]`);
             if (lf) return lf.textContent.trim();
         }
-        // 2) label dentro del mismo col-*
         const wrap = el.closest('[class*="col-"]');
         const l2 = wrap?.querySelector("label.form-label");
         if (l2) return l2.textContent.trim();
-
-        // 3) fallback
         return el.placeholder || el.name || "este campo";
     }
 
     function messageForInvalid(el){
         const name = fieldLabel(el);
-
-        if (el.id === "phone" && el.validity.patternMismatch) {
-            return `Revisa "${name}": deben ser 10 dígitos.`;
-        }
+        if (el.id === "phone" && el.validity.patternMismatch) return `Revisa "${name}": deben ser 10 dígitos.`;
         if (el.validity.valueMissing) return `Completa "${name}".`;
         if (el.validity.patternMismatch) return `Revisa "${name}" (formato inválido).`;
         if (el.validity.typeMismatch) return `Revisa "${name}".`;
         return `Revisa "${name}".`;
     }
 
-    function markInvalid(el){
-        el.classList.add("is-invalid");
-    }
-    function clearInvalid(el){
-        el.classList.remove("is-invalid");
-    }
+    function markInvalid(el){ el.classList.add("is-invalid"); }
+    function clearInvalid(el){ el.classList.remove("is-invalid"); }
 
-    // Limpio el rojo cuando el usuario corrige
     formEl.addEventListener("input", (e) => clearInvalid(e.target), true);
     formEl.addEventListener("change", (e) => clearInvalid(e.target), true);
 
     formEl.addEventListener("submit", (e) => {
-        // 1) Validación HTML5 (required/pattern/type/etc) -> toast
         const invalid = formEl.querySelector(":invalid");
         if (invalid) {
             e.preventDefault();
@@ -948,7 +865,6 @@
             return;
         }
 
-        // 2) Tu validación extra de horario (no es input visible, así que va aparte)
         if (!departTimeHidden.value) {
             e.preventDefault();
             notify("Selecciona un horario disponible antes de confirmar.", { variant: "warning", delay: 2500 });
@@ -957,15 +873,8 @@
         }
     });
 
-    // listeners
-    fromCity.addEventListener("change", () => {
-        syncDirection();
-        loadAvailability();
-    });
-    toCity.addEventListener("change", () => {
-        syncDirection();
-        loadAvailability();
-    });
+    fromCity.addEventListener("change", () => { syncDirection(); loadAvailability(); });
+    toCity.addEventListener("change", () => { syncDirection(); loadAvailability(); });
 
     tripDate.addEventListener("change", loadAvailability);
 
@@ -987,17 +896,13 @@
         loadAvailability();
     });
 
-
     paymentMethod.addEventListener("change", updateUIByPayment);
 
-
-    // init
     syncDirection();
     updateUIByType();
     updateUIByPayment();
     updatePriceUI();
 
-    // default date = today (if empty)
     if (!tripDate.value) tripDate.value = todayISO();
 
     setSeats(1);
@@ -1005,7 +910,5 @@
     loadAvailability();
 </script>
 
-
 </body>
 </html>
-

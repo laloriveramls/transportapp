@@ -217,11 +217,17 @@
         return byCount || seats || 1;
     };
 
-    const used = (reservations || [])
+    const usedRaw = (reservations || [])
             .filter(x => x.type === 'PASSENGER' && isActive(x))
             .reduce((acc, x) => acc + countPassengers(x), 0);
 
-    const cap = Number(trip.capacity_passengers || 0);
+    // ✅ Cap máximo 6 (aunque DB traiga otro valor)
+    const capRaw = Number(trip.capacity_passengers || 0);
+    const cap = Math.min(6, Math.max(0, capRaw));
+
+    // ✅ (Recomendado) por UI: no muestres más de 6 usados
+    const used = Math.min(usedRaw, cap);
+
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     const libres = Math.max(0, cap - used);
 
@@ -230,7 +236,6 @@
             .filter(x => x.type === 'PACKAGE' && isActive(x))
             .reduce((acc, x) => acc + (Number(x.seats || 0) || 1), 0);
     %>
-
 
     <div class="trip-card mb-3">
         <div class="top">

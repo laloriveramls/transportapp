@@ -10,6 +10,9 @@ const router = express.Router();
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
 
+// ✅ Cupo máximo del sistema
+const MAX_CAP = 6;
+
 // I keep pricing on the server as the source of truth.
 const PRICE_MXN = 120.0;
 
@@ -90,24 +93,27 @@ async function getOrCreateTrip(conn, templateId, tripDate) {
 
 async function computeAvailable(conn, tripId) {
     // I compute availability using passenger_count when available, falling back to r.seats, then 1.
+    // ✅ además limito la capacidad a MAX_CAP para que siempre sea 6.
     const [[row]] = await conn.query(
         `
             SELECT
                 GREATEST(
-                        dt.capacity_passengers - COALESCE(SUM(
-                                                                  CASE
-                                                                      WHEN r.type = 'PASSENGER'
-                                                                          AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
-                                                                          THEN COALESCE(NULLIF(r.seats,0), rp.passenger_count, 1)
-                                                                      ELSE 0
-                                                                      END
-                                                          ), 0),
+                        LEAST(dt.capacity_passengers, ?) - COALESCE(
+                                SUM(
+                                        CASE
+                                            WHEN r.type = 'PASSENGER'
+                                                AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
+                                                THEN COALESCE(rp.passenger_count, NULLIF(r.seats,0), 1)
+                                            ELSE 0
+                                            END
+                                ),
+                                0
+                                                           ),
                         0
                 ) AS available
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
-                     LEFT JOIN transporte_reservations r
-                               ON r.trip_id = t.id
+                     LEFT JOIN transporte_reservations r ON r.trip_id = t.id
                      LEFT JOIN (
                 SELECT reservation_id, COUNT(*) AS passenger_count
                 FROM transporte_reservation_passengers
@@ -116,12 +122,11 @@ async function computeAvailable(conn, tripId) {
             WHERE t.id = ?
             GROUP BY dt.capacity_passengers
         `,
-        [tripId]
+        [MAX_CAP, tripId]
     );
 
     return Number(row?.available ?? 0);
 }
-
 
 /**
  * Home
@@ -160,7 +165,9 @@ router.get(
     requireDb,
     safe(async (req, res) => {
         const { date, direction } = req.query;
-        const seatsWanted = Math.max(0, Math.min(7, Number(req.query.seats || 1)));
+
+        // ✅ hasta 6 (y permite 0 para paquetería)
+        const seatsWanted = Math.max(0, Math.min(MAX_CAP, Number(req.query.seats || 1)));
 
         const conn = await pool.getConnection();
         try {
@@ -229,7 +236,9 @@ router.post(
         let seats = 0;
         if (type === "PASSENGER") {
             const wanted = Number(req.body.seats || 1);
-            seats = Math.max(1, Math.min(7, wanted));
+
+            // ✅ hasta 6
+            seats = Math.max(1, Math.min(MAX_CAP, wanted));
         } else {
             // I keep PACKAGE without consuming seats.
             seats = 0;
@@ -351,11 +360,11 @@ router.get(
 
         const [[r]] = await pool.query(
             `
-            SELECT r.*, t.trip_date, dt.direction, dt.depart_time
-            FROM transporte_reservations r
-            JOIN transporte_trips t ON t.id = r.trip_id
-            JOIN transporte_departure_templates dt ON dt.id = t.template_id
-            WHERE r.id = ?
+                SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+                FROM transporte_reservations r
+                         JOIN transporte_trips t ON t.id = r.trip_id
+                         JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                WHERE r.id = ?
             `,
             [reservationId]
         );
@@ -406,7 +415,6 @@ router.post(
         return res.redirect(`/pay/${reservationId}`);
     })
 );
-
 
 /**
  * Confirmación (pendiente de pago)
@@ -754,7 +762,5 @@ router.get(
         }
     })
 );
-
-
 
 module.exports = router;

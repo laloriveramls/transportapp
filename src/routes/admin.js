@@ -4,6 +4,8 @@ const { pool, hasDb } = require("../db");
 
 const router = express.Router();
 
+const MAX_CAP = 6; // ✅ cupo máximo global
+
 function requireDb(req, res, next) {
     if (hasDb) return next();
     return res.status(503).render("maintenance", {
@@ -87,9 +89,14 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                 t.trip_date,
                 dt.direction,
                 dt.depart_time,
-                dt.capacity_passengers,
-                COALESCE(agg.used_seats, 0) AS used_seats,
-                COALESCE(agg.packages, 0)   AS packages
+
+                -- ✅ cupo limitado a 6 desde backend
+                LEAST(COALESCE(dt.capacity_passengers, 0), ?) AS capacity_passengers,
+
+                -- ✅ usados también clamp a 6 (para que UI no se rompa)
+                LEAST(COALESCE(agg.used_seats, 0), ?) AS used_seats,
+
+                COALESCE(agg.packages, 0) AS packages
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
                      LEFT JOIN (
@@ -113,7 +120,6 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                                 ELSE 0
                                 END
                     ) AS packages
-
                 FROM transporte_reservations r
                          LEFT JOIN (
                     SELECT reservation_id, COUNT(*) AS passenger_count
@@ -125,7 +131,7 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
             WHERE t.trip_date = ?
             ORDER BY dt.depart_time
         `,
-        [date]
+        [MAX_CAP, MAX_CAP, date]
     );
 
     res.render("admin_agenda", { date, trips, directionLabel });
@@ -138,12 +144,19 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
 
     const [[trip]] = await pool.query(
         `
-            SELECT t.id AS trip_id, t.trip_date, dt.direction, dt.depart_time, dt.capacity_passengers
+            SELECT
+                t.id AS trip_id,
+                t.trip_date,
+                dt.direction,
+                dt.depart_time,
+
+                -- ✅ cupo limitado a 6 desde backend
+                LEAST(COALESCE(dt.capacity_passengers, 0), ?) AS capacity_passengers
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
             WHERE t.id = ?
         `,
-        [tripId]
+        [MAX_CAP, tripId]
     );
     if (!trip) return res.status(404).send("Salida no encontrada.");
 
@@ -152,8 +165,8 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
             SELECT
                 r.*,
                 (SELECT tk.code FROM transporte_tickets tk WHERE tk.reservation_id = r.id LIMIT 1) AS ticket_code,
-            GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names,
-            COUNT(p.id) AS passenger_count
+                GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names,
+                COUNT(p.id) AS passenger_count
             FROM transporte_reservations r
                 LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
             WHERE r.trip_id = ?
@@ -163,7 +176,6 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
         `,
         [tripId, onlyPending ? 1 : 0]
     );
-
 
     res.render("admin_trip", {
         trip,
