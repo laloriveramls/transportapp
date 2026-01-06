@@ -97,6 +97,18 @@
             color: var(--text);
         }
 
+        /* ✅ Solid "wine" button (so it works even if theme.css doesn't have it) */
+        .btn-wine {
+            border: 1px solid color-mix(in srgb, var(--wine) 55%, var(--border));
+            background: var(--wine);
+            color: #fff;
+        }
+
+        .btn-wine:hover {
+            background: color-mix(in srgb, var(--wine) 92%, #000 8%);
+            color: #fff;
+        }
+
         .btn-wa{
             background:#25D366;
             border-color:#25D366;
@@ -179,9 +191,6 @@
             flex-wrap:wrap;
         }
 
-        /* =========================
-           ✅ MOBILE polish
-        ========================= */
         @media (max-width: 576px){
             .top{ padding: 14px 14px 12px; }
             .body{ padding: 14px; }
@@ -244,7 +253,9 @@
     const isPendingOnline = isOnline && (status === "PENDING_PAYMENT" || !status);
     const isPaid = status === "PAID";
 
-    const ticketCode = (r.ticket_code || "").trim();
+    // ✅ comes from transporte_tickets (passed by backend)
+    const tkCode = (ticketCode || "").trim();
+    const hasTicket = !!tkCode;
 
     const unit = Number(r.unit_price_mxn || 120);
     const seats = Number(r.seats || 0);
@@ -303,11 +314,11 @@
                 </div>
 
                 <div class="btn-group-top">
-                    <% if (isPaid && ticketCode) { %>
-                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= ticketCode %>" target="_blank" rel="noopener">
+                    <% if (isPaid && hasTicket) { %>
+                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener">
                             🎫 Ver ticket
                         </a>
-                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= ticketCode %>/pdf" target="_blank" rel="noopener">
+                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank" rel="noopener">
                             📄 PDF
                         </a>
                     <% } %>
@@ -336,8 +347,24 @@
                     </div>
 
                     <div class="mt-3 bottom-actions">
-                        <a class="btn btn-wine btn-xs" href="/checkout/<%= r.id %>">Pagar ahora</a>
+                        <a class="btn btn-wine btn-xs" href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">Pagar
+                            ahora</a>
+                        <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn">🔄 Actualizar estado
+                        </button>
                         <a class="btn btn-ghost btn-xs" href="/reserve">Nueva reserva</a>
+                    </div>
+                </div>
+            <% } %>
+
+            <% if (isPaid && !hasTicket) { %>
+                <div class="note-strong mb-3">
+                    <div class="fw-semibold">✅ Pago confirmado</div>
+                    <div class="mt-1" style="color: var(--muted);">
+                        Estamos generando tu ticket… Si no aparece todavía, presiona <strong>Actualizar estado</strong>.
+                    </div>
+                    <div class="mt-3 bottom-actions">
+                        <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2">🔄 Actualizar estado
+                        </button>
                     </div>
                 </div>
             <% } %>
@@ -367,8 +394,8 @@
                 <li><span class="k">Total a pagar</span><span class="v"><%= fmtMXN(total) %></span></li>
                 <li><span class="k">Estado</span><span class="v"><%= statusText() %></span></li>
 
-                <% if (isPaid && ticketCode) { %>
-                    <li><span class="k">Ticket</span><span class="v"><%= ticketCode %></span></li>
+                <% if (isPaid && hasTicket) { %>
+                    <li><span class="k">Ticket</span><span class="v"><%= tkCode %></span></li>
                 <% } %>
             </ul>
 
@@ -377,11 +404,6 @@
             </div>
 
             <div class="mt-3 bottom-actions">
-                <% if (isPaid && ticketCode) { %>
-                    <a class="btn btn-ghost btn-xs" href="/ticket/<%= ticketCode %>" target="_blank" rel="noopener">🎫 Ver ticket</a>
-                    <a class="btn btn-pdf btn-xs" href="/ticket/<%= ticketCode %>/pdf" target="_blank" rel="noopener">📄 PDF</a>
-                <% } %>
-
                 <a class="btn btn-ghost btn-xs" href="/reserve">➕ Nueva reserva</a>
                 <a class="btn btn-ghost btn-xs" href="/">🏠 Volver al inicio</a>
             </div>
@@ -395,7 +417,7 @@
 <script type="application/json" id="reservationData">
 <%- JSON.stringify({
         folio,
-        reservation_id: r.id,
+        public_token: (publicToken || ""),
         direction: r.direction,
         trip_date: r.trip_date,
         depart_time: r.depart_time,
@@ -410,7 +432,8 @@
         transfer_ref: r.transfer_ref || null,
         status: r.status || "",
 
-        ticket_code: r.ticket_code || "",
+        // ✅ ticket code comes from transporte_tickets
+        ticket_code: (ticketCode || ""),
 
         unit_price_mxn: r.unit_price_mxn || 120,
         amount_total_mxn: r.amount_total_mxn || null
@@ -527,6 +550,30 @@
             alert("No pude copiar. Selecciona el folio manualmente.");
         }
     });
+
+    const refreshBtn = document.getElementById("refreshStatusBtn");
+    refreshBtn?.addEventListener("click", () => location.reload());
+
+    const refreshBtn2 = document.getElementById("refreshStatusBtn2");
+    refreshBtn2?.addEventListener("click", () => location.reload());
+
+    (function autoRefreshAfterStripe() {
+        const params = new URLSearchParams(window.location.search);
+        const sid = params.get("session_id");
+        if (!sid) return;
+
+        const st = String(data.status || "").toUpperCase();
+        if (st === "PAID") return;
+
+        let tries = 0;
+        const maxTries = 5;
+
+        const timer = setInterval(() => {
+            tries++;
+            if (tries > maxTries) return clearInterval(timer);
+            location.reload();
+        }, 2500);
+    })();
 </script>
 </body>
 </html>

@@ -3,103 +3,472 @@
 <head>
     <%- include('partials/head') %>
     <link href="/css/theme.css" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
     <title>Pago en línea</title>
 
     <style>
-        .card-soft{
+        /* =========================
+           Checkout - Drawer UX (polished)
+           ========================= */
+
+        .page-wrap {
+            max-width: 1120px;
+        }
+
+        /* Hero */
+        .hero {
+            background: radial-gradient(900px 420px at 12% 0%, rgba(106, 15, 31, .20), transparent 55%),
+            radial-gradient(700px 360px at 88% 10%, rgba(106, 15, 31, .10), transparent 60%);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .hero-inner {
+            padding: 18px 18px 14px;
+        }
+
+        .hero-title {
+            margin: 0;
+            font-weight: 850;
+            letter-spacing: -.02em;
+        }
+
+        .hero-sub {
+            color: var(--muted);
+            font-size: .95rem;
+            margin-top: 6px;
+            max-width: 72ch;
+        }
+
+        .pill{
+            display:inline-flex; align-items:center; gap:.5rem;
+            padding: .42rem .72rem;
+            border-radius: 999px;
+            border:1px solid var(--border);
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            font-weight: 750;
+            font-size: .9rem;
+            white-space:nowrap;
+        }
+
+        .steps {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 0 18px 16px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--muted);
+            font-weight: 650;
+            font-size: .92rem;
+        }
+
+        .dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 86%, transparent);
+            color: var(--muted);
+            font-weight: 850;
+            font-size: .85rem;
+        }
+
+        .step.active {
+            color: var(--text);
+        }
+
+        .step.active .dot {
+            background: var(--wine);
+            border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
+            color: #fff;
+        }
+
+        .chev {
+            color: var(--muted);
+            opacity: .65;
+        }
+
+        /* Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 14px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-soft {
             background: var(--card);
             border: 1px solid var(--border);
             box-shadow: var(--shadow);
             border-radius: 22px;
             overflow: hidden;
         }
-        .top{
-            padding: 18px 18px 14px;
-            background:
-                    radial-gradient(1000px 520px at 10% 0%, rgba(106,15,31,.20), transparent 55%),
-                    radial-gradient(800px 420px at 90% 10%, rgba(106,15,31,.10), transparent 60%);
+
+        .card-head {
+            padding: 16px 16px 12px;
             border-bottom: 1px solid var(--border);
-        }
-        .body{ padding: 18px; }
-
-        .title{ letter-spacing: -.02em; font-weight: 650; margin: 0; }
-        .meta{ color: var(--muted); font-size: .95rem; }
-
-        .pill{
-            display:inline-flex; align-items:center; gap:.5rem;
-            padding:.45rem .75rem; border-radius:999px;
-            border:1px solid var(--border);
-            background: var(--chip-bg);
-            color: var(--chip-text);
-            font-weight:600; font-size:.9rem;
-            white-space:nowrap;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
         }
 
+        .card-title {
+            margin: 0;
+            font-weight: 850;
+            letter-spacing: -.01em;
+            font-size: 1.05rem;
+        }
+
+        .card-sub {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: .92rem;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Summary list */
         .kv{
-            list-style:none; padding:0; margin:0;
-            display:grid; gap:.55rem;
+            display: grid;
+            gap: .55rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
         .kv li{
-            display:flex; justify-content:space-between; gap:12px;
-            padding:.6rem .75rem;
-            border:1px solid var(--border);
-            border-radius:14px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: .65rem .75rem;
+            border: 1px solid var(--border);
+            border-radius: 16px;
             background: color-mix(in srgb, var(--card) 86%, transparent);
         }
-        .kv .k{ color: var(--muted); font-weight:500; }
-        .kv .v{ color: var(--text); font-weight:500; text-align:right; }
 
+        .kv .k {
+            color: var(--muted);
+            font-weight: 650;
+        }
+
+        .kv .v {
+            color: var(--text);
+            font-weight: 750;
+            text-align: right;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: .95rem;
+            word-break: break-word;
+        }
+
+        /* Notes */
         .note{
-            border:1px solid var(--border);
+            border: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 82%, transparent);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 12px 14px;
             color: var(--muted);
         }
 
-        .mono{
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-            font-size: .95rem;
-            color: var(--text);
-            word-break: break-word;
-        }
-
-        .btn-xs{
-            padding:.55rem .9rem;
-            border-radius:12px;
-            font-weight:600;
-            font-size:.95rem;
-        }
-        .btn-ghost{
-            border:1px solid var(--border);
-            background:transparent;
-            color: var(--text);
-        }
-        .btn-ghost:hover{
-            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
-            background: color-mix(in srgb, var(--card) 70%, transparent);
+        .note strong {
             color: var(--text);
         }
 
-        .divider{ height:1px; background: var(--border); margin: 14px 0; }
-
-        .danger{
-            border-color: rgba(239,68,68,.35);
-            background: rgba(239,68,68,.06);
+        .danger {
+            border-color: rgba(239, 68, 68, .35);
+            background: rgba(239, 68, 68, .06);
             color: color-mix(in srgb, #ef4444 55%, var(--text));
         }
 
-        .spinner{
-            width:18px; height:18px;
-            border:2px solid rgba(255,255,255,.35);
-            border-top-color:#fff;
+        /* Total box */
+        .total-box {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+            border-radius: 18px;
+            padding: 12px 14px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .rowline {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--muted);
+            font-weight: 650;
+            font-size: .95rem;
+        }
+
+        .rowline strong {
+            color: var(--text);
+        }
+
+        .rowline.big {
+            font-size: 1.18rem;
+            color: var(--text);
+            font-weight: 900;
+            padding-top: 6px;
+            border-top: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+            margin-top: 2px;
+        }
+
+        /* Buttons */
+        .btn-xs{
+            padding: .62rem .95rem;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: .96rem;
+        }
+
+        .btn-solid {
+            border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            color: var(--text);
+        }
+
+        .btn-solid:hover {
+            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
+            background: color-mix(in srgb, var(--card) 72%, transparent);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            border: 1px solid color-mix(in srgb, var(--wine) 55%, var(--border));
+            background: var(--wine);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: color-mix(in srgb, var(--wine) 92%, #000 8%);
+            color: #fff;
+        }
+
+        .btn-primary:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .pay-cta {
+            display: grid;
+            gap: 12px;
+        }
+
+        .pay-cta .hint {
+            color: var(--muted);
+            font-size: .92rem;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 576px) {
+            .actions a {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* =========================
+           Drawer (Stripe)
+           ========================= */
+        .drawer {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .drawer .backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, .55);
+            opacity: 0;
+            transition: opacity .18s ease;
+        }
+
+        .drawer .panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: min(560px, 100%);
+            background: var(--card);
+            border-left: 1px solid var(--border);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .25);
+            transform: translateX(105%);
+            transition: transform .22s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer.open {
+            pointer-events: auto;
+        }
+
+        .drawer.open .backdrop {
+            opacity: 1;
+        }
+
+        .drawer.open .panel {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .drawer .panel {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                height: min(92vh, 720px);
+                border-left: none;
+                border-top: 1px solid var(--border);
+                border-radius: 22px 22px 0 0;
+                transform: translateY(105%);
+            }
+
+            .drawer.open .panel {
+                transform: translateY(0);
+            }
+        }
+
+        .drawer-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            backdrop-filter: blur(10px);
+        }
+
+        .drawer-title {
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: -.01em;
+            font-size: 1.08rem;
+            line-height: 1.15;
+        }
+
+        .drawer-sub {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: .92rem;
+        }
+
+        .close-btn {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
+        }
+
+        .drawer-body {
+            padding: 14px 16px 16px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            display: grid;
+            gap: 12px;
+        }
+
+        /* Shell debe ser relative para el overlay */
+        .embed-shell {
+            position: relative;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            border-radius: 18px;
+            padding: 10px;
+        }
+
+        /* IMPORTANT: mount must be EMPTY */
+        .embed-mount {
+            border-radius: 14px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            background: var(--card);
+            border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+            min-height: 380px;
+            max-height: 62vh;
+        }
+
+        @media (max-width: 768px) {
+            .embed-mount {
+                min-height: 380px;
+                max-height: 58vh;
+            }
+        }
+
+        /* Loading overlay (sibling of mount; mount stays empty) */
+        .embed-loading {
+            position: absolute;
+            inset: 10px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 18px;
+            color: var(--muted);
+            font-weight: 800;
+            background: color-mix(in srgb, var(--card) 86%, transparent);
+            border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+            backdrop-filter: blur(8px);
+        }
+
+        .mini-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid color-mix(in srgb, var(--muted) 35%, transparent);
+            border-top-color: var(--muted);
             border-radius:999px;
-            display:inline-block;
             animation: spin .8s linear infinite;
-            vertical-align: -3px;
-            margin-right:8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Lock body scroll when drawer open */
+        body.drawer-open {
+            overflow: hidden;
+            touch-action: none;
+        }
     </style>
 </head>
 
@@ -117,10 +486,8 @@
     </div>
 </nav>
 
-<main class="container py-4">
-
+<main class="container py-4 page-wrap">
     <%
-    // r viene del server: reserva + trip_date + depart_time + direction
     const type = String(r.type || "").toUpperCase();
     const isPassenger = type === "PASSENGER";
     const isPackage = type === "PACKAGE";
@@ -128,129 +495,412 @@
     const payment = String(r.payment_method || "ONLINE").toUpperCase();
     const status = String(r.status || "").toUpperCase();
 
-    // I trust the server total, and I keep a safe fallback.
-    const unit = Number(r.unit_price_mxn || 120);
     const seats = Number(r.seats || 0);
-    const totalSafe =
-            (total != null && total !== "")
-                    ? Number(total)
-                    : (isPassenger ? unit * Math.max(1, seats || 1) : unit);
+    const totalSafe = (total != null && total !== "") ? Number(total) : Number(r.amount_total_mxn || 0);
 
     function fmtMXN(n){
         const v = Number(n || 0);
         return `$${v.toFixed(2)} MXN`;
     }
-
     function typeLabel(){
         return isPassenger ? "Pasaje" : "Paquetería";
     }
 
-    function routeLabel(dir){
-        return dir === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
-    }
-
     const isOnline = payment === "ONLINE";
-    const canPay = isOnline && (status === "PENDING_PAYMENT" || !status); // I allow old rows without status.
+    const canPay = isOnline && (status === "PENDING_PAYMENT" || !status);
     const isPaid = status === "PAID";
+    const canMount = (canPay && !isPaid && isOnline);
+
+    const token = publicToken || "";
+    const payUrl = `/pay/t/${encodeURIComponent(token)}`;
     %>
 
-    <div class="card-soft">
-        <div class="top">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <div class="pill">Pago en línea</div>
-                    <h1 class="h3 title mt-2">Checkout</h1>
-                    <div class="meta mt-1">Revisa tus datos y confirma el pago.</div>
+    <section class="hero">
+        <div class="hero-inner d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <span class="pill">Pago seguro</span>
+                    <span class="pill">Stripe</span>
                 </div>
 
-                <div class="d-flex gap-2 flex-wrap">
-                    <a class="btn btn-ghost btn-xs" href="/pay/<%= r.id %>">Volver</a>
-                    <a class="btn btn-ghost btn-xs" href="/">Inicio</a>
+                <h1 class="h3 hero-title mt-2">Confirmar pago</h1>
+                <div class="hero-sub">
+                    Revisa tu reserva. Al pagar, tu ticket queda confirmado automáticamente.
                 </div>
             </div>
-        </div>
-
-        <div class="body">
-
-            <% if (!isOnline) { %>
-                <div class="note danger mb-3">
-                    Esta reserva no está configurada como <strong>Pago en línea</strong>.
-                    Vuelve y cambia el método de pago si lo necesitas.
-                </div>
-            <% } %>
-
-            <% if (isPaid) { %>
-                <div class="note mb-3">
-                    ✅ Este pago ya aparece como <strong>Pagado</strong>. Si solo querías revisar, puedes volver.
-                </div>
-            <% } %>
-
-            <ul class="kv mb-3">
-                <li><span class="k">Folio</span><span class="v mono"><%= folio %></span></li>
-                <li><span class="k">Tipo</span><span class="v"><%= typeLabel() %></span></li>
-
-                <% if (isPassenger) { %>
-                    <li><span class="k">Pasajeros</span><span class="v"><%= Math.max(1, Number(seats || 1)) %></span></li>
-                <% } %>
-
-                <% if (isPackage) { %>
-                    <li><span class="k">Detalle</span><span class="v"><%= (r.package_details || "-") %></span></li>
-                <% } %>
-
-                <li><span class="k">Ruta</span><span class="v"><%= routeLabel(r.direction) %></span></li>
-                <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
-                <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
-                <li><span class="k">Contacto</span><span class="v"><%= r.customer_name %></span></li>
-                <li><span class="k">Teléfono</span><span class="v"><%= r.phone %></span></li>
-
-                <li><span class="k">Total a pagar</span><span class="v"><strong><%= fmtMXN(totalSafe) %></strong></span></li>
-            </ul>
-
-            <div class="note mb-3">
-                Aún no hay proveedor de pagos configurado. Este checkout es <strong>simulación</strong>:
-                al confirmar, registraremos el pago como completado (para pruebas) y te llevaremos al resumen.
-            </div>
-
-            <div class="divider"></div>
 
             <div class="d-flex gap-2 flex-wrap">
-                <form id="payForm" method="POST" action="/checkout/<%= r.id %>/complete" class="m-0">
-                    <input type="hidden" name="amount_total_mxn" value="<%= totalSafe %>">
-                    <input type="hidden" name="currency" value="MXN">
-
-                    <button id="payBtn" class="btn btn-wine btn-xs" type="submit"
-                    <% if (!canPay || isPaid) { %> disabled <% } %>>
-                        Pagar ahora (simulado)
-                    </button>
-                </form>
-
-                <a class="btn btn-ghost btn-xs" href="/pay/<%= r.id %>">Ver resumen</a>
+                <a class="btn btn-solid btn-xs" href="<%= payUrl %>">Volver</a>
+                <a class="btn btn-solid btn-xs" href="/">Inicio</a>
             </div>
-
-            <div class="mt-3">
-                <small class="text-muted">
-                    Cuando conectemos Stripe/MercadoPago, este botón abrirá el flujo real y luego regresará a
-                    <span class="mono">/pay/<%= r.id %></span>.
-                </small>
-            </div>
-
         </div>
+
+        <div class="steps">
+            <div class="step">
+                <span class="dot">1</span>
+                <span>Reserva</span>
+            </div>
+            <span class="chev">›</span>
+            <div class="step active">
+                <span class="dot">2</span>
+                <span>Pago</span>
+            </div>
+            <span class="chev">›</span>
+            <div class="step">
+                <span class="dot">3</span>
+                <span>Ticket</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid">
+        <!-- LEFT: RESUMEN -->
+        <section class="card-soft">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Resumen</h2>
+                    <p class="card-sub">Verifica ruta, fecha y datos de contacto.</p>
+                </div>
+                <div class="pill"><%= typeLabel() %></div>
+            </div>
+
+            <div class="card-body">
+                <% if (!isOnline) { %>
+                    <div class="note danger mb-3">
+                        Esta reserva no está configurada como <strong>Pago en línea</strong>.
+                    </div>
+                <% } %>
+
+                <% if (isPaid) { %>
+                    <div class="note mb-3">
+                        ✅ Este pago ya aparece como <strong>Pagado</strong>.
+                    </div>
+                <% } %>
+
+                <ul class="kv mb-3">
+                    <li><span class="k">Folio</span><span class="v mono"><%= folio %></span></li>
+                    <li><span class="k">Ruta</span><span class="v"><%= directionLabel(r.direction) %></span></li>
+                    <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
+                    <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
+
+                    <% if (isPassenger) { %>
+                        <li><span class="k">Pasajeros</span><span
+                                    class="v"><%= Math.max(1, Number(seats || 1)) %></span></li>
+                    <% } %>
+
+                    <% if (isPackage) { %>
+                        <li><span class="k">Detalle</span><span class="v"><%= (r.package_details || "-") %></span></li>
+                    <% } %>
+
+                    <li><span class="k">Contacto</span><span class="v"><%= (r.customer_name || "-") %></span></li>
+                    <li><span class="k">Teléfono</span><span class="v"><%= (r.phone || "-") %></span></li>
+                </ul>
+
+                <div class="note">
+                    <strong>Importante:</strong> tus datos de tarjeta no se almacenan en este sitio.
+                    El pago se procesa directamente en Stripe.
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: PAGO CTA -->
+        <aside class="card-soft">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title">Pago</h2>
+                    <p class="card-sub">Abre el panel y paga en línea.</p>
+                </div>
+                <div class="pill">MXN</div>
+            </div>
+
+            <div class="card-body">
+                <div class="pay-cta">
+                    <div class="total-box">
+                        <div class="rowline">
+                            <span>Subtotal</span>
+                            <span><strong><%= fmtMXN(totalSafe) %></strong></span>
+                        </div>
+                        <div class="rowline">
+                            <span>Comisión</span>
+                            <span><strong>$0.00 MXN</strong></span>
+                        </div>
+                        <div class="rowline big">
+                            <span>Total</span>
+                            <span><%= fmtMXN(totalSafe) %></span>
+                        </div>
+                    </div>
+
+                    <% if (!isOnline) { %>
+                        <div class="note danger">
+                            Selecciona <strong>Pago en línea</strong> para poder pagar con tarjeta.
+                        </div>
+                    <% } else if (isPaid) { %>
+                        <div class="note">
+                            ✅ Este pago ya está <strong>pagado</strong>. Puedes ver tu ticket en el resumen.
+                        </div>
+                    <% } else { %>
+                        <button
+                                id="openPayDrawer"
+                                class="btn btn-primary btn-xs"
+                                type="button"
+                                <% if (!canMount) { %>disabled
+                                <% } %>
+                        >
+                            🔒 Pagar ahora
+                        </button>
+
+                        <p class="hint m-0">
+                            Se abre un panel con Stripe. Si ya pagaste y aparece pendiente, espera unos segundos y
+                            recarga.
+                        </p>
+                    <% } %>
+                </div>
+            </div>
+        </aside>
     </div>
 
+    <div class="actions">
+        <a class="btn btn-solid btn-xs" href="<%= payUrl %>">Ver resumen</a>
+        <a class="btn btn-solid btn-xs" href="/reserve">Nueva reserva</a>
+    </div>
 </main>
+
+<!-- Drawer -->
+<div
+        id="payDrawer"
+        class="drawer"
+        aria-hidden="true"
+        data-can-mount="<%= canMount ? '1' : '0' %>"
+        data-pk="<%= stripePublishableKey %>"
+        data-token="<%= publicToken %>"
+>
+    <div class="backdrop" data-close-drawer="1"></div>
+
+    <div class="panel" role="dialog" aria-modal="true" aria-label="Pago en línea">
+        <div class="drawer-head">
+            <div>
+                <div class="pill">Pago en línea</div>
+                <h3 class="drawer-title mt-2">Completa tu pago</h3>
+                <p class="drawer-sub">Total: <strong><%= fmtMXN(totalSafe) %></strong></p>
+            </div>
+
+            <button id="drawerClose" class="close-btn" type="button" data-close-drawer="1" aria-label="Cerrar">
+                ✕
+            </button>
+        </div>
+
+        <div class="drawer-body">
+            <div class="note">
+                <strong>Seguro:</strong> el formulario pertenece a Stripe. Este sitio no guarda tu tarjeta.
+            </div>
+
+            <div class="embed-shell">
+                <!-- Loading overlay (NOT inside mount) -->
+                <div id="embedLoading" class="embed-loading">
+                    <span class="mini-spinner"></span>
+                    <span>Cargando formulario…</span>
+                </div>
+
+                <!-- MUST be EMPTY -->
+                <div id="embedded-checkout" class="embed-mount"></div>
+            </div>
+
+            <div class="note">
+                Si al finalizar no regresa solo, cierra el panel y vuelve al resumen.
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="/js/theme.js"></script>
 
 <script>
-    const form = document.getElementById("payForm");
-    const btn = document.getElementById("payBtn");
+    (() => {
+        const drawer = document.getElementById("payDrawer");
+        const openBtn = document.getElementById("openPayDrawer");
+        const mountEl = document.getElementById("embedded-checkout");
+        const loadingEl = document.getElementById("embedLoading");
 
-    form?.addEventListener("submit", () => {
-        // I block double-submit and I show a small loading hint.
-        if (!btn) return;
-        btn.disabled = true;
-        btn.innerHTML = `<span class="spinner"></span>Procesando...`;
-    });
+        if (!drawer || !mountEl) return;
+
+        const canMount = drawer.dataset.canMount === "1";
+        const publishableKey = drawer.dataset.pk || "";
+        const publicToken = (drawer.dataset.token || "").trim();
+
+        let sessionId = null;
+
+        // I must keep ONLY one EmbeddedCheckout instance per page.
+        let stripe = null;
+        let checkout = null;
+        let checkoutInitPromise = null;
+
+        let mounting = false;
+        let mountedOnce = false;
+
+        function setLoading(on) {
+            if (!loadingEl) return;
+            loadingEl.style.display = on ? "flex" : "none";
+        }
+
+        function openDrawer() {
+            drawer.classList.add("open");
+            drawer.setAttribute("aria-hidden", "false");
+            document.body.classList.add("drawer-open");
+
+            // If iframe already exists, I hide the loader immediately.
+            if (mountEl.querySelector("iframe")) setLoading(false);
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove("open");
+            drawer.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("drawer-open");
+
+            // ✅ I DO NOT unmount. I keep Stripe alive and mounted.
+            if (mountEl.querySelector("iframe")) setLoading(false);
+            else setLoading(true);
+        }
+
+        function safeTokenOrThrow() {
+            if (!publicToken) throw new Error("Falta token público de reserva.");
+            return publicToken;
+        }
+
+        async function fetchClientSecret() {
+            const tok = encodeURIComponent(safeTokenOrThrow());
+
+            const res = await fetch(`/checkout/t/${tok}/create-session`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => "");
+                throw new Error(txt || "No se pudo iniciar el pago.");
+            }
+
+            const data = await res.json();
+            sessionId = data.sessionId;
+            return data.clientSecret;
+        }
+
+        function watchIframeAndHideLoading() {
+            if (mountEl.querySelector("iframe")) {
+                setLoading(false);
+                return;
+            }
+
+            const obs = new MutationObserver(() => {
+                if (mountEl.querySelector("iframe")) {
+                    setLoading(false);
+                    try {
+                        obs.disconnect();
+                    } catch {
+                    }
+                }
+            });
+            obs.observe(mountEl, {childList: true, subtree: true});
+
+            let ticks = 0;
+            const timer = setInterval(() => {
+                ticks++;
+                if (mountEl.querySelector("iframe")) {
+                    setLoading(false);
+                    clearInterval(timer);
+                    try {
+                        obs.disconnect();
+                    } catch {
+                    }
+                    return;
+                }
+                if (ticks >= 100) { // ~12s
+                    clearInterval(timer);
+                    try {
+                        obs.disconnect();
+                    } catch {
+                    }
+                    setLoading(false);
+                    mountEl.classList.add("danger");
+                    mountEl.textContent = "No se pudo cargar el formulario. Cierra y vuelve a intentar.";
+                }
+            }, 120);
+        }
+
+        async function ensureCheckoutInitialized() {
+            if (checkout) return checkout;
+
+            if (!publishableKey) {
+                setLoading(false);
+                mountEl.classList.add("danger");
+                mountEl.textContent = "Falta STRIPE_PUBLISHABLE_KEY.";
+                throw new Error("Missing STRIPE_PUBLISHABLE_KEY");
+            }
+
+            if (!stripe) stripe = Stripe(publishableKey);
+
+            // I init only once (promise cache).
+            if (!checkoutInitPromise) {
+                checkoutInitPromise = stripe.initEmbeddedCheckout({
+                    fetchClientSecret,
+                    onComplete: () => {
+                        const tok = encodeURIComponent(publicToken || "");
+                        const sid = encodeURIComponent(sessionId || "");
+                        window.location.href = `/pay/t/${tok}${sid ? `?session_id=${sid}` : ""}`;
+                    },
+                });
+            }
+
+            checkout = await checkoutInitPromise;
+            return checkout;
+        }
+
+        async function ensureMountedOnce() {
+            if (!canMount) return;
+            if (mountedOnce) return;        // ✅ no remount
+            if (mounting) return;
+            mounting = true;
+
+            try {
+                mountEl.classList.remove("danger");
+                if (mountEl.textContent) mountEl.textContent = "";
+
+                // Stripe wants the mount empty the first time.
+                try {
+                    mountEl.replaceChildren();
+                } catch {
+                }
+
+                setLoading(true);
+                watchIframeAndHideLoading();
+
+                const c = await ensureCheckoutInitialized();
+                c.mount("#embedded-checkout");
+
+                mountedOnce = true;
+            } catch (e) {
+                setLoading(false);
+                mountEl.classList.add("danger");
+                mountEl.textContent = `Error al cargar pago: ${String(e.message || e)}`;
+            } finally {
+                mounting = false;
+            }
+        }
+
+        openBtn?.addEventListener("click", async () => {
+            openDrawer();
+            await ensureMountedOnce();
+        });
+
+        drawer.addEventListener("click", (ev) => {
+            const t = ev.target;
+            if (t && t.closest && t.closest("[data-close-drawer='1']")) closeDrawer();
+        });
+
+        document.addEventListener("keydown", (ev) => {
+            if (ev.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+        });
+    })();
 </script>
+
 </body>
 </html>

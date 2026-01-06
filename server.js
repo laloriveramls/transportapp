@@ -47,7 +47,19 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Body parsers
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+
+// I keep raw body for Stripe webhook signature verification.
+app.use(
+    express.json({
+        verify: (req, res, buf) => {
+            if (req.originalUrl && req.originalUrl.startsWith("/stripe/webhook")) {
+                req.rawBody = buf;
+            }
+        },
+    })
+);
+
+
 
 // Sessions (before routes that might need req.session)
 app.use(
