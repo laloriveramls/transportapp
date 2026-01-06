@@ -26,20 +26,6 @@
     <meta name="twitter:image" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
 
     <style>
-        .admin-hotspot {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            border: 0;
-            background: transparent;
-            opacity: 0;
-            cursor: pointer;
-        }
-
         .hero-min {
             border: 1px solid var(--border);
             border-radius: 22px;
@@ -319,13 +305,29 @@
             }
         }
 
-        .admin-hotspot{
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: manipulation; /* reduce gestos como double-tap zoom */
+        /* ===== Admin hotspot sobre el LOGO ===== */
+        .logo-wrap{
+            position: relative;
+            display: inline-block;
         }
 
+        .logo-wrap .admin-hotspot{
+            position: absolute;
+            inset: 0;                 /* cubre todo el logo */
+            width: auto;
+            height: auto;
+            border-radius: 18px;
+            border: 0;
+            background: transparent;
+            opacity: 0;
+            cursor: default;
+
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;       /* evita gestures/callout en iOS */
+        }
     </style>
 </head>
 
@@ -336,8 +338,6 @@
             <span class="brand-dot" aria-hidden="true"></span>
             <span class="fw-bold">TransportApp</span>
         </a>
-
-        <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
 
         <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
             <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
@@ -362,7 +362,10 @@
         </div>
 
         <div class="hero-right">
-            <img class="hero-logo-big" src="/assets/logo.png" alt="Servicio de transporte">
+            <div class="logo-wrap">
+                <img class="hero-logo-big" src="/assets/logo.png" alt="Servicio de transporte">
+                <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
+            </div>
         </div>
     </div>
 
@@ -490,38 +493,55 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    /* ===== Admin login oculto: mantener presionado el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
+        const HOLD_MS = 2000; // ajusta a 3000 si quieres
 
-        const HOLD_MS = 2000;
         let holdTimer = null;
+        let usingTouch = false;
 
-        function startHold(e) {
-            // Evita selección / comportamientos raros
-            e.preventDefault();
-
-            if (holdTimer) return;
-
-            holdTimer = setTimeout(() => {
-                holdTimer = null;
-                window.location.href = "/admin/login";
-            }, HOLD_MS);
+        function go() {
+            holdTimer = null;
+            window.location.href = "/admin/login";
         }
 
-        function cancelHold() {
+        function start(e) {
+            if (e.cancelable) e.preventDefault();
+            if (holdTimer) return;
+
+            if (e.type && e.type.startsWith("touch")) usingTouch = true;
+
+            holdTimer = setTimeout(go, HOLD_MS);
+        }
+
+        function cancel() {
             if (!holdTimer) return;
             clearTimeout(holdTimer);
             holdTimer = null;
         }
 
-        // Pointer events (mejor compatibilidad que touchstart/touchend)
-        hotspot.addEventListener("pointerdown", startHold, { passive: false });
-        hotspot.addEventListener("pointerup", cancelHold);
-        hotspot.addEventListener("pointercancel", cancelHold);
-        hotspot.addEventListener("pointerleave", cancelHold);
+        // iOS / Safari / WebViews
+        hotspot.addEventListener("touchstart", start, { passive: false });
+        hotspot.addEventListener("touchend", cancel);
+        hotspot.addEventListener("touchcancel", cancel);
+        hotspot.addEventListener("touchmove", cancel);
 
-        // Evita menú contextual al mantener presionado (Android/iOS)
+        // Mouse / Android moderno
+        hotspot.addEventListener("pointerdown", (e) => {
+            if (usingTouch) return;
+            start(e);
+        }, { passive: false });
+
+        hotspot.addEventListener("pointerup", cancel);
+        hotspot.addEventListener("pointercancel", cancel);
+        hotspot.addEventListener("pointerleave", cancel);
+
         hotspot.addEventListener("contextmenu", (e) => e.preventDefault());
+
+        hotspot.addEventListener("touchend", () => {
+            setTimeout(() => { usingTouch = false; }, 0);
+        });
     })();
 
     (function () {
