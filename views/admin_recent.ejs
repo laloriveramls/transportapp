@@ -409,6 +409,24 @@
                         if (p === 'TRANSFER' || p === 'TRANSFERENCIA') return { t:'🏦 Transfer', cls:'tag' };
                         return { t: p || '—', cls:'tag' };
                     };
+
+                    // ✅ I format MySQL datetime strings (UTC) to America/Monterrey for display.
+                    const fmtMty = (mysqlStr) => {
+                        try{
+                            const s = String(mysqlStr || '').trim();
+                            if (!s) return '';
+                            const d = new Date(s.replace(' ', 'T') + 'Z'); // <- I force UTC
+                            if (isNaN(d.getTime())) return s;
+
+                            return new Intl.DateTimeFormat('es-MX', {
+                                timeZone: 'America/Monterrey',
+                                dateStyle: 'medium',
+                                timeStyle: 'medium',
+                            }).format(d);
+                        }catch{
+                            return String(mysqlStr || '');
+                        }
+                    };
                     %>
 
                     <% (recentRows || []).forEach(r => {
@@ -428,7 +446,7 @@
                         const detailTitle = isPassenger ? 'Pasajeros' : 'Paquete';
                         const detailValue = isPassenger ? (hasNames ? r.passenger_names : (r.customer_name || '-')) : (r.package_details || '-');
 
-                        const created = r.created_at ? String(r.created_at) : '';
+                        const created = r.created_at ? fmtMty(r.created_at) : '';
                         const total = (r.amount_total_mxn != null && r.amount_total_mxn !== '') ? Number(r.amount_total_mxn) : null;
                     %>
                     <tr>

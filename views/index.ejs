@@ -17,6 +17,7 @@
     <meta property="og:image:secure_url" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
     <meta property="og:image:width" content="1200"/>
     <meta property="og:image:height" content="630"/>
+    <meta property="og:image:alt" content="Servicio de transporte Victoria ↔ Llera"/>
 
     <link rel="canonical" href="https://serviciodetransportevic.com/"/>
 
@@ -34,48 +35,21 @@
             radial-gradient(900px 500px at 90% 10%, rgba(106, 15, 31, .08), transparent 60%);
         }
 
-        .title {
-            letter-spacing: -.02em;
-            font-weight: 650;
-            margin: 0;
-        }
+        .title { letter-spacing: -.02em; font-weight: 650; margin: 0; }
 
-        .sub {
-            color: var(--muted);
-            margin-top: 6px;
-            font-size: .95rem;
-        }
+        .sub { color: var(--muted); margin-top: 6px; font-size: .95rem; }
 
-        .hero-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 14px;
-        }
+        .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
 
-        .btn-ghost {
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-        }
-
+        .btn-ghost { border: 1px solid var(--border); background: transparent; color: var(--text); }
         .btn-ghost:hover {
             border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
             background: color-mix(in srgb, var(--card) 70%, transparent);
             color: var(--text);
         }
 
-        .btn-wa {
-            background: #25D366;
-            border-color: #25D366;
-            color: #fff;
-        }
-
-        .btn-wa:hover {
-            background: #1fb85a;
-            border-color: #1fb85a;
-            color: #fff;
-        }
+        .btn-wa { background: #25D366; border-color: #25D366; color: #fff; }
+        .btn-wa:hover { background: #1fb85a; border-color: #1fb85a; color: #fff; }
 
         .tabs-card {
             background: var(--card);
@@ -86,9 +60,7 @@
             margin-top: 14px;
         }
 
-        .tabs-card .nav-tabs {
-            border-bottom: 1px solid var(--border);
-        }
+        .tabs-card .nav-tabs { border-bottom: 1px solid var(--border); }
 
         .tabs-card .nav-tabs .nav-link {
             color: var(--muted);
@@ -99,9 +71,7 @@
             padding: .55rem .85rem;
         }
 
-        .tabs-card .nav-tabs .nav-link:hover {
-            color: var(--text);
-        }
+        .tabs-card .nav-tabs .nav-link:hover { color: var(--text); }
 
         .tabs-card .nav-tabs .nav-link.active {
             color: var(--text);
@@ -109,21 +79,14 @@
             border-bottom-color: var(--wine);
         }
 
-        .tab-pane {
-            padding: 14px 6px 4px;
-        }
+        .tab-pane { padding: 14px 6px 4px; }
 
         .routes {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
-
-        @media (max-width: 992px) {
-            .routes {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 992px) { .routes { grid-template-columns: 1fr; } }
 
         .route-card {
             background: color-mix(in srgb, var(--card) 90%, transparent);
@@ -140,28 +103,16 @@
             margin-bottom: 8px;
         }
 
-        .route-name {
-            margin: 0;
-            font-weight: 650;
-            letter-spacing: -.01em;
-        }
+        .route-name { margin: 0; font-weight: 650; letter-spacing: -.01em; }
+        .route-sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
 
-        .route-sub {
-            color: var(--muted);
-            font-size: .9rem;
-            margin-top: 2px;
-        }
+        .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 
-        .chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
+        /* Chips ahora son links */
         .chip-time {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: .5rem;
             padding: .52rem .78rem;
             border-radius: 999px;
@@ -171,24 +122,23 @@
             font-weight: 600;
             font-size: .92rem;
             white-space: nowrap;
+            text-decoration: none;
         }
 
         .chip-time:hover {
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
             background: color-mix(in srgb, var(--card) 78%, transparent);
+            color: var(--text);
+            text-decoration: none;
         }
 
-        .map-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .chip-time:focus-visible{
+            outline: 3px solid color-mix(in srgb, var(--wine) 35%, transparent);
+            outline-offset: 2px;
         }
 
-        @media (max-width: 992px) {
-            .map-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 992px) { .map-grid { grid-template-columns: 1fr; } }
 
         .map-card {
             border: 1px solid var(--border);
@@ -197,11 +147,7 @@
             background: color-mix(in srgb, var(--card) 90%, transparent);
         }
 
-        .map-title {
-            margin: 0 0 10px 0;
-            font-weight: 650;
-            letter-spacing: -.01em;
-        }
+        .map-title { margin: 0 0 10px 0; font-weight: 650; letter-spacing: -.01em; }
 
         .map-frame {
             width: 100%;
@@ -212,24 +158,10 @@
             background: color-mix(in srgb, var(--card) 92%, transparent);
         }
 
-        .map-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
+        .map-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 
-        .footer-cta {
-            position: sticky;
-            bottom: 14px;
-            z-index: 5;
-        }
-
-        @media (min-width: 992px) {
-            .footer-cta {
-                position: static;
-            }
-        }
+        .footer-cta { position: sticky; bottom: 14px; z-index: 5; }
+        @media (min-width: 992px) { .footer-cta { position: static; } }
 
         .app-footer {
             margin-top: 18px;
@@ -239,19 +171,9 @@
             font-size: .92rem;
         }
 
-        .footer-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
-        .footer-phone {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-        }
+        .footer-phone { display: inline-flex; align-items: center; gap: .5rem; }
 
         .footer-phone code {
             color: var(--text);
@@ -263,45 +185,35 @@
             font-size: .9rem;
         }
 
-        .hero-split{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap: 18px;
-        }
+        .hero-split{ display:flex; align-items:center; justify-content:space-between; gap: 18px; }
 
-        .hero-left{
-            flex: 1 1 auto;
-            min-width: 0;
-        }
-
-        .hero-right{
-            flex: 0 0 auto;
-            display:flex;
-            align-items:center;
-            justify-content:flex-end;
-        }
+        .hero-left{ flex: 1 1 auto; min-width: 0; }
+        .hero-right{ flex: 0 0 auto; display:flex; align-items:center; justify-content:flex-end; }
 
         .hero-logo-big{
             width: 280px;
             max-width: 34vw;
             height: auto;
             object-fit: contain;
+            display:block; /* ayuda a centrar con margin auto */
         }
 
+        /* ===== móvil: centrar LOGO ===== */
         @media (max-width: 992px){
             .hero-split{
                 flex-direction:column;
-                align-items:flex-start;
+                align-items:stretch;
             }
             .hero-right{
                 width:100%;
                 justify-content:center;
                 margin-top: 10px;
+                text-align:center;
             }
             .hero-logo-big{
                 width: min(320px, 90%);
                 max-width: 90%;
+                margin: 0 auto; /* centrado real */
             }
         }
 
@@ -311,9 +223,13 @@
             display: inline-block;
         }
 
+        @media (max-width: 992px){
+            .logo-wrap{ margin: 0 auto; }
+        }
+
         .logo-wrap .admin-hotspot{
             position: absolute;
-            inset: 0;                 /* cubre todo el logo */
+            inset: 0;
             width: auto;
             height: auto;
             border-radius: 18px;
@@ -326,7 +242,64 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            touch-action: none;       /* evita gestures/callout en iOS */
+            touch-action: none;
+        }
+
+        /* ===== Próximas salidas ===== */
+        .next-card{
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: radial-gradient(900px 420px at 10% 0%, rgba(106, 15, 31, .10), transparent 55%),
+            color-mix(in srgb, var(--card) 92%, transparent);
+        }
+
+        .next-title{
+            margin: 0 0 10px 0;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .next-grid{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 992px){
+            .next-grid{ grid-template-columns: 1fr; }
+        }
+
+        .next-item{
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 10px;
+        }
+
+        .next-meta{ min-width:0; }
+        .next-route{ font-weight:650; margin:0; }
+        .next-when{ color: var(--muted); font-size: .92rem; margin-top: 2px; }
+
+        .next-pill{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:.45rem .7rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .next-actions a{
+            white-space:nowrap;
         }
     </style>
 </head>
@@ -355,7 +328,7 @@
             <div class="hero-actions">
                 <a class="btn btn-wine" href="/reserve">Reservar</a>
                 <a class="btn btn-wa" target="_blank"
-                   href="https://wa.me/52<%= ('8344756376').replace(/\\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
+                   href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
                     WhatsApp
                 </a>
             </div>
@@ -387,6 +360,42 @@
 
         <div class="tab-content" id="homeTabsContent">
             <div class="tab-pane fade show active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
+
+                <!-- Propuesta #2: Próximas salidas -->
+                <div class="next-card" id="nextCard" style="display:none;">
+                    <p class="next-title">Próximas salidas</p>
+
+                    <div class="next-grid">
+                        <div class="next-item" id="nextV2L" style="display:none;">
+                            <div class="next-meta">
+                                <p class="next-route">Victoria → Llera</p>
+                                <div class="next-when" id="nextV2LWhen">—</div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <span class="next-pill" id="nextV2LTime">--:--</span>
+                                <div class="next-actions">
+                                    <a class="btn btn-wine btn-sm rounded-4" id="nextV2LLink" href="/reserve">Reservar</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="next-item" id="nextL2V" style="display:none;">
+                            <div class="next-meta">
+                                <p class="next-route">Llera → Victoria</p>
+                                <div class="next-when" id="nextL2VWhen">—</div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                                <span class="next-pill" id="nextL2VTime">--:--</span>
+                                <div class="next-actions">
+                                    <a class="btn btn-wine btn-sm rounded-4" id="nextL2VLink" href="/reserve">Reservar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="routes">
 
                     <div class="route-card">
@@ -401,8 +410,13 @@
                         <div class="chips">
                             <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <span class="chip-time"><%= hhmm %></span>
+                            <!-- Propuesta #1: chip clickeable -->
+                            <a class="chip-time"
+                               data-dir="VIC_TO_LLE"
+                               data-time="<%= hhmm %>"
+                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
                             <% }) %>
+
                             <% if (v2l.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
                             <% } %>
@@ -421,8 +435,13 @@
                         <div class="chips">
                             <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
                             <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <span class="chip-time"><%= hhmm %></span>
+                            <!-- Propuesta #1: chip clickeable -->
+                            <a class="chip-time"
+                               data-dir="LLE_TO_VIC"
+                               data-time="<%= hhmm %>"
+                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
                             <% }) %>
+
                             <% if (l2v.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
                             <% } %>
@@ -479,7 +498,7 @@
 
             <div class="d-flex gap-2 flex-wrap">
                 <a class="btn btn-wa btn-sm" target="_blank"
-                   href="https://wa.me/52<%= ('8344756376').replace(/\\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
+                   href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
                     Escribir
                 </a>
                 <button type="button" class="btn btn-ghost btn-sm" id="copyPhoneBtn">Copiar</button>
@@ -496,7 +515,7 @@
     /* ===== Admin login oculto: mantener presionado el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
-        const HOLD_MS = 2000; // ajusta a 3000 si quieres
+        const HOLD_MS = 1500; // puedes subir a 3000 si quieres
 
         let holdTimer = null;
         let usingTouch = false;
@@ -542,6 +561,84 @@
         hotspot.addEventListener("touchend", () => {
             setTimeout(() => { usingTouch = false; }, 0);
         });
+    })();
+
+    /* ===== Próximas salidas (Propuesta #2) ===== */
+    (function () {
+        const card = document.getElementById("nextCard");
+
+        const elV2L = document.getElementById("nextV2L");
+        const elV2LTime = document.getElementById("nextV2LTime");
+        const elV2LWhen = document.getElementById("nextV2LWhen");
+        const elV2LLink = document.getElementById("nextV2LLink");
+
+        const elL2V = document.getElementById("nextL2V");
+        const elL2VTime = document.getElementById("nextL2VTime");
+        const elL2VWhen = document.getElementById("nextL2VWhen");
+        const elL2VLink = document.getElementById("nextL2VLink");
+
+        function parseHHMM(hhmm) {
+            const m = /^(\d{2}):(\d{2})$/.exec(String(hhmm || "").trim());
+            if (!m) return null;
+            const h = Number(m[1]);
+            const min = Number(m[2]);
+            if (Number.isNaN(h) || Number.isNaN(min)) return null;
+            return h * 60 + min;
+        }
+
+        function computeNext(times) {
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+
+            const mins = times
+                .map(parseHHMM)
+                .filter(v => typeof v === "number")
+                .sort((a,b) => a - b);
+
+            if (mins.length === 0) return null;
+
+            const idx = mins.findIndex(v => v >= nowMin);
+            const nextMin = idx >= 0 ? mins[idx] : mins[0];
+            const when = idx >= 0 ? "Hoy" : "Mañana";
+
+            const hh = String(Math.floor(nextMin / 60)).padStart(2, "0");
+            const mm = String(nextMin % 60).padStart(2, "0");
+            const hhmm = `${hh}:${mm}`;
+
+            return { hhmm, when };
+        }
+
+        function collectTimes(dir) {
+            return Array.from(document.querySelectorAll(`.chip-time[data-dir="${dir}"]`))
+                .map(a => a.getAttribute("data-time"))
+                .filter(Boolean);
+        }
+
+        const v2lTimes = collectTimes("VIC_TO_LLE");
+        const l2vTimes = collectTimes("LLE_TO_VIC");
+
+        const nextV2L = computeNext(v2lTimes);
+        const nextL2V = computeNext(l2vTimes);
+
+        let any = false;
+
+        if (nextV2L) {
+            any = true;
+            elV2L.style.display = "";
+            elV2LTime.textContent = nextV2L.hhmm;
+            elV2LWhen.textContent = `Salida ${nextV2L.when}`;
+            elV2LLink.href = `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2L.hhmm)}`;
+        }
+
+        if (nextL2V) {
+            any = true;
+            elL2V.style.display = "";
+            elL2VTime.textContent = nextL2V.hhmm;
+            elL2VWhen.textContent = `Salida ${nextL2V.when}`;
+            elL2VLink.href = `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2V.hhmm)}`;
+        }
+
+        if (any) card.style.display = "";
     })();
 
     (function () {

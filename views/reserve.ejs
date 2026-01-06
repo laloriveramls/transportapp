@@ -556,6 +556,9 @@
 
     const formEl = document.getElementById("reserveForm");
 
+    // ✅ I use this to preselect direction/time coming from the index chips (/reserve?dir=...&time=...)
+    let PREFERRED_TIME = null;
+
     // ✅ pricing inicial desde server (sin romper el JS del editor)
     function parsePricingFromServer(){
         try{
@@ -634,6 +637,60 @@
         const to = toCity.value;
 
         directionInput.value = (from === "VIC" && to === "LLE") ? "VIC_TO_LLE" : "LLE_TO_VIC";
+    }
+
+    function applyPrefillFromQuery() {
+        try {
+            const qs = new URLSearchParams(window.location.search);
+
+            const dir = (qs.get("dir") || qs.get("direction") || "").trim().toUpperCase();
+            const timeRaw = (qs.get("time") || qs.get("depart_time") || "").trim();
+            const date = (qs.get("date") || qs.get("trip_date") || "").trim();
+
+            // Normalizo HH:MM (si viene 6:30 => 06:30)
+            const time = timeRaw ? toHHMM(timeRaw) : "";
+
+            // Aplico dirección a selects (para que syncDirection() ya deje bien el hidden)
+            if (dir === "VIC_TO_LLE") {
+                fromCity.value = "VIC";
+                toCity.value = "LLE";
+            } else if (dir === "LLE_TO_VIC") {
+                fromCity.value = "LLE";
+                toCity.value = "VIC";
+            }
+
+            // Fecha (YYYY-MM-DD)
+            if (date) {
+                tripDate.value = date;
+            }
+
+            // Hora preferida para seleccionar al renderizar slots
+            if (time) {
+                PREFERRED_TIME = time; // ya viene en HH:MM
+            }
+
+            // ✅ Limpio URL (solo estética) sin recargar
+            // Deja /reserve?dir=VIC_TO_LLE&time=06:30
+            if (dir || time || date) {
+                const clean = new URL(window.location.href);
+
+                if (dir) clean.searchParams.set("dir", dir);
+                if (time) clean.searchParams.set("time", time);
+                else clean.searchParams.delete("time");
+
+                if (date) clean.searchParams.set("date", date);
+                else clean.searchParams.delete("date");
+
+                // Quita variantes si existieran
+                clean.searchParams.delete("direction");
+                clean.searchParams.delete("depart_time");
+                clean.searchParams.delete("trip_date");
+
+                window.history.replaceState({}, "", clean.toString());
+            }
+        } catch {
+            // no-op
+        }
     }
 
     function updateUIByType() {
@@ -759,7 +816,16 @@
 
         sections.classList.remove("d-none");
         slotsLoading.textContent = "Selecciona un horario:";
-        setSelectedTime((morning[0] || afternoon[0]).time);
+
+        // ✅ If I have a preferred time from the index, I try to select it.
+        const preferred = PREFERRED_TIME ? toHHMM(PREFERRED_TIME) : null;
+        const found = preferred ? items.find(x => x.time === preferred) : null;
+
+        const initial = (found ? found.time : (morning[0] || afternoon[0]).time);
+        setSelectedTime(initial);
+
+        // ✅ I clear preferred time after it successfully matches, so later reloads behave normal.
+        if (found) PREFERRED_TIME = null;
     }
 
     async function loadAvailability() {
@@ -939,6 +1005,9 @@
     });
 
     paymentMethod.addEventListener("change", updateUIByPayment);
+
+    // ✅ I apply query prefill before syncing direction and loading availability
+    applyPrefillFromQuery();
 
     syncDirection();
     updateUIByType();
