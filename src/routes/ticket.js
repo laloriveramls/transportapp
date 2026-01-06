@@ -178,7 +178,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     const hasLogo = fs.existsSync(logoPath);
 
     // Business lines (smaller)
-    const BRAND_LINE_1 = "Servicio de transporte • Salidas diarias";
+    const BRAND_LINE_1 = "";
     const BRAND_LINE_2 = "Comodidad • Seguridad • WiFi gratis";
     const BRAND_LINE_3 = "WhatsApp: (834) 475-63-76";
 
