@@ -8,26 +8,24 @@
     <style>
         .page-title{ letter-spacing:-.02em; font-weight:650; margin:0; }
 
+        .subtle {
+            color: var(--muted);
+        }
+
         .pill{
             display:inline-flex; align-items:center; gap:.5rem;
-            padding:.45rem .75rem; border-radius:999px;
+            padding: .45rem .75rem;
+            border-radius: 999px;
             border:1px solid var(--border);
             background:var(--chip-bg);
             color:var(--chip-text);
-            font-weight:600;
+            font-weight: 650;
             font-size:.9rem;
             white-space:nowrap;
         }
 
-        .form-control{
-            border-radius:14px;
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-        }
-        .form-control:focus{
-            border-color:color-mix(in srgb, var(--wine) 65%, var(--border));
-            box-shadow:0 0 0 .25rem rgba(106,15,31,.15);
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
         .btn-ghost{
@@ -35,6 +33,7 @@
             background:transparent;
             color:var(--text);
             border-radius:14px;
+            font-weight: 650;
         }
         .btn-ghost:hover{
             border-color:color-mix(in srgb, var(--wine) 45%, var(--border));
@@ -42,37 +41,198 @@
             color:var(--text);
         }
 
-        .mono{
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+        .form-control, .form-select {
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
         }
 
-        .recent-card{
-            background:var(--card);
+        .form-control:focus, .form-select:focus {
+            border-color: color-mix(in srgb, var(--wine) 65%, var(--border));
+            box-shadow: 0 0 0 .25rem rgba(106, 15, 31, .15);
+        }
+
+        /* ===== Layout shell ===== */
+        .recent-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .recent-hero {
+            background: var(--card);
             border:1px solid var(--border);
             box-shadow:var(--shadow);
             border-radius:20px;
-            overflow:hidden;
-        }
-        .recent-head{
             padding:16px;
+        }
+
+        .hero-top {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .hero-title {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* ===== Sticky filters card ===== */
+        .filter-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .filter-bar {
+            padding: 14px 16px;
             border-bottom:1px solid var(--border);
-            background:color-mix(in srgb, var(--card) 88%, transparent);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
             display:flex;
             gap:12px;
             flex-wrap:wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-left {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .kpis {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .kpi {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .40rem .65rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            font-weight: 650;
+            font-size: .85rem;
+            white-space: nowrap;
+        }
+
+        .kpi span {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .kpi strong {
+            font-weight: 700;
+        }
+
+        .filter-right {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .chiplink {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .42rem .70rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            font-weight: 650;
+            font-size: .85rem;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: var(--text);
+        }
+
+        .chiplink:hover {
+            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
+            background: color-mix(in srgb, var(--card) 80%, transparent);
+            color: var(--text);
+        }
+
+        .chiplink.active {
+            background: linear-gradient(90deg, var(--wine), var(--wine-2));
+            border-color: transparent;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .filter-form {
+            padding: 14px 16px 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
             align-items:flex-end;
             justify-content:space-between;
         }
-        .recent-title{ font-weight:650; letter-spacing:-.01em; }
-        .recent-sub{ color:var(--muted); font-size:.9rem; }
 
-        .recent-search{
+        .form-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .form-row .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 210px;
+        }
+
+        .field label {
+            font-size: .82rem;
+            font-weight: 650;
+            color: var(--muted);
+        }
+
+        .filter-actions {
             display:flex;
             gap:10px;
             flex-wrap:wrap;
             align-items:center;
+            justify-content: flex-end;
         }
 
+        .sticky {
+            position: sticky;
+            top: 12px;
+            z-index: 9;
+        }
+
+        /* ===== Table ===== */
         .table-shell{
             padding: 10px 12px 14px;
         }
@@ -82,20 +242,19 @@
             border-collapse:separate;
             border-spacing:0;
             margin:0;
-            --rowH: 70px;
+            --rowH: 72px;
         }
 
         .table-modern thead th{
             position: sticky;
             top: 0;
             z-index: 2;
-
             background: color-mix(in srgb, var(--card) 92%, transparent);
             backdrop-filter: blur(6px);
 
             font-size: .82rem;
             color: var(--muted);
-            font-weight: 750;
+            font-weight: 650;
             letter-spacing: .01em;
 
             border-bottom: 1px solid var(--border);
@@ -109,11 +268,28 @@
             vertical-align: middle;
         }
 
-        .table-modern tbody tr:nth-child(odd){
-            background: color-mix(in srgb, var(--card) 96%, transparent);
-        }
         .table-modern tbody tr:hover{
             background: color-mix(in srgb, var(--wine) 6%, var(--card));
+        }
+
+        .row-accent {
+            border-left: 4px solid transparent;
+        }
+
+        .row-accent.is-paid {
+            border-left-color: color-mix(in srgb, #10D88F 70%, transparent);
+        }
+
+        .row-accent.is-pending {
+            border-left-color: color-mix(in srgb, #f1dc21 70%, transparent);
+        }
+
+        .row-accent.is-cancel {
+            border-left-color: color-mix(in srgb, #94a3b8 70%, transparent);
+        }
+
+        .row-accent.is-board {
+            border-left-color: color-mix(in srgb, #3b82f6 70%, transparent);
         }
 
         .col-actions{ width: 170px; }
@@ -130,7 +306,7 @@
             justify-content:center;
         }
         .main-title{
-            font-weight: 800;
+            font-weight: 750;
             letter-spacing: -.01em;
             line-height: 1.2;
         }
@@ -146,7 +322,7 @@
             border-radius:999px;
             border:1px solid var(--border);
             background: color-mix(in srgb, var(--card) 92%, transparent);
-            font-weight: 750;
+            font-weight: 650;
             font-size:.82rem;
             white-space:nowrap;
         }
@@ -158,7 +334,7 @@
         .ticket-link{
             color: var(--wine);
             text-decoration: none;
-            font-weight: 850;
+            font-weight: 750;
         }
         .ticket-link:hover{ text-decoration: underline; }
 
@@ -170,8 +346,8 @@
         }
 
         /* detail expand */
-        details.row-detail{
-            margin-top:.25rem;
+        details.row-detail {
+            margin-top: .25rem;
         }
         details.row-detail > summary{
             list-style:none;
@@ -183,7 +359,7 @@
             border-radius:999px;
             border:1px solid var(--border);
             color:var(--muted);
-            font-weight:750;
+            font-weight: 650;
             font-size:.82rem;
             user-select:none;
             background: color-mix(in srgb, var(--card) 92%, transparent);
@@ -207,38 +383,25 @@
             gap:.55rem .75rem;
             font-size:.9rem;
         }
-        .detail-k{ color:var(--muted); font-size:.82rem; font-weight:750; }
-        .detail-v{ font-weight:750; }
+
+        .detail-k {
+            color: var(--muted);
+            font-size: .82rem;
+            font-weight: 650;
+        }
+
+        .detail-v {
+            font-weight: 700;
+        }
         .detail-wide{ grid-column: 1 / -1; }
         .detail-v.muted{ color:var(--muted); font-weight:650; }
-
-        /* mobile: “cards” */
-        @media (max-width: 768px){
-            .table-modern thead{ display:none; }
-            .table-modern, .table-modern tbody, .table-modern tr, .table-modern td{
-                display:block;
-                width:100%;
-            }
-            .table-modern tr{
-                border-bottom: 1px solid var(--border);
-                padding: 10px 12px;
-            }
-            .table-modern tbody td{
-                border-bottom:none;
-                padding: .35rem 0 !important;
-            }
-            .actions-row{ justify-content:flex-start; }
-            .col-actions, .col-status, .col-type, .col-ticket, .col-pay{ width:auto; }
-            .cell-main{ min-height:auto; }
-            .detail-grid{ grid-template-columns: 1fr; }
-        }
 
         /* badges */
         .badge-soft{
             border: 1px solid var(--border);
             padding: .33rem .55rem;
             border-radius: 999px;
-            font-weight: 800;
+            font-weight: 700;
             font-size: .82rem;
             display: inline-flex;
             align-items: center;
@@ -251,13 +414,11 @@
         .b-board{ background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text)); }
 
         .btn-xs{
-            padding:.35rem .55rem;
+            padding: .38rem .60rem;
             border-radius:12px;
-            font-weight:800;
+            font-weight: 700;
             font-size:.82rem;
         }
-
-        .muted{ color:var(--muted); }
 
         /* pagination */
         .pager{
@@ -280,7 +441,7 @@
             color:var(--text);
             border-radius:12px;
             padding:.38rem .62rem;
-            font-weight:800;
+            font-weight: 700;
             font-size:.85rem;
             text-decoration:none;
             display:inline-flex;
@@ -296,12 +457,126 @@
             background: linear-gradient(90deg, var(--wine), var(--wine-2));
             border-color: transparent;
             color:#fff;
+            font-weight: 700;
         }
-        .page-btn.disabled{
-            pointer-events:none;
-            opacity:.45;
+
+        .page-btn.disabled {
+            pointer-events: none;
+            opacity: .45;
         }
-        .dots{ color:var(--muted); padding: 0 .25rem; font-weight:800; }
+
+        .dots {
+            color: var(--muted);
+            padding: 0 .25rem;
+            font-weight: 700;
+        }
+
+        /* ===== Mobile cards ===== */
+        @media (max-width: 768px) {
+            .sticky {
+                top: 8px;
+            }
+
+            .filter-form {
+                gap: 12px;
+            }
+
+            .form-row {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .form-row .field {
+                min-width: 0;
+                width: 100%;
+            }
+
+            .filter-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+
+            .filter-actions > * {
+                width: 100%;
+            }
+
+            .table-modern thead {
+                display: none;
+            }
+
+            .table-modern, .table-modern tbody, .table-modern tr, .table-modern td {
+                display: block;
+                width: 100%;
+            }
+
+            .table-modern tr {
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                margin: 10px 0;
+                padding: 12px;
+                background: color-mix(in srgb, var(--card) 95%, transparent);
+                box-shadow: var(--shadow);
+            }
+
+            .table-modern tbody td {
+                border-bottom: none;
+                padding: 0 !important;
+            }
+
+            .m-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .m-folio {
+                font-weight: 750;
+            }
+
+            .m-meta {
+                margin-top: 6px;
+                color: var(--muted);
+                font-size: .88rem;
+            }
+
+            .m-row {
+                margin-top: 10px;
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            .m-actions {
+                margin-top: 10px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .m-actions a {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .cell-main {
+                min-height: auto;
+            }
+
+            .actions-row {
+                justify-content: flex-start;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            details.row-detail > summary {
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 
@@ -327,308 +602,444 @@
 
 <main class="container py-4">
 
-    <div class="hero mb-3">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div>
-                <div class="pill">Agenda</div>
-                <h1 class="h3 page-title mt-2 mb-1">Últimos registros</h1>
-                <div class="subtle">Buscar por folio / ticket / teléfono.</div>
-            </div>
+    <%
+    const _pm = String(pm || '').toUpperCase();
+    const _q = String(q || '').trim();
+    const _ps = Number(pageSize || 25);
+    const _page = Number(page || 1);
+    const _pages = Number(pages || 1);
 
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-                <a class="btn btn-ghost px-3 fw-semibold" href="/admin/agenda">Salidas del día</a>
-                <a class="btn btn-wine px-3 fw-semibold" href="/admin/recent">Últimos registros</a>
+    const qsBase = [];
+    if (_q) qsBase.push('q=' + encodeURIComponent(_q));
+    if (_pm) qsBase.push('pm=' + encodeURIComponent(_pm));
+    if (_ps) qsBase.push('pageSize=' + encodeURIComponent(_ps));
+
+    const linkAll = '/admin/recent?' + [...(qsBase.filter(x => !x.startsWith('pm='))), 'page=1'].join('&');
+    const linkPm = (v) => '/admin/recent?' + [...(qsBase.filter(x => !x.startsWith('pm='))), 'pm=' + encodeURIComponent(v), 'page=1'].join('&');
+
+    const buildUrl = (p) => {
+        const parts = [];
+        if (_q) parts.push('q=' + encodeURIComponent(_q));
+        if (_pm) parts.push('pm=' + encodeURIComponent(_pm));
+        parts.push('page=' + encodeURIComponent(p));
+        parts.push('pageSize=' + encodeURIComponent(_ps));
+        return '/admin/recent?' + parts.join('&');
+    };
+
+    const money = (n) => {
+        const v = Number(n || 0);
+        try {
+            return v.toLocaleString('es-MX', {style: 'currency', currency: 'MXN'});
+        } catch {
+            return '$' + (Math.round(v * 100) / 100);
+        }
+    };
+
+    const payChip = (pm) => {
+        const p = String(pm || '').toUpperCase();
+        if (p === 'TAQUILLA') return {t: '💵 Taquilla', cls: 'tag'};
+        if (p === 'TRANSFERENCIA') return {t: '🏦 Transfer', cls: 'tag'};
+        if (p === 'ONLINE') return {t: '🌐 Online', cls: 'tag'};
+        if (p === 'TRANSFER') return {t: '🏦 Transfer', cls: 'tag'};
+        return {t: p || '—', cls: 'tag'};
+    };
+
+    // I format MySQL datetime strings (UTC) to America/Monterrey for display.
+    const fmtMty = (mysqlStr) => {
+        try {
+            const s = String(mysqlStr || '').trim();
+            if (!s) return '';
+            const d = new Date(s.replace(' ', 'T') + 'Z');
+            if (isNaN(d.getTime())) return s;
+            return new Intl.DateTimeFormat('es-MX', {
+                timeZone: 'America/Monterrey',
+                dateStyle: 'medium',
+                timeStyle: 'medium',
+            }).format(d);
+        } catch {
+            return String(mysqlStr || '');
+        }
+    };
+
+    const rows = recentRows || [];
+    const kPaid = rows.filter(x => x.status === 'PAID').length;
+    const kPend = rows.filter(x => x.status === 'PENDING_PAYMENT').length;
+    const kBoard = rows.filter(x => x.status === 'PAY_AT_BOARDING').length;
+    const kCancel = rows.filter(x => x.status === 'CANCELLED').length;
+
+    const windowPages = [];
+    if (_pages <= 7) {
+        for (let i = 1; i <= _pages; i++) windowPages.push(i);
+    } else {
+        windowPages.push(1);
+        const start = Math.max(2, _page - 1);
+        const end = Math.min(_pages - 1, _page + 1);
+        if (start > 2) windowPages.push('...');
+        for (let i = start; i <= end; i++) windowPages.push(i);
+        if (end < _pages - 1) windowPages.push('...');
+        windowPages.push(_pages);
+    }
+
+    const hasFilters = !!(_q || _pm);
+    const clearHref = '/admin/recent?page=1&pageSize=' + encodeURIComponent(_ps);
+    %>
+
+    <div class="recent-wrap">
+
+        <div class="recent-hero">
+            <div class="hero-top">
+                <div class="hero-title">
+                    <div class="pill">Agenda</div>
+                    <h1 class="h3 page-title">Últimos registros</h1>
+                    <div class="subtle">
+                        Busca por folio / ticket / teléfono y filtra por método.
+                        <span class="mono">Ej: RES-20260104-000123</span>
+                    </div>
+                </div>
+
+                <div class="nav-pills">
+                    <a class="btn btn-ghost px-3" href="/admin/agenda">Salidas del día</a>
+                    <a class="btn btn-wine px-3" href="/admin/recent">Últimos registros</a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="recent-card">
-        <div class="recent-head">
-            <div>
-                <div class="recent-title mb-0">Tabla de registros</div>
-                <div class="recent-sub">
-                    Ejemplo folio: <span class="mono">RES-20260104-000123</span>
+        <div class="filter-card sticky">
+            <div class="filter-bar">
+                <div class="filter-left">
+                    <div style="font-weight:650; letter-spacing:-.01em;">Filtros & Resumen</div>
+                    <div class="kpis">
+                        <span class="kpi"><span>Total:</span> <strong class="mono"><%= total || 0 %></strong></span>
+                        <span class="kpi"><span>En página:</span> <strong
+                                    class="mono"><%= rows.length %></strong></span>
+                        <span class="kpi"><span>✅</span> <strong class="mono"><%= kPaid %></strong></span>
+                        <span class="kpi"><span>⏳</span> <strong class="mono"><%= kPend %></strong></span>
+                        <span class="kpi"><span>💵</span> <strong class="mono"><%= kBoard %></strong></span>
+                        <span class="kpi"><span>⛔</span> <strong class="mono"><%= kCancel %></strong></span>
+                    </div>
+                </div>
+
+                <div class="filter-right">
+                    <div class="quick-filters">
+                        <a class="chiplink <%= !_pm ? 'active' : '' %>" href="<%= linkAll %>">Todos</a>
+                        <a class="chiplink <%= _pm === 'TAQUILLA' ? 'active' : '' %>" href="<%= linkPm('TAQUILLA') %>">💵
+                            Taquilla</a>
+                        <a class="chiplink <%= _pm === 'TRANSFERENCIA' ? 'active' : '' %>"
+                           href="<%= linkPm('TRANSFERENCIA') %>">🏦 Transfer</a>
+                        <a class="chiplink <%= _pm === 'ONLINE' ? 'active' : '' %>" href="<%= linkPm('ONLINE') %>">🌐
+                            Online</a>
+                    </div>
                 </div>
             </div>
 
-            <form class="recent-search" method="GET" action="/admin/recent">
+            <form class="filter-form" method="GET" action="/admin/recent" id="filterForm">
                 <input type="hidden" name="page" value="1">
-                <input type="hidden" name="pageSize" value="<%= pageSize || 25 %>">
 
-                <input class="form-control" name="q" value="<%= q || '' %>"
-                       style="min-width: 320px;"
-                       placeholder="Buscar folio / ticket / teléfono...">
+                <div class="form-row">
+                    <div class="field" style="min-width:320px;">
+                        <label>Buscar</label>
+                        <input class="form-control" name="q" value="<%= _q %>"
+                               placeholder="Folio / ticket / teléfono...">
+                    </div>
 
-                <button class="btn btn-wine rounded-4 px-4 fw-semibold" type="submit">Buscar</button>
+                    <div class="field">
+                        <label>Método</label>
+                        <select class="form-select" name="pm">
+                            <option value="" <%= !_pm ? 'selected' : '' %>>Todos</option>
+                            <option value="TAQUILLA" <%= _pm === 'TAQUILLA' ? 'selected' : '' %>>💵 Taquilla</option>
+                            <option value="TRANSFERENCIA" <%= _pm === 'TRANSFERENCIA' ? 'selected' : '' %>>🏦
+                                Transferencia
+                            </option>
+                            <option value="ONLINE" <%= _pm === 'ONLINE' ? 'selected' : '' %>>🌐 Online</option>
+                        </select>
+                    </div>
 
-                <% if (q) { %>
-                    <a class="btn btn-ghost px-3 fw-semibold" href="/admin/recent?pageSize=<%= pageSize || 25 %>">Limpiar</a>
-                <% } %>
+                    <div class="field" style="min-width:160px;">
+                        <label>Por página</label>
+                        <select class="form-select" name="pageSize" id="pageSizeSelect">
+                            <option value="25" <%= _ps === 25 ? 'selected' : '' %>>25</option>
+                            <option value="50" <%= _ps === 50 ? 'selected' : '' %>>50</option>
+                            <option value="100" <%= _ps === 100 ? 'selected' : '' %>>100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn btn-wine rounded-4 px-4" type="submit">Aplicar</button>
+                    <% if (hasFilters) { %>
+                        <a class="btn btn-ghost px-3" href="<%= clearHref %>">Limpiar</a>
+                    <% } %>
+                </div>
             </form>
         </div>
 
-        <div class="table-shell">
-            <div class="table-responsive">
-                <table class="table-modern">
-                    <thead>
-                    <tr>
-                        <th>Reserva</th>
-                        <th>Viaje</th>
-                        <th class="col-pay">Pago</th>
-                        <th class="col-type">Tipo</th>
-                        <th class="col-status">Estado</th>
-                        <th class="col-ticket">Ticket</th>
-                        <th class="text-end col-actions">Acciones</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <% if (!recentRows || recentRows.length === 0) { %>
+        <div class="filter-card">
+            <div class="table-shell">
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
                         <tr>
-                            <td colspan="7" class="p-4">
-                                <div class="h6 mb-1">Sin registros</div>
-                                <div class="subtle"><%= q ? 'No hubo coincidencias.' : 'Aún no hay registros recientes.' %></div>
-                            </td>
+                            <th>Reserva</th>
+                            <th>Viaje</th>
+                            <th class="col-pay">Pago</th>
+                            <th class="col-type">Tipo</th>
+                            <th class="col-status">Estado</th>
+                            <th class="col-ticket">Ticket</th>
+                            <th class="text-end col-actions">Acciones</th>
                         </tr>
-                    <% } %>
+                        </thead>
 
-                    <%
-                    const money = (n) => {
-                        const v = Number(n || 0);
-                        try {
-                            return v.toLocaleString('es-MX', { style:'currency', currency:'MXN' });
-                        } catch {
-                            return '$' + (Math.round(v*100)/100);
-                        }
-                    };
+                        <tbody>
+                        <% if (!rows || rows.length === 0) { %>
+                            <tr>
+                                <td colspan="7" class="p-4">
+                                    <div class="h6 mb-1">Sin registros</div>
+                                    <div class="subtle"><%= hasFilters ? 'No hubo coincidencias.' : 'Aún no hay registros recientes.' %></div>
+                                </td>
+                            </tr>
+                        <% } %>
 
-                    const payChip = (pm, ref) => {
-                        const p = String(pm || '').toUpperCase();
-                        if (p === 'TAQUILLA') return { t:'💵 Taquilla', cls:'tag' };
-                        if (p === 'TRANSFERENCIA') return { t:'🏦 Transfer', cls:'tag' };
-                        if (p === 'ONLINE') return { t:'🌐 Online', cls:'tag' };
-                        if (p === 'TRANSFER' || p === 'TRANSFERENCIA') return { t:'🏦 Transfer', cls:'tag' };
-                        return { t: p || '—', cls:'tag' };
-                    };
+                        <% rows.forEach(r => {
+                            const hhmm = String(r.depart_time || '').slice(0, 5);
 
-                    // ✅ I format MySQL datetime strings (UTC) to America/Monterrey for display.
-                    const fmtMty = (mysqlStr) => {
-                        try{
-                            const s = String(mysqlStr || '').trim();
-                            if (!s) return '';
-                            const d = new Date(s.replace(' ', 'T') + 'Z'); // <- I force UTC
-                            if (isNaN(d.getTime())) return s;
+                            const qs = [];
+                            if (_q) qs.push('q=' + encodeURIComponent(_q));
+                            if (_pm) qs.push('pm=' + encodeURIComponent(_pm));
+                            if (_ps) qs.push('pageSize=' + encodeURIComponent(_ps));
+                            if (_page) qs.push('page=' + encodeURIComponent(_page));
+                            const returnBack = '/admin/recent' + (qs.length ? ('?' + qs.join('&')) : '');
 
-                            return new Intl.DateTimeFormat('es-MX', {
-                                timeZone: 'America/Monterrey',
-                                dateStyle: 'medium',
-                                timeStyle: 'medium',
-                            }).format(d);
-                        }catch{
-                            return String(mysqlStr || '');
-                        }
-                    };
-                    %>
+                            const pm = payChip(r.payment_method);
+                            const paxShown = Number(r.passenger_count || 0) || Number(r.seats || 0) || 0;
 
-                    <% (recentRows || []).forEach(r => {
-                        const hhmm = String(r.depart_time || '').slice(0,5);
+                            const isPassenger = r.type === 'PASSENGER';
+                            const hasNames = String(r.passenger_names || '').trim();
+                            const detailTitle = isPassenger ? 'Pasajeros' : 'Paquete';
+                            const detailValue = isPassenger ? (hasNames ? r.passenger_names : (r.customer_name || '-')) : (r.package_details || '-');
 
-                        const qs = [];
-                        if (q) qs.push('q=' + encodeURIComponent(q));
-                        if (pageSize) qs.push('pageSize=' + encodeURIComponent(pageSize));
-                        if (page) qs.push('page=' + encodeURIComponent(page));
-                        const returnBack = '/admin/recent' + (qs.length ? ('?' + qs.join('&')) : '');
+                            const created = r.created_at ? fmtMty(r.created_at) : '';
+                            const totalRow = (r.amount_total_mxn != null && r.amount_total_mxn !== '') ? Number(r.amount_total_mxn) : null;
 
-                        const pm = payChip(r.payment_method, r.transfer_ref);
-                        const paxShown = Number(r.passenger_count || 0) || Number(r.seats || 0) || 0;
+                            const st = String(r.status || '');
+                            const accentCls =
+                                    st === 'PAID' ? 'is-paid'
+                                            : st === 'PENDING_PAYMENT' ? 'is-pending'
+                                                    : st === 'PAY_AT_BOARDING' ? 'is-board'
+                                                            : st === 'CANCELLED' ? 'is-cancel'
+                                                                    : '';
+                        %>
 
-                        const isPassenger = r.type === 'PASSENGER';
-                        const hasNames = String(r.passenger_names || '').trim();
-                        const detailTitle = isPassenger ? 'Pasajeros' : 'Paquete';
-                        const detailValue = isPassenger ? (hasNames ? r.passenger_names : (r.customer_name || '-')) : (r.package_details || '-');
+                        <tr class="row-accent <%= accentCls %>">
+                            <!-- Reserva -->
+                            <td>
+                                <div class="cell-main">
+                                    <div class="main-title mono"><%= r.folio %></div>
+                                    <div class="main-sub">
+                                        <span style="font-weight:650;"><%= r.customer_name || '-' %></span>
+                                        <span class="mono"> · <%= r.phone || '-' %></span>
+                                    </div>
 
-                        const created = r.created_at ? fmtMty(r.created_at) : '';
-                        const total = (r.amount_total_mxn != null && r.amount_total_mxn !== '') ? Number(r.amount_total_mxn) : null;
-                    %>
-                    <tr>
-                        <!-- Reserva -->
-                        <td>
-                            <div class="cell-main">
-                                <div class="main-title mono"><%= r.folio %></div>
-                                <div class="main-sub">
-                                    <span style="font-weight:800;"><%= r.customer_name || '-' %></span>
-                                    <span class="mono"> · <%= r.phone || '-' %></span>
-                                </div>
-
-                                <details class="row-detail">
-                                    <summary>Ver detalle</summary>
-                                    <div class="detail-box">
-                                        <div class="detail-grid">
-                                            <div>
-                                                <div class="detail-k">Total</div>
-                                                <div class="detail-v"><%= total != null ? money(total) : '—' %></div>
-                                            </div>
-
-                                            <div>
-                                                <div class="detail-k">Método</div>
-                                                <div class="detail-v"><%= String(r.payment_method || '—') %></div>
-                                            </div>
-
-                                            <div>
-                                                <div class="detail-k"><%= detailTitle %></div>
-                                                <div class="detail-v muted"><%= detailValue %></div>
-                                            </div>
-
-                                            <div>
-                                                <div class="detail-k"><%= isPassenger ? 'Cantidad' : 'Piezas' %></div>
-                                                <div class="detail-v"><%= isPassenger ? (paxShown || 1) : 1 %></div>
-                                            </div>
-
-                                            <% if (String(r.transfer_ref || '').trim()) { %>
-                                                <div class="detail-wide">
-                                                    <div class="detail-k">Referencia transferencia</div>
-                                                    <div class="detail-v mono"><%= r.transfer_ref %></div>
+                                    <details class="row-detail">
+                                        <summary>Ver detalle</summary>
+                                        <div class="detail-box">
+                                            <div class="detail-grid">
+                                                <div>
+                                                    <div class="detail-k">Total</div>
+                                                    <div class="detail-v"><%= totalRow != null ? money(totalRow) : '—' %></div>
                                                 </div>
+
+                                                <div>
+                                                    <div class="detail-k">Método</div>
+                                                    <div class="detail-v"><%= String(r.payment_method || '—') %></div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="detail-k"><%= detailTitle %></div>
+                                                    <div class="detail-v muted"><%= detailValue %></div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="detail-k"><%= isPassenger ? 'Cantidad' : 'Piezas' %></div>
+                                                    <div class="detail-v"><%= isPassenger ? (paxShown || 1) : 1 %></div>
+                                                </div>
+
+                                                <% if (String(r.transfer_ref || '').trim()) { %>
+                                                    <div class="detail-wide">
+                                                        <div class="detail-k">Referencia transferencia</div>
+                                                        <div class="detail-v mono"><%= r.transfer_ref %></div>
+                                                    </div>
+                                                <% } %>
+
+                                                <% if (created) { %>
+                                                    <div class="detail-wide">
+                                                        <div class="detail-k">Creado</div>
+                                                        <div class="detail-v mono"><%= created %></div>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- Mobile summary -->
+                                    <div class="d-block d-md-none" style="margin-top:10px;">
+                                        <div class="m-head"
+                                             style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+                                            <div>
+                                                <div class="m-folio mono"><%= r.folio %></div>
+                                                <div class="m-meta mono"
+                                                     style="margin-top:6px; color:var(--muted); font-size:.88rem;"><%= r.trip_date %>
+                                                    · <%= hhmm %></div>
+                                            </div>
+                                            <div>
+                                                <% if (r.status === 'PAID') { %>
+                                                    <span class="badge-soft b-paid">✅ Pagado</span>
+                                                <% } else if (r.status === 'CANCELLED') { %>
+                                                    <span class="badge-soft b-cancel">⛔ Cancelado</span>
+                                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
+                                                    <span class="badge-soft b-pending">⏳ Pendiente</span>
+                                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                                    <span class="badge-soft b-board">💵 Taquilla</span>
+                                                <% } else { %>
+                                                    <span class="badge-soft"><%= r.status %></span>
+                                                <% } %>
+                                            </div>
+                                        </div>
+
+                                        <div class="m-row"
+                                             style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                            <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
+                                            <span class="<%= pm.cls %>"><%= pm.t %></span>
+                                            <span class="tag"><%= r.type === 'PASSENGER' ? '🧍‍♂️ Pasajero' : '📦 Paquetería' %></span>
+                                            <% if (r.ticket_code) { %>
+                                                <span class="tag mono">🎫 <%= r.ticket_code %></span>
                                             <% } %>
+                                        </div>
 
-                                            <% if (created) { %>
-                                                <div class="detail-wide">
-                                                    <div class="detail-k">Creado</div>
-                                                    <div class="detail-v mono"><%= created %></div>
-                                                </div>
+                                        <div class="m-actions"
+                                             style="margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                            <a class="btn btn-ghost btn-xs"
+                                               href="/admin/trip/<%= r.trip_id %>">Salida</a>
+                                            <% if (r.ticket_code) { %>
+                                                <a class="btn btn-wine btn-xs"
+                                                   href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">Ticket</a>
+                                            <% } else { %>
+                                                <a class="btn btn-ghost btn-xs disabled"
+                                                   style="opacity:.5; pointer-events:none;" href="#">Sin ticket</a>
                                             <% } %>
                                         </div>
                                     </div>
-                                </details>
-                            </div>
-                        </td>
-
-                        <!-- Viaje -->
-                        <td>
-                            <div class="cell-main">
-                                <div class="main-title">
-                                    <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
                                 </div>
-                                <div class="main-sub mono"><%= r.trip_date %> · <%= hhmm %></div>
-                            </div>
-                        </td>
+                            </td>
 
-                        <!-- Pago chip -->
-                        <td class="col-pay">
-                            <span class="<%= pm.cls %>"><%= pm.t %></span>
-                        </td>
+                            <!-- Viaje -->
+                            <td class="d-none d-md-table-cell">
+                                <div class="cell-main">
+                                    <div class="main-title">
+                                        <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
+                                    </div>
+                                    <div class="main-sub mono"><%= r.trip_date %> · <%= hhmm %></div>
+                                </div>
+                            </td>
 
-                        <!-- Tipo -->
-                        <td class="col-type">
-                            <span class="tag">
-                                <%= r.type === 'PASSENGER' ? '🧍‍♂️ Pasajero' : '📦 Paquetería' %>
-                            </span>
-                        </td>
+                            <!-- Pago -->
+                            <td class="col-pay d-none d-md-table-cell">
+                                <span class="<%= pm.cls %>"><%= pm.t %></span>
+                            </td>
 
-                        <!-- Estado -->
-                        <td class="col-status">
-                            <% if (r.status === 'PAID') { %>
-                                <span class="badge-soft b-paid">✅ Pagado</span>
-                            <% } else if (r.status === 'CANCELLED') { %>
-                                <span class="badge-soft b-cancel">⛔ Cancelado</span>
-                            <% } else if (r.status === 'PENDING_PAYMENT') { %>
-                                <span class="badge-soft b-pending">⏳ Pendiente</span>
-                            <% } else if (r.status === 'PAY_AT_BOARDING') { %>
-                                <span class="badge-soft b-board">💵 Taquilla</span>
-                            <% } else { %>
-                                <span class="badge-soft"><%= r.status %></span>
-                            <% } %>
-                        </td>
+                            <!-- Tipo -->
+                            <td class="col-type d-none d-md-table-cell">
+                                <span class="tag">
+                                    <%= r.type === 'PASSENGER' ? '🧍‍♂️ Pasajero' : '📦 Paquetería' %>
+                                </span>
+                            </td>
 
-                        <!-- Ticket -->
-                        <td class="col-ticket mono">
-                            <% if (r.ticket_code) { %>
-                                <a class="ticket-link"
-                                   href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
-                                    <%= r.ticket_code %>
-                                </a>
-                            <% } else { %>
-                                <span class="muted">—</span>
-                            <% } %>
-                        </td>
-
-                        <!-- Acciones -->
-                        <td class="text-end col-actions">
-                            <div class="actions-row">
-                                <a class="btn btn-ghost btn-xs" href="/admin/trip/<%= r.trip_id %>">Salida</a>
-                                <% if (r.ticket_code) { %>
-                                    <a class="btn btn-wine btn-xs"
-                                       href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
-                                        Ticket
-                                    </a>
+                            <!-- Estado -->
+                            <td class="col-status d-none d-md-table-cell">
+                                <% if (r.status === 'PAID') { %>
+                                    <span class="badge-soft b-paid">✅ Pagado</span>
+                                <% } else if (r.status === 'CANCELLED') { %>
+                                    <span class="badge-soft b-cancel">⛔ Cancelado</span>
+                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
+                                    <span class="badge-soft b-pending">⏳ Pendiente</span>
+                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                    <span class="badge-soft b-board">💵 Taquilla</span>
+                                <% } else { %>
+                                    <span class="badge-soft"><%= r.status %></span>
                                 <% } %>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+
+                            <!-- Ticket -->
+                            <td class="col-ticket mono d-none d-md-table-cell">
+                                <% if (r.ticket_code) { %>
+                                    <a class="ticket-link"
+                                       href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
+                                        <%= r.ticket_code %>
+                                    </a>
+                                <% } else { %>
+                                    <span class="subtle">—</span>
+                                <% } %>
+                            </td>
+
+                            <!-- Acciones -->
+                            <td class="text-end col-actions d-none d-md-table-cell">
+                                <div class="actions-row">
+                                    <a class="btn btn-ghost btn-xs" href="/admin/trip/<%= r.trip_id %>">Salida</a>
+                                    <% if (r.ticket_code) { %>
+                                        <a class="btn btn-wine btn-xs"
+                                           href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
+                                            Ticket
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pager">
+                <div class="pager-left">
+                    Mostrando <span class="mono"><%= from || 0 %></span>–<span class="mono"><%= to || 0 %></span>
+                    de <span class="mono"><%= total || 0 %></span>
+                    · Página <span class="mono"><%= _page %></span>/<span class="mono"><%= _pages %></span>
+                </div>
+
+                <div class="pager-right">
+                    <a class="page-btn <%= _page <= 1 ? 'disabled' : '' %>"
+                       href="<%= buildUrl(Math.max(1, _page - 1)) %>">←</a>
+
+                    <% windowPages.forEach(p => { %>
+                        <% if (p === '...') { %>
+                            <span class="dots">…</span>
+                        <% } else { %>
+                            <a class="page-btn <%= Number(p) === _page ? 'active' : '' %>"
+                               href="<%= buildUrl(p) %>"><%= p %></a>
+                        <% } %>
                     <% }) %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Pagination -->
-        <%
-        const _q = String(q || '').trim();
-        const _ps = Number(pageSize || 25);
-        const _page = Number(page || 1);
-        const _pages = Number(pages || 1);
-
-        const buildUrl = (p) => {
-            const parts = [];
-            if (_q) parts.push('q=' + encodeURIComponent(_q));
-            parts.push('page=' + encodeURIComponent(p));
-            parts.push('pageSize=' + encodeURIComponent(_ps));
-            return '/admin/recent?' + parts.join('&');
-        };
-
-        const windowPages = [];
-        if (_pages <= 7) {
-            for (let i=1;i<=_pages;i++) windowPages.push(i);
-        } else {
-            windowPages.push(1);
-            const start = Math.max(2, _page - 1);
-            const end = Math.min(_pages - 1, _page + 1);
-
-            if (start > 2) windowPages.push('...');
-            for (let i=start;i<=end;i++) windowPages.push(i);
-            if (end < _pages - 1) windowPages.push('...');
-            windowPages.push(_pages);
-        }
-        %>
-
-        <div class="pager">
-            <div class="pager-left">
-                Mostrando <span class="mono"><%= from || 0 %></span>–<span class="mono"><%= to || 0 %></span>
-                de <span class="mono"><%= total || 0 %></span>
-                · Página <span class="mono"><%= _page %></span>/<span class="mono"><%= _pages %></span>
+                    <a class="page-btn <%= _page >= _pages ? 'disabled' : '' %>"
+                       href="<%= buildUrl(Math.min(_pages, _page + 1)) %>">→</a>
+                </div>
             </div>
 
-            <div class="pager-right">
-                <a class="page-btn <%= _page <= 1 ? 'disabled' : '' %>"
-                   href="<%= buildUrl(Math.max(1, _page - 1)) %>">←</a>
-
-                <% windowPages.forEach(p => { %>
-                    <% if (p === '...') { %>
-                        <span class="dots">…</span>
-                    <% } else { %>
-                        <a class="page-btn <%= Number(p) === _page ? 'active' : '' %>"
-                           href="<%= buildUrl(p) %>"><%= p %></a>
-                    <% } %>
-                <% }) %>
-
-                <a class="page-btn <%= _page >= _pages ? 'disabled' : '' %>"
-                   href="<%= buildUrl(Math.min(_pages, _page + 1)) %>">→</a>
-            </div>
         </div>
 
     </div>
 
 </main>
+
 <script src="/js/theme.js"></script>
+<script>
+    // Auto-submit on pageSize change
+    (function () {
+        const ps = document.getElementById('pageSizeSelect');
+        const form = document.getElementById('filterForm');
+        if (ps && form) {
+            ps.addEventListener('change', () => form.submit());
+        }
+    })();
+</script>
 </body>
 </html>

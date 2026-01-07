@@ -252,6 +252,15 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
         where.push(`(${or.join(" OR ")})`);
     }
 
+    const pmRaw = String(req.query.pm || "").trim().toUpperCase();
+    // I only allow known payment method filters to keep queries safe and predictable.
+    const pm = (pmRaw === "TAQUILLA" || pmRaw === "TRANSFERENCIA" || pmRaw === "ONLINE") ? pmRaw : null;
+
+    if (pm) {
+        where.push(`UPPER(COALESCE(r.payment_method,'')) = ?`);
+        params.push(pm);
+    }
+
     const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
     const [[countRow]] = await pool.query(
@@ -324,6 +333,7 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
 
     return res.render("admin_recent", {
         q: qRaw,
+        pm: pm || "",          // ✅ add this
         recentRows,
         directionLabel,
         page,
@@ -334,6 +344,7 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
         from,
         to,
     });
+
 });
 
 /* =========================================================
