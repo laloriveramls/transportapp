@@ -315,7 +315,7 @@
 
                 <div class="text-end">
                     <div class="pill">🧍‍♂️ <%= used %>/<%= cap %> · <%= libres %> libres</div>
-                    <div class="pill mt-2">📦 Mandados: <%= mandados %></div>
+                    <div class="pill mt-2">📦 Paquetería: <%= mandados %></div>
 
                     <a class="btn btn-sm <%= onlyPending ? 'btn-wine' : 'btn-ghost' %> rounded-4 mt-2"
                        href="/admin/trip/<%= trip.trip_id %>?onlyPending=<%= onlyPending ? 0 : 1 %>">
@@ -468,31 +468,34 @@
                                         <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf" target="_blank" rel="noopener">📄 Ticket</a>
                                     <% } %>
 
-                                    <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
-                                    <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
+                                        <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
+                                        <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
 
-                                        <!-- 1) Cancelar (con confirmación) -->
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
-                                              onsubmit="return confirm('¿Cancelar esta reserva? Esto la marcará como CANCELLED y libera cupo. Después reembolsa en Stripe.')">
-                                            <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
-                                            </button>
-                                        </form>
+                                            <!-- 1) Cancelar (con confirmación) -->
+                                            <!-- NOTA: tu backend /cancel en ONLINE+PAID NO cancela; solo redirige a Stripe -->
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
+                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
+                                                </button>
+                                            </form>
 
-                                        <!-- 2) Reembolsar (Stripe) -->
-                                        <a class="btn btn-outline-danger btn-xs"
-                                           href="/admin/reservation/<%= r.id %>/stripe-refund"
-                                           target="_blank" rel="noopener">
-                                            ↩️ Reembolsar (Stripe)
-                                        </a>
+                                            <!-- 2) Reembolsar (Stripe) -->
+                                            <a class="btn btn-outline-danger btn-xs"
+                                               href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                               target="_blank" rel="noopener">
+                                                ↩️ Reembolsar (Stripe)
+                                            </a>
 
-                                        <!-- 3) Ya reembolsé (con confirmación) -->
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
-                                              class="m-0"
-                                              onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto registrará el reembolso como completado.')">
-                                            <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé</button>
-                                        </form>
+                                            <!-- 3) Ya reembolsé (con confirmación) -->
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
+                                                <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
+                                                </button>
+                                            </form>
 
-                                    <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
+                                        <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
 
                                         <!-- No pagado => cancelar normal -->
                                         <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
@@ -562,7 +565,6 @@
                                     <div class="m-ticket-row">
                                         <% if (r.ticket_code) { %>
                                             <a class="ticket-code" href="/ticket/<%= r.ticket_code %>" target="_blank"><%= r.ticket_code %></a>
-                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf" target="_blank" rel="noopener">📄 PDF</a>
 
                                             <% if (digits.length >= 10) { %>
                                                 <a class="btn btn-wa btn-xs" target="_blank"
@@ -595,33 +597,34 @@
                                             <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf" target="_blank" rel="noopener">📄 PDF</a>
                                         <% } %>
 
-                                        <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
-                                        <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
+                                            <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
+                                            <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
 
-                                            <!-- 1) Cancelar -->
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
-                                                  class="m-0"
-                                                  onsubmit="return confirm('¿Cancelar esta reserva? Esto la marcará como CANCELLED y libera cupo. Después reembolsa en Stripe.')">
-                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
-                                                </button>
-                                            </form>
+                                                <!-- 1) Cancelar -->
+                                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                                      class="m-0"
+                                                      onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
+                                                    <button class="btn btn-outline-danger btn-xs" type="submit">⛔
+                                                        Cancelar
+                                                    </button>
+                                                </form>
 
-                                            <!-- 2) Stripe -->
-                                            <a class="btn btn-outline-danger btn-xs"
-                                               href="/admin/reservation/<%= r.id %>/stripe-refund"
-                                               target="_blank" rel="noopener">
-                                                ↩️ Reembolsar (Stripe)
-                                            </a>
+                                                <!-- 2) Stripe -->
+                                                <a class="btn btn-outline-danger btn-xs"
+                                                   href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                                   target="_blank" rel="noopener">
+                                                    ↩️ Reembolsar (Stripe)
+                                                </a>
 
-                                            <!-- 3) Ya reembolsé -->
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
-                                                  class="m-0"
-                                                  onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto registrará el reembolso como completado.')">
-                                                <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
-                                                </button>
-                                            </form>
+                                                <!-- 3) Ya reembolsé -->
+                                                <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                                      class="m-0"
+                                                      onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
+                                                    <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
+                                                    </button>
+                                                </form>
 
-                                        <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
+                                            <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
 
                                             <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
                                                   onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">

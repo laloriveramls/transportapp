@@ -425,13 +425,32 @@ router.get("/api/horarios", requireAdmin, requireDb, async (req, res) => {
 // Desactivar por día (OPEN/CANCELLED)
 router.post("/api/horarios/trip", requireAdmin, requireDb, async (req, res) => {
     try {
-        const {trip_date, template_id, enabled, notes} = req.body;
-        const status = Number(enabled) ? "OPEN" : "CANCELLED";
+        const trip_date = String(req.body.trip_date || "").trim();
+        const template_id = Number(req.body.template_id);
+        const notes = (String(req.body.notes || "").trim() || null);
+
+        // enabled puede venir: true/false, "true"/"false", 1/0, "1"/"0"
+        const enabledRaw = req.body.enabled;
+        const enabledBool =
+            enabledRaw === true ||
+            enabledRaw === 1 ||
+            enabledRaw === "1" ||
+            String(enabledRaw || "").toLowerCase() === "true";
+
+        if (!trip_date || !template_id) {
+            return res.status(400).json({ok: false, message: "Faltan datos."});
+        }
+
+        const status = enabledBool ? "OPEN" : "CANCELLED";
+
+        let cancelledReservations = 0;
+        let rejectedPayments = 0;
 
         const conn = await pool.getConnection();
         try {
             await conn.beginTransaction();
 
+            // 1) Upsert del trip (requiere UNIQUE(template_id, trip_date))
             await conn.query(
                 `
                     INSERT INTO transporte_trips (template_id, trip_date, status, notes)
@@ -441,38 +460,51 @@ router.post("/api/horarios/trip", requireAdmin, requireDb, async (req, res) => {
                     VALUES (status), notes =
                     VALUES (notes)
                 `,
-                [Number(template_id), String(trip_date), status, (notes || "").trim() || null]
+                [template_id, trip_date, status, notes]
             );
 
-            // ✅ si lo deshabilito, cancelo reservas NO pagadas de ese trip
+            // 2) Obtener trip_id real para este día + template
+            const [[tr]] = await conn.query(
+                `
+                    SELECT id
+                    FROM transporte_trips
+                    WHERE template_id = ?
+                      AND trip_date = ? LIMIT 1
+                `,
+                [template_id, trip_date]
+            );
+
+            const tripId = tr?.id;
+            if (!tripId) {
+                throw new Error("No pude obtener trip_id tras guardar el viaje.");
+            }
+
+            // 3) Si lo deshabilito, cancelo reservas NO pagadas y rechazo pagos pendientes
             if (status === "CANCELLED") {
-                // 1) Cancelo reservas pendientes / pago a bordo
                 const [u1] = await conn.query(
                     `
                         UPDATE transporte_reservations
-                        SET status='CANCELLED'
+                        SET status = 'CANCELLED'
                         WHERE trip_id = ?
                           AND status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING')
                     `,
-                    [tr.id]
+                    [tripId]
                 );
 
-// 2) Rechazo pagos pendientes asociados
                 const [u2] = await conn.query(
                     `
                         UPDATE transporte_payments p
                             JOIN transporte_reservations r
                         ON r.id = p.reservation_id
-                            SET p.status='REJECTED'
-                        WHERE r.trip_id=?
-                          AND p.status='PENDING'
+                            SET p.status = 'REJECTED'
+                        WHERE r.trip_id = ?
+                          AND p.status = 'PENDING'
                     `,
-                    [tr.id]
+                    [tripId]
                 );
 
-                const cancelledReservations = Number(u1.affectedRows || 0);
-                const rejectedPayments = Number(u2.affectedRows || 0);
-
+                cancelledReservations = Number(u1.affectedRows || 0);
+                rejectedPayments = Number(u2.affectedRows || 0);
             }
 
             await conn.commit();
@@ -485,7 +517,7 @@ router.post("/api/horarios/trip", requireAdmin, requireDb, async (req, res) => {
         }
     } catch (e) {
         console.error(e);
-        return res.status(500).json({ok: false});
+        return res.status(500).json({ok: false, message: e.message || "Error"});
     }
 });
 
