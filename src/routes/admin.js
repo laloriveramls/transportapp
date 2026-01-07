@@ -845,5 +845,157 @@ router.post("/reservation/:id/mark-paid", requireAdmin, requireDb, async (req, r
     }
 });
 
+// Cancel reservation (ADMIN)
+// Flow for ONLINE+PAID: 1) cancel first, 2) go to Stripe, 3) admin confirms "refund done".
+router.post("/reservation/:id/cancel", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    const back = req.get("Referrer") || "/admin/agenda";
+    if (!id) return res.status(400).send("ID inválido.");
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        // I lock the reservation row so status/method checks are race-safe.
+        const [[r]] = await conn.query(
+            `SELECT id, status, payment_method
+             FROM transporte_reservations
+             WHERE id = ? FOR UPDATE`,
+            [id]
+        );
+
+        if (!r) {
+            await conn.rollback();
+            return res.status(404).send("Reserva no encontrada.");
+        }
+
+        const st = String(r.status || "").toUpperCase();
+        const pm = String(r.payment_method || "").toUpperCase();
+
+        if (st === "CANCELLED") {
+            await conn.rollback();
+            return res.redirect(back);
+        }
+
+        // I do not cancel paid reservations unless they are ONLINE (manual refund flow).
+        if (st === "PAID" && pm !== "ONLINE") {
+            await conn.rollback();
+            return res.redirect(back);
+        }
+
+        // ✅ I do cancel here (including ONLINE+PAID). I keep Stripe IDs intact.
+        await conn.query(
+            `UPDATE transporte_reservations
+             SET status='CANCELLED'
+             WHERE id = ?
+               AND status <> 'CANCELLED'`,
+            [id]
+        );
+
+        await conn.commit();
+        return res.redirect(back);
+    } catch (e) {
+        try {
+            await conn.rollback();
+        } catch {
+        }
+        console.error(e);
+        return res.status(500).send(e.message || "Error al cancelar.");
+    } finally {
+        conn.release();
+    }
+});
+
+function stripeDashBase() {
+    const key = String(process.env.STRIPE_SECRET_KEY || "");
+    const isTest = key.startsWith("sk_test_");
+    return `https://dashboard.stripe.com${isTest ? "/test" : ""}`;
+}
+
+router.get("/reservation/:id/stripe-refund", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    const back = req.get("Referrer") || "/admin/agenda";
+    if (!id) return res.redirect(back);
+
+    const [[r]] = await pool.query(
+        `SELECT id, status, payment_method, stripe_payment_intent_id, stripe_session_id
+         FROM transporte_reservations
+         WHERE id = ? LIMIT 1`,
+        [id]
+    );
+    if (!r) return res.status(404).send("Reserva no encontrada.");
+
+    const st = String(r.status || "").toUpperCase();
+    const pm = String(r.payment_method || "").toUpperCase();
+
+    // ✅ Allow if it's ONLINE and was paid (PAID) or already cancelled (because we cancel first).
+    if (pm !== "ONLINE" || (st !== "PAID" && st !== "CANCELLED")) return res.redirect(back);
+
+    const base = stripeDashBase();
+
+    // Prefer PaymentIntent
+    if (r.stripe_payment_intent_id) {
+        return res.redirect(`${base}/payments/${encodeURIComponent(r.stripe_payment_intent_id)}`);
+    }
+
+    // Alternative: Checkout Session
+    if (r.stripe_session_id) {
+        return res.redirect(`${base}/checkout/sessions/${encodeURIComponent(r.stripe_session_id)}`);
+    }
+
+    return res.redirect(back);
+});
+
+router.post("/reservation/:id/refund-done", requireAdmin, requireDb, async (req, res) => {
+    // I mark the reservation as CANCELLED after I manually refunded in Stripe.
+    const id = Number(req.params.id || 0);
+    const back = req.get("Referrer") || "/admin/agenda";
+    if (!id) return res.status(400).send("ID inválido.");
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [[r]] = await conn.query(
+            `SELECT id, status, payment_method
+             FROM transporte_reservations
+             WHERE id = ? FOR UPDATE`,
+            [id]
+        );
+        if (!r) {
+            await conn.rollback();
+            return res.status(404).send("Reserva no encontrada.");
+        }
+
+        const st = String(r.status || "").toUpperCase();
+        const pm = String(r.payment_method || "").toUpperCase();
+
+        // I only allow this action for ONLINE + PAID.
+        if (!(st === "PAID" && pm === "ONLINE")) {
+            await conn.rollback();
+            return res.redirect(back);
+        }
+
+        await conn.query(
+            `UPDATE transporte_reservations
+             SET status='CANCELLED'
+             WHERE id = ?`,
+            [id]
+        );
+
+        await conn.commit();
+        return res.redirect(back);
+    } catch (e) {
+        try {
+            await conn.rollback();
+        } catch {
+        }
+        console.error(e);
+        return res.status(500).send(e.message || "Error al marcar reembolso.");
+    } finally {
+        conn.release();
+    }
+});
+
 
 module.exports = router;

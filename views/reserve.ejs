@@ -1,1100 +1,746 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <link href="/css/theme.css" rel="stylesheet">
     <%- include('partials/head') %>
-    <title>Reservar</title>
+    <link href="/css/theme.css" rel="stylesheet">
+    <title>Salida</title>
 
     <style>
-        /* =========================
-           Reserva - mejoras UI
-           ========================= */
-
-        .form-label { font-weight: 600; }
-        .help { color: var(--muted); font-size: .9rem; }
-
-        /* Stepper estilo "lista desplegable" (form-select) pero con + / - */
-        .stepper{
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            height: calc(2.375rem + 2px);
-            padding: .375rem .75rem;
-            border: 1px solid var(--border);
-            border-radius: .375rem;
-            background: var(--card);
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06);
-            gap: 10px;
-        }
-
-        .stepper:focus-within{
-            border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06),
-            0 0 0 .25rem color-mix(in srgb, var(--wine) 22%, transparent);
-        }
-
-        .stepper .btn-step{
-            width: 34px;
-            height: 30px;
-            border-radius: .375rem;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
+        .page-title {
+            letter-spacing: -.02em;
             font-weight: 800;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stepper .btn-step:hover{
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 75%, transparent);
-        }
-
-        .stepper .btn-step:disabled{
-            opacity: .45;
-            cursor: not-allowed;
-        }
-
-        .stepper .count{
-            flex: 1;
-            text-align: center;
-            font-weight: 650;
-            letter-spacing: -.01em;
-            color: var(--text);
-            user-select: none;
-        }
-
-        .slots-wrap{
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 14px;
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-        }
-
-        .slots-head{
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .slots-title{
-            font-weight: 650;
-            letter-spacing: -.01em;
             margin: 0;
         }
 
-        .slots-sub{ color: var(--muted); font-size: .9rem; }
-
-        .slot-section{ margin-top: 12px; }
-        .slot-section:first-child{ margin-top: 0; }
-
-        .section-label{
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--muted);
-            font-weight: 650;
-            font-size: .9rem;
-            margin-bottom: 8px;
-        }
-
-        .slots{
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .slot-pill{
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            border-radius: 999px;
-            padding: 10px 12px;
-            cursor: pointer;
-            transition: transform .06s ease, border-color .12s ease, background .12s ease;
-            color: var(--text);
-            user-select: none;
-
+        .pill {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            line-height: 1;
-        }
-
-        .slot-pill:hover{
-            transform: translateY(-1px);
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 78%, transparent);
-        }
-
-        .slot-pill[aria-selected="true"]{
-            border-color: color-mix(in srgb, var(--wine) 75%, var(--border));
-            background: color-mix(in srgb, var(--chip-bg) 70%, var(--card));
-            box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
-        }
-
-        .slot-pill .time{ font-weight: 650; white-space: nowrap; }
-
-        .slot-pill .mini{
-            display: inline-flex;
-            align-items: center;
-            gap: .35rem;
-            padding: .18rem .5rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-            color: var(--muted);
-            font-size: .82rem;
-            white-space: nowrap;
-        }
-
-        .slot-pill.is-warning .mini{
-            background: rgba(241, 220, 33, .14);
-            color: color-mix(in srgb, #f1dc21 60%, var(--text));
-        }
-
-        .slot-pill.is-danger{
-            opacity: .55;
-            pointer-events: none;
-        }
-
-        .card-soft .row.g-3 > [class*="col-"]{ padding-top: 2px; }
-
-        #onlineWrap .alert{
-            border-radius: 16px;
-            border: 1px solid var(--border);
-        }
-
-        .pill{
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            padding: .45rem .75rem;
+            gap: .45rem;
+            padding: .42rem .7rem;
             border-radius: 999px;
             border: 1px solid var(--border);
             background: var(--chip-bg);
             color: var(--chip-text);
-            font-weight: 650;
-            font-size: .95rem;
+            font-weight: 700;
+            font-size: .9rem;
             white-space: nowrap;
         }
 
-        .transfer-actions{
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: .5rem;
+        .trip-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            overflow: hidden;
         }
 
-        .tbtn{
-            display: inline-flex;
-            align-items: center;
-            gap: .55rem;
+        .trip-card .top {
+            padding: 16px 16px 12px;
+        }
 
-            padding: .55rem .8rem;
+        .trip-card .bottom {
+            padding: 12px 16px 16px;
+            border-top: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+        }
+
+        .progress-soft {
+            height: 10px;
             border-radius: 999px;
+            background: color-mix(in srgb, var(--muted) 18%, transparent);
+            overflow: hidden;
             border: 1px solid var(--border);
+        }
 
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+        .progress-soft > span {
+            display: block;
+            height: 100%;
+            width: var(--w, 0%);
+            background: linear-gradient(90deg, var(--wine), var(--wine-2));
+            border-radius: 999px;
+        }
+
+        .card-soft {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .table-wrap-pad {
+            padding: 10px 12px;
+        }
+
+        .table-pro {
+            --bs-table-bg: transparent;
+            border-color: var(--border);
+        }
+
+        .table-pro thead th {
+            font-size: .85rem;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .table-pro td {
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
             color: var(--text);
-
-            font-weight: 650;
-            letter-spacing: -.01em;
-            line-height: 1;
-
-            transition: transform .06s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
-            user-select: none;
         }
 
-        .tbtn:hover{
-            transform: translateY(-1px);
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 78%, transparent);
-            box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
+        .table-pro thead th, .table-pro tbody td {
+            padding: .75rem .9rem !important;
         }
 
-        .tbtn:active{ transform: translateY(0); }
+        @media (max-width: 576px) {
+            .table-pro thead th, .table-pro tbody td {
+                padding: .65rem .7rem !important;
+            }
 
-        .tbtn:focus-visible{
-            outline: none;
-            border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
-            box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--wine) 22%, transparent);
-        }
-
-        .tbtn-ic{
-            width: 28px;
-            height: 28px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: .95rem;
-        }
-
-        .tbtn-txt{ font-size: .92rem; }
-
-        .form-control.is-invalid,
-        .form-select.is-invalid{
-            border-color: color-mix(in srgb, var(--wine) 60%, #dc3545);
-            box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--wine) 18%, transparent);
-        }
-
-        .invalid-feedback{
-            display: none;
-            margin-top: .35rem;
-            font-size: .9rem;
-            color: color-mix(in srgb, var(--wine) 65%, #dc3545);
-        }
-
-        .is-invalid + .invalid-feedback{ display: block; }
-
-        /* Header de "Nombres de pasajeros" */
-        .names-head{
-            display:flex;
-            align-items:center;
-            gap: 1px;
-            flex-wrap: wrap;
-        }
-
-        /* Switch compacto (sin el “salto”/margen de Bootstrap) */
-        .names-toggle{
-            display:flex;
-            align-items:center;
-            gap: 10px;
-        }
-        .names-toggle .form-check-input{
-            float: none !important;
-        }
-        .names-toggle .form-check-label{
-            margin: 0;
-        }
-
-        /* En móvil se apila y queda más natural */
-        @media (max-width: 576px){
-            .names-head{
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;
+            /* en mobile: el thead no tiene sentido porque usamos cards */
+            .table-pro thead {
+                display: none;
             }
         }
 
-    </style>
+        .table-pro thead th:first-child, .table-pro tbody td:first-child {
+            padding-left: 1.1rem !important;
+        }
 
-    <!-- ✅ Inyecto pricing sin romper el JS del editor -->
-    <script id="pricingJson" type="application/json"><%- JSON.stringify(
-                (typeof pricing !== "undefined" && pricing) ? pricing : { passenger_price_mxn: 120, package_price_mxn: 120 }
-        ) %></script>
+        .table-pro thead th:last-child, .table-pro tbody td:last-child {
+            padding-right: 1.1rem !important;
+        }
+
+        .td-wrap {
+            max-width: 360px;
+            word-break: break-word;
+        }
+
+        .badge-soft {
+            border: 1px solid var(--border);
+            padding: .33rem .55rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: .82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            white-space: nowrap;
+        }
+
+        .badge-paid {
+            background: rgba(16, 216, 143, .12);
+            color: color-mix(in srgb, #10D88F 70%, var(--text));
+        }
+
+        .badge-pending {
+            background: rgba(241, 220, 33, .14);
+            color: color-mix(in srgb, #f1dc21 60%, var(--text));
+        }
+
+        .badge-cancel {
+            background: rgba(148, 163, 184, .18);
+            color: var(--muted);
+        }
+
+        .btn-xs {
+            padding: .35rem .55rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: .82rem;
+            line-height: 1.1;
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .btn-ghost {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+        }
+
+        .btn-ghost:hover {
+            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
+            background: color-mix(in srgb, var(--card) 70%, transparent);
+            color: var(--text);
+        }
+
+        .btn-wa {
+            background: #25D366;
+            border-color: #25D366;
+            color: #fff;
+        }
+
+        .btn-wa:hover {
+            background: #1fb85a;
+            border-color: #1fb85a;
+            color: #fff;
+        }
+
+        .btn-pdf {
+            border: 1px solid color-mix(in srgb, var(--wine) 40%, var(--border));
+            background: color-mix(in srgb, var(--wine) 12%, transparent);
+            color: var(--text);
+        }
+
+        .btn-pdf:hover {
+            border-color: var(--wine);
+            background: color-mix(in srgb, var(--wine) 18%, transparent);
+            color: var(--text);
+        }
+
+        .actions {
+            display:flex;
+            justify-content: flex-end;
+            gap: .4rem;
+            flex-wrap: wrap;
+        }
+
+        .subtle {
+            color: var(--muted);
+        }
+
+        .table-pro tbody tr:hover {
+            background: color-mix(in srgb, var(--card) 80%, var(--wine) 4%);
+        }
+
+        .ticket-code {
+            font-weight: 800;
+            letter-spacing: .02em;
+            color: var(--wine);
+            text-decoration: none;
+        }
+
+        .ticket-code:hover {
+            text-decoration: underline;
+        }
+
+        .tr-mobile {
+            display: none;
+        }
+
+        /* desktop: escondo mobile row */
+
+        @media (max-width: 576px) {
+            .app-navbar .navbar-brand .fw-bold {
+                font-size: .95rem;
+            }
+
+            .theme-btn {
+                padding: .35rem .55rem;
+                border-radius: 12px;
+            }
+
+            .trip-card .top {
+                padding: 14px 14px 10px;
+            }
+
+            .trip-card .bottom {
+                padding: 10px 14px 14px;
+            }
+
+            .pill {
+                font-size: .88rem;
+            }
+
+            .page-title {
+                font-size: 1.15rem;
+                line-height: 1.2;
+            }
+
+            .trip-card .top .text-end {
+                text-align: left !important;
+            }
+
+            .tr-desktop {
+                display: none;
+            }
+
+            .tr-mobile {
+                display: table-row;
+            }
+
+            .tr-mobile td {
+                padding: 0 !important;
+                border: 0 !important;
+            }
+
+            .m-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: var(--shadow);
+                overflow: hidden;
+                margin: 10px 0;
+                padding: 10px 12px;
+            }
+
+            .m-row-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .m-name {
+                font-weight: 800;
+                font-size: .98rem;
+                line-height: 1.2;
+            }
+
+            .m-meta {
+                color: var(--muted);
+                font-size: .85rem;
+                margin-top: 2px;
+            }
+
+            .m-divider {
+                border-top: 1px dashed color-mix(in srgb, var(--border) 75%, transparent);
+                margin: 8px 0;
+            }
+
+            .m-detail {
+                color: var(--text);
+                font-size: .9rem;
+            }
+
+            .m-detail .subtle {
+                font-size: .85rem;
+            }
+
+            .m-ticket-row {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+
+            .m-ticket-row .btn-wa {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .actions {
+                justify-content: flex-start;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .actions > * {
+                width: 100%;
+            }
+
+            .btn-xs {
+                width: 100%;
+                justify-content: center;
+                padding: .52rem .6rem;
+                border-radius: 14px;
+            }
+
+            .table-wrap-pad {
+                padding: 6px 8px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda?date=<%= trip.trip_date %>">
             <span class="brand-dot"></span>
-            <span class="fw-bold">TransportApp</span>
+            <span class="fw-bold">← Agenda</span>
         </a>
 
-        <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-            <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+            </button>
+
+            <form method="POST" action="/admin/logout" class="m-0">
+                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
+            </form>
+        </div>
     </div>
 </nav>
 
 <main class="container py-4">
+    <%
+    const isActive = (x) => x.status !== 'CANCELLED';
 
-    <div class="hero mb-3">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div>
-                <h1 class="h3 headline mb-1">Reservar</h1>
-                <div class="subtle">Elige ruta, fecha y cantidad. Te mostramos solo horarios con cupo.</div>
+    const countPassengers = (x) => {
+        const byCount = Number(x.passenger_count || 0);
+        const seats = Number(x.seats || 0);
+        return byCount || seats || 1;
+    };
+
+    const usedRaw = (reservations || [])
+            .filter(x => x.type === 'PASSENGER' && isActive(x))
+            .reduce((acc, x) => acc + countPassengers(x), 0);
+
+    const capRaw = Number(trip.capacity_passengers || 0);
+    const cap = Math.min(6, Math.max(0, capRaw));
+    const used = Math.min(usedRaw, cap);
+
+    const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
+    const libres = Math.max(0, cap - used);
+
+    const mandados = (reservations || [])
+            .filter(x => x.type === 'PACKAGE' && isActive(x))
+            .reduce((acc, x) => acc + (Number(x.seats || 0) || 1), 0);
+
+    function pmLabelOf(v) {
+        const pm = String(v || '').toUpperCase();
+        return pm === 'ONLINE' ? '💳 Online'
+                : pm === 'TRANSFERENCIA' ? '🏦 Transfer'
+                        : pm === 'TAQUILLA' ? '💵 Taquilla'
+                                : (v || '-');
+    }
+    %>
+
+    <div class="trip-card mb-3">
+        <div class="top">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="pill">🚌 Salida</div>
+                    <h1 class="h3 page-title mt-2">
+                        <%= directionLabel(trip.direction) %> —
+                        <span style="color: var(--wine);"><%= trip.depart_time %></span>
+                    </h1>
+                    <div class="subtle">Fecha: <%= trip.trip_date %></div>
+                </div>
+
+                <div class="text-end">
+                    <div class="pill">🧍‍♂️ <%= used %>/<%= cap %> · <%= libres %> libres</div>
+                    <div class="pill mt-2">📦 Mandados: <%= mandados %></div>
+
+                    <a class="btn btn-sm <%= onlyPending ? 'btn-wine' : 'btn-ghost' %> rounded-4 mt-2"
+                       href="/admin/trip/<%= trip.trip_id %>?onlyPending=<%= onlyPending ? 0 : 1 %>">
+                        <%= onlyPending ? 'Ver todos' : 'Solo pendientes' %>
+                    </a>
+                </div>
             </div>
-            <a class="btn btn-wine" href="/">Volver</a>
+
+            <div class="mt-3">
+                <div class="d-flex justify-content-between small subtle mb-1">
+                    <span>Ocupación</span>
+                    <span><%= pct %>%</span>
+                </div>
+                <div class="progress-soft" style="--w:<%= pct %>%"><span></span></div>
+            </div>
+        </div>
+
+        <div class="bottom">
+            <div class="subtle small">
+                Marcar pagos, abrir ticket, descargar PDF, enviar por WhatsApp y cancelar reservaciones.
+            </div>
         </div>
     </div>
 
-    <div class="card-soft p-4">
-        <% if (error) { %>
-            <div class="alert alert-danger mb-3"><%= error %></div>
-        <% } %>
+    <div class="card-soft p-0">
+        <div class="table-wrap-pad">
+            <div class="table-responsive">
+                <table class="table table-sm table-pro align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Contacto</th>
+                        <th>Tel</th>
+                        <th>Tipo</th>
+                        <th class="td-wrap">Detalle</th>
+                        <th>Método</th>
+                        <th>Estado</th>
+                        <th>Ticket</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                    </thead>
 
-        <form id="reserveForm" method="POST" action="/reserve" class="row g-3" novalidate>
+                    <tbody>
+                    <% if (!reservations || reservations.length === 0) { %>
+                        <tr>
+                            <td colspan="8" class="p-4">
+                                <div class="h6 mb-1">Sin reservaciones</div>
+                                <div class="subtle">Aún no hay registros para esta salida.</div>
+                            </td>
+                        </tr>
+                    <% } %>
 
-            <!-- 1) Origen -->
-            <div class="col-md-6">
-                <label class="form-label">¿De dónde sales?</label>
-                <select id="from_city" class="form-select" required>
-                    <option value="VIC" selected>Ciudad Victoria</option>
-                    <option value="LLE">Llera</option>
-                </select>
+                    <% (reservations || []).forEach(r => { %>
+                        <%
+                            const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
+                            const rawNames = String(r.passenger_names || '').trim();
+                            const displayNames = rawNames ? rawNames : Array.from({length: shown}, (_, i) => `Pasajero ${i + 1}`).join(', ');
+                            const digits = (r.phone || '').replace(/\D/g, '');
+
+                            const stU = String(r.status || '').toUpperCase();
+                            const pmU = String(r.payment_method || '').toUpperCase();
+                            const isPaid = stU === 'PAID';
+                            const isPaidOnline = isPaid && pmU === 'ONLINE';
+                        %>
+
+                        <!-- =========================
+                             DESKTOP ROW (normal)
+                        ========================== -->
+                        <tr class="tr-desktop">
+                            <td><%= r.customer_name %></td>
+                            <td class="subtle"><%= r.phone %></td>
+
+                            <td>
+                <span class="pill">
+                  <%= r.type === "PASSENGER" ? "🧍‍♂️ Pasajero" : "📦 Paquetería" %>
+                </span>
+                            </td>
+
+                            <td class="td-wrap">
+                                <% if (r.type === "PASSENGER") { %>
+                                    <div class="small">
+                                        <div class="subtle"><%= shown %> pasajero(s)</div>
+                                        <div class="subtle"><%= displayNames %></div>
+                                    </div>
+                                <% } else { %>
+                                    <div class="small subtle">
+                                        <div><%= r.package_details || "-" %></div>
+                                    </div>
+                                <% } %>
+                            </td>
+
+                            <td>
+                <span class="badge-soft" style="background: rgba(148,163,184,.12); color: var(--text);">
+                  <%= pmLabelOf(r.payment_method) %>
+                </span>
+                            </td>
+
+                            <td>
+                                <% if (stU === 'PAID') { %>
+                                    <span class="badge-soft badge-paid">✅ Pagado</span>
+                                <% } else if (stU === 'CANCELLED') { %>
+                                    <span class="badge-soft badge-cancel">⛔ Cancelado</span>
+                                <% } else if (stU === 'PENDING_PAYMENT') { %>
+                                    <span class="badge-soft badge-pending">⏳ Pendiente</span>
+                                <% } else if (stU === 'PAY_AT_BOARDING') { %>
+                                    <span class="badge-soft"
+                                          style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
+                    💵 Pagar en taquilla
+                  </span>
+                                <% } else { %>
+                                    <span class="badge-soft" style="background: transparent; color: var(--muted);">
+                    <%= r.status %>
+                  </span>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <% if (r.ticket_code) { %>
+                                    <a class="ticket-code" href="/ticket/<%= r.ticket_code %>"
+                                       target="_blank"><%= r.ticket_code %></a>
+
+                                    <% if (digits.length >= 10) { %>
+                                        <div class="mt-2">
+                                            <a class="btn btn-wa btn-xs" target="_blank"
+                                               href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
+                                                       'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
+                                               ) %>">
+                                                💬 WhatsApp
+                                            </a>
+                                        </div>
+                                    <% } %>
+                                <% } else { %>
+                                    <span class="subtle">-</span>
+                                <% } %>
+                            </td>
+
+                            <td class="text-end">
+                                <div class="actions">
+                                    <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                              class="m-0">
+                                            <input type="hidden" name="method" value="CASH">
+                                            <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
+                                        </form>
+
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                              class="m-0">
+                                            <input type="hidden" name="method" value="TRANSFER">
+                                            <button class="btn btn-ghost btn-xs" type="submit">🏦 Transfer</button>
+                                        </form>
+                                    <% } %>
+
+                                    <% if (r.ticket_code) { %>
+                                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>"
+                                           target="_blank">👁️ Ver</a>
+                                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf"
+                                           target="_blank" rel="noopener">📄 Ticket</a>
+                                    <% } %>
+
+                                    <!-- ✅ ONLINE+PAID => Stripe + confirm "ya reembolsé" -->
+                                    <% if (stU !== 'CANCELLED') { %>
+                                        <% if (isPaidOnline) { %>
+                                            <a class="btn btn-outline-danger btn-xs"
+                                               href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                               target="_blank" rel="noopener">
+                                                ↩️ Reembolsar (Stripe)
+                                            </a>
+
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('¿Ya hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED en el sistema.')">
+                                                <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
+                                                </button>
+                                            </form>
+
+                                        <% } else if (!isPaid) { %>
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
+                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- =========================
+                             MOBILE ROW (card)
+                        ========================== -->
+                        <tr class="tr-mobile">
+                            <td colspan="8">
+                                <div class="m-card">
+                                    <div class="m-row-top">
+                                        <div>
+                                            <div class="m-name"><%= r.customer_name %></div>
+                                            <div class="m-meta">
+                                                <%= r.phone %>
+                                                · <%= r.type === "PASSENGER" ? "🧍‍♂️ Pasajero" : "📦 Paquetería" %>
+                                            </div>
+                                        </div>
+
+                                        <div style="text-align:right;">
+                                            <% if (stU === 'PAID') { %>
+                                                <span class="badge-soft badge-paid">✅ Pagado</span>
+                                            <% } else if (stU === 'CANCELLED') { %>
+                                                <span class="badge-soft badge-cancel">⛔ Cancelado</span>
+                                            <% } else if (stU === 'PENDING_PAYMENT') { %>
+                                                <span class="badge-soft badge-pending">⏳ Pendiente</span>
+                                            <% } else if (stU === 'PAY_AT_BOARDING') { %>
+                                                <span class="badge-soft"
+                                                      style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
+                          💵 Taquilla
+                        </span>
+                                            <% } else { %>
+                                                <span class="badge-soft"
+                                                      style="background: transparent; color: var(--muted);">
+                          <%= r.status %>
+                        </span>
+                                            <% } %>
+
+                                            <div class="mt-2">
+                        <span class="badge-soft" style="background: rgba(148,163,184,.12); color: var(--text);">
+                          <%= pmLabelOf(r.payment_method) %>
+                        </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="m-divider"></div>
+
+                                    <div class="m-detail">
+                                        <% if (r.type === "PASSENGER") { %>
+                                            <div class="subtle"><%= shown %> pasajero(s)</div>
+                                            <div class="subtle"><%= displayNames %></div>
+                                        <% } else { %>
+                                            <div class="subtle"><%= r.package_details || "-" %></div>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="m-divider"></div>
+
+                                    <div class="m-ticket-row">
+                                        <% if (r.ticket_code) { %>
+                                            <a class="ticket-code" href="/ticket/<%= r.ticket_code %>"
+                                               target="_blank"><%= r.ticket_code %></a>
+                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf"
+                                               target="_blank" rel="noopener">📄 PDF</a>
+
+                                            <% if (digits.length >= 10) { %>
+                                                <a class="btn btn-wa btn-xs" target="_blank"
+                                                   href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
+                                                           'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
+                                                   ) %>">💬 WhatsApp</a>
+                                            <% } %>
+                                        <% } else { %>
+                                            <span class="subtle">Sin ticket</span>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="m-divider"></div>
+
+                                    <div class="actions">
+                                        <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                                  class="m-0">
+                                                <input type="hidden" name="method" value="CASH">
+                                                <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
+                                            </form>
+
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid"
+                                                  class="m-0">
+                                                <input type="hidden" name="method" value="TRANSFER">
+                                                <button class="btn btn-ghost btn-xs" type="submit">🏦 Transfer</button>
+                                            </form>
+                                        <% } %>
+
+                                        <% if (r.ticket_code) { %>
+                                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>"
+                                               target="_blank">👁️ Ver</a>
+                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf"
+                                               target="_blank" rel="noopener">📄 PDF</a>
+                                        <% } %>
+
+                                        <% if (stU !== 'CANCELLED') { %>
+                                            <% if (isPaidOnline) { %>
+                                                <a class="btn btn-outline-danger btn-xs"
+                                                   href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                                   target="_blank" rel="noopener">
+                                                    ↩️ Reembolsar (Stripe)
+                                                </a>
+
+                                                <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                                      class="m-0"
+                                                      onsubmit="return confirm('¿Ya hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED en el sistema.')">
+                                                    <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
+                                                    </button>
+                                                </form>
+
+                                            <% } else if (!isPaid) { %>
+                                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                                      class="m-0"
+                                                      onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
+                                                    <button class="btn btn-outline-danger btn-xs" type="submit">⛔
+                                                        Cancelar
+                                                    </button>
+                                                </form>
+                                            <% } %>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                    <% }) %>
+                    </tbody>
+                </table>
             </div>
-
-            <!-- 2) Destino -->
-            <div class="col-md-6">
-                <label class="form-label">¿Hacia dónde vas?</label>
-                <select id="to_city" class="form-select" required>
-                    <option value="LLE" selected>Llera</option>
-                    <option value="VIC">Ciudad Victoria</option>
-                </select>
-            </div>
-
-            <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
-
-            <!-- 3) Fecha -->
-            <div class="col-md-4">
-                <label class="form-label">¿Cuándo viajas?</label>
-                <input id="trip_date" name="trip_date" type="date" class="form-control" required/>
-                <div class="form-text subtle">Por defecto se coloca el día de hoy.</div>
-            </div>
-
-            <!-- 4) Tipo -->
-            <div class="col-md-4">
-                <label class="form-label">¿Qué quieres reservar?</label>
-                <select id="type" name="type" class="form-select" required>
-                    <option value="PASSENGER" selected>Pasajero</option>
-                    <option value="PACKAGE">Paquetería</option>
-                </select>
-            </div>
-
-            <!-- 5) Cuántos viajan -->
-            <div class="col-md-4" id="seatsWrap">
-                <label class="form-label">¿Cuántos viajan?</label>
-
-                <div class="stepper">
-                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir">−</button>
-                    <div class="count"><span id="seatsText">1</span></div>
-                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar">+</button>
-
-                    <!-- ✅ SOLO 1–6 -->
-                    <select id="seats" name="seats" class="d-none">
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-
-                <div class="form-text subtle">Máximo 6 pasajeros por salida.</div>
-            </div>
-
-            <!-- ✅ CONTACTO (SIEMPRE) -->
-            <div class="col-md-6" id="contactNameWrap">
-                <label class="form-label">Nombre de contacto</label>
-                <input id="customer_name" name="customer_name" class="form-control" required
-                       placeholder="Ej: Juan Martínez"/>
-                <div class="form-text subtle">
-                    Usaremos este nombre para tu reserva y para contactarte.
-                </div>
-            </div>
-
-            <!-- Teléfono -->
-            <div class="col-md-6">
-                <label class="form-label">Teléfono</label>
-                <input id="phone" name="phone" class="form-control" required
-                       inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376"/>
-                <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
-            </div>
-
-            <!-- ✅ PASAJEROS (OPCIONAL) -->
-            <div class="col-12" id="passengerNamesWrap">
-                <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
-                    <input class="form-check-input" type="checkbox" id="namesToggle">
-                    <label class="form-check-label subtle" for="namesToggle">Capturar nombres</label>
-                </div>
-
-                <div class="form-text subtle mt-1">
-                    Puedes omitir los nombres y solo usar el contacto.
-                </div>
-
-                <div id="passengerNamesBox" class="mt-2 d-none">
-                    <div id="passengerNames" class="row g-2"></div>
-                    <div class="form-text">
-                        Si activas esta opción, capturamos un nombre por asiento.
-                    </div>
-                </div>
-            </div>
-
-            <!-- MÉTODO DE PAGO -->
-            <div class="col-md-6">
-                <label class="form-label">Método de pago</label>
-                <select id="payment_method" name="payment_method" class="form-select" required>
-                    <option value="TAQUILLA" selected>Taquilla</option>
-                    <option value="TRANSFERENCIA">Transferencia</option>
-                    <option value="ONLINE">Pago en línea</option>
-                </select>
-                <div class="form-text subtle">Elige cómo deseas pagar tu reserva.</div>
-            </div>
-
-            <!-- TOTAL A PAGAR -->
-            <div class="col-12">
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Total a pagar</p>
-                        <div class="slots-sub" id="priceHint">Cargando precio…</div>
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="pill">💰 <span id="priceTotal">$0</span></span>
-                        <span class="help" id="priceBreakdown"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TRANSFERENCIA -->
-            <div class="col-12 d-none" id="transferWrap">
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Datos para transferencia</p>
-                        <div class="slots-sub">Realiza la transferencia y envía el comprobante por WhatsApp.</div>
-                    </div>
-
-                    <ul class="kv mb-3">
-                        <li><span class="k">Banco: </span><span class="v" id="bankName">BBVA</span></li>
-                        <li><span class="k">Beneficiario: </span><span class="v" id="bankOwner">Gary Treviño</span></li>
-                        <li>
-                            <span class="k">Número de tarjeta: </span>
-                            <span class="v mono" id="bankClabe">4152 3142 8477 3416</span>
-                        </li>
-                    </ul>
-
-                    <div class="transfer-actions">
-                        <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar número de tarjeta">
-                            <span class="tbtn-ic">📋</span>
-                            <span class="tbtn-txt">Copiar tarjeta</span>
-                        </button>
-
-                        <button type="button" class="tbtn" id="copyTransferMsgBtn" aria-label="Copiar mensaje de transferencia">
-                            <span class="tbtn-ic">💬</span>
-                            <span class="tbtn-txt">Copiar mensaje</span>
-                        </button>
-                    </div>
-
-                    <div class="note mb-3">
-                        <strong>Concepto sugerido:</strong> “Servicio de transporte”
-                        <span class="subtle">(tu folio se genera al finalizar)</span>.
-                        <br>
-                        Después, envíanos el comprobante por WhatsApp para confirmar.
-                    </div>
-
-                    <label class="form-label">Referencia / folio de transferencia (opcional)</label>
-                    <input id="transfer_ref" name="transfer_ref" class="form-control"
-                           placeholder="Ej: 123456 / SPEI / concepto"/>
-                    <div class="form-text subtle">
-                        Si ya hiciste la transferencia, pega aquí la referencia. Si no, puedes dejarlo vacío.
-                    </div>
-                </div>
-            </div>
-
-            <!-- ONLINE: aviso -->
-            <div class="col-12 d-none" id="onlineWrap">
-                <div class="alert alert-info mb-0">
-                    <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago del pasaje.
-                </div>
-            </div>
-
-            <!-- PAQUETERÍA -->
-            <div class="col-12" id="packageWrap">
-                <label class="form-label">Detalle paquetería (obligatorio)</label>
-                <input id="package_details" name="package_details" class="form-control"
-                       placeholder="Ej: sobre, refacciones, etc."/>
-            </div>
-
-            <!-- Horarios -->
-            <div class="col-12">
-                <label class="form-label">Hora (según cupo)</label>
-                <input type="hidden" id="depart_time" name="depart_time" value="">
-
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Horarios disponibles</p>
-                        <div class="slots-sub" id="slotsHint">Selecciona fecha y ruta.</div>
-                    </div>
-
-                    <div id="slotsLoading" class="help">—</div>
-
-                    <div id="sections" class="d-none">
-                        <div class="slot-section" id="morningSection">
-                            <div class="section-label">🌤️ Mañana</div>
-                            <div id="morningSlots" class="slots"></div>
-                        </div>
-
-                        <div class="slot-section" id="afternoonSection">
-                            <div class="section-label">🌇 Tarde</div>
-                            <div id="afternoonSlots" class="slots"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-text subtle mt-2">Te mostramos horarios con cupo para tu selección.</div>
-                <div class="form-text subtle mt-2">Para cancelaciones favor de enviar tu ticket, con mínimo 1 hora de anticipación antes de tu viaje para realizar tu devolución sino no hay reembolso.</div>
-            </div>
-
-            <div class="col-12 d-flex gap-2 flex-wrap mt-2">
-                <button class="btn btn-wine px-4">Confirmar reserva</button>
-                <a class="btn btn-outline-secondary px-4" href="/">Cancelar</a>
-            </div>
-
-        </form>
+        </div>
     </div>
 
 </main>
 
-<%- include('partials/toast') %>
-<%- include('partials/footer') %>
-
-<script>
-    const tripDate = document.getElementById("trip_date");
-
-    const fromCity = document.getElementById("from_city");
-    const toCity = document.getElementById("to_city");
-    const directionInput = document.getElementById("direction");
-
-    const typeSel = document.getElementById("type");
-
-    const seatsWrap = document.getElementById("seatsWrap");
-    const seatsSel = document.getElementById("seats");
-    const seatsText = document.getElementById("seatsText");
-    const plusBtn = document.getElementById("plusBtn");
-    const minusBtn = document.getElementById("minusBtn");
-
-    const customerName = document.getElementById("customer_name");
-
-    const passengerNamesWrap = document.getElementById("passengerNamesWrap");
-    const passengerNamesBox = document.getElementById("passengerNamesBox");
-    const passengerNames = document.getElementById("passengerNames");
-    const namesToggleWrap = document.getElementById("namesToggleWrap");
-    const namesToggle = document.getElementById("namesToggle");
-
-    const paymentMethod = document.getElementById("payment_method");
-    const transferWrap = document.getElementById("transferWrap");
-    const onlineWrap = document.getElementById("onlineWrap");
-
-    const packageWrap = document.getElementById("packageWrap");
-    const packageDetails = document.getElementById("package_details");
-
-    const departTimeHidden = document.getElementById("depart_time");
-
-    const slotsHint = document.getElementById("slotsHint");
-    const slotsLoading = document.getElementById("slotsLoading");
-    const sections = document.getElementById("sections");
-    const morningSection = document.getElementById("morningSection");
-    const afternoonSection = document.getElementById("afternoonSection");
-    const morningSlots = document.getElementById("morningSlots");
-    const afternoonSlots = document.getElementById("afternoonSlots");
-
-    const priceTotal = document.getElementById("priceTotal");
-    const priceBreakdown = document.getElementById("priceBreakdown");
-    const priceHint = document.getElementById("priceHint");
-
-    const copyClabeBtn = document.getElementById("copyClabeBtn");
-    const copyTransferMsgBtn = document.getElementById("copyTransferMsgBtn");
-    const bankClabeEl = document.getElementById("bankClabe");
-
-    const formEl = document.getElementById("reserveForm");
-
-    // ✅ I use this to preselect direction/time coming from the index chips (/reserve?dir=...&time=...)
-    let PREFERRED_TIME = null;
-
-    // ✅ pricing inicial desde server (sin romper el JS del editor)
-    function parsePricingFromServer(){
-        try{
-            const el = document.getElementById("pricingJson");
-            const raw = el ? el.textContent : "{}";
-            const obj = JSON.parse(raw || "{}");
-            return {
-                passenger_price_mxn: Number(obj?.passenger_price_mxn ?? 120),
-                package_price_mxn: Number(obj?.package_price_mxn ?? 120),
-            };
-        }catch{
-            return { passenger_price_mxn: 120, package_price_mxn: 120 };
-        }
-    }
-
-    let PRICING = parsePricingFromServer();
-    let PRICING_OK = true;
-
-    function todayISO() {
-        return new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" });
-    }
-
-    async function loadPricing() {
-        // I refresh pricing from /pricing, but I already have a server-side default.
-        try {
-            const res = await fetch("/pricing", { headers: { "Accept": "application/json" } });
-            const data = await res.json();
-
-            if (data?.ok) {
-                PRICING = {
-                    passenger_price_mxn: Number(data.passenger_price_mxn ?? PRICING.passenger_price_mxn ?? 120),
-                    package_price_mxn: Number(data.package_price_mxn ?? PRICING.package_price_mxn ?? 120),
-                };
-                PRICING_OK = true;
-            } else {
-                PRICING_OK = false;
-            }
-        } catch {
-            PRICING_OK = false;
-        } finally {
-            updatePriceUI();
-        }
-    }
-
-    function toHHMM(t) {
-        const s = String(t || "").trim();
-        const parts = s.split(":");
-        if (parts.length >= 2) return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
-        return s;
-    }
-
-    function hourFromTime(t) {
-        const hhmm = toHHMM(t);
-        const hh = Number((hhmm.split(":")[0] || "0"));
-        return isNaN(hh) ? 0 : hh;
-    }
-
-    function setSeats(n) {
-        const value = Math.max(1, Math.min(6, Number(n || 1)));
-        seatsSel.value = String(value);
-        seatsText.textContent = String(value);
-
-        minusBtn.disabled = value <= 1;
-        plusBtn.disabled = value >= 6;
-
-        updatePriceUI();
-    }
-
-    function syncDirection() {
-        const f = fromCity.value;
-        const t = toCity.value;
-
-        if (f === t) toCity.value = (f === "VIC") ? "LLE" : "VIC";
-
-        const from = fromCity.value;
-        const to = toCity.value;
-
-        directionInput.value = (from === "VIC" && to === "LLE") ? "VIC_TO_LLE" : "LLE_TO_VIC";
-    }
-
-    function applyPrefillFromQuery() {
-        try {
-            const qs = new URLSearchParams(window.location.search);
-
-            const dir = (qs.get("dir") || qs.get("direction") || "").trim().toUpperCase();
-            const timeRaw = (qs.get("time") || qs.get("depart_time") || "").trim();
-            const date = (qs.get("date") || qs.get("trip_date") || "").trim();
-
-            // Normalizo HH:MM (si viene 6:30 => 06:30)
-            const time = timeRaw ? toHHMM(timeRaw) : "";
-
-            // Aplico dirección a selects (para que syncDirection() ya deje bien el hidden)
-            if (dir === "VIC_TO_LLE") {
-                fromCity.value = "VIC";
-                toCity.value = "LLE";
-            } else if (dir === "LLE_TO_VIC") {
-                fromCity.value = "LLE";
-                toCity.value = "VIC";
-            }
-
-            // Fecha (YYYY-MM-DD)
-            if (date) {
-                tripDate.value = date;
-            }
-
-            // Hora preferida para seleccionar al renderizar slots
-            if (time) {
-                PREFERRED_TIME = time; // ya viene en HH:MM
-            }
-
-            // ✅ Limpio URL (solo estética) sin recargar
-            if (dir || time || date) {
-                const clean = new URL(window.location.href);
-
-                if (dir) clean.searchParams.set("dir", dir);
-                if (time) clean.searchParams.set("time", time);
-                else clean.searchParams.delete("time");
-
-                if (date) clean.searchParams.set("date", date);
-                else clean.searchParams.delete("date");
-
-                clean.searchParams.delete("direction");
-                clean.searchParams.delete("depart_time");
-                clean.searchParams.delete("trip_date");
-
-                window.history.replaceState({}, "", clean.toString());
-            }
-        } catch {
-            // no-op
-        }
-    }
-
-    function namesEnabled(){
-        return !!namesToggle?.checked;
-    }
-
-    function updateUIByType() {
-        const isPassenger = typeSel.value === "PASSENGER";
-
-        seatsWrap.style.display = isPassenger ? "" : "none";
-
-        // I show the "capture names" switch only for passengers.
-        namesToggleWrap.style.display = isPassenger ? "" : "none";
-
-        // I show/hide package detail.
-        packageWrap.style.display = isPassenger ? "none" : "";
-
-        // I enforce package details only for packages.
-        if (!isPassenger) {
-            packageDetails.setAttribute("required", "required");
-
-            // I disable passenger names when switching to package.
-            if (namesToggle) namesToggle.checked = false;
-            passengerNames.innerHTML = "";
-            passengerNamesBox.classList.add("d-none");
-        } else {
-            packageDetails.value = "";
-            packageDetails.removeAttribute("required");
-        }
-
-        updatePriceUI();
-        renderPassengerInputs();
-    }
-
-    function updateUIByPayment() {
-        const m = paymentMethod.value;
-        const isTransfer = m === "TRANSFERENCIA";
-        const isOnline = m === "ONLINE";
-
-        transferWrap.classList.toggle("d-none", !isTransfer);
-        onlineWrap.classList.toggle("d-none", !isOnline);
-    }
-
-    function renderPassengerInputs() {
-        const isPassenger = typeSel.value === "PASSENGER";
-        const seats = Number(seatsSel.value || 1);
-
-        passengerNames.innerHTML = "";
-
-        // I only render passenger name inputs if the user explicitly wants them.
-        if (!isPassenger || !namesEnabled()) {
-            passengerNamesBox.classList.add("d-none");
-            return;
-        }
-
-        passengerNamesBox.classList.remove("d-none");
-
-        for (let i = 1; i <= seats; i++) {
-            const col = document.createElement("div");
-            col.className = "col-md-4";
-            col.innerHTML = `
-                <input class="form-control" name="passenger_names[]" required
-                       placeholder="Pasajero ${i} (Nombre completo)" />
-            `;
-            passengerNames.appendChild(col);
-        }
-    }
-
-    function clearSlotsUI(msg) {
-        departTimeHidden.value = "";
-        slotsLoading.textContent = msg || "Selecciona fecha y ruta para ver horarios.";
-        sections.classList.add("d-none");
-        morningSlots.innerHTML = "";
-        afternoonSlots.innerHTML = "";
-        morningSection.classList.remove("d-none");
-        afternoonSection.classList.remove("d-none");
-    }
-
-    function setSelectedTime(hhmm) {
-        const value = toHHMM(hhmm);
-        departTimeHidden.value = value;
-
-        document.querySelectorAll(".slot-pill").forEach(el => {
-            el.setAttribute("aria-selected", (el.dataset.time === value) ? "true" : "false");
-        });
-    }
-
-    function createPill({time, available, seatsNeeded}) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "slot-pill";
-        const hhmm = toHHMM(time);
-        btn.dataset.time = hhmm;
-        btn.setAttribute("aria-selected", "false");
-
-        if (seatsNeeded > 0) {
-            if (available <= 2) btn.classList.add("is-warning");
-            if (available <= 0) btn.classList.add("is-danger");
-        }
-
-        const extra = (seatsNeeded > 0)
-            ? `<span class="mini">para ${seatsNeeded}</span>`
-            : `<span class="mini">Paquetería</span>`;
-
-        btn.innerHTML = `
-            <span class="time">🕒 ${hhmm}</span>
-            <span class="mini">👥 ${available} libres</span>
-            ${extra}
-        `;
-
-        btn.addEventListener("click", () => setSelectedTime(hhmm));
-        return btn;
-    }
-
-    function renderSlotsGrouped(results, seatsNeeded) {
-        const requiresCapacity = seatsNeeded > 0;
-
-        const items = (results || [])
-            .map(x => ({time: toHHMM(x.time), available: Number(x.available || 0)}))
-            .filter(x => requiresCapacity ? (x.available >= seatsNeeded) : true)
-            .sort((a, b) => a.time.localeCompare(b.time));
-
-        if (!items.length) {
-            clearSlotsUI(requiresCapacity
-                ? "No hay horarios con cupo suficiente para tu selección."
-                : "No hay horarios para esta fecha/ruta.");
-            return;
-        }
-
-        const morning = items.filter(x => hourFromTime(x.time) < 12);
-        const afternoon = items.filter(x => hourFromTime(x.time) >= 12);
-
-        morningSlots.innerHTML = "";
-        afternoonSlots.innerHTML = "";
-
-        if (!morning.length) morningSection.classList.add("d-none"); else morningSection.classList.remove("d-none");
-        if (!afternoon.length) afternoonSection.classList.add("d-none"); else afternoonSection.classList.remove("d-none");
-
-        morning.forEach(x => morningSlots.appendChild(createPill({...x, seatsNeeded})));
-        afternoon.forEach(x => afternoonSlots.appendChild(createPill({...x, seatsNeeded})));
-
-        sections.classList.remove("d-none");
-        slotsLoading.textContent = "Selecciona un horario:";
-
-        // ✅ If I have a preferred time from the index, I try to select it.
-        const preferred = PREFERRED_TIME ? toHHMM(PREFERRED_TIME) : null;
-        const found = preferred ? items.find(x => x.time === preferred) : null;
-
-        const initial = (found ? found.time : (morning[0] || afternoon[0]).time);
-        setSelectedTime(initial);
-
-        // ✅ I clear preferred time after it successfully matches, so later reloads behave normal.
-        if (found) PREFERRED_TIME = null;
-    }
-
-    async function loadAvailability() {
-        const date = tripDate.value;
-        const dir = directionInput.value;
-
-        if (!date || !dir) {
-            clearSlotsUI("Selecciona fecha y ruta para ver horarios.");
-            return;
-        }
-
-        const seatsNeeded = (typeSel.value === "PASSENGER")
-            ? Number(seatsSel.value || 1)
-            : 0;
-
-        slotsLoading.textContent = "Cargando horarios...";
-        sections.classList.add("d-none");
-        departTimeHidden.value = "";
-
-        try {
-            const url = `/availability?date=${encodeURIComponent(date)}&direction=${encodeURIComponent(dir)}&seats=${encodeURIComponent(seatsNeeded)}`;
-            const res = await fetch(url);
-            const data = await res.json();
-
-            renderSlotsGrouped(data.results || [], seatsNeeded);
-        } catch (e) {
-            clearSlotsUI("Error al cargar horarios. Intenta de nuevo.");
-        }
-    }
-
-    function formatMXN(n) {
-        const v = Number(n || 0);
-        return `$${v.toFixed(2)} MXN`;
-    }
-
-    function buildTransferMessage() {
-        const bank = document.getElementById("bankName")?.textContent?.trim() || "";
-        const owner = document.getElementById("bankOwner")?.textContent?.trim() || "";
-        const card = document.getElementById("bankClabe")?.textContent?.trim() || "";
-
-        const dir = (directionInput.value === "VIC_TO_LLE") ? "Victoria - Llera" : "Llera - Victoria";
-        const date = tripDate.value || "-";
-        const time = departTimeHidden.value || "(sin horario aún)";
-        const type = (typeSel.value === "PASSENGER") ? "Pasaje" : "Paquetería";
-        const seats = Number(seatsSel.value || 1);
-
-        const totalText = priceTotal?.textContent || "";
-        const contact = (customerName?.value || "").trim();
-
-        return [
-            "Datos para transferencia (TransportApp)",
-            "--------------------------------------",
-            `Banco: ${bank}`,
-            `Beneficiario: ${owner}`,
-            `Número de tarjeta: ${card}`,
-            "",
-            "Datos de mi reserva",
-            "-------------------",
-            `Contacto: ${contact || "-"}`,
-            `Ruta: ${dir}`,
-            `Fecha: ${date}`,
-            `Hora: ${time}`,
-            `Tipo: ${type}${typeSel.value === "PASSENGER" ? ` (${seats} pasajero(s))` : ""}`,
-            `Total: ${totalText}`,
-            "",
-            "Nota: El folio se genera al finalizar la reserva."
-        ].join("\n");
-    }
-
-    copyClabeBtn?.addEventListener("click", async () => {
-        try {
-            const rawCard = bankClabeEl?.textContent?.trim() || "";
-            const cardNoSpaces = rawCard.replace(/\s+/g, "").replace(/-/g, "");
-            await navigator.clipboard.writeText(cardNoSpaces);
-            notify("Número de tarjeta copiado", {variant: "success"});
-        } catch {
-            notify("No pude copiar el número. Selecciónalo manualmente.", {variant: "danger", delay: 2500});
-        }
-    });
-
-    copyTransferMsgBtn?.addEventListener("click", async () => {
-        try {
-            await navigator.clipboard.writeText(buildTransferMessage());
-            notify("Mensaje copiado", {variant: "success"});
-        } catch {
-            notify("No pude copiar el mensaje. Intenta de nuevo.", {variant: "danger", delay: 2500});
-        }
-    });
-
-    function updatePriceUI() {
-        const isPassenger = typeSel.value === "PASSENGER";
-        const seats = Number(seatsSel.value || 1);
-
-        const unit = isPassenger
-            ? Number(PRICING.passenger_price_mxn || 0)
-            : Number(PRICING.package_price_mxn || 0);
-
-        const total = isPassenger ? (unit * seats) : unit;
-
-        priceTotal.textContent = formatMXN(total);
-
-        if (isPassenger) {
-            priceBreakdown.textContent = `${formatMXN(unit)} x ${seats} pasajero(s)`;
-            priceHint.textContent = PRICING_OK ? "Pasaje (precio actual)" : "Pasaje (estimado)";
-        } else {
-            priceBreakdown.textContent = `${formatMXN(unit)} (costo fijo)`;
-            priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
-        }
-    }
-
-    function fieldLabel(el){
-        if (el.id) {
-            const lf = formEl.querySelector(`label[for="${el.id}"]`);
-            if (lf) return lf.textContent.trim();
-        }
-        const wrap = el.closest('[class*="col-"]');
-        const l2 = wrap?.querySelector("label.form-label");
-        if (l2) return l2.textContent.trim();
-        return el.placeholder || el.name || "este campo";
-    }
-
-    function messageForInvalid(el){
-        const name = fieldLabel(el);
-        if (el.id === "phone" && el.validity.patternMismatch) return `Revisa "${name}": deben ser 10 dígitos.`;
-        if (el.validity.valueMissing) return `Completa "${name}".`;
-        if (el.validity.patternMismatch) return `Revisa "${name}" (formato inválido).`;
-        if (el.validity.typeMismatch) return `Revisa "${name}".`;
-        return `Revisa "${name}".`;
-    }
-
-    function markInvalid(el){ el.classList.add("is-invalid"); }
-    function clearInvalid(el){ el.classList.remove("is-invalid"); }
-
-    formEl.addEventListener("input", (e) => clearInvalid(e.target), true);
-    formEl.addEventListener("change", (e) => clearInvalid(e.target), true);
-
-    formEl.addEventListener("submit", (e) => {
-        const invalid = formEl.querySelector(":invalid");
-        if (invalid) {
-            e.preventDefault();
-            [...formEl.querySelectorAll(":invalid")].forEach(markInvalid);
-
-            notify(messageForInvalid(invalid), { variant: "warning", delay: 2600 });
-
-            invalid.focus({ preventScroll: true });
-            invalid.scrollIntoView({ behavior: "smooth", block: "center" });
-            return;
-        }
-
-        if (!departTimeHidden.value) {
-            e.preventDefault();
-            notify("Selecciona un horario disponible antes de confirmar.", { variant: "warning", delay: 2500 });
-            document.getElementById("sections")?.closest(".slots-wrap")?.scrollIntoView({ behavior: "smooth", block: "center" });
-            return;
-        }
-    });
-
-    fromCity.addEventListener("change", () => { syncDirection(); loadAvailability(); });
-    toCity.addEventListener("change", () => { syncDirection(); loadAvailability(); });
-
-    tripDate.addEventListener("change", loadAvailability);
-
-    typeSel.addEventListener("change", () => {
-        updateUIByType();
-        loadAvailability();
-    });
-
-    namesToggle?.addEventListener("change", () => {
-        renderPassengerInputs();
-    });
-
-    plusBtn.addEventListener("click", () => {
-        setSeats(Number(seatsSel.value || 1) + 1);
-        renderPassengerInputs();
-        loadAvailability();
-    });
-
-    minusBtn.addEventListener("click", () => {
-        setSeats(Number(seatsSel.value || 1) - 1);
-        renderPassengerInputs();
-        loadAvailability();
-    });
-
-    paymentMethod.addEventListener("change", updateUIByPayment);
-
-    // ✅ I apply query prefill before syncing direction and loading availability
-    applyPrefillFromQuery();
-
-    syncDirection();
-    updateUIByType();
-    updateUIByPayment();
-
-    if (!tripDate.value) tripDate.value = todayISO();
-
-    setSeats(1);
-    renderPassengerInputs();
-
-    // ✅ pintar precio inmediato con lo que vino del server
-    updatePriceUI();
-
-    // ✅ refrescar pricing desde DB (por si cambió)
-    loadPricing();
-
-    // horarios
-    loadAvailability();
-</script>
-
+<script src="/js/theme.js"></script>
 </body>
 </html>

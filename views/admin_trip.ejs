@@ -71,11 +71,18 @@
         .table-pro thead th, .table-pro tbody td{
             padding:.75rem .9rem !important;
         }
-        @media (max-width: 576px){
+
+        @media (max-width: 576px) {
             .table-pro thead th, .table-pro tbody td{
                 padding:.65rem .7rem !important;
             }
+
+            /* en mobile: el thead no tiene sentido porque usamos cards */
+            .table-pro thead {
+                display: none;
+            }
         }
+
         .table-pro thead th:first-child, .table-pro tbody td:first-child{ padding-left:1.1rem !important; }
         .table-pro thead th:last-child,  .table-pro tbody td:last-child{  padding-right:1.1rem !important; }
 
@@ -150,33 +157,32 @@
         }
         .ticket-code:hover{ text-decoration:underline; }
 
-        /* =========================================================
-           ✅ MOBILE UPGRADE (SIN romper desktop)
-           - usamos 2 rows: .tr-desktop y .tr-mobile
-        ========================================================= */
-        .tr-mobile{ display:none; }  /* desktop: escondo mobile row */
+        .tr-mobile {
+            display: none;
+        }
 
-        @media (max-width: 576px){
-            /* navbar más compacto */
-            .app-navbar .navbar-brand .fw-bold{ font-size: .95rem; }
+        /* desktop: escondo mobile row */
+
+        @media (max-width: 576px) {
+            .app-navbar .navbar-brand .fw-bold {
+                font-size: .95rem;
+            }
             .theme-btn{ padding:.35rem .55rem; border-radius:12px; }
 
-            /* header de salida */
             .trip-card .top{ padding:14px 14px 10px; }
             .trip-card .bottom{ padding:10px 14px 14px; }
             .pill{ font-size:.88rem; }
             .page-title{ font-size:1.15rem; line-height:1.2; }
             .trip-card .top .text-end{ text-align:left !important; }
 
-            /* en mobile: oculto fila desktop y muestro fila mobile */
             .tr-desktop{ display:none; }
             .tr-mobile{ display:table-row; }
 
-            /* convierto el TD de mobile a “card” */
-            .tr-mobile td{
-                padding:0 !important;
-                border:0 !important;
+            .tr-mobile td {
+                padding: 0 !important;
+                border: 0 !important;
             }
+
             .m-card{
                 background:var(--card);
                 border:1px solid var(--border);
@@ -234,7 +240,9 @@
                 border-radius:14px;
             }
 
-            .table-wrap-pad{ padding: 6px 8px; }
+            .table-wrap-pad {
+                padding: 6px 8px;
+            }
         }
     </style>
 </head>
@@ -283,6 +291,14 @@
     const mandados = (reservations || [])
             .filter(x => x.type === 'PACKAGE' && isActive(x))
             .reduce((acc, x) => acc + (Number(x.seats || 0) || 1), 0);
+
+    function pmLabelOf(v) {
+        const pm = String(v || '').toUpperCase();
+        return pm === 'ONLINE' ? '💳 Online'
+                : pm === 'TRANSFERENCIA' ? '🏦 Transfer'
+                        : pm === 'TAQUILLA' ? '💵 Taquilla'
+                                : (v || '-');
+    }
     %>
 
     <div class="trip-card mb-3">
@@ -334,6 +350,7 @@
                         <th>Tel</th>
                         <th>Tipo</th>
                         <th class="td-wrap">Detalle</th>
+                        <th>Método</th>
                         <th>Estado</th>
                         <th>Ticket</th>
                         <th class="text-end">Acciones</th>
@@ -343,19 +360,24 @@
                     <tbody>
                     <% if (!reservations || reservations.length === 0) { %>
                         <tr>
-                            <td colspan="7" class="p-4">
+                            <td colspan="8" class="p-4">
                                 <div class="h6 mb-1">Sin reservaciones</div>
                                 <div class="subtle">Aún no hay registros para esta salida.</div>
                             </td>
                         </tr>
                     <% } %>
 
-                    <% reservations.forEach(r => { %>
+                    <% (reservations || []).forEach(r => { %>
                         <%
                             const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
                             const rawNames = String(r.passenger_names || '').trim();
                             const displayNames = rawNames ? rawNames : Array.from({ length: shown }, (_, i) => `Pasajero ${i + 1}`).join(', ');
                             const digits = (r.phone || '').replace(/\D/g, '');
+
+                            const stU = String(r.status || '').toUpperCase();
+                            const pmU = String(r.payment_method || '').toUpperCase();
+                            const isPaid = stU === 'PAID';
+                            const isPaidOnline = isPaid && pmU === 'ONLINE';
                         %>
 
                         <!-- =========================
@@ -383,13 +405,19 @@
                             </td>
 
                             <td>
-                                <% if (r.status === 'PAID') { %>
+                                <span class="badge-soft" style="background: rgba(148,163,184,.12); color: var(--text);">
+                                  <%= pmLabelOf(r.payment_method) %>
+                                </span>
+                            </td>
+
+                            <td>
+                                <% if (stU === 'PAID') { %>
                                     <span class="badge-soft badge-paid">✅ Pagado</span>
-                                <% } else if (r.status === 'CANCELLED') { %>
+                                <% } else if (stU === 'CANCELLED') { %>
                                     <span class="badge-soft badge-cancel">⛔ Cancelado</span>
-                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
+                                <% } else if (stU === 'PENDING_PAYMENT') { %>
                                     <span class="badge-soft badge-pending">⏳ Pendiente</span>
-                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                <% } else if (stU === 'PAY_AT_BOARDING') { %>
                                     <span class="badge-soft"
                                           style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
                                         💵 Pagar en taquilla
@@ -422,7 +450,8 @@
 
                             <td class="text-end">
                                 <div class="actions">
-                                    <% if (!r.ticket_code && r.status !== 'CANCELLED') { %>
+
+                                    <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
                                         <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
                                             <input type="hidden" name="method" value="CASH">
                                             <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
@@ -439,11 +468,38 @@
                                         <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf" target="_blank" rel="noopener">📄 Ticket</a>
                                     <% } %>
 
-                                    <% if (r.status !== 'CANCELLED') { %>
+                                    <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
+                                    <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
+
+                                        <!-- 1) Cancelar (con confirmación) -->
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
+                                              onsubmit="return confirm('¿Cancelar esta reserva? Esto la marcará como CANCELLED y libera cupo. Después reembolsa en Stripe.')">
+                                            <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
+                                            </button>
+                                        </form>
+
+                                        <!-- 2) Reembolsar (Stripe) -->
+                                        <a class="btn btn-outline-danger btn-xs"
+                                           href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                           target="_blank" rel="noopener">
+                                            ↩️ Reembolsar (Stripe)
+                                        </a>
+
+                                        <!-- 3) Ya reembolsé (con confirmación) -->
+                                        <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                              class="m-0"
+                                              onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto registrará el reembolso como completado.')">
+                                            <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé</button>
+                                        </form>
+
+                                    <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
+
+                                        <!-- No pagado => cancelar normal -->
                                         <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
                                               onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
                                             <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar</button>
                                         </form>
+
                                     <% } %>
                                 </div>
                             </td>
@@ -451,10 +507,9 @@
 
                         <!-- =========================
                              MOBILE ROW (card)
-                             1 solo TD (colspan=7)
                         ========================== -->
                         <tr class="tr-mobile">
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="m-card">
                                     <div class="m-row-top">
                                         <div>
@@ -464,14 +519,14 @@
                                             </div>
                                         </div>
 
-                                        <div>
-                                            <% if (r.status === 'PAID') { %>
+                                        <div style="text-align:right;">
+                                            <% if (stU === 'PAID') { %>
                                                 <span class="badge-soft badge-paid">✅ Pagado</span>
-                                            <% } else if (r.status === 'CANCELLED') { %>
+                                            <% } else if (stU === 'CANCELLED') { %>
                                                 <span class="badge-soft badge-cancel">⛔ Cancelado</span>
-                                            <% } else if (r.status === 'PENDING_PAYMENT') { %>
+                                            <% } else if (stU === 'PENDING_PAYMENT') { %>
                                                 <span class="badge-soft badge-pending">⏳ Pendiente</span>
-                                            <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                            <% } else if (stU === 'PAY_AT_BOARDING') { %>
                                                 <span class="badge-soft"
                                                       style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
                                                     💵 Taquilla
@@ -481,6 +536,13 @@
                                                     <%= r.status %>
                                                 </span>
                                             <% } %>
+
+                                            <div class="mt-2">
+                                                <span class="badge-soft"
+                                                      style="background: rgba(148,163,184,.12); color: var(--text);">
+                                                    <%= pmLabelOf(r.payment_method) %>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -516,7 +578,7 @@
                                     <div class="m-divider"></div>
 
                                     <div class="actions">
-                                        <% if (!r.ticket_code && r.status !== 'CANCELLED') { %>
+                                        <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
                                             <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
                                                 <input type="hidden" name="method" value="CASH">
                                                 <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
@@ -533,11 +595,39 @@
                                             <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf" target="_blank" rel="noopener">📄 PDF</a>
                                         <% } %>
 
-                                        <% if (r.status !== 'CANCELLED') { %>
+                                        <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
+                                        <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
+
+                                            <!-- 1) Cancelar -->
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('¿Cancelar esta reserva? Esto la marcará como CANCELLED y libera cupo. Después reembolsa en Stripe.')">
+                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
+                                                </button>
+                                            </form>
+
+                                            <!-- 2) Stripe -->
+                                            <a class="btn btn-outline-danger btn-xs"
+                                               href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                               target="_blank" rel="noopener">
+                                                ↩️ Reembolsar (Stripe)
+                                            </a>
+
+                                            <!-- 3) Ya reembolsé -->
+                                            <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                                  class="m-0"
+                                                  onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto registrará el reembolso como completado.')">
+                                                <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
+                                                </button>
+                                            </form>
+
+                                        <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
+
                                             <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
                                                   onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
                                                 <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar</button>
                                             </form>
+
                                         <% } %>
                                     </div>
                                 </div>
