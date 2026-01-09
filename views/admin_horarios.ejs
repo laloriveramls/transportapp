@@ -1,9 +1,11 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
-    <title>Admin horarios</title>
+    <%- include('partials/head', {
+    title: 'Admin horarios',
+    description: 'Panel para administrar horarios y salidas.',
+    noindex: true
+    }) %>
 
     <style>
         .page-title{ letter-spacing:-.02em; font-weight:650; margin:0; }

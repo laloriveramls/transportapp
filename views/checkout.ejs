@@ -1,10 +1,15 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
+    <%- include('partials/head', {
+    title: 'Pago en línea | Servicio de Transporte',
+    description: 'Completa tu pago en línea de forma segura con Stripe.',
+    canonicalUrl: 'https://serviciodetransportevic.com/checkout',
+    noindex: true
+    }) %>
+
+    <!-- Stripe (must be in <head> or before use) -->
     <script src="https://js.stripe.com/v3/"></script>
-    <title>Pago en línea</title>
 
     <style>
         /* =========================

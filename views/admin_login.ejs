@@ -1,11 +1,15 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
-    <title>TransportApp · Admin</title>
+    <%- include('partials/head', {
+    title: 'TransportApp · Admin',
+    description: 'Acceso al panel de administración.',
+    noindex: true
+    }) %>
+</head>
 
-    <style>
+
+<style>
         /* Fondo con blur (glass) */
         .bg-blur-wrap{
             min-height: 100vh;

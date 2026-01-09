@@ -1,9 +1,12 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
-    <title>Salida</title>
+    <%- include('partials/head', {
+    title: 'Salida',
+    description: 'Administración de salida (reservas y cupo).',
+    canonicalUrl: 'https://serviciodetransportevic.com/admin/trip',
+    noindex: true
+    }) %>
 
     <style>
         .page-title{ letter-spacing:-.02em; font-weight:800; margin:0; }

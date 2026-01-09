@@ -1,11 +1,16 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
-    <title>Reserva creada</title>
+    <%- include('partials/head', {
+    title: 'Reserva creada | Servicio de Transporte',
+    description: 'Confirmación de reserva y folio. Envía tu folio por WhatsApp para confirmar rápidamente.',
+    canonicalUrl: 'https://serviciodetransportevic.com/pay',
+    noindex: true
+    }) %>
 
     <style>
+        /* I keep the screen UI clean and modern, and I avoid heavy bold usage. */
+
         .card-soft{
             background: var(--card);
             border: 1px solid var(--border);
@@ -26,64 +31,83 @@
 
         .title{
             letter-spacing: -.02em;
-            font-weight: 750;
+            font-weight: 700;
             margin: 0;
         }
 
-        .meta{ color: var(--muted); font-size: .95rem; }
+        .meta {
+            color: var(--muted);
+            font-size: .95rem;
+            font-weight: 500;
+        }
+
+        .pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
         .pill{
             display:inline-flex; align-items:center; gap:.5rem;
-            padding:.45rem .75rem; border-radius:999px;
+            padding: .44rem .72rem;
+            border-radius: 999px;
             border:1px solid var(--border);
             background: var(--chip-bg);
             color: var(--chip-text);
-            font-weight:650; font-size:.9rem;
+            font-weight: 600;
+            font-size: .9rem;
             white-space:nowrap;
         }
 
-        .folio-wrap{
+        /* I use light status variants. */
+        .pill--ok {
+            background: color-mix(in srgb, var(--wine) 10%, transparent);
+            border-color: color-mix(in srgb, var(--wine) 25%, var(--border));
+        }
+
+        .pill--warn {
+            background: color-mix(in srgb, #f59e0b 14%, transparent);
+            border-color: color-mix(in srgb, #f59e0b 28%, var(--border));
+            color: color-mix(in srgb, #b45309 70%, var(--text));
+        }
+
+        .pill--bad {
+            background: color-mix(in srgb, #ef4444 12%, transparent);
+            border-color: color-mix(in srgb, #ef4444 28%, var(--border));
+            color: color-mix(in srgb, #991b1b 70%, var(--text));
+        }
+
+        .header-row {
             display:flex;
-            align-items:stretch;
-            gap:10px;
-            flex-wrap:wrap;
-            margin-top:10px;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
-        .folio-box{
-            flex: 1 1 320px;
-            border:1px solid color-mix(in srgb, var(--wine) 28%, var(--border));
-            background: color-mix(in srgb, var(--wine) 8%, var(--card));
-            border-radius: 16px;
-            padding: 12px 14px;
-            min-width: 240px;
-        }
-
-        .folio-label{
-            color: var(--muted);
-            font-size: .92rem;
-            margin-bottom: 4px;
-        }
-
-        .mono{
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-            font-size: 1rem;
-            font-weight: 800;
-            letter-spacing: .02em;
-            color: var(--text);
-            word-break: break-word;
+        .header-left {
+            min-width: 260px;
         }
 
         .btn-xs{
             padding:.55rem .85rem;
             border-radius:14px;
-            font-weight:700;
+            font-weight: 650;
             font-size:.95rem;
             display:inline-flex;
             align-items:center;
             gap:.45rem;
             line-height:1.1;
             white-space:nowrap;
+        }
+
+        .btn-group-top {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: flex-end;
         }
 
         .btn-ghost{
@@ -97,7 +121,7 @@
             color: var(--text);
         }
 
-        /* ✅ Solid "wine" button (so it works even if theme.css doesn't have it) */
+        /* I keep a solid wine button so it works even if theme.css doesn't have it. */
         .btn-wine {
             border: 1px solid color-mix(in srgb, var(--wine) 55%, var(--border));
             background: var(--wine);
@@ -131,12 +155,84 @@
             color:var(--text);
         }
 
-        .btn-group-top{
+        .folio-wrap {
             display:flex;
+            align-items: stretch;
             gap:10px;
             flex-wrap:wrap;
-            align-items:flex-start;
-            justify-content:flex-end;
+            margin-top: 12px;
+        }
+
+        .folio-box {
+            flex: 1 1 320px;
+            border: 1px solid color-mix(in srgb, var(--wine) 28%, var(--border));
+            background: color-mix(in srgb, var(--wine) 8%, var(--card));
+            border-radius: 16px;
+            padding: 12px 14px;
+            min-width: 240px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .folio-left {
+            min-width: 0;
+        }
+
+        .folio-label {
+            color: var(--muted);
+            font-size: .92rem;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 1rem;
+            font-weight: 750;
+            letter-spacing: .02em;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .copy-toast {
+            display: none;
+            font-size: .9rem;
+            color: color-mix(in srgb, var(--wine) 78%, var(--text));
+            font-weight: 600;
+        }
+
+        /* Summary cards */
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .note {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 82%, transparent);
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .note-strong {
+            border: 1px solid color-mix(in srgb, var(--wine) 35%, var(--border));
+            background: color-mix(in srgb, var(--wine) 6%, var(--card));
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: var(--text);
+        }
+
+        .bottom-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         /* Key/Value */
@@ -149,7 +245,7 @@
         .kv li{
             display:flex;
             gap:12px;
-            padding:.7rem .8rem;
+            padding: .72rem .85rem;
             border:1px solid var(--border);
             border-radius:14px;
             background: color-mix(in srgb, var(--card) 86%, transparent);
@@ -157,38 +253,25 @@
         }
         .kv .k{
             color: var(--muted);
-            font-weight:650;
+            font-weight: 550;
             font-size:.92rem;
             min-width: 120px;
         }
         .kv .v{
             color: var(--text);
-            font-weight:650;
+            font-weight: 600;
             text-align:right;
             flex:1;
             word-break: break-word;
         }
 
-        .note{
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 82%, transparent);
-            border-radius: 16px;
-            padding: 12px 14px;
-            color: var(--muted);
-        }
-
-        .note-strong{
-            border:1px solid color-mix(in srgb, var(--wine) 35%, var(--border));
-            background: color-mix(in srgb, var(--wine) 6%, var(--card));
-            border-radius: 16px;
-            padding: 12px 14px;
-            color: var(--text);
-        }
-
-        .bottom-actions{
+        /* Small helper row */
+        .sub-actions {
             display:flex;
-            gap:10px;
-            flex-wrap:wrap;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 10px;
         }
 
         @media (max-width: 576px){
@@ -196,7 +279,6 @@
             .body{ padding: 14px; }
 
             .title{ font-size: 1.35rem; }
-            .meta{ font-size: .92rem; }
 
             .btn-group-top{
                 width:100%;
@@ -209,13 +291,17 @@
                 border-radius: 16px;
             }
 
-            .folio-box{ flex: 1 1 100%; }
-            .folio-wrap{ gap:10px; }
+            .folio-box {
+                flex: 1 1 100%;
+                align-items: flex-start;
+                flex-direction: column;
+            }
 
             .kv{ grid-template-columns: 1fr; }
-            .kv li{
-                flex-direction:column;
-                gap:6px;
+
+            .kv li {
+                flex-direction: column;
+                gap: 6px;
             }
             .kv .k{ min-width: 0; }
             .kv .v{ text-align:left; }
@@ -253,7 +339,7 @@
     const isPendingOnline = isOnline && (status === "PENDING_PAYMENT" || !status);
     const isPaid = status === "PAID";
 
-    // ✅ comes from transporte_tickets (passed by backend)
+    // I read the ticket code coming from transporte_tickets (passed by backend).
     const tkCode = (ticketCode || "").trim();
     const hasTicket = !!tkCode;
 
@@ -267,7 +353,7 @@
 
     function fmtMXN(n){
         const v = Number(n || 0);
-        return `$${v.toFixed(2)} MXN`;
+        return v.toLocaleString("es-MX", {style: "currency", currency: "MXN"});
     }
 
     function typeLabel(){
@@ -286,7 +372,15 @@
         if (status === "PAY_AT_BOARDING") return "Pago en taquilla";
         if (status === "PENDING_PAYMENT") return "Pendiente de pago";
         if (status === "PAID") return "Pagado";
+        if (status === "CANCELLED") return "Cancelado";
         return status;
+    }
+
+    function statusClass() {
+        if (status === "PAID") return "pill--ok";
+        if (status === "CANCELLED") return "pill--bad";
+        if (status === "PENDING_PAYMENT" || status === "PAY_AT_BOARDING" || !status) return "pill--warn";
+        return "";
     }
 
     function noteText(){
@@ -306,11 +400,16 @@
 
     <div class="card-soft">
         <div class="top">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <div class="pill">✅ Reserva creada</div>
+            <div class="header-row">
+                <div class="header-left">
+                    <div class="pills">
+                        <div class="pill <%= statusClass() %>">✅ Reserva creada</div>
+                        <div class="pill">🧾 <%= statusText() %></div>
+                        <div class="pill">💳 <%= paymentLabel() %></div>
+                    </div>
+
                     <h1 class="h3 title mt-2">Listo</h1>
-                    <div class="meta mt-1">Guarda tu folio y envíalo por WhatsApp si necesitas confirmar rápido.</div>
+                    <div class="meta mt-1">Guarda tu folio. Si necesitas confirmar rápido, envíalo por WhatsApp.</div>
                 </div>
 
                 <div class="btn-group-top">
@@ -323,51 +422,62 @@
                         </a>
                     <% } %>
 
-                    <button type="button" class="btn btn-ghost btn-xs" id="copyBtn">📋 Copiar folio</button>
-                    <a class="btn btn-wa btn-xs" id="waBtn" target="_blank" href="#">💬 Enviar por WhatsApp</a>
+                        <button type="button" class="btn btn-ghost btn-xs" id="shareBtn">📤 Compartir</button>
+                        <a class="btn btn-wa btn-xs" id="waBtn" target="_blank" href="#">💬 WhatsApp</a>
                 </div>
             </div>
 
             <div class="folio-wrap">
                 <div class="folio-box">
-                    <div class="folio-label">Tu folio</div>
-                    <div class="mono" id="folioText"><%= folio %></div>
+                    <div class="folio-left">
+                        <div class="folio-label">Tu folio</div>
+                        <div class="mono" id="folioText"><%= folio %></div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                        <button type="button" class="btn btn-ghost btn-xs" id="copyBtn">📋 Copiar</button>
+                        <span class="copy-toast" id="copyToast">Copiado ✓</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="body">
 
-            <% if (isPendingOnline) { %>
-                <div class="note-strong mb-3">
-                    <div class="fw-semibold">💳 Pago en línea pendiente</div>
-                    <div class="mt-1" style="color: var(--muted);">
-                        Total a pagar:
-                        <span class="fw-semibold" style="color: var(--text);"><%= fmtMXN(total) %></span>
-                    </div>
+            <div class="summary">
+                <% if (isPendingOnline) { %>
+                    <div class="note-strong">
+                        <div class="fw-semibold">💳 Pago en línea pendiente</div>
+                        <div class="mt-1" style="color: var(--muted);">
+                            Total a pagar:
+                            <span class="fw-semibold" style="color: var(--text);"><%= fmtMXN(total) %></span>
+                        </div>
 
-                    <div class="mt-3 bottom-actions">
-                        <a class="btn btn-wine btn-xs" href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">Pagar
-                            ahora</a>
-                        <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn">🔄 Actualizar estado
-                        </button>
-                        <a class="btn btn-ghost btn-xs" href="/reserve">Nueva reserva</a>
+                        <div class="sub-actions">
+                            <a class="btn btn-wine btn-xs"
+                               href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">
+                                🔒 Pagar ahora
+                            </a>
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn">🔄 Actualizar
+                            </button>
+                            <a class="btn btn-ghost btn-xs" href="/reserve">➕ Nueva reserva</a>
+                        </div>
                     </div>
-                </div>
-            <% } %>
+                <% } %>
 
-            <% if (isPaid && !hasTicket) { %>
-                <div class="note-strong mb-3">
-                    <div class="fw-semibold">✅ Pago confirmado</div>
-                    <div class="mt-1" style="color: var(--muted);">
-                        Estamos generando tu ticket… Si no aparece todavía, presiona <strong>Actualizar estado</strong>.
+                <% if (isPaid && !hasTicket) { %>
+                    <div class="note-strong">
+                        <div class="fw-semibold">✅ Pago confirmado</div>
+                        <div class="mt-1" style="color: var(--muted);">
+                            Estamos generando tu ticket. Si no aparece todavía, presiona <strong>Actualizar</strong>.
+                        </div>
+                        <div class="sub-actions">
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2">🔄 Actualizar
+                            </button>
+                        </div>
                     </div>
-                    <div class="mt-3 bottom-actions">
-                        <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2">🔄 Actualizar estado
-                        </button>
-                    </div>
-                </div>
-            <% } %>
+                <% } %>
+            </div>
 
             <ul class="kv mb-3">
                 <li><span class="k">Tipo</span><span class="v"><%= typeLabel() %></span></li>
@@ -383,15 +493,19 @@
                 <li><span class="k">Ruta</span><span class="v"><%= r.direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria" %></span></li>
                 <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
                 <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
+
                 <li><span class="k">Contacto</span><span class="v"><%= r.customer_name %></span></li>
                 <li><span class="k">Teléfono</span><span class="v" id="phoneText"><%= r.phone %></span></li>
+
                 <li><span class="k">Método de pago</span><span class="v"><%= paymentLabel() %></span></li>
 
                 <% if (payment === "TRANSFERENCIA" && r.transfer_ref) { %>
                     <li><span class="k">Referencia</span><span class="v"><%= r.transfer_ref %></span></li>
                 <% } %>
 
-                <li><span class="k">Total a pagar</span><span class="v"><%= fmtMXN(total) %></span></li>
+                <li><span class="k">Precio</span><span class="v"><%= fmtMXN(unit) %></span></li>
+                <li><span class="k">Total</span><span class="v"><%= fmtMXN(total) %></span></li>
+
                 <li><span class="k">Estado</span><span class="v"><%= statusText() %></span></li>
 
                 <% if (isPaid && hasTicket) { %>
@@ -432,7 +546,6 @@
         transfer_ref: r.transfer_ref || null,
         status: r.status || "",
 
-        // ✅ ticket code comes from transporte_tickets
         ticket_code: (ticketCode || ""),
 
         unit_price_mxn: r.unit_price_mxn || 120,
@@ -441,8 +554,11 @@
 </script>
 
 <script>
+    // I build a friendly WhatsApp message with the reservation details.
     const copyBtn = document.getElementById("copyBtn");
+    const copyToast = document.getElementById("copyToast");
     const waBtn = document.getElementById("waBtn");
+    const shareBtn = document.getElementById("shareBtn");
 
     const adminWa = "8344756376";
 
@@ -481,12 +597,13 @@
         if (x === "PAY_AT_BOARDING") return "Pago en taquilla";
         if (x === "PENDING_PAYMENT") return "Pendiente de pago";
         if (x === "PAID") return "Pagado";
+        if (x === "CANCELLED") return "Cancelado";
         return x;
     }
 
     function formatMXN(n){
         const v = Number(n || 0);
-        return `$${v.toFixed(2)} MXN`;
+        return v.toLocaleString("es-MX", {style: "currency", currency: "MXN"});
     }
 
     const typeLabel = niceType(data.type);
@@ -538,16 +655,30 @@
     } else {
         waBtn.classList.add("disabled");
         waBtn.setAttribute("aria-disabled","true");
+        waBtn.href = "#";
     }
 
     copyBtn?.addEventListener("click", async () => {
         try{
             await navigator.clipboard.writeText(String(data.folio || ""));
-            const old = copyBtn.textContent;
-            copyBtn.textContent = "✅ Copiado";
-            setTimeout(() => copyBtn.textContent = old, 1200);
+            copyToast.style.display = "inline";
+            clearTimeout(window.__copyToastTimer);
+            window.__copyToastTimer = setTimeout(() => copyToast.style.display = "none", 1200);
         } catch {
             alert("No pude copiar. Selecciona el folio manualmente.");
+        }
+    });
+
+    // I use Web Share API when available for a better mobile experience.
+    shareBtn?.addEventListener("click", async () => {
+        const text = `Reserva ${data.folio || ""} • ${niceRoute(data.direction)} • ${data.trip_date || ""} ${data.depart_time || ""}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({title: "Reserva", text});
+            } catch {
+            }
+        } else {
+            alert("Tu navegador no soporta compartir. Usa WhatsApp o copia el folio.");
         }
     });
 

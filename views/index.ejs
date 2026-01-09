@@ -1,31 +1,11 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <title>TransportApp</title>
-
-    <meta property="og:locale" content="es_MX"/>
-    <meta property="og:type" content="website"/>
-    <meta property="og:site_name" content="Servicio de transporte"/>
-
-    <meta property="og:title" content="Servicio de Transporte | Victoria ↔ Llera"/>
-    <meta property="og:description"
-          content="Horarios, reservas y ubicación de salidas. 6 pasajeros · Servicios de paquetería"/>
-
-    <meta property="og:url" content="https://serviciodetransportevic.com/"/>
-    <meta property="og:image" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
-    <meta property="og:image:secure_url" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
-    <meta property="og:image:width" content="1200"/>
-    <meta property="og:image:height" content="630"/>
-    <meta property="og:image:alt" content="Servicio de transporte Victoria ↔ Llera"/>
-
-    <link rel="canonical" href="https://serviciodetransportevic.com/"/>
-    <link href="/css/theme.css" rel="stylesheet">
-
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="Servicio de Transporte | Victoria ↔ Llera"/>
-    <meta name="twitter:description" content="Horarios, reservas y ubicación de salidas."/>
-    <meta name="twitter:image" content="https://serviciodetransportevic.com/assets/og-transportapp.png"/>
+    <%- include('partials/head', {
+    title: 'Servicio de Transporte | Victoria ↔ Llera',
+    description: 'Horarios, reservas y ubicación de salidas. 6 pasajeros · Servicios de paquetería',
+    canonicalUrl: 'https://serviciodetransportevic.com/'
+    }) %>
 
     <style>
         .hero-min {

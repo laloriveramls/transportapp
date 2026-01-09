@@ -1,33 +1,199 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-    <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
-    <title><%= title || "Mantenimiento" %></title>
+    <%- include('partials/head', {
+    title: (title || "Mantenimiento") + " | Servicio de Transporte",
+    description: "Estamos preparando el sitio. Vuelve a intentarlo en unos minutos.",
+    noindex: true
+    }) %>
 
     <style>
-        body{
-            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-            padding:40px;
-            max-width:720px;
-            margin:auto;
+        /* I keep the maintenance page clean, centered, and readable in both light/dark themes. */
+
+        .maint-wrap {
+            min-height: calc(100dvh - 64px);
+            display: grid;
+            place-items: center;
+            padding: 22px 12px;
         }
-        .box{
-            border:1px solid var(--border, #ddd);
-            border-radius:14px;
-            padding:24px;
-            background: var(--card, #fff);
-            box-shadow: var(--shadow, none);
+
+        .maint-card {
+            width: min(820px, 100%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 22px;
+            overflow: hidden;
         }
-        h1{margin:0 0 10px;}
-        p{margin:0; color: var(--muted, #555);}
+
+        .maint-top {
+            padding: 18px 18px 14px;
+            background: radial-gradient(1000px 520px at 10% 0%, rgba(106, 15, 31, .20), transparent 55%),
+            radial-gradient(800px 420px at 90% 10%, rgba(106, 15, 31, .10), transparent 60%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .maint-body {
+            padding: 18px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .44rem .72rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            font-weight: 600;
+            font-size: .9rem;
+            white-space: nowrap;
+        }
+
+        .title {
+            margin: 10px 0 0;
+            letter-spacing: -.02em;
+            font-weight: 750;
+        }
+
+        .sub {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: .98rem;
+            line-height: 1.45;
+            max-width: 70ch;
+        }
+
+        .tips {
+            margin-top: 14px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .tip {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            padding: 12px 14px;
+            color: var(--muted);
+            font-size: .94rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .btn-soft {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: var(--text);
+            padding: .62rem .95rem;
+            border-radius: 14px;
+            font-weight: 650;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            white-space: nowrap;
+        }
+
+        .btn-soft:hover {
+            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
+            background: color-mix(in srgb, var(--card) 78%, transparent);
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .btn-wine {
+            border: 1px solid color-mix(in srgb, var(--wine) 55%, var(--border));
+            background: var(--wine);
+            color: #fff;
+            padding: .62rem .95rem;
+            border-radius: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            white-space: nowrap;
+        }
+
+        .btn-wine:hover {
+            background: color-mix(in srgb, var(--wine) 92%, #000 8%);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .tiny {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        @media (max-width: 576px) {
+            .maint-top {
+                padding: 14px 14px 12px;
+            }
+
+            .maint-body {
+                padding: 14px;
+            }
+
+            .actions a {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
+
 <body>
-<div class="box">
-    <h1><%= title || "Mantenimiento" %></h1>
-    <p><%= message || "Estamos preparando el sitio." %></p>
-</div>
+<nav class="navbar navbar-dark app-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="Inicio">
+            <span class="brand-dot" aria-hidden="true"></span>
+            <span class="fw-bold">TransportApp</span>
+        </a>
+
+        <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+            <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+        </button>
+    </div>
+</nav>
+
+<main class="maint-wrap">
+    <section class="maint-card" role="status" aria-live="polite">
+        <header class="maint-top">
+            <div class="pill">🛠️ Modo mantenimiento</div>
+            <h1 class="h3 title"><%= title || "Mantenimiento" %></h1>
+            <p class="sub"><%= message || "Estamos preparando el sitio. Intenta de nuevo en unos minutos." %></p>
+        </header>
+
+        <div class="maint-body">
+            <div class="tips">
+                <div class="tip">Si estabas por pagar o reservar, no te preocupes: puedes volver a intentarlo cuando el
+                    sitio esté listo.
+                </div>
+                <div class="tip">Si necesitas ayuda urgente, contáctanos por WhatsApp.</div>
+            </div>
+
+            <div class="actions">
+                <a class="btn-wine" href="/" aria-label="Volver al inicio">🏠 Volver al inicio</a>
+                <a class="btn-soft" href="javascript:location.reload()" aria-label="Recargar página">🔄 Reintentar</a>
+                <a class="btn-soft" target="_blank"
+                   href="https://wa.me/528344756376?text=<%= encodeURIComponent('Hola, el sitio está en mantenimiento. ¿Me pueden apoyar?') %>">
+                    💬 WhatsApp
+                </a>
+            </div>
+
+            <div class="tiny">Gracias por tu paciencia.</div>
+        </div>
+    </section>
+</main>
 
 <script src="/js/theme.js"></script>
 </body>
