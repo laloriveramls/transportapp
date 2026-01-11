@@ -1,25 +1,88 @@
 "use strict";
 
+/* =========================
+   Imports / Setup
+   ========================= */
+
 const express = require("express");
-const {pool, hasDb} = require("../db");
+const crypto = require("crypto");
 const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 const Stripe = require("stripe");
+
+const {pool, hasDb} = require("../db");
+const {sendTelegram, escapeHtml} = require("../notifications/telegram");
+
+const router = express.Router();
 
 const stripe = process.env.STRIPE_SECRET_KEY
     ? new Stripe(process.env.STRIPE_SECRET_KEY)
     : null;
 
-const router = express.Router();
+/* =========================
+   Constants
+   ========================= */
+
+// I keep a strict cap (also clamped by template capacity in DB).
+const MAX_CAP = 6;
 
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
 
-const crypto = require("crypto");
+/* =========================
+   Middleware / wrappers
+   ========================= */
+
+function requireDb(req, res, next) {
+    if (hasDb) return next();
+    return res.status(503).render("maintenance", {
+        title: "Sitio en configuración",
+        message:
+            "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
+    });
+}
+
+function safe(handler) {
+    return async (req, res, next) => {
+        try {
+            await handler(req, res, next);
+        } catch (e) {
+            console.error(e);
+            if (res.headersSent) return next(e);
+            return res.status(500).render("maintenance", {
+                title: "Error",
+                message: "Ocurrió un error temporal. Intenta más tarde.",
+            });
+        }
+    };
+}
+
+/* =========================
+   Basic helpers
+   ========================= */
+
+function directionLabel(direction) {
+    return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
+}
+
+// I compute folio from reservation id + trip date (no DB column needed).
+function folioFromReservationId(id, dateStr) {
+    const ymd = String(dateStr || "").replaceAll("-", "");
+    return `RES-${ymd}-${String(id ?? "")}`;
+}
+
+function moneyMXN(n) {
+    const v = Number(n || 0);
+    return Math.round(v * 100) / 100;
+}
 
 function makePublicToken() {
     return crypto.randomBytes(24).toString("base64url"); // Node 20 OK
 }
+
+/* =========================
+   Public token (backfill for legacy)
+   ========================= */
 
 async function ensurePublicTokenByReservationId(reservationId) {
     reservationId = Number(reservationId);
@@ -58,9 +121,10 @@ async function ensurePublicTokenByReservationId(reservationId) {
                  LIMIT 1`,
                 [reservationId]
             );
+
             const finalTok = String(again?.public_token || "").trim();
             if (finalTok) return finalTok;
-        } catch (e) {
+        } catch {
             // ignore and retry
         }
     }
@@ -73,47 +137,14 @@ async function ensurePublicTokenByReservationId(reservationId) {
          LIMIT 1`,
         [reservationId]
     );
+
     return String(finalRow?.public_token || "").trim() || null;
 }
 
+/* =========================
+   Tickets helpers
+   ========================= */
 
-// ✅ System max cap
-const MAX_CAP = 6;
-
-function requireDb(req, res, next) {
-    if (hasDb) return next();
-    return res.status(503).render("maintenance", {
-        title: "Sitio en configuración",
-        message: "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
-    });
-}
-
-function safe(handler) {
-    return async (req, res, next) => {
-        try {
-            await handler(req, res, next);
-        } catch (e) {
-            console.error(e);
-            if (res.headersSent) return next(e);
-            return res.status(500).render("maintenance", {
-                title: "Error",
-                message: "Ocurrió un error temporal. Intenta más tarde.",
-            });
-        }
-    };
-}
-
-function directionLabel(direction) {
-    return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
-}
-
-// ✅ Folio SIN ceros a la izquierda
-function folioFromReservationId(id, dateStr) {
-    const ymd = String(dateStr || "").replaceAll("-", "");
-    return `RES-${ymd}-${String(id ?? "")}`;
-}
-
-// ✅ Get ticket code from transporte_tickets by reservation id
 async function getTicketCodeByReservationId(reservationId) {
     const [[tk]] = await pool.query(
         `SELECT code
@@ -126,16 +157,14 @@ async function getTicketCodeByReservationId(reservationId) {
     return tk?.code ? String(tk.code) : "";
 }
 
-// ✅ Ensure a ticket exists (safe to call multiple times)
-//    Requires a UNIQUE KEY on transporte_tickets.reservation_id (recommended).
+// I ensure a ticket exists (safe to call multiple times).
+// Requires UNIQUE KEY on transporte_tickets.reservation_id (recommended).
 async function ensureTicketForReservation(reservationId) {
     reservationId = Number(reservationId);
 
-    // If it already exists, return it.
     const existing = await getTicketCodeByReservationId(reservationId);
     if (existing) return existing;
 
-    // Create new code (short + unique enough)
     const code = crypto.randomBytes(5).toString("hex").toUpperCase(); // 10 chars
 
     try {
@@ -145,20 +174,44 @@ async function ensureTicketForReservation(reservationId) {
             [reservationId, code]
         );
         return code;
-    } catch (e) {
-        // If race condition (two inserts), just read again
+    } catch {
+        // If race condition (two inserts), I read again.
         return await getTicketCodeByReservationId(reservationId);
     }
 }
 
-function moneyMXN(n) {
-    const v = Number(n || 0);
-    return Math.round(v * 100) / 100;
+/* =========================
+   WhatsApp helpers
+   ========================= */
+
+function normalizePhoneMX(raw) {
+    // I keep only digits.
+    const digits = String(raw || "").replace(/\D+/g, "");
+
+    // If it already includes country code (52) and looks like 12+ digits, keep it.
+    if (digits.startsWith("52") && digits.length >= 12) return digits;
+
+    // If it's a 10-digit MX number, prepend 52.
+    if (digits.length === 10) return "52" + digits;
+
+    // Otherwise, return whatever digits exist (best effort).
+    return digits;
 }
 
-/* -----------------------------
+function waLinkFromPhone(
+    rawPhone,
+    defaultText = "Hola, te contacto por tu reserva en TransportApp"
+) {
+    const wa = normalizePhoneMX(rawPhone);
+    if (!wa) return null;
+
+    const text = encodeURIComponent(String(defaultText || ""));
+    return `https://wa.me/${wa}?text=${text}`;
+}
+
+/* =========================
    Pricing (DB source of truth)
------------------------------ */
+   ========================= */
 
 async function getPricing(conn) {
     // I read pricing from transporte_settings (id=1). If missing, I fallback to 120.
@@ -168,6 +221,7 @@ async function getPricing(conn) {
              FROM transporte_settings
              WHERE id = 1`
         );
+
         const passenger = Number(row?.passenger_price_mxn ?? 120);
         const pkg = Number(row?.package_price_mxn ?? 120);
 
@@ -194,15 +248,16 @@ function computeTotalsWithPricing(type, seats, pricing) {
     return {unit_price_mxn: unit, amount_total_mxn: total};
 }
 
-/* -----------------------------
+/* =========================
    Trips helpers
------------------------------ */
+   ========================= */
 
 async function getOrCreateTrip(conn, templateId, tripDate) {
     const [rows] = await conn.query(
         "SELECT id, status FROM transporte_trips WHERE template_id=? AND trip_date=?",
         [templateId, tripDate]
     );
+
     if (rows.length) return {id: rows[0].id, status: rows[0].status || "OPEN"};
 
     try {
@@ -253,45 +308,10 @@ async function computeAvailable(conn, tripId) {
     return Number(row?.available ?? 0);
 }
 
-/**
- * Home
- */
-router.get(
-    "/",
-    requireDb,
-    safe(async (req, res) => {
-        const [templates] = await pool.query(`
-            SELECT direction, depart_time
-            FROM transporte_departure_templates
-            WHERE active = 1
-            ORDER BY depart_time
-        `);
+/* =========================
+   Time helpers (Monterrey)
+   ========================= */
 
-        res.render("index", {templates});
-    })
-);
-
-/**
- * Pantalla de reservar
- */
-router.get(
-    "/reserve",
-    requireDb,
-    safe(async (req, res) => {
-        // I pass pricing to the UI so it can show correct totals.
-        const conn = await pool.getConnection();
-        try {
-            const pricing = await getPricing(conn);
-            res.render("reserve", {error: null, pricing});
-        } finally {
-            conn.release();
-        }
-    })
-);
-
-/**
- * Availability por fecha/ruta (oculta horarios pasados)
- */
 function todayISO_MTY() {
     return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"}); // YYYY-MM-DD
 }
@@ -334,6 +354,70 @@ function toHHMM_24(t) {
     return s; // fallback
 }
 
+/* =========================
+   Telegram helpers (inline button safety)
+   ========================= */
+
+function isPublicHttpsUrl(u) {
+    try {
+        const url = new URL(u);
+
+        // Telegram inline buttons: I only allow public https URLs.
+        if (url.protocol !== "https:") return false;
+
+        const host = (url.hostname || "").toLowerCase();
+
+        // I block localhost and private networks.
+        if (host === "localhost") return false;
+        if (/^127\./.test(host)) return false;
+        if (/^10\./.test(host)) return false;
+        if (/^192\.168\./.test(host)) return false;
+        if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return false;
+
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function buildBaseUrl(req) {
+    return (process.env.BASE_URL || "").trim() || `${req.protocol}://${req.get("host")}`;
+}
+
+/* =========================
+   Routes: Home / Reserve / Availability
+   ========================= */
+
+router.get(
+    "/",
+    requireDb,
+    safe(async (req, res) => {
+        const [templates] = await pool.query(`
+            SELECT direction, depart_time
+            FROM transporte_departure_templates
+            WHERE active = 1
+            ORDER BY depart_time
+        `);
+
+        res.render("index", {templates});
+    })
+);
+
+router.get(
+    "/reserve",
+    requireDb,
+    safe(async (req, res) => {
+        // I pass pricing to the UI so it can show correct totals.
+        const conn = await pool.getConnection();
+        try {
+            const pricing = await getPricing(conn);
+            res.render("reserve", {error: null, pricing});
+        } finally {
+            conn.release();
+        }
+    })
+);
+
 router.get(
     "/availability",
     requireDb,
@@ -351,8 +435,6 @@ router.get(
         const today = todayISO_MTY();
         const nowHHMM = nowHHMM_MTY();
 
-        // si pidieron una fecha anterior, ya no muestro nada
-        // (YYYY-MM-DD compara bien como string)
         if (String(date) < today) {
             return res.json({date, direction, seatsWanted, results: []});
         }
@@ -397,10 +479,10 @@ router.get(
     })
 );
 
+/* =========================
+   Route: Create reservation (anti-sobreventa)
+   ========================= */
 
-/**
- * Crear reserva (anti-sobreventa)
- */
 router.post(
     "/reserve",
     requireDb,
@@ -440,8 +522,6 @@ router.post(
         if (type === "PASSENGER") {
             const wanted = Number(req.body.seats || 1);
             seats = Math.max(1, Math.min(MAX_CAP, wanted));
-        } else {
-            seats = 0;
         }
 
         let passengerNames = req.body.passenger_names || [];
@@ -455,7 +535,6 @@ router.post(
         const today = todayISO_MTY();
         const nowHHMM = nowHHMM_MTY();
 
-        // I keep comparisons safe by using YYYY-MM-DD and HH:MM (24h).
         if (!trip_date) {
             return res.status(400).render("reserve", {error: "Selecciona una fecha válida."});
         }
@@ -463,12 +542,10 @@ router.post(
             return res.status(400).render("reserve", {error: "Selecciona un horario disponible."});
         }
 
-        // If date is in the past, I reject.
         if (trip_date < today) {
             return res.status(400).render("reserve", {error: "No puedes reservar en fechas pasadas."});
         }
 
-        // If date is today, I reject times that already passed (or equal).
         if (trip_date === today) {
             const depHHMM = toHHMM_24(depart_time);
             if (depHHMM <= nowHHMM) {
@@ -556,6 +633,7 @@ router.post(
 
             let reservationId = null;
             let publicToken = null;
+            let folio = null;
 
             for (let i = 0; i < 5; i++) {
                 publicToken = makePublicToken();
@@ -568,15 +646,23 @@ router.post(
                                                              public_token)
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
-                            trip.id, type, seats, customer_name, phone,
+                            trip.id,
+                            type,
+                            seats,
+                            customer_name,
+                            phone,
                             type === "PACKAGE" ? package_details : null,
-                            payment_method, transfer_ref, status,
-                            unit_price_mxn, amount_total_mxn,
+                            payment_method,
+                            transfer_ref,
+                            status,
+                            unit_price_mxn,
+                            amount_total_mxn,
                             publicToken,
                         ]
                     );
 
                     reservationId = ins.insertId;
+                    folio = folioFromReservationId(reservationId, trip_date);
                     break;
                 } catch (e) {
                     if (String(e?.code) === "ER_DUP_ENTRY") continue;
@@ -599,6 +685,71 @@ router.post(
 
             await conn.commit();
 
+            // ✅ I notify the admin after commit (so I never notify on failed TX).
+            try {
+                const routeText = direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
+                const typeText = type === "PACKAGE" ? "Paquetería" : "Pasaje";
+
+                const payText =
+                    payment_method === "TAQUILLA"
+                        ? "Taquilla"
+                        : payment_method === "TRANSFERENCIA"
+                            ? "Transferencia"
+                            : payment_method === "ONLINE"
+                                ? "Pago en línea"
+                                : payment_method;
+
+                const totalText = Number(amount_total_mxn || 0).toLocaleString("es-MX", {
+                    style: "currency",
+                    currency: "MXN",
+                });
+
+                const baseUrl = buildBaseUrl(req);
+                const viewUrl = `${baseUrl}/pay/t/${encodeURIComponent(publicToken)}`;
+                const canUseButton = isPublicHttpsUrl(viewUrl);
+
+                const waUrl = waLinkFromPhone(
+                    phone,
+                    `Hola ${customer_name || ""}. Te contacto por tu reserva (${folio}).`
+                );
+
+                const telText = waUrl
+                    ? `<a href="${escapeHtml(waUrl)}">${escapeHtml(phone || "-")}</a>`
+                    : `<code>${escapeHtml(phone || "-")}</code>`;
+
+                const text = [
+                    "🆕 <b>Nueva reserva</b>",
+                    `Folio: <code>${escapeHtml(folio)}</code>`,
+                    `Tipo: ${escapeHtml(typeText)}${
+                        type === "PASSENGER"
+                            ? ` (${seats} pasajero${seats === 1 ? "" : "s"})`
+                            : ""
+                    }`,
+                    `Ruta: ${escapeHtml(routeText)}`,
+                    `Fecha: ${escapeHtml(trip_date)} ${escapeHtml(depart_time)}`,
+                    `Contacto: ${escapeHtml(customer_name || "-")}`,
+                    `Tel: ${telText}`, // ✅ WhatsApp link
+                    `Pago: ${escapeHtml(payText)}`,
+                    payment_method === "TRANSFERENCIA" && transfer_ref
+                        ? `Referencia: <code>${escapeHtml(transfer_ref)}</code>`
+                        : null,
+                    `Total: <b>${escapeHtml(totalText)}</b>`,
+                    type === "PACKAGE" ? `Detalles: ${escapeHtml(package_details || "-")}` : null,
+                    !canUseButton ? `Ver: ${escapeHtml(viewUrl)}` : null,
+                ]
+                    .filter(Boolean)
+                    .join("\n");
+
+                void sendTelegram({
+                    text,
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true,
+                    ...(canUseButton ? {buttons: [{text: "🔎 Abrir reserva", url: viewUrl}]} : {}),
+                });
+            } catch {
+            }
+
+            // Continue normal flow
             if (payment_method === "ONLINE") {
                 return res.redirect(`/checkout/t/${encodeURIComponent(publicToken)}`);
             }
@@ -624,10 +775,10 @@ router.post(
     })
 );
 
+/* =========================
+   Routes: Checkout + Pay
+   ========================= */
 
-/**
- * Checkout (ONLINE payment screen)
- */
 router.get(
     "/checkout/t/:token",
     requireDb,
@@ -671,7 +822,7 @@ router.get(
         if (!stripePublishableKey) {
             return res.status(503).render("maintenance", {
                 title: "Pago no disponible",
-                message: "Falta STRIPE_PUBLISHABLE_KEY."
+                message: "Falta STRIPE_PUBLISHABLE_KEY.",
             });
         }
 
@@ -681,16 +832,11 @@ router.get(
             total,
             directionLabel,
             stripePublishableKey,
-            // si quieres, pasa token para que JS lo use en create-session
             publicToken: token,
         });
     })
 );
 
-
-/**
- * Confirmación (pendiente de pago)
- */
 router.get(
     "/pay/t/:token",
     requireDb,
@@ -710,9 +856,8 @@ router.get(
         );
         if (!r) return res.status(404).send("Reserva no encontrada.");
 
-        // el resto igual que tu /pay/:reservationId
-        // usa r.id internamente cuando ocupes el id real
         let ticketCode = await getTicketCodeByReservationId(r.id);
+
         const pm = String(r.payment_method || "").toUpperCase();
         let st = String(r.status || "").toUpperCase();
 
@@ -739,19 +884,21 @@ router.get(
             }
         }
 
-        // si online y sin sid:
+        // If online and no sid:
         if (pm === "ONLINE" && st !== "PAID" && !sid) {
             if (st === "EXPIRED") {
                 const folio = folioFromReservationId(r.id, r.trip_date);
                 return res.render("pay", {
-                    r, folio, directionLabel, ticketCode,
+                    r,
+                    folio,
+                    directionLabel,
+                    ticketCode,
                     publicToken: token,
-                    expired: true, // <- úsalo en pay.ejs para mostrar aviso
+                    expired: true,
                 });
             }
             return res.redirect(`/checkout/t/${encodeURIComponent(token)}`);
         }
-
 
         if (st === "PAID" && !ticketCode) ticketCode = await ensureTicketForReservation(r.id);
 
@@ -760,10 +907,10 @@ router.get(
     })
 );
 
+/* =========================
+   Routes: Ticket views
+   ========================= */
 
-/**
- * Ver ticket (público)
- */
 router.get(
     "/ticket/:code",
     requireDb,
@@ -821,20 +968,10 @@ router.get(
                 ? String(req.query.return)
                 : "/";
 
-        res.render("ticket", {
-            row,
-            folio,
-            qrDataUrl,
-            directionLabel,
-            url,
-            returnUrl,
-        });
+        res.render("ticket", {row, folio, qrDataUrl, directionLabel, url, returnUrl});
     })
 );
 
-/**
- * PDF del ticket
- */
 router.get(
     "/ticket/:code/pdf",
     requireDb,
@@ -876,7 +1013,9 @@ router.get(
             [row.reservation_id]
         );
 
-        let passengers = (pRows || []).map((x) => String(x.passenger_name || "").trim()).filter(Boolean);
+        let passengers = (pRows || [])
+            .map((x) => String(x.passenger_name || "").trim())
+            .filter(Boolean);
 
         // ✅ If no passengers captured, use "Pasajero 1..n" based on seats
         if (row.type === "PASSENGER" && passengers.length === 0) {
@@ -1078,6 +1217,10 @@ router.get(
     })
 );
 
+/* =========================
+   Route: Pricing JSON
+   ========================= */
+
 router.get(
     "/pricing",
     requireDb,
@@ -1092,6 +1235,10 @@ router.get(
         }
     })
 );
+
+/* =========================
+   Stripe: Create embedded session
+   ========================= */
 
 router.post(
     "/checkout/t/:token/create-session",
@@ -1121,8 +1268,6 @@ router.post(
 
         const st = String(r.status || "").toUpperCase();
         if (st === "PAID") return res.status(409).json({error: "ALREADY_PAID"});
-
-        // I block expired reservations to avoid overbooking (seat might have been released).
         if (st === "EXPIRED") return res.status(409).json({error: "EXPIRED"});
 
         // I compute the total from DB snapshot if present, otherwise I recompute with current pricing.
@@ -1145,11 +1290,7 @@ router.post(
         const amountCents = Math.round(Number(totalMxn || 0) * 100);
         if (!amountCents || amountCents < 1) return res.status(400).json({error: "INVALID_AMOUNT"});
 
-        // I build an absolute base URL safely.
-        const baseUrl =
-            (process.env.BASE_URL || "").trim() ||
-            `${req.protocol}://${req.get("host")}`;
-
+        const baseUrl = buildBaseUrl(req);
         const returnUrl = `${baseUrl}/pay/t/${encodeURIComponent(token)}?session_id={CHECKOUT_SESSION_ID}`;
 
         // (Optional) I try to reuse an existing open session if it exists.
@@ -1158,14 +1299,12 @@ router.post(
             try {
                 const ses = await stripe.checkout.sessions.retrieve(existingSid);
                 const payStatus = String(ses?.payment_status || "").toLowerCase(); // "paid" | "unpaid"
-                const sesStatus = String(ses?.status || "").toLowerCase();         // "open" | "complete" | "expired"
+                const sesStatus = String(ses?.status || "").toLowerCase(); // "open" | "complete" | "expired"
 
                 if (payStatus === "paid") {
-                    // I keep DB update to webhook/pay route, but I can short-circuit.
                     return res.status(409).json({error: "ALREADY_PAID"});
                 }
 
-                // If session is still open, I can reuse it.
                 if (sesStatus === "open" && ses?.client_secret) {
                     return res.json({sessionId: ses.id, clientSecret: ses.client_secret});
                 }
@@ -1174,13 +1313,10 @@ router.post(
             }
         }
 
-        // I create a new embedded Checkout Session.
         const session = await stripe.checkout.sessions.create({
             ui_mode: "embedded",
             mode: "payment",
             currency: "mxn",
-
-            // I keep it simple: single line item with total.
             line_items: [
                 {
                     quantity: 1,
@@ -1194,11 +1330,7 @@ router.post(
                     },
                 },
             ],
-
-            // I always return to /pay/t/:token with the session id.
             return_url: returnUrl,
-
-            // I attach identifiers so webhook can update the reservation.
             client_reference_id: String(r.id),
             metadata: {
                 reservationId: String(r.id),
@@ -1224,11 +1356,10 @@ router.post(
     })
 );
 
+/* =========================
+   Stripe: Webhook
+   ========================= */
 
-/**
- * Stripe webhook (confirmación real)
- * Usa req.rawBody (lo guarda server.js con express.json verify)
- */
 router.post("/stripe/webhook", async (req, res) => {
     if (!stripe) return res.status(503).send("Stripe not configured.");
 
@@ -1237,7 +1368,7 @@ router.post("/stripe/webhook", async (req, res) => {
 
     try {
         event = stripe.webhooks.constructEvent(
-            req.rawBody, // <- desde server.js
+            req.rawBody, // <- from server.js
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -1256,20 +1387,14 @@ router.post("/stripe/webhook", async (req, res) => {
             session?.client_reference_id ||
             null;
 
-        // Helpers
-        const paymentStatus = String(session?.payment_status || "").toLowerCase(); // "paid", "unpaid", etc.
+        const paymentStatus = String(session?.payment_status || "").toLowerCase();
         const isPaid = paymentStatus === "paid";
 
         if (!reservationId) {
-            // Siempre 2xx para que Stripe no reintente eternamente
             return res.json({received: true, note: "No reservationId in metadata"});
         }
 
-        // ✅ Pago exitoso (inmediato o async succeeded)
-        if (
-            type === "checkout.session.completed" ||
-            type === "checkout.session.async_payment_succeeded"
-        ) {
+        if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
             if (isPaid) {
                 await pool.query(
                     `UPDATE transporte_reservations
@@ -1290,11 +1415,8 @@ router.post("/stripe/webhook", async (req, res) => {
             return res.json({received: true});
         }
 
-
-        // ❌ Async failed (métodos delayed)
         if (type === "checkout.session.async_payment_failed") {
-            // Recomendación Stripe: avisar y permitir reintento on-session. :contentReference[oaicite:1]{index=1}
-            // En tu DB: dejo la reserva en PENDING_PAYMENT pero limpio session_id para forzar nueva sesión al reintentar.
+            // I keep reservation PENDING but I clear session_id to force a new session on retry.
             await pool.query(
                 `UPDATE transporte_reservations
                  SET status='PENDING_PAYMENT',
@@ -1309,7 +1431,6 @@ router.post("/stripe/webhook", async (req, res) => {
             return res.json({received: true});
         }
 
-        // ⏳ Sesión expirada (útil para liberar cupo)
         if (type === "checkout.session.expired") {
             await pool.query(
                 `UPDATE transporte_reservations
@@ -1324,7 +1445,6 @@ router.post("/stripe/webhook", async (req, res) => {
             return res.json({received: true});
         }
 
-        // Otros eventos: respondemos 2xx
         return res.json({received: true});
     } catch (e) {
         console.error("Error handling Stripe webhook:", e);
@@ -1332,7 +1452,10 @@ router.post("/stripe/webhook", async (req, res) => {
     }
 });
 
-// Legacy routes
+/* =========================
+   Legacy routes
+   ========================= */
+
 router.get(
     "/pay/:reservationId",
     requireDb,
@@ -1360,6 +1483,5 @@ router.post(
         return res.redirect(307, `/checkout/t/${encodeURIComponent(token)}/create-session`);
     })
 );
-
 
 module.exports = router;
