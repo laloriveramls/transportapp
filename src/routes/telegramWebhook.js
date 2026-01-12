@@ -17,8 +17,17 @@ function isAdmin(update) {
     return fromId && ADMIN_IDS.includes(String(fromId));
 }
 
+function readEnvClean(key) {
+    // I normalize env values in case Hostinger stores them with quotes.
+    let v = String(process.env[key] || "").trim();
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1).trim();
+    }
+    return v;
+}
+
 async function tgReply(chatId, text, opts = {}) {
-    const token = (process.env.TG_BOT_TOKEN || "").trim();
+    const token = readEnvClean("TG_BOT_TOKEN");
     if (!token) {
         console.error("tgReply: missing TG_BOT_TOKEN");
         return;
@@ -53,14 +62,12 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
     // I ACK fast so Telegram doesn't retry.
     res.status(200).send("OK");
 
-    // Optional: verify secret header (recommended if your URL is public).
-    const webhookSecret = (process.env.TG_WEBHOOK_SECRET || "").trim();
+    // Verify secret header (recommended if your URL is public).
+    const webhookSecret = readEnvClean("TG_WEBHOOK_SECRET");
     if (webhookSecret) {
         const secret = req.get("x-telegram-bot-api-secret-token") || "";
         if (secret !== webhookSecret) {
-            if (process.env.NODE_ENV !== "production") {
-                console.warn("TG webhook secret mismatch:", {got: secret ? "set" : "empty"});
-            }
+            console.warn("TG webhook secret mismatch:", {got: secret ? "set" : "empty"});
             return;
         }
     }
@@ -80,18 +87,25 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
     const replyTo = msg.message_id;
     if (!chatId) return;
 
-    // Optional: only allow commands in one specific chat (recommended).
-    const allowedChatId = String(process.env.TG_CHAT_ID || "").trim();
-    if (allowedChatId && String(chatId) !== allowedChatId) return;
-
-    if (process.env.NODE_ENV !== "production") {
-        console.log("TG cmd:", cmd, "chat:", chatId, "thread:", threadId || null);
-    }
-
+    const chatType = msg.chat?.type || "unknown";
     const replyOpts = {
         reply_to_message_id: replyTo,
         ...(threadId ? {message_thread_id: threadId} : {}),
     };
+
+    // Only allow commands in the configured group; allow DM only from admins (so I can test).
+    const allowedChatId = readEnvClean("TG_CHAT_ID");
+    const isPrivate = chatType === "private";
+
+    if (allowedChatId) {
+        if (String(chatId) !== allowedChatId) {
+            if (!(isPrivate && isAdmin(update))) return;
+        }
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+        console.log("TG cmd:", cmd, "chat:", chatId, "type:", chatType, "thread:", threadId || null);
+    }
 
     // Public commands
     if (cmd === "/start") {
@@ -117,11 +131,7 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
     }
 
     if (cmd === "/status") {
-        await tgReply(
-            chatId,
-            "✅ <b>Status</b>\nBot activo.\nNotificaciones: habilitadas.",
-            replyOpts
-        );
+        await tgReply(chatId, "✅ <b>Status</b>\nBot activo.\nNotificaciones: habilitadas.", replyOpts);
         return;
     }
 
@@ -162,11 +172,7 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
     }
 
     if (cmd === "/topic") {
-        await tgReply(
-            chatId,
-            `🧵 <b>message_thread_id</b>: <code>${threadId ?? "null"}</code>`,
-            replyOpts
-        );
+        await tgReply(chatId, `🧵 <b>message_thread_id</b>: <code>${threadId ?? "null"}</code>`, replyOpts);
         return;
     }
 
@@ -176,7 +182,7 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
     }
 
     if (cmd === "/version") {
-        const ver = (process.env.APP_VERSION || "").trim() || "unknown";
+        const ver = readEnvClean("APP_VERSION") || "unknown";
         await tgReply(chatId, `🏷️ <b>Version</b>: <code>${ver}</code>`, replyOpts);
         return;
     }
