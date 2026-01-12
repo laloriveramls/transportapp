@@ -4,6 +4,30 @@
 const express = require("express");
 const router = express.Router();
 
+const {pool, hasDb} = require("../db");
+
+/* =========================
+   Helpers: env + auth
+   ========================= */
+
+function escapeHtml(s) {
+    return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
+function readEnvClean(key) {
+    // I normalize env values in case the host stores them with quotes.
+    let v = String(process.env[key] || "").trim();
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+        v = v.slice(1, -1).trim();
+    }
+    return v;
+}
+
 const ADMIN_IDS = String(process.env.TG_ADMIN_IDS || "")
     .split(",")
     .map((s) => s.trim())
@@ -12,19 +36,65 @@ const ADMIN_IDS = String(process.env.TG_ADMIN_IDS || "")
 function isAdmin(update) {
     const fromId =
         update?.message?.from?.id ??
+        update?.edited_message?.from?.id ??
         update?.callback_query?.from?.id;
 
     return fromId && ADMIN_IDS.includes(String(fromId));
 }
 
-function readEnvClean(key) {
-    // I normalize env values in case Hostinger stores them with quotes.
-    let v = String(process.env[key] || "").trim();
-    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-        v = v.slice(1, -1).trim();
-    }
-    return v;
+function isProd() {
+    return String(process.env.NODE_ENV || "").toLowerCase() === "production";
 }
+
+/* =========================
+   Helpers: update parsing
+   ========================= */
+
+function getMessageFromUpdate(update) {
+    // I support message, edited_message, and callback_query.message.
+    return update?.message || update?.edited_message || update?.callback_query?.message || null;
+}
+
+function parseCommand(text) {
+    // I parse "/cmd@BotName arg1 arg2".
+    const t = String(text || "").trim();
+    if (!t.startsWith("/")) return {cmd: null, args: []};
+
+    const parts = t.split(/\s+/);
+    const head = parts[0] || "";
+    const cmd = head.split("@")[0]; // strip "@YourBot"
+    const args = parts.slice(1);
+
+    return {cmd, args};
+}
+
+function nowIsoMty() {
+    // I show Monterrey time to keep ops consistent with the business timezone.
+    const d = new Date();
+    const date = d.toLocaleDateString("en-CA", {timeZone: "America/Monterrey"}); // YYYY-MM-DD
+    const time = d.toLocaleTimeString("en-GB", {
+        timeZone: "America/Monterrey",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    });
+    return `${date} ${time} (America/Monterrey)`;
+}
+
+function baseUrlFromEnv() {
+    const b = readEnvClean("BASE_URL");
+    return b ? b.replace(/\/+$/, "") : "";
+}
+
+function folioFromReservationId(id, tripDate) {
+    const ymd = String(tripDate || "").replaceAll("-", "");
+    return `RES-${ymd}-${String(id ?? "")}`;
+}
+
+/* =========================
+   Telegram call
+   ========================= */
 
 async function tgReply(chatId, text, opts = {}) {
     const token = readEnvClean("TG_BOT_TOKEN");
@@ -58,36 +128,113 @@ async function tgReply(chatId, text, opts = {}) {
     }
 }
 
-router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) => {
+async function tgGetWebhookInfo() {
+    const token = readEnvClean("TG_BOT_TOKEN");
+    if (!token) return null;
+
+    const url = `https://api.telegram.org/bot${token}/getWebhookInfo`;
+    try {
+        const r = await fetch(url);
+        const data = await r.json().catch(() => null);
+        return data?.ok ? data.result : null;
+    } catch {
+        return null;
+    }
+}
+
+/* =========================
+   Middleware: JSON
+   ========================= */
+
+router.use(express.json({limit: "1mb"}));
+
+/* =========================
+   DB helpers
+   ========================= */
+
+async function getLastReservationById() {
+    if (!hasDb) return null;
+
+    const [rows] = await pool.query(
+        `
+            SELECT r.id,
+                   r.public_token,
+                   r.type,
+                   r.seats,
+                   r.customer_name,
+                   r.phone,
+                   r.payment_method,
+                   r.transfer_ref,
+                   r.status,
+                   r.amount_total_mxn,
+                   r.created_at,
+                   t.trip_date,
+                   dt.direction,
+                   dt.depart_time
+            FROM transporte_reservations r
+                     JOIN transporte_trips t ON t.id = r.trip_id
+                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
+            ORDER BY r.id DESC
+            LIMIT 1
+        `
+    );
+
+    return rows?.[0] || null;
+}
+
+function directionText(direction) {
+    return direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
+}
+
+function typeText(type) {
+    return String(type || "").toUpperCase() === "PACKAGE" ? "Paquetería" : "Pasaje";
+}
+
+function paymentText(pm) {
+    const x = String(pm || "").toUpperCase();
+    if (x === "TAQUILLA") return "Taquilla";
+    if (x === "TRANSFERENCIA") return "Transferencia";
+    if (x === "ONLINE") return "Pago en línea";
+    return pm || "-";
+}
+
+function moneyMXN(n) {
+    const v = Number(n || 0);
+    return v.toLocaleString("es-MX", {style: "currency", currency: "MXN"});
+}
+
+/* =========================
+   Webhook route
+   ========================= */
+
+router.post("/telegram/webhook", async (req, res) => {
     // I ACK fast so Telegram doesn't retry.
     res.status(200).send("OK");
 
     // Verify secret header (recommended if your URL is public).
     const webhookSecret = readEnvClean("TG_WEBHOOK_SECRET");
     if (webhookSecret) {
-        const secret = req.get("x-telegram-bot-api-secret-token") || "";
-        if (secret !== webhookSecret) {
-            console.warn("TG webhook secret mismatch:", {got: secret ? "set" : "empty"});
+        const got = req.get("x-telegram-bot-api-secret-token") || "";
+        if (got !== webhookSecret) {
+            if (!isProd()) console.warn("TG webhook secret mismatch:", {got: got ? "set" : "empty"});
             return;
         }
     }
 
     const update = req.body || {};
-    const msg = update.message;
+    const msg = getMessageFromUpdate(update);
     if (!msg?.text) return;
 
-    const text = String(msg.text).trim();
-    if (!text.startsWith("/")) return;
-
-    // I handle "/cmd@YourBot" by stripping the bot suffix.
-    const cmd = text.split(/\s+/)[0].split("@")[0];
+    const {cmd, args} = parseCommand(msg.text);
+    if (!cmd) return;
 
     const chatId = msg.chat?.id;
-    const threadId = msg.message_thread_id;
-    const replyTo = msg.message_id;
     if (!chatId) return;
 
     const chatType = msg.chat?.type || "unknown";
+    const threadId = msg.message_thread_id;
+    const replyTo = msg.message_id;
+
     const replyOpts = {
         reply_to_message_id: replyTo,
         ...(threadId ? {message_thread_id: threadId} : {}),
@@ -103,11 +250,14 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
         }
     }
 
-    if (process.env.NODE_ENV !== "production") {
-        console.log("TG cmd:", cmd, "chat:", chatId, "type:", chatType, "thread:", threadId || null);
+    if (!isProd()) {
+        console.log("TG cmd:", cmd, "args:", args, "chat:", chatId, "type:", chatType, "thread:", threadId || null);
     }
 
-    // Public commands
+    /* =========================
+       Public commands
+       ========================= */
+
     if (cmd === "/start") {
         await tgReply(
             chatId,
@@ -122,9 +272,10 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
             chatId,
             "📌 <b>Comandos</b>\n" +
             "/status — Estado del bot\n" +
-            "/privacy — Privacidad\n\n" +
+            "/privacy — Privacidad\n" +
+            "/time — Hora del servidor (MTY)\n\n" +
             "<i>Admin</i>:\n" +
-            "/ping /chatid /test /version /errors /topic",
+            "/ping /chatid /topic /test /version /errors /whoami /uptime /webhook /lastreserve",
             replyOpts
         );
         return;
@@ -144,15 +295,39 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
         return;
     }
 
-    // Admin commands
-    const adminCmds = new Set(["/ping", "/chatid", "/test", "/version", "/errors", "/topic"]);
+    if (cmd === "/time") {
+        await tgReply(chatId, `🕒 <b>Hora</b>\n<code>${nowIsoMty()}</code>`, replyOpts);
+        return;
+    }
+
+    /* =========================
+       Admin gate
+       ========================= */
+
+    const adminCmds = new Set([
+        "/ping",
+        "/chatid",
+        "/topic",
+        "/test",
+        "/version",
+        "/errors",
+        "/whoami",
+        "/uptime",
+        "/webhook",
+        "/lastreserve",
+    ]);
+
     if (adminCmds.has(cmd) && !isAdmin(update)) {
         await tgReply(chatId, "⛔ Solo admins.", replyOpts);
         return;
     }
 
+    /* =========================
+       Admin commands
+       ========================= */
+
     if (cmd === "/ping") {
-        await tgReply(chatId, `🏓 pong\n${new Date().toISOString()}`, replyOpts);
+        await tgReply(chatId, `🏓 pong\n<code>${new Date().toISOString()}</code>`, replyOpts);
         return;
     }
 
@@ -165,7 +340,7 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
             chatId,
             `🆔 <b>chat_id</b>: <code>${chatId}</code>\n` +
             `🏷️ <b>type</b>: <code>${kind}</code>\n` +
-            `🧵 <b>thread</b>: <code>${threadId ?? "null"}</code>`,
+            `🔐 <b>allowed</b>: <code>${readEnvClean("TG_CHAT_ID") || "not set"}</code>`,
             replyOpts
         );
         return;
@@ -191,6 +366,110 @@ router.post("/telegram/webhook", express.json({limit: "1mb"}), async (req, res) 
         await tgReply(chatId, "🧾 <b>Errors</b>\nSin buffer de errores configurado.", replyOpts);
         return;
     }
+
+    if (cmd === "/whoami") {
+        const from = update?.message?.from || update?.edited_message?.from || update?.callback_query?.from || {};
+        const lines = [
+            "👤 <b>Whoami</b>",
+            `id: <code>${from.id ?? "?"}</code>`,
+            from.username ? `user: <code>@${from.username}</code>` : null,
+            from.first_name
+                ? `name: <code>${from.first_name}${from.last_name ? " " + from.last_name : ""}</code>`
+                : null,
+            `admin: <code>${isAdmin(update) ? "yes" : "no"}</code>`,
+        ].filter(Boolean);
+
+        await tgReply(chatId, lines.join("\n"), replyOpts);
+        return;
+    }
+
+    if (cmd === "/uptime") {
+        const up = Math.round(process.uptime());
+        await tgReply(
+            chatId,
+            `⏱️ <b>Uptime</b>\nsec: <code>${up}</code>\nnode: <code>${process.version}</code>`,
+            replyOpts
+        );
+        return;
+    }
+
+    if (cmd === "/webhook") {
+        const info = await tgGetWebhookInfo();
+        if (!info) {
+            await tgReply(chatId, "⚠️ No pude leer getWebhookInfo.", replyOpts);
+            return;
+        }
+
+        const lines = [
+            "🪝 <b>Webhook</b>",
+            `url: <code>${escapeHtml(info.url || "empty")}</code>`,
+            `pending: <code>${escapeHtml(info.pending_update_count ?? "?")}</code>`,
+            info.last_error_message
+                ? `last_error: <code>${escapeHtml(String(info.last_error_message).slice(0, 180))}</code>`
+                : null,
+        ].filter(Boolean);
+
+        await tgReply(chatId, lines.join("\n"), replyOpts);
+        return;
+    }
+
+    if (cmd === "/lastreserve") {
+        if (!hasDb) {
+            await tgReply(chatId, "⚠️ DB no configurada en runtime (missing env vars).", replyOpts);
+            return;
+        }
+
+        try {
+            const r = await getLastReservationById();
+            if (!r) {
+                await tgReply(chatId, "🟡 No hay reservas aún.", replyOpts);
+                return;
+            }
+
+            const folio = folioFromReservationId(r.id, r.trip_date);
+            const route = directionText(r.direction);
+            const type = typeText(r.type);
+
+            const seats =
+                String(r.type || "").toUpperCase() === "PASSENGER"
+                    ? ` (${Number(r.seats || 1)} asiento${Number(r.seats || 1) === 1 ? "" : "s"})`
+                    : "";
+
+            const total = moneyMXN(r.amount_total_mxn || 0);
+            const pay = paymentText(r.payment_method);
+
+            const baseUrl = baseUrlFromEnv();
+            const viewUrl =
+                baseUrl && r.public_token
+                    ? `${baseUrl}/pay/t/${encodeURIComponent(String(r.public_token))}`
+                    : null;
+
+            const lines = [
+                "🧾 <b>Última reserva (por ID)</b>",
+                `ID: <code>${escapeHtml(r.id)}</code>`,
+                `Folio: <code>${escapeHtml(folio)}</code>`,
+                `Tipo: ${escapeHtml(type)}${escapeHtml(seats)}`,
+                `Ruta: ${escapeHtml(route)}`,
+                `Fecha: <code>${escapeHtml(r.trip_date)}</code>`,
+                `Hora: <code>${escapeHtml(r.depart_time)}</code>`,
+                `Contacto: ${escapeHtml(r.customer_name || "-")}`,
+                `Tel: <code>${escapeHtml(r.phone || "-")}</code>`,
+                `Pago: ${escapeHtml(pay)}`,
+                `Status: <code>${escapeHtml(r.status || "-")}</code>`,
+                `Total: <b>${escapeHtml(total)}</b>`,
+                viewUrl ? `Ver: ${escapeHtml(viewUrl)}` : null,
+            ].filter(Boolean);
+
+            await tgReply(chatId, lines.join("\n"), replyOpts);
+            return;
+        } catch (e) {
+            await tgReply(chatId, `❌ Error leyendo DB: <code>${escapeHtml(e?.code || e?.message || String(e))}</code>`, replyOpts);
+            return;
+        }
+    }
+
+    // Unknown command
+    await tgReply(chatId, "❓ Comando no reconocido. Usa /help.", replyOpts);
 });
 
 module.exports = router;
