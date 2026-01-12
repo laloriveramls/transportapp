@@ -34,9 +34,11 @@ const { pool, hasDb } = require("./src/db");
 
 // Routers
 const telegramWebhookRouter = require("./src/routes/telegramWebhook");
+const seoRoutes = require("./src/routes/seo");
 const ticketRoutes = require("./src/routes/ticket");
 const publicRoutes = require("./src/routes/public");
 const adminRoutes = require("./src/routes/admin");
+
 
 const app = express();
 
@@ -102,6 +104,9 @@ app.use((req, res, next) => {
 
 // Telegram webhook
 app.use(telegramWebhookRouter);
+
+// SEO endpoints (robots/sitemap)
+app.use(seoRoutes);
 
 /* =========================
    Routes
