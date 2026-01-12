@@ -134,6 +134,24 @@ async function sendTelegram(textOrOptions) {
 
             if (r1.ok) continue;
 
+            // If Telegram migrated the group to a supergroup, it returns the new chat id.
+            const migratedTo = r1.data?.parameters?.migrate_to_chat_id;
+            if (r1.status === 400 && migratedTo) {
+                // I retry once with the new chat id.
+                payload.chat_id = String(migratedTo);
+
+                const rMig = await tgCall(token, "sendMessage", payload);
+                if (rMig.ok) continue;
+
+                console.error("Telegram sendMessage failed (after migration retry):", {
+                    status: rMig.status,
+                    description: rMig.data?.description,
+                    raw: rMig.raw,
+                    migrated_to_chat_id: String(migratedTo),
+                });
+                return;
+            }
+
             // If rate-limited, I wait and retry once.
             const retryAfter = Number(r1.data?.parameters?.retry_after || 0);
             if (r1.status === 429 && retryAfter > 0) {
@@ -159,6 +177,7 @@ async function sendTelegram(textOrOptions) {
             console.error("Telegram notify failed:", e?.name === "AbortError" ? "timeout" : (e?.message || e));
             return;
         }
+
     }
 }
 
