@@ -238,7 +238,6 @@
             background-repeat: no-repeat;
         }
 
-
         .next-title{
             margin: 0 0 10px 0;
             font-weight: 650;
@@ -345,7 +344,7 @@
         <div class="tab-content" id="homeTabsContent">
             <div class="tab-pane fade show active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
 
-                <!-- Propuesta #2: Próximas salidas -->
+                <!-- Próximas salidas -->
                 <div class="next-card" id="nextCard" style="display:none;">
                     <p class="next-title">Próximas salidas</p>
 
@@ -394,7 +393,6 @@
                         <div class="chips">
                             <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <!-- Propuesta #1: chip clickeable -->
                             <a class="chip-time"
                                data-dir="VIC_TO_LLE"
                                data-time="<%= hhmm %>"
@@ -419,7 +417,6 @@
                         <div class="chips">
                             <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
                             <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <!-- Propuesta #1: chip clickeable -->
                             <a class="chip-time"
                                data-dir="LLE_TO_VIC"
                                data-time="<%= hhmm %>"
@@ -591,7 +588,7 @@
         }
 
         async function fetchAvailability(dateISO, dir, seats) {
-            // I use seats=0 to get "next departure" even if it's full.
+            // seats=0 => informativo: incluye horarios aunque estén llenos
             const url =
                 `/availability?date=${encodeURIComponent(dateISO)}` +
                 `&direction=${encodeURIComponent(dir)}` +
@@ -605,7 +602,6 @@
         async function findNext(dir, seats) {
             const base = todayISO_MTY();
 
-            // I scan today -> next 7 days until I find at least one matching slot.
             for (let offset = 0; offset <= 7; offset++) {
                 const dateISO = addDaysISO(base, offset);
 
@@ -616,92 +612,76 @@
                     results = [];
                 }
 
-                const sorted = results
+                const slots = results
                     .map(r => ({
                         hhmm: toHHMM(r.time ?? r.depart_time ?? ""),
                         available: Number(r.available ?? 0),
-                        rawTime: (r.time ?? r.depart_time ?? ""),
                     }))
                     .filter(x => x.hhmm)
                     .sort((a, b) => a.hhmm.localeCompare(b.hhmm));
 
-                if (sorted.length) {
+                if (slots.length) {
                     const when = offset === 0 ? "hoy" : offset === 1 ? "mañana" : dateISO;
-                    return {
-                        dateISO,
-                        when,
-                        hhmm: sorted[0].hhmm,
-                        available: sorted[0].available,
-                        rawTime: sorted[0].rawTime
-                    };
+                    const first = slots[0];
+                    return {dateISO, when, hhmm: first.hhmm, available: first.available};
                 }
             }
 
             return null;
         }
 
-        function buildReserveUrl(dir, dateISO, hhmm) {
-            if (!dateISO || !hhmm) return "/reserve";
-            return (
-                `/reserve?dir=${encodeURIComponent(dir)}` +
-                `&time=${encodeURIComponent(hhmm)}` +
-                `&date=${encodeURIComponent(dateISO)}`
-            );
-        }
-
-        function renderNext({elWrap, elTime, elWhen, elLink}, dir, nextReal, nextOk) {
-            if (!nextReal) return false;
-
-            elWrap.style.display = "";
-            elTime.textContent = nextReal.hhmm;
-
-            const isFull = Number(nextReal.available || 0) <= 0;
-
-            if (isFull) {
-                elWhen.textContent =
-                    `Salida ${nextReal.when} · Lleno` +
-                    (nextOk ? ` · Siguiente con cupo: ${nextOk.hhmm} (${nextOk.when})` : "");
-
-                // I keep the button as "Reservar" but send it to the next reservable slot if I have one.
-                elLink.textContent = "Reservar";
-                elLink.href = nextOk
-                    ? buildReserveUrl(dir, nextOk.dateISO, nextOk.hhmm)
-                    : "/reserve";
-            } else {
-                elWhen.textContent = `Salida ${nextReal.when}`;
-                elLink.textContent = "Reservar";
-                elLink.href = buildReserveUrl(dir, nextReal.dateISO, nextReal.hhmm);
-            }
-
-            return true;
-        }
-
         Promise.all([
-            // I get the next REAL departure (even if full).
+            // next REAL (even if full)
             findNext("VIC_TO_LLE", 0),
             findNext("LLE_TO_VIC", 0),
-
-            // I also get the next reservable departure (needs at least 1 seat).
+            // next reservable (needs >=1 seat)
             findNext("VIC_TO_LLE", 1),
             findNext("LLE_TO_VIC", 1),
-        ]).then(([v2lReal, l2vReal, v2lOk, l2vOk]) => {
+        ]).then(([nextV2LReal, nextL2VReal, nextV2LOk, nextL2VOk]) => {
             let any = false;
 
-            any =
-                renderNext(
-                    {elWrap: elV2L, elTime: elV2LTime, elWhen: elV2LWhen, elLink: elV2LLink},
-                    "VIC_TO_LLE",
-                    v2lReal,
-                    v2lOk
-                ) || any;
+            if (nextV2LReal) {
+                any = true;
+                const full = Number(nextV2LReal.available || 0) <= 0;
 
-            any =
-                renderNext(
-                    {elWrap: elL2V, elTime: elL2VTime, elWhen: elL2VWhen, elLink: elL2VLink},
-                    "LLE_TO_VIC",
-                    l2vReal,
-                    l2vOk
-                ) || any;
+                elV2L.style.display = "";
+                elV2LTime.textContent = nextV2LReal.hhmm;
+
+                if (full) {
+                    elV2LWhen.textContent =
+                        `Salida ${nextV2LReal.when} · Lleno` +
+                        (nextV2LOk ? ` · Siguiente con cupo: ${nextV2LOk.hhmm} (${nextV2LOk.when})` : "");
+
+                    // botón se queda en "Reservar", pero si está lleno lo mando al siguiente con cupo (si existe)
+                    elV2LLink.href = nextV2LOk
+                        ? `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LOk.hhmm)}&date=${encodeURIComponent(nextV2LOk.dateISO)}`
+                        : `/reserve?dir=VIC_TO_LLE&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
+                } else {
+                    elV2LWhen.textContent = `Salida ${nextV2LReal.when}`;
+                    elV2LLink.href = `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LReal.hhmm)}&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
+                }
+            }
+
+            if (nextL2VReal) {
+                any = true;
+                const full = Number(nextL2VReal.available || 0) <= 0;
+
+                elL2V.style.display = "";
+                elL2VTime.textContent = nextL2VReal.hhmm;
+
+                if (full) {
+                    elL2VWhen.textContent =
+                        `Salida ${nextL2VReal.when} · Lleno` +
+                        (nextL2VOk ? ` · Siguiente con cupo: ${nextL2VOk.hhmm} (${nextL2VOk.when})` : "");
+
+                    elL2VLink.href = nextL2VOk
+                        ? `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VOk.hhmm)}&date=${encodeURIComponent(nextL2VOk.dateISO)}`
+                        : `/reserve?dir=LLE_TO_VIC&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
+                } else {
+                    elL2VWhen.textContent = `Salida ${nextL2VReal.when}`;
+                    elL2VLink.href = `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VReal.hhmm)}&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
+                }
+            }
 
             if (any) card.style.display = "";
         });
@@ -725,7 +705,6 @@
         });
     })();
 </script>
-
 
 </body>
 </html>
