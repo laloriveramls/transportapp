@@ -366,6 +366,31 @@
             }
         }
 
+        /* I avoid overlap: the details panel should push content down on mobile. */
+        @media (max-width: 920px) {
+            .details {
+                position: static; /* overrides relative */
+            }
+
+            .details-panel {
+                position: static; /* overrides absolute */
+                width: 100%;
+                margin-top: 10px;
+                transform: none; /* I disable float animation in mobile */
+                opacity: 1; /* visible when not hidden */
+                pointer-events: auto;
+            }
+
+            /* I keep your open/close class, but only fade (no translate). */
+            .details-panel {
+                transition: opacity .18s ease;
+            }
+
+            .details-panel.is-open {
+                opacity: 1;
+            }
+        }
+
 
 
     </style>
