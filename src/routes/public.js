@@ -67,10 +67,13 @@ function directionLabel(direction) {
     return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
 }
 
-// I compute folio from reservation id + trip date (no DB column needed).
-function folioFromReservationId(id, dateStr) {
+// I compute folio from trip date + daily sequence (fallback to reservation id for legacy rows).
+function folioFromReservation(id, dateStr, dailySeq) {
     const ymd = String(dateStr || "").replaceAll("-", "");
-    return `RES-${ymd}-${String(id ?? "")}`;
+    const nRaw = Number(dailySeq);
+    const n = Number.isFinite(nRaw) && nRaw > 0 ? nRaw : Number(id || 0);
+    const seq = n > 0 ? String(n).padStart(3, "0") : "000";
+    return `RES-${ymd}-${seq}`;
 }
 
 function moneyMXN(n) {
@@ -667,19 +670,28 @@ router.post(
             }
 
             let reservationId = null;
+            let dailySeq = null;
             let publicToken = null;
             let folio = null;
 
             for (let i = 0; i < 5; i++) {
                 publicToken = makePublicToken();
                 try {
+                    const [[seqRow]] = await conn.query(
+                        `SELECT COALESCE(MAX(daily_seq), 0) + 1 AS next_seq
+                         FROM transporte_reservations
+                         WHERE folio_date = ?`,
+                        [trip_date]
+                    );
+                    dailySeq = Number(seqRow?.next_seq || 1);
+
                     const [ins] = await conn.query(
                         `INSERT INTO transporte_reservations(trip_id, type, seats, customer_name, phone,
                                                              package_details,
                                                              payment_method, transfer_ref, status,
                                                              unit_price_mxn, amount_total_mxn,
-                                                             public_token)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                                             public_token, folio_date, daily_seq)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trip.id,
                             type,
@@ -693,11 +705,13 @@ router.post(
                             unit_price_mxn,
                             amount_total_mxn,
                             publicToken,
+                            trip_date,
+                            dailySeq,
                         ]
                     );
 
                     reservationId = ins.insertId;
-                    folio = folioFromReservationId(reservationId, trip_date);
+                    folio = folioFromReservation(reservationId, trip_date, dailySeq);
                     break;
                 } catch (e) {
                     if (String(e?.code) === "ER_DUP_ENTRY") continue;
@@ -836,7 +850,7 @@ router.get(
         const pm = String(r.payment_method || "").toUpperCase();
         if (pm !== "ONLINE") return res.redirect(`/pay/t/${encodeURIComponent(token)}`);
 
-        const folio = folioFromReservationId(r.id, r.trip_date);
+        const folio = folioFromReservation(r.id, r.trip_date, r.daily_seq);
 
         let total =
             r.amount_total_mxn != null && r.amount_total_mxn !== ""
@@ -922,7 +936,7 @@ router.get(
         // If online and no sid:
         if (pm === "ONLINE" && st !== "PAID" && !sid) {
             if (st === "EXPIRED") {
-                const folio = folioFromReservationId(r.id, r.trip_date);
+                const folio = folioFromReservation(r.id, r.trip_date, r.daily_seq);
                 return res.render("pay", {
                     r,
                     folio,
@@ -937,7 +951,7 @@ router.get(
 
         if (st === "PAID" && !ticketCode) ticketCode = await ensureTicketForReservation(r.id);
 
-        const folio = folioFromReservationId(r.id, r.trip_date);
+        const folio = folioFromReservation(r.id, r.trip_date, r.daily_seq);
         return res.render("pay", {r, folio, directionLabel, ticketCode, publicToken: token});
     })
 );
@@ -963,6 +977,7 @@ router.get(
                        r.seats,
                        r.package_details,
                        r.payment_method,
+                       r.daily_seq,
                        r.unit_price_mxn,
                        r.amount_total_mxn,
                        t.trip_date,
@@ -976,7 +991,7 @@ router.get(
                          LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
                 WHERE tk.code = ?
                 GROUP BY tk.code, tk.issued_at, r.id, r.customer_name, r.phone, r.type, r.seats, r.package_details,
-                         r.payment_method, r.unit_price_mxn, r.amount_total_mxn,
+                         r.payment_method, r.daily_seq, r.unit_price_mxn, r.amount_total_mxn,
                          t.trip_date, dt.direction, dt.depart_time
             `,
             [code]
@@ -996,7 +1011,7 @@ router.get(
         const baseUrl = process.env.BASE_URL || "";
         const url = `${baseUrl}/ticket/${row.code}`;
         const qrDataUrl = await QRCode.toDataURL(url);
-        const folio = folioFromReservationId(row.reservation_id, row.trip_date);
+        const folio = folioFromReservation(row.reservation_id, row.trip_date, row.daily_seq);
 
         const returnUrl =
             req.query.return && String(req.query.return).startsWith("/")
@@ -1024,6 +1039,7 @@ router.get(
                        r.seats,
                        r.package_details,
                        r.payment_method,
+                       r.daily_seq,
                        r.unit_price_mxn,
                        r.amount_total_mxn,
                        t.trip_date,
@@ -1061,7 +1077,7 @@ router.get(
         const baseUrl = process.env.BASE_URL || "";
         const url = `${baseUrl}/ticket/${row.code}`;
         const qrPng = await QRCode.toBuffer(url);
-        const folio = folioFromReservationId(row.reservation_id, row.trip_date);
+        const folio = folioFromReservation(row.reservation_id, row.trip_date, row.daily_seq);
 
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `inline; filename="${folio}.pdf"`);
@@ -1360,7 +1376,7 @@ router.post(
                         unit_amount: amountCents,
                         product_data: {
                             name: "Servicio de transporte",
-                            description: `Folio: RES-${String(r.trip_date || "").replaceAll("-", "")}-${r.id}`,
+                            description: `Folio: ${folioFromReservation(r.id, r.trip_date, r.daily_seq)}`,
                         },
                     },
                 },

@@ -213,6 +213,55 @@
             margin-bottom: .5rem;
         }
 
+        .transfer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .transfer-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
+            padding: 10px 12px;
+        }
+
+        .transfer-key {
+            display: block;
+            font-size: .78rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .transfer-value {
+            font-size: .96rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .transfer-value.mono {
+            letter-spacing: .02em;
+        }
+
+        .transfer-tip {
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+            margin-bottom: 12px;
+        }
+
+        .transfer-ref {
+            border-top: 1px dashed var(--border);
+            padding-top: 10px;
+        }
+
         .tbtn {
             display: inline-flex;
             align-items: center;
@@ -264,6 +313,12 @@
             font-size: .95rem;
         }
 
+        .tbtn-ic svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+        }
+
         .tbtn-txt {
             font-size: .92rem;
         }
@@ -283,6 +338,16 @@
 
         .is-invalid + .invalid-feedback {
             display: block;
+        }
+
+        .step-inline-error {
+            margin-top: .45rem;
+            font-size: .9rem;
+            color: color-mix(in srgb, var(--wine) 65%, #dc3545);
+        }
+
+        .step-inline-error.d-none {
+            display: none;
         }
 
         /* Header de "Nombres de pasajeros" */
@@ -317,6 +382,562 @@
             }
         }
 
+        /* =========================
+           Reserva - UI refresh v2
+           ========================= */
+        main.container {
+            position: relative;
+            isolation: isolate;
+        }
+
+        main.container::before {
+            content: "";
+            position: absolute;
+            inset: -8px -6px auto -6px;
+            height: 260px;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(50% 140px at 12% 16%, rgba(106, 15, 31, .17), transparent 78%),
+            radial-gradient(46% 150px at 90% 8%, rgba(15, 93, 168, .15), transparent 76%);
+            filter: blur(2px);
+        }
+
+        .reserve-hero {
+            border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(106, 15, 31, .22));
+            border-radius: 22px;
+            padding: 20px;
+            background: linear-gradient(125deg, color-mix(in srgb, var(--card) 92%, #ffffff 8%), color-mix(in srgb, var(--card) 98%, transparent)),
+            radial-gradient(1050px 420px at 12% -18%, rgba(106, 15, 31, .17), transparent 60%);
+            box-shadow: 0 20px 40px rgba(2, 6, 23, .10);
+        }
+
+        .reserve-hero .headline {
+            letter-spacing: -.02em;
+            font-size: clamp(1.52rem, 2.5vw, 2.06rem);
+            font-weight: 760;
+        }
+
+        .reserve-tags {
+            display: flex;
+            gap: .52rem;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .reserve-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: .33rem .62rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+            color: color-mix(in srgb, var(--text) 90%, var(--muted));
+            font-size: .81rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .reserve-card {
+            border-radius: 22px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 98%, transparent), color-mix(in srgb, var(--card) 94%, transparent));
+            box-shadow: 0 18px 42px rgba(2, 6, 23, .09);
+        }
+
+        .reserve-form .form-control,
+        .reserve-form .form-select,
+        .reserve-form .stepper {
+            border-radius: 12px;
+            border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
+            transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease, transform .12s ease;
+        }
+
+        .reserve-form .form-control,
+        .reserve-form .form-select {
+            min-height: 44px;
+            padding-inline: .82rem;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 99%, transparent), color-mix(in srgb, var(--card) 94%, transparent));
+        }
+
+        .reserve-form .form-control::placeholder {
+            color: color-mix(in srgb, var(--muted) 72%, var(--text));
+            opacity: .82;
+        }
+
+        .reserve-form .form-control:hover,
+        .reserve-form .form-select:hover,
+        .reserve-form .stepper:hover {
+            border-color: color-mix(in srgb, var(--wine) 24%, var(--border));
+            background-color: color-mix(in srgb, var(--card) 96%, transparent);
+        }
+
+        .reserve-form .form-control:focus,
+        .reserve-form .form-select:focus,
+        .reserve-form .stepper:focus-within {
+            border-color: color-mix(in srgb, var(--wine) 58%, var(--border));
+            box-shadow: 0 0 0 .24rem color-mix(in srgb, var(--wine) 20%, transparent);
+            background-color: color-mix(in srgb, var(--card) 99%, transparent);
+        }
+
+        .reserve-form .form-select {
+            background-position: right .9rem center;
+            background-size: 14px 10px;
+        }
+
+        .reserve-form .form-label {
+            margin-bottom: .38rem;
+            letter-spacing: -.005em;
+        }
+
+        .reserve-form .form-text {
+            margin-top: .38rem;
+            color: color-mix(in srgb, var(--muted) 94%, var(--text));
+        }
+
+        .reserve-form .form-text {
+            font-size: .86rem;
+        }
+
+        .slots-wrap {
+            border-radius: 20px;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 95%, transparent), color-mix(in srgb, var(--card) 90%, transparent));
+        }
+
+        .price-wrap {
+            border-color: color-mix(in srgb, var(--wine) 24%, var(--border));
+        }
+
+        .schedule-wrap {
+            border-color: color-mix(in srgb, #0f5da8 18%, var(--border));
+        }
+
+        .transfer-wrap {
+            border-color: color-mix(in srgb, #179561 20%, var(--border));
+        }
+
+        .reserve-actions {
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+            margin-top: 8px !important;
+        }
+
+        .wizard-wrap {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--card) 95%, transparent);
+            padding: 12px;
+        }
+
+        .wizard-track {
+            height: 6px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--card) 80%, transparent);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .wizard-bar {
+            height: 100%;
+            width: 25%;
+            background: linear-gradient(90deg, var(--wine), var(--wine-2));
+            transition: width .2s ease;
+        }
+
+        .wizard-steps {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .wizard-step {
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: var(--muted);
+            padding: .42rem .55rem;
+            font-size: .82rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .16s ease, color .16s ease, background .16s ease;
+        }
+
+        .wizard-step.is-active,
+        .wizard-step.is-done {
+            color: var(--text);
+            border-color: color-mix(in srgb, var(--wine) 34%, var(--border));
+            background: color-mix(in srgb, var(--chip-bg) 58%, var(--card));
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.is-active {
+            display: block;
+            animation: stepFadeIn .18s ease;
+        }
+
+        @keyframes stepFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-card {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--card) 96%, transparent);
+            padding: 14px;
+        }
+
+        .step-title {
+            margin: 0 0 10px 0;
+            font-size: 1.02rem;
+            font-weight: 760;
+            letter-spacing: -.01em;
+        }
+
+        .step-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .confirm-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .confirm-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .32rem .62rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: color-mix(in srgb, var(--text) 90%, var(--muted));
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .confirm-summary {
+            border-color: color-mix(in srgb, var(--wine) 22%, var(--border));
+        }
+
+        .confirm-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .confirm-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
+            padding: 10px 12px;
+            min-height: 66px;
+        }
+
+        .confirm-item.total-item {
+            border-color: color-mix(in srgb, var(--wine) 34%, var(--border));
+            background: color-mix(in srgb, var(--chip-bg) 58%, var(--card));
+        }
+
+        .confirm-k {
+            display: block;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .confirm-v {
+            display: block;
+            font-size: .98rem;
+            font-weight: 720;
+            color: var(--text);
+            line-height: 1.22;
+            word-break: break-word;
+        }
+
+        .confirm-v.total-value {
+            font-size: 1.08rem;
+        }
+
+        .cancel-policy {
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            margin-top: 12px;
+        }
+
+        .cancel-title {
+            margin: 0 0 4px 0;
+            font-size: .9rem;
+            font-weight: 760;
+        }
+
+        .cancel-text {
+            margin: 0;
+            font-size: .88rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .reserve-submit {
+            min-height: 46px;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            box-shadow: 0 12px 28px rgba(106, 15, 31, .24);
+        }
+
+        .reserve-cancel {
+            min-height: 46px;
+            font-weight: 650;
+        }
+
+        /* =========================
+           Reserva - Dark mode polish
+           ========================= */
+        html[data-theme="dark"] main.container::before {
+            background: radial-gradient(50% 150px at 10% 18%, rgba(139, 21, 48, .30), transparent 78%),
+            radial-gradient(42% 160px at 90% 6%, rgba(20, 99, 173, .24), transparent 76%);
+            filter: blur(4px);
+        }
+
+        html[data-theme="dark"] .reserve-hero {
+            border-color: color-mix(in srgb, #8b1530 36%, var(--border));
+            background: linear-gradient(125deg, color-mix(in srgb, #121420 88%, var(--card) 12%), color-mix(in srgb, var(--card) 96%, transparent)),
+            radial-gradient(980px 420px at 12% -22%, rgba(139, 21, 48, .24), transparent 58%);
+            box-shadow: 0 22px 44px rgba(0, 0, 0, .42);
+        }
+
+        html[data-theme="dark"] .reserve-tag {
+            border-color: color-mix(in srgb, #8b1530 26%, var(--border));
+            background: color-mix(in srgb, #161925 88%, var(--card));
+            color: color-mix(in srgb, #ffd6de 62%, var(--text));
+        }
+
+        html[data-theme="dark"] .reserve-card {
+            border-color: color-mix(in srgb, #8b1530 20%, var(--border));
+            background: linear-gradient(180deg, color-mix(in srgb, #11131d 90%, var(--card) 10%), color-mix(in srgb, #0f121a 88%, var(--card) 12%));
+            box-shadow: 0 20px 48px rgba(0, 0, 0, .45);
+        }
+
+        html[data-theme="dark"] .reserve-form .form-control,
+        html[data-theme="dark"] .reserve-form .form-select,
+        html[data-theme="dark"] .reserve-form .stepper {
+            border-color: color-mix(in srgb, #233145 60%, var(--border));
+            background: linear-gradient(180deg, color-mix(in srgb, #171b26 92%, var(--card)), color-mix(in srgb, #111621 94%, var(--card)));
+            color: var(--text);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, .02);
+        }
+
+        html[data-theme="dark"] .reserve-form .form-control::placeholder {
+            color: color-mix(in srgb, #9fb1cb 60%, var(--muted));
+            opacity: .86;
+        }
+
+        html[data-theme="dark"] .reserve-form .form-control:hover,
+        html[data-theme="dark"] .reserve-form .form-select:hover,
+        html[data-theme="dark"] .reserve-form .stepper:hover {
+            border-color: color-mix(in srgb, #8b1530 36%, #2a3a52);
+            background-color: color-mix(in srgb, #182030 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .reserve-form .form-control:focus,
+        html[data-theme="dark"] .reserve-form .form-select:focus,
+        html[data-theme="dark"] .reserve-form .stepper:focus-within {
+            border-color: color-mix(in srgb, #8b1530 56%, #2f4c74);
+            box-shadow: 0 0 0 .24rem rgba(139, 21, 48, .34);
+            background-color: color-mix(in srgb, #1a2131 94%, var(--card));
+        }
+
+        html[data-theme="dark"] .slots-wrap {
+            border-color: color-mix(in srgb, #203047 54%, var(--border));
+            background: linear-gradient(180deg, color-mix(in srgb, #121926 90%, var(--card)), color-mix(in srgb, #0f1520 88%, var(--card)));
+        }
+
+        html[data-theme="dark"] .price-wrap {
+            border-color: color-mix(in srgb, #8b1530 36%, #27344b);
+        }
+
+        html[data-theme="dark"] .schedule-wrap {
+            border-color: color-mix(in srgb, #1d6daf 40%, #27344b);
+        }
+
+        html[data-theme="dark"] .transfer-wrap {
+            border-color: color-mix(in srgb, #179561 34%, #27344b);
+        }
+
+        html[data-theme="dark"] .transfer-item {
+            border-color: color-mix(in srgb, #2a3a52 58%, var(--border));
+            background: color-mix(in srgb, #131c2b 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .transfer-key {
+            color: color-mix(in srgb, #9eb0ca 62%, var(--muted));
+        }
+
+        html[data-theme="dark"] .transfer-tip {
+            border-color: color-mix(in srgb, #2a3a52 62%, var(--border));
+            background: color-mix(in srgb, #111a28 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .transfer-ref {
+            border-top-color: color-mix(in srgb, #2a3a52 66%, var(--border));
+        }
+
+        html[data-theme="dark"] .pill {
+            border-color: color-mix(in srgb, #8b1530 38%, var(--border));
+            background: color-mix(in srgb, #3f1120 54%, var(--chip-bg));
+            color: #ffdfe5;
+        }
+
+        html[data-theme="dark"] .slot-pill {
+            border-color: color-mix(in srgb, #253349 58%, var(--border));
+            background: color-mix(in srgb, #151c2a 92%, var(--card));
+        }
+
+        html[data-theme="dark"] .slot-pill:hover {
+            border-color: color-mix(in srgb, #8b1530 44%, #2f4669);
+            background: color-mix(in srgb, #1a2233 88%, var(--card));
+        }
+
+        html[data-theme="dark"] .slot-pill .mini {
+            border-color: color-mix(in srgb, #253349 56%, var(--border));
+            background: color-mix(in srgb, #111a29 90%, var(--card));
+            color: color-mix(in srgb, #b2c2d9 66%, var(--muted));
+        }
+
+        html[data-theme="dark"] .tbtn {
+            border-color: color-mix(in srgb, #253349 58%, var(--border));
+            background: color-mix(in srgb, #151d2c 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .tbtn:hover {
+            border-color: color-mix(in srgb, #8b1530 40%, #2f4669);
+            background: color-mix(in srgb, #1a2335 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .tbtn-ic {
+            border-color: color-mix(in srgb, #263750 58%, var(--border));
+            background: color-mix(in srgb, #121a29 92%, var(--card));
+        }
+
+        html[data-theme="dark"] #onlineWrap .alert-info {
+            color: #d6ebff;
+            border-color: color-mix(in srgb, #1d6daf 44%, var(--border));
+            background: linear-gradient(180deg, rgba(29, 109, 175, .18), rgba(29, 109, 175, .10));
+        }
+
+        html[data-theme="dark"] .reserve-actions {
+            border-top-color: color-mix(in srgb, #2a3a52 66%, var(--border));
+        }
+
+        html[data-theme="dark"] .reserve-submit {
+            box-shadow: 0 12px 30px rgba(139, 21, 48, .34);
+        }
+
+        html[data-theme="dark"] .wizard-wrap,
+        html[data-theme="dark"] .step-card {
+            border-color: color-mix(in srgb, #2a3a52 56%, var(--border));
+            background: color-mix(in srgb, #121826 90%, var(--card));
+        }
+
+        html[data-theme="dark"] .wizard-track {
+            border-color: color-mix(in srgb, #2a3a52 56%, var(--border));
+            background: color-mix(in srgb, #0f1522 92%, var(--card));
+        }
+
+        html[data-theme="dark"] .wizard-step {
+            border-color: color-mix(in srgb, #2a3a52 58%, var(--border));
+            background: color-mix(in srgb, #121a2a 92%, var(--card));
+            color: color-mix(in srgb, #a7b8d1 62%, var(--muted));
+        }
+
+        html[data-theme="dark"] .wizard-step.is-active,
+        html[data-theme="dark"] .wizard-step.is-done {
+            border-color: color-mix(in srgb, #8b1530 40%, #2a3a52);
+            background: color-mix(in srgb, #3b1220 58%, #121a2a);
+            color: #ffe0e7;
+        }
+
+        html[data-theme="dark"] .confirm-pill {
+            border-color: color-mix(in srgb, #2a3a52 56%, var(--border));
+            background: color-mix(in srgb, #131b2b 90%, var(--card));
+            color: color-mix(in srgb, #aec0d8 64%, var(--muted));
+        }
+
+        html[data-theme="dark"] .confirm-summary {
+            border-color: color-mix(in srgb, #8b1530 36%, #2a3a52);
+        }
+
+        html[data-theme="dark"] .confirm-item {
+            border-color: color-mix(in srgb, #2a3a52 58%, var(--border));
+            background: color-mix(in srgb, #111a2a 92%, var(--card));
+        }
+
+        html[data-theme="dark"] .confirm-item.total-item {
+            border-color: color-mix(in srgb, #8b1530 40%, #2a3a52);
+            background: color-mix(in srgb, #3b1220 58%, #121a2a);
+        }
+
+        html[data-theme="dark"] .confirm-k {
+            color: color-mix(in srgb, #9fb2cc 66%, var(--muted));
+        }
+
+        html[data-theme="dark"] .cancel-policy {
+            border-color: color-mix(in srgb, #2a3a52 62%, var(--border));
+            background: color-mix(in srgb, #101928 92%, var(--card));
+        }
+
+        html[data-theme="dark"] .cancel-text {
+            color: color-mix(in srgb, #a4b8d2 68%, var(--muted));
+        }
+
+        @media (max-width: 768px) {
+            .reserve-card {
+                padding: 1rem !important;
+            }
+
+            .wizard-steps {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .transfer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .confirm-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .form-step.is-active {
+                animation: none;
+            }
+        }
+
     </style>
 
     <!-- ✅ Inyecto pricing sin romper el JS del editor -->
@@ -345,242 +966,371 @@
 
 <main class="container py-4">
 
-    <div class="hero mb-3">
+    <div class="hero reserve-hero mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
                 <h1 class="h3 headline mb-1">Reservar</h1>
                 <div class="subtle">Elige ruta, fecha y cantidad. Te mostramos solo horarios con cupo.</div>
+                <div class="reserve-tags">
+                    <span class="reserve-tag">Proceso guiado</span>
+                    <span class="reserve-tag">Confirmación inmediata</span>
+                    <span class="reserve-tag">Hasta 6 pasajeros</span>
+                </div>
             </div>
             <a class="btn btn-wine" href="/">Volver</a>
         </div>
     </div>
 
-    <div class="card-soft p-4">
+    <div class="card-soft reserve-card p-4">
         <% if (error) { %>
             <div class="alert alert-danger mb-3"><%= error %></div>
         <% } %>
 
-        <form id="reserveForm" method="POST" action="/reserve" class="row g-3" novalidate>
-
-            <!-- 1) Origen -->
-            <div class="col-md-6">
-                <label class="form-label">¿De dónde sales?</label>
-                <select id="from_city" class="form-select" required>
-                    <option value="VIC" selected>Ciudad Victoria</option>
-                    <option value="LLE">Llera</option>
-                </select>
-            </div>
-
-            <!-- 2) Destino -->
-            <div class="col-md-6">
-                <label class="form-label">¿Hacia dónde vas?</label>
-                <select id="to_city" class="form-select" required>
-                    <option value="LLE" selected>Llera</option>
-                    <option value="VIC">Ciudad Victoria</option>
-                </select>
-            </div>
-
-            <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
-
-            <!-- 3) Fecha -->
-            <div class="col-md-4">
-                <label class="form-label">¿Cuándo viajas?</label>
-                <input id="trip_date" name="trip_date" type="date" class="form-control" required/>
-                <div class="form-text subtle">Por defecto se coloca el día de hoy.</div>
-            </div>
-
-            <!-- 4) Tipo -->
-            <div class="col-md-4">
-                <label class="form-label">¿Qué quieres reservar?</label>
-                <select id="type" name="type" class="form-select" required>
-                    <option value="PASSENGER" selected>Pasajero</option>
-                    <option value="PACKAGE">Paquetería</option>
-                </select>
-            </div>
-
-            <!-- 5) Cuántos viajan -->
-            <div class="col-md-4" id="seatsWrap">
-                <label class="form-label">¿Cuántos viajan?</label>
-
-                <div class="stepper">
-                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir">−</button>
-                    <div class="count"><span id="seatsText">1</span></div>
-                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar">+</button>
-
-                    <!-- ✅ SOLO 1–6 -->
-                    <select id="seats" name="seats" class="d-none">
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-
-                <div class="form-text subtle">Máximo 6 pasajeros por salida.</div>
-            </div>
-
-            <!-- ✅ CONTACTO (SIEMPRE) -->
-            <div class="col-md-6" id="contactNameWrap">
-                <label class="form-label">Nombre de contacto</label>
-                <input id="customer_name" name="customer_name" class="form-control" required
-                       placeholder="Ej: Juan Martínez"/>
-                <div class="form-text subtle">
-                    Usaremos este nombre para tu reserva y para contactarte.
-                </div>
-            </div>
-
-            <!-- Teléfono -->
-            <div class="col-md-6">
-                <label class="form-label">Teléfono</label>
-                <input id="phone" name="phone" class="form-control" required
-                       inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376"/>
-                <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
-            </div>
-
-            <!-- ✅ PASAJEROS (OPCIONAL) -->
-            <div class="col-12" id="passengerNamesWrap">
-                <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
-                    <input class="form-check-input" type="checkbox" id="namesToggle">
-                    <label class="form-check-label subtle" for="namesToggle">Capturar nombres</label>
-                </div>
-
-                <div class="form-text subtle mt-1">
-                    Puedes omitir los nombres y solo usar el contacto.
-                </div>
-
-                <div id="passengerNamesBox" class="mt-2 d-none">
-                    <div id="passengerNames" class="row g-2"></div>
-                    <div class="form-text">
-                        Si activas esta opción, capturamos un nombre por asiento.
-                    </div>
-                </div>
-            </div>
-
-            <!-- MÉTODO DE PAGO -->
-            <div class="col-md-6">
-                <label class="form-label">Método de pago</label>
-                <select id="payment_method" name="payment_method" class="form-select" required>
-                    <option value="TAQUILLA" selected>Taquilla</option>
-                    <option value="TRANSFERENCIA">Transferencia</option>
-                    <option value="ONLINE">Pago en línea</option>
-                </select>
-                <div class="form-text subtle">Elige cómo deseas pagar tu reserva.</div>
-            </div>
-
-            <!-- TOTAL A PAGAR -->
-            <div class="col-12">
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Total a pagar</p>
-                        <div class="slots-sub" id="priceHint">Cargando precio…</div>
-                    </div>
-
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="pill">💰 <span id="priceTotal">$0</span></span>
-                        <span class="help" id="priceBreakdown"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TRANSFERENCIA -->
-            <div class="col-12 d-none" id="transferWrap">
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Datos para transferencia</p>
-                        <div class="slots-sub">Realiza la transferencia y envía el comprobante por WhatsApp.</div>
-                    </div>
-
-                    <ul class="kv mb-3">
-                        <li><span class="k">Banco: </span><span class="v" id="bankName">BBVA</span></li>
-                        <li><span class="k">Beneficiario: </span><span class="v" id="bankOwner">Gary Treviño</span></li>
-                        <li>
-                            <span class="k">Número de tarjeta: </span>
-                            <span class="v mono" id="bankClabe">4152 3142 8477 3416</span>
-                        </li>
-                    </ul>
-
-                    <div class="transfer-actions">
-                        <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar número de tarjeta">
-                            <span class="tbtn-ic">📋</span>
-                            <span class="tbtn-txt">Copiar tarjeta</span>
-                        </button>
-
-                        <button type="button" class="tbtn" id="copyTransferMsgBtn"
-                                aria-label="Copiar mensaje de transferencia">
-                            <span class="tbtn-ic">💬</span>
-                            <span class="tbtn-txt">Copiar mensaje</span>
-                        </button>
-                    </div>
-
-                    <div class="note mb-3">
-                        <strong>Concepto sugerido:</strong> “Servicio de transporte”
-                        <span class="subtle">(tu folio se genera al finalizar)</span>.
-                        <br>
-                        Después, envíanos el comprobante por WhatsApp para confirmar.
-                    </div>
-
-                    <label class="form-label">Referencia / folio de transferencia (opcional)</label>
-                    <input id="transfer_ref" name="transfer_ref" class="form-control"
-                           placeholder="Ej: 123456 / SPEI / concepto"/>
-                    <div class="form-text subtle">
-                        Si ya hiciste la transferencia, pega aquí la referencia. Si no, puedes dejarlo vacío.
-                    </div>
-                </div>
-            </div>
-
-            <!-- ONLINE: aviso -->
-            <div class="col-12 d-none" id="onlineWrap">
-                <div class="alert alert-info mb-0">
-                    <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago del pasaje.
-                </div>
-            </div>
-
-            <!-- PAQUETERÍA -->
-            <div class="col-12" id="packageWrap">
-                <label class="form-label">Detalle paquetería (obligatorio)</label>
-                <input id="package_details" name="package_details" class="form-control"
-                       placeholder="Ej: sobre, refacciones, etc."/>
-            </div>
-
-            <!-- Horarios -->
-            <div class="col-12">
-                <label class="form-label">Hora (según cupo)</label>
-                <input type="hidden" id="depart_time" name="depart_time" value="">
-
-                <div class="slots-wrap">
-                    <div class="slots-head">
-                        <p class="slots-title mb-0">Horarios disponibles</p>
-                        <div class="slots-sub" id="slotsHint">Selecciona fecha y ruta.</div>
-                    </div>
-
-                    <div id="slotsLoading" class="help">—</div>
-
-                    <div id="sections" class="d-none">
-                        <div class="slot-section" id="morningSection">
-                            <div class="section-label">🌤️ Mañana</div>
-                            <div id="morningSlots" class="slots"></div>
+            <form id="reserveForm" method="POST" action="/reserve" class="reserve-form row g-3" novalidate>
+                <div class="col-12">
+                    <div class="wizard-wrap">
+                        <div class="wizard-track" aria-hidden="true">
+                            <div id="wizardBar" class="wizard-bar"></div>
                         </div>
-
-                        <div class="slot-section" id="afternoonSection">
-                            <div class="section-label">🌇 Tarde</div>
-                            <div id="afternoonSlots" class="slots"></div>
+                        <div class="wizard-steps" role="tablist" aria-label="Progreso de la reserva">
+                            <button type="button" class="wizard-step is-active" data-step-target="1">1. Viaje</button>
+                            <button type="button" class="wizard-step" data-step-target="2">2. Contacto</button>
+                            <button type="button" class="wizard-step" data-step-target="3">3. Pago</button>
+                            <button type="button" class="wizard-step" data-step-target="4">4. Confirmar</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-text subtle mt-2">Te mostramos horarios con cupo para tu selección.</div>
-                <div class="form-text subtle mt-2">Para cancelaciones favor de enviar tu ticket, con mínimo 1 hora de
-                    anticipación antes de tu viaje para realizar tu devolución sino no hay reembolso.
+                <div class="col-12 form-step is-active" data-step="1">
+                    <div class="step-card">
+                        <h2 class="step-title">Ruta y horario</h2>
+                        <div class="row g-3">
+                            <!-- 1) Origen -->
+                            <div class="col-md-6">
+                                <label class="form-label">¿De dónde sales?</label>
+                                <select id="from_city" class="form-select" required>
+                                    <option value="VIC" selected>Ciudad Victoria</option>
+                                    <option value="LLE">Llera</option>
+                                </select>
+                            </div>
+
+                            <!-- 2) Destino -->
+                            <div class="col-md-6">
+                                <label class="form-label">¿Hacia dónde vas?</label>
+                                <select id="to_city" class="form-select" required>
+                                    <option value="LLE" selected>Llera</option>
+                                    <option value="VIC">Ciudad Victoria</option>
+                                </select>
+                            </div>
+
+                            <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
+
+                            <!-- 3) Fecha -->
+                            <div class="col-md-4">
+                                <label class="form-label">¿Cuándo viajas?</label>
+                                <input id="trip_date" name="trip_date" type="date" class="form-control" required/>
+                                <div class="form-text subtle">Por defecto se coloca el día de hoy.</div>
+                            </div>
+
+                            <!-- 4) Tipo -->
+                            <div class="col-md-4">
+                                <label class="form-label">¿Qué quieres reservar?</label>
+                                <select id="type" name="type" class="form-select" required>
+                                    <option value="PASSENGER" selected>Pasajero</option>
+                                    <option value="PACKAGE">Paquetería</option>
+                                </select>
+                            </div>
+
+                            <!-- 5) Cuántos viajan -->
+                            <div class="col-md-4" id="seatsWrap">
+                                <label class="form-label">¿Cuántos viajan?</label>
+
+                                <div class="stepper">
+                                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir">−
+                                    </button>
+                                    <div class="count"><span id="seatsText">1</span></div>
+                                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar">+</button>
+
+                                    <!-- ✅ SOLO 1–6 -->
+                                    <select id="seats" name="seats" class="d-none">
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                        <option value="6">6</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-text subtle">Máximo 6 pasajeros por salida.</div>
+                            </div>
+
+                            <!-- PAQUETERÍA -->
+                            <div class="col-12" id="packageWrap">
+                                <label class="form-label">Detalle paquetería (obligatorio)</label>
+                                <input id="package_details" name="package_details" class="form-control"
+                                       placeholder="Ej: sobre, refacciones, etc."/>
+                            </div>
+
+                            <!-- Horarios -->
+                            <div class="col-12">
+                                <label class="form-label">Hora (según cupo)</label>
+                                <input type="hidden" id="depart_time" name="depart_time" value="">
+
+                                <div class="slots-wrap schedule-wrap">
+                                    <div class="slots-head">
+                                        <p class="slots-title mb-0">Horarios disponibles</p>
+                                        <div class="slots-sub" id="slotsHint">Selecciona fecha y ruta.</div>
+                                    </div>
+
+                                    <div id="slotsLoading" class="help">—</div>
+
+                                    <div id="sections" class="d-none">
+                                        <div class="slot-section" id="morningSection">
+                                            <div class="section-label">🌤️ Mañana</div>
+                                            <div id="morningSlots" class="slots"></div>
+                                        </div>
+
+                                        <div class="slot-section" id="afternoonSection">
+                                            <div class="section-label">🌇 Tarde</div>
+                                            <div id="afternoonSlots" class="slots"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-text subtle mt-2">Te mostramos horarios con cupo para tu selección.
+                                </div>
+                                <div id="departTimeError" class="step-inline-error d-none"></div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 form-step" data-step="2">
+                    <div class="step-card">
+                        <h2 class="step-title">Datos de contacto</h2>
+                        <div class="row g-3">
+                            <!-- ✅ CONTACTO (SIEMPRE) -->
+                            <div class="col-md-6" id="contactNameWrap">
+                                <label class="form-label">Nombre de contacto</label>
+                                <input id="customer_name" name="customer_name" class="form-control" required
+                                       placeholder="Ej: Juan Martínez"/>
+                                <div class="form-text subtle">
+                                    Usaremos este nombre para tu reserva y para contactarte.
+                                </div>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input id="phone" name="phone" class="form-control" required
+                                       inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376"/>
+                                <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
+                            </div>
+
+                            <!-- ✅ PASAJEROS (OPCIONAL) -->
+                            <div class="col-12" id="passengerNamesWrap">
+                                <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
+                                    <input class="form-check-input" type="checkbox" id="namesToggle">
+                                    <label class="form-check-label subtle" for="namesToggle">Capturar nombres</label>
+                                </div>
+
+                                <div class="form-text subtle mt-1">
+                                    Puedes omitir los nombres y solo usar el contacto.
+                                </div>
+
+                                <div id="passengerNamesBox" class="mt-2 d-none">
+                                    <div id="passengerNames" class="row g-2"></div>
+                                    <div class="form-text">
+                                        Si activas esta opción, capturamos un nombre por asiento.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            </button>
+                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 d-flex gap-2 flex-wrap mt-2">
-                <button class="btn btn-wine px-4">Confirmar reserva</button>
-                <a class="btn btn-outline-secondary px-4" href="/">Cancelar</a>
+                <div class="col-12 form-step" data-step="3">
+                    <div class="step-card">
+                        <h2 class="step-title">Pago</h2>
+                        <div class="row g-3">
+                            <!-- MÉTODO DE PAGO -->
+                            <div class="col-md-6">
+                                <label class="form-label">Método de pago</label>
+                                <select id="payment_method" name="payment_method" class="form-select" required>
+                                    <option value="TAQUILLA" selected>Taquilla</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                    <option value="ONLINE">Pago en línea</option>
+                                </select>
+                                <div class="form-text subtle">Elige cómo deseas pagar tu reserva.</div>
+                            </div>
+
+                            <!-- TOTAL A PAGAR -->
+                            <div class="col-12">
+                                <div class="slots-wrap price-wrap">
+                                    <div class="slots-head">
+                                        <p class="slots-title mb-0">Total a pagar</p>
+                                        <div class="slots-sub" id="priceHint">Cargando precio…</div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="pill">💰 <span id="priceTotal">$0</span></span>
+                                        <span class="help" id="priceBreakdown"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TRANSFERENCIA -->
+                            <div class="col-12 d-none" id="transferWrap">
+                                <div class="slots-wrap transfer-wrap">
+                                    <div class="slots-head">
+                                        <p class="slots-title mb-0">Datos para transferencia</p>
+                                        <div class="slots-sub">Transfiere y comparte el comprobante por WhatsApp.</div>
+                                    </div>
+
+                                    <div class="transfer-grid" aria-label="Datos bancarios">
+                                        <div class="transfer-item">
+                                            <span class="transfer-key">Banco</span>
+                                            <span class="transfer-value" id="bankName">BBVA</span>
+                                        </div>
+                                        <div class="transfer-item">
+                                            <span class="transfer-key">Beneficiario</span>
+                                            <span class="transfer-value" id="bankOwner">Gary Treviño</span>
+                                        </div>
+                                        <div class="transfer-item">
+                                            <span class="transfer-key">Numero de tarjeta</span>
+                                            <span class="transfer-value mono" id="bankClabe">4152 3142 8477 3416</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="transfer-actions">
+                                        <button type="button" class="tbtn" id="copyClabeBtn"
+                                                aria-label="Copiar número de tarjeta">
+                                        <span class="tbtn-ic" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </span>
+                                            <span class="tbtn-txt">Copiar tarjeta</span>
+                                        </button>
+
+                                        <button type="button" class="tbtn" id="copyTransferMsgBtn"
+                                                aria-label="Copiar mensaje de transferencia">
+                                        <span class="tbtn-ic" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                 stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                            </svg>
+                                        </span>
+                                            <span class="tbtn-txt">Copiar mensaje</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="transfer-tip">
+                                        <strong>Concepto sugerido:</strong> “Servicio de transporte”
+                                        <span class="subtle">(tu folio se genera al finalizar)</span>.
+                                        <br>
+                                        Después, envíanos el comprobante por WhatsApp para confirmar.
+                                    </div>
+
+                                    <div class="transfer-ref d-none">
+                                        <label class="form-label">Referencia / folio de transferencia (opcional)</label>
+                                        <input id="transfer_ref" name="transfer_ref" class="form-control"
+                                               placeholder="Ej: 123456 / SPEI / concepto"/>
+                                        <div class="form-text subtle">
+                                            Si ya hiciste la transferencia, pega aquí la referencia. Si no, puedes
+                                            dejarlo vacío.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ONLINE: aviso -->
+                            <div class="col-12 d-none" id="onlineWrap">
+                                <div class="alert alert-info mb-0">
+                                    <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago del
+                                    pasaje.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            </button>
+                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                        </div>
+                    </div>
             </div>
 
+                <div class="col-12 form-step" data-step="4">
+                    <div class="step-card">
+                        <div class="confirm-head">
+                            <h2 class="step-title mb-0">Confirmación</h2>
+                            <span class="confirm-pill">Revisa antes de enviar</span>
+                        </div>
+                        <div class="slots-wrap confirm-summary">
+                            <div class="slots-head">
+                                <p class="slots-title mb-0">Resumen de la reserva</p>
+                            </div>
+                            <div class="confirm-grid">
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Ruta</span>
+                                    <span class="confirm-v" id="sumRoute">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Fecha</span>
+                                    <span class="confirm-v" id="sumDate">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Hora</span>
+                                    <span class="confirm-v" id="sumTime">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Tipo</span>
+                                    <span class="confirm-v" id="sumType">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Pasajeros</span>
+                                    <span class="confirm-v" id="sumSeats">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Pago</span>
+                                    <span class="confirm-v" id="sumPayment">-</span>
+                                </div>
+                                <div class="confirm-item total-item">
+                                    <span class="confirm-k">Total</span>
+                                    <span class="confirm-v total-value" id="sumTotal">-</span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k">Contacto</span>
+                                    <span class="confirm-v" id="sumContact">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cancel-policy">
+                            <p class="cancel-title">Política de cancelación</p>
+                            <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar
+                                devolución.</p>
+                        </div>
+
+                        <div class="step-actions reserve-actions">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            </button>
+                            <button class="btn btn-wine px-4 reserve-submit">Confirmar reserva</button>
+                            <a class="btn btn-outline-secondary px-4 reserve-cancel" href="/">Cancelar</a>
+                        </div>
+                    </div>
+            </div>
         </form>
     </div>
 
@@ -620,6 +1370,7 @@
     const packageDetails = document.getElementById("package_details");
 
     const departTimeHidden = document.getElementById("depart_time");
+    const departTimeError = document.getElementById("departTimeError");
 
     const slotsHint = document.getElementById("slotsHint");
     const slotsLoading = document.getElementById("slotsLoading");
@@ -638,6 +1389,16 @@
     const bankClabeEl = document.getElementById("bankClabe");
 
     const formEl = document.getElementById("reserveForm");
+    const stepPanels = [...document.querySelectorAll(".form-step")];
+    const stepDots = [...document.querySelectorAll(".wizard-step")];
+    const wizardBar = document.getElementById("wizardBar");
+
+    const TOTAL_STEPS = 4;
+    let currentStep = 1;
+    let maxReachedStep = 1;
+    const DRAFT_KEY = "reserve_form_draft_v1";
+    let restoredStep = 1;
+    let restoredPassengerNames = [];
 
     // ✅ I use this to preselect direction/time coming from the index chips (/reserve?dir=...&time=...)
     let PREFERRED_TIME = null;
@@ -659,6 +1420,83 @@
 
     let PRICING = parsePricingFromServer();
     let PRICING_OK = true;
+
+    function readDraft() {
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return null;
+            const draft = JSON.parse(raw);
+            return draft && typeof draft === "object" ? draft : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function writeDraft() {
+        try {
+            const passengerInputs = [...document.querySelectorAll("#passengerNames input[name='passenger_names[]']")];
+            const draft = {
+                step: currentStep,
+                from_city: fromCity.value || "",
+                to_city: toCity.value || "",
+                trip_date: tripDate.value || "",
+                type: typeSel.value || "PASSENGER",
+                seats: seatsSel.value || "1",
+                customer_name: customerName.value || "",
+                phone: document.getElementById("phone")?.value || "",
+                names_toggle: !!namesToggle?.checked,
+                passenger_names: passengerInputs.map((x) => x.value || ""),
+                payment_method: paymentMethod.value || "TAQUILLA",
+                package_details: packageDetails.value || "",
+                transfer_ref: document.getElementById("transfer_ref")?.value || "",
+                depart_time: departTimeHidden.value || ""
+            };
+
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        } catch {
+            // no-op
+        }
+    }
+
+    function clearDraft() {
+        try {
+            localStorage.removeItem(DRAFT_KEY);
+        } catch {
+            // no-op
+        }
+    }
+
+    function restoreDraft() {
+        const draft = readDraft();
+        if (!draft) return false;
+
+        if (draft.from_city) fromCity.value = String(draft.from_city);
+        if (draft.to_city) toCity.value = String(draft.to_city);
+        if (draft.trip_date) tripDate.value = String(draft.trip_date);
+        if (draft.type) typeSel.value = String(draft.type);
+        if (draft.seats) seatsSel.value = String(draft.seats);
+        if (typeof draft.customer_name === "string") customerName.value = draft.customer_name;
+
+        const phoneEl = document.getElementById("phone");
+        if (phoneEl && typeof draft.phone === "string") phoneEl.value = draft.phone;
+
+        if (namesToggle && typeof draft.names_toggle === "boolean") namesToggle.checked = draft.names_toggle;
+
+        if (paymentMethod && draft.payment_method) paymentMethod.value = String(draft.payment_method);
+        if (typeof draft.package_details === "string") packageDetails.value = draft.package_details;
+
+        const transferRefEl = document.getElementById("transfer_ref");
+        if (transferRefEl && typeof draft.transfer_ref === "string") transferRefEl.value = draft.transfer_ref;
+
+        if (typeof draft.depart_time === "string" && draft.depart_time) {
+            departTimeHidden.value = draft.depart_time;
+            PREFERRED_TIME = draft.depart_time;
+        }
+
+        restoredPassengerNames = Array.isArray(draft.passenger_names) ? draft.passenger_names.map((x) => String(x || "")) : [];
+        restoredStep = Math.max(1, Math.min(TOTAL_STEPS, Number(draft.step || 1)));
+        return true;
+    }
 
     function todayISO() {
         return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
@@ -723,6 +1561,8 @@
         plusBtn.disabled = value >= 6;
 
         updatePriceUI();
+        updateSummary();
+        writeDraft();
     }
 
     function syncDirection() {
@@ -735,6 +1575,8 @@
         const to = toCity.value;
 
         directionInput.value = (from === "VIC" && to === "LLE") ? "VIC_TO_LLE" : "LLE_TO_VIC";
+        updateSummary();
+        writeDraft();
     }
 
     function applyPrefillFromQuery() {
@@ -819,6 +1661,8 @@
 
         updatePriceUI();
         renderPassengerInputs();
+        updateSummary();
+        writeDraft();
     }
 
     function updateUIByPayment() {
@@ -828,6 +1672,8 @@
 
         transferWrap.classList.toggle("d-none", !isTransfer);
         onlineWrap.classList.toggle("d-none", !isOnline);
+        updateSummary();
+        writeDraft();
     }
 
     function renderPassengerInputs() {
@@ -847,16 +1693,23 @@
         for (let i = 1; i <= seats; i++) {
             const col = document.createElement("div");
             col.className = "col-md-4";
-            col.innerHTML = `
-                <input class="form-control" name="passenger_names[]" required
-                       placeholder="Pasajero ${i} (Nombre completo)" />
-            `;
+            const input = document.createElement("input");
+            input.className = "form-control";
+            input.name = "passenger_names[]";
+            input.required = true;
+            input.placeholder = `Pasajero ${i} (Nombre completo)`;
+            input.value = restoredPassengerNames[i - 1] || "";
+            input.addEventListener("input", writeDraft);
+            col.appendChild(input);
             passengerNames.appendChild(col);
         }
+
+        restoredPassengerNames = [];
     }
 
     function clearSlotsUI(msg) {
         departTimeHidden.value = "";
+        clearDepartTimeError();
         slotsLoading.textContent = msg || "Selecciona fecha y ruta para ver horarios.";
         sections.classList.add("d-none");
         morningSlots.innerHTML = "";
@@ -868,10 +1721,13 @@
     function setSelectedTime(hhmm) {
         const value = toHHMM(hhmm);
         departTimeHidden.value = value;
+        clearDepartTimeError();
 
         document.querySelectorAll(".slot-pill").forEach(el => {
             el.setAttribute("aria-selected", (el.dataset.time === value) ? "true" : "false");
         });
+        updateSummary();
+        writeDraft();
     }
 
     function createPill({time, available, seatsNeeded}) {
@@ -1059,6 +1915,8 @@
             priceBreakdown.textContent = `${formatMXN(unit)} (costo fijo)`;
             priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
         }
+
+        updateSummary();
     }
 
     function fieldLabel(el) {
@@ -1081,24 +1939,215 @@
         return `Revisa "${name}".`;
     }
 
+    function getOrCreateFeedback(el) {
+        const next = el.nextElementSibling;
+        if (next && next.classList?.contains("invalid-feedback")) return next;
+
+        const fb = document.createElement("div");
+        fb.className = "invalid-feedback";
+        fb.setAttribute("data-generated", "1");
+        el.insertAdjacentElement("afterend", fb);
+        return fb;
+    }
+
     function markInvalid(el) {
+        const msg = messageForInvalid(el);
+        const fb = getOrCreateFeedback(el);
+        if (fb) fb.textContent = msg;
         el.classList.add("is-invalid");
     }
 
     function clearInvalid(el) {
         el.classList.remove("is-invalid");
+        const next = el.nextElementSibling;
+        if (next && next.classList?.contains("invalid-feedback") && next.getAttribute("data-generated") === "1") {
+            next.remove();
+        }
     }
 
-    formEl.addEventListener("input", (e) => clearInvalid(e.target), true);
-    formEl.addEventListener("change", (e) => clearInvalid(e.target), true);
+    function showDepartTimeError(msg) {
+        if (!departTimeError) return;
+        departTimeError.textContent = msg || "Selecciona un horario disponible.";
+        departTimeError.classList.remove("d-none");
+    }
+
+    function clearDepartTimeError() {
+        if (!departTimeError) return;
+        departTimeError.textContent = "";
+        departTimeError.classList.add("d-none");
+    }
+
+    function routeLabel(dir) {
+        return dir === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
+    }
+
+    function paymentLabel(v) {
+        if (v === "TAQUILLA") return "Taquilla";
+        if (v === "TRANSFERENCIA") return "Transferencia";
+        if (v === "ONLINE") return "Pago en linea";
+        return "-";
+    }
+
+    function updateSummary() {
+        const sumRoute = document.getElementById("sumRoute");
+        const sumDate = document.getElementById("sumDate");
+        const sumTime = document.getElementById("sumTime");
+        const sumType = document.getElementById("sumType");
+        const sumSeats = document.getElementById("sumSeats");
+        const sumPayment = document.getElementById("sumPayment");
+        const sumTotal = document.getElementById("sumTotal");
+        const sumContact = document.getElementById("sumContact");
+
+        if (!sumRoute) return;
+
+        const isPassenger = typeSel.value === "PASSENGER";
+        sumRoute.textContent = routeLabel(directionInput.value || "");
+        sumDate.textContent = tripDate.value || "-";
+        sumTime.textContent = departTimeHidden.value || "Sin seleccionar";
+        sumType.textContent = isPassenger ? "Pasajero" : "Paqueteria";
+        sumSeats.textContent = isPassenger ? String(seatsSel.value || "1") : "N/A";
+        sumPayment.textContent = paymentLabel(paymentMethod.value);
+        sumTotal.textContent = priceTotal.textContent || "-";
+        sumContact.textContent = (customerName.value || "").trim() || "-";
+    }
+
+    function updateWizardUI() {
+        for (const dot of stepDots) {
+            const step = Number(dot.dataset.stepTarget || "1");
+            dot.classList.toggle("is-active", step === currentStep);
+            dot.classList.toggle("is-done", step < currentStep);
+        }
+
+        for (const panel of stepPanels) {
+            panel.classList.toggle("is-active", Number(panel.dataset.step || "1") === currentStep);
+        }
+
+        if (wizardBar) {
+            const pct = (currentStep / TOTAL_STEPS) * 100;
+            wizardBar.style.width = `${pct}%`;
+        }
+
+        updateSummary();
+    }
+
+    function focusFirstFieldInStep(step) {
+        const panel = stepPanels.find((x) => Number(x.dataset.step || "1") === step);
+        if (!panel) return;
+        const first = panel.querySelector("input:not([type=\"hidden\"]), select, textarea, button[data-next-step], button[data-prev-step]");
+        if (first && typeof first.focus === "function") first.focus();
+    }
+
+    function validateStep(step) {
+        const panel = stepPanels.find((x) => Number(x.dataset.step || "1") === step);
+        if (!panel) return true;
+
+        const invalids = [];
+        const requiredInStep = [...panel.querySelectorAll("input, select, textarea")].filter((el) => {
+            if (!el.required) return false;
+            if (el.disabled) return false;
+            if (el.type === "hidden") return false;
+            if (el.closest(".d-none")) return false;
+            if (el.offsetParent === null) return false;
+            return true;
+        });
+
+        for (const el of requiredInStep) {
+            if (!el.checkValidity()) invalids.push(el);
+        }
+
+        if (step === 1 && !departTimeHidden.value) {
+            showDepartTimeError("Selecciona un horario disponible antes de continuar.");
+            document.getElementById("sections")?.closest(".slots-wrap")?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+            return false;
+        }
+
+        if (invalids.length) {
+            invalids.forEach(markInvalid);
+            const first = invalids[0];
+            first.focus({preventScroll: true});
+            first.scrollIntoView({behavior: "smooth", block: "center"});
+            return false;
+        }
+
+        return true;
+    }
+
+    function goToStep(step, force = false) {
+        const target = Math.max(1, Math.min(TOTAL_STEPS, Number(step || 1)));
+        if (!force && target > maxReachedStep + 1) return;
+        currentStep = target;
+        maxReachedStep = Math.max(maxReachedStep, currentStep);
+        updateWizardUI();
+        writeDraft();
+    }
+
+    function goNextStep() {
+        if (!validateStep(currentStep)) return;
+        goToStep(currentStep + 1, true);
+        focusFirstFieldInStep(currentStep);
+    }
+
+    function goPrevStep() {
+        goToStep(currentStep - 1, true);
+        focusFirstFieldInStep(currentStep);
+    }
+
+    formEl.addEventListener("input", (e) => {
+        clearInvalid(e.target);
+        writeDraft();
+    }, true);
+    formEl.addEventListener("change", (e) => {
+        clearInvalid(e.target);
+        writeDraft();
+    }, true);
+
+    formEl.addEventListener("click", (e) => {
+        const nextBtn = e.target.closest("[data-next-step]");
+        if (nextBtn) {
+            e.preventDefault();
+            goNextStep();
+            return;
+        }
+
+        const prevBtn = e.target.closest("[data-prev-step]");
+        if (prevBtn) {
+            e.preventDefault();
+            goPrevStep();
+        }
+    });
+
+    stepDots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+            const target = Number(dot.dataset.stepTarget || "1");
+            if (target <= currentStep) {
+                goToStep(target, true);
+                return;
+            }
+
+            if (target === currentStep + 1 && validateStep(currentStep)) {
+                goToStep(target, true);
+            }
+        });
+    });
 
     formEl.addEventListener("submit", (e) => {
+        if (currentStep < TOTAL_STEPS) {
+            e.preventDefault();
+            if (validateStep(currentStep)) goToStep(currentStep + 1, true);
+            return;
+        }
+
         const invalid = formEl.querySelector(":invalid");
         if (invalid) {
             e.preventDefault();
             [...formEl.querySelectorAll(":invalid")].forEach(markInvalid);
 
-            notify(messageForInvalid(invalid), {variant: "warning", delay: 2600});
+            const panel = invalid.closest(".form-step");
+            const step = Number(panel?.dataset.step || "1");
+            goToStep(step, true);
 
             invalid.focus({preventScroll: true});
             invalid.scrollIntoView({behavior: "smooth", block: "center"});
@@ -1107,13 +2156,16 @@
 
         if (!departTimeHidden.value) {
             e.preventDefault();
-            notify("Selecciona un horario disponible antes de confirmar.", {variant: "warning", delay: 2500});
+            goToStep(1, true);
+            showDepartTimeError("Selecciona un horario disponible antes de confirmar.");
             document.getElementById("sections")?.closest(".slots-wrap")?.scrollIntoView({
                 behavior: "smooth",
                 block: "center"
             });
             return;
         }
+
+        clearDraft();
     });
 
     fromCity.addEventListener("change", () => {
@@ -1125,7 +2177,10 @@
         loadAvailability();
     });
 
-    tripDate.addEventListener("change", loadAvailability);
+    tripDate.addEventListener("change", () => {
+        updateSummary();
+        loadAvailability();
+    });
 
     typeSel.addEventListener("change", () => {
         updateUIByType();
@@ -1134,6 +2189,12 @@
 
     namesToggle?.addEventListener("change", () => {
         renderPassengerInputs();
+        writeDraft();
+    });
+
+    customerName?.addEventListener("input", () => {
+        updateSummary();
+        writeDraft();
     });
 
     plusBtn.addEventListener("click", () => {
@@ -1150,16 +2211,20 @@
 
     paymentMethod.addEventListener("change", updateUIByPayment);
 
+    // ✅ I restore local draft first, then query params can override when present
+    restoreDraft();
+
     // ✅ I apply query prefill before syncing direction and loading availability
     applyPrefillFromQuery();
 
+    goToStep(restoredStep || 1, true);
     syncDirection();
     updateUIByType();
     updateUIByPayment();
 
     if (!tripDate.value) tripDate.value = todayISO();
 
-    setSeats(1);
+    setSeats(Number(seatsSel.value || 1));
     renderPassengerInputs();
 
     // ✅ pintar precio inmediato con lo que vino del server
@@ -1170,6 +2235,7 @@
 
     // horarios
     loadAvailability();
+    updateSummary();
 </script>
 
 </body>

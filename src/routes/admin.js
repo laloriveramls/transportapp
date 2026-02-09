@@ -217,7 +217,7 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
     const pageSize = Math.max(10, Math.min(200, Number(req.query.pageSize || 25)));
     const pageReq = Math.max(1, Number(req.query.page || 1));
 
-    const folioExpr = `CONCAT('RES-', DATE_FORMAT(t.trip_date,'%Y%m%d'), '-', LPAD(r.id,6,'0'))`;
+    const folioExpr = `CONCAT('RES-', DATE_FORMAT(t.trip_date,'%Y%m%d'), '-', LPAD(COALESCE(NULLIF(r.daily_seq,0), r.id),3,'0'))`;
     const phoneDigitsExpr =
         `REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(r.phone,''),' ',''),'-',''),'(',''),')',''),'+','')`;
 
