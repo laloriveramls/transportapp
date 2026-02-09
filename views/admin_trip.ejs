@@ -9,6 +9,10 @@
     }) %>
 
     <style>
+        main.container {
+            max-width: 1220px;
+        }
+
         .page-title{ letter-spacing:-.02em; font-weight:800; margin:0; }
 
         .pill{
@@ -21,6 +25,30 @@
             font-weight:700;
             font-size:.9rem;
             white-space:nowrap;
+        }
+
+        .hero-trip {
+            background: radial-gradient(760px 260px at -10% -35%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 70%),
+            var(--card);
+        }
+
+        .route-line {
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            flex-wrap: wrap;
+        }
+
+        .route-time {
+            color: var(--wine);
+            font-weight: 800;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: .5rem;
         }
 
         .trip-card{
@@ -65,6 +93,7 @@
             font-weight:700;
             border-bottom:1px solid var(--border);
             white-space:nowrap;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
         }
         .table-pro td{
             vertical-align:middle;
@@ -115,6 +144,7 @@
             display:inline-flex;
             align-items:center;
             gap:.35rem;
+            min-height: 32px;
         }
 
         .btn-ghost{
@@ -152,6 +182,10 @@
         .subtle{ color:var(--muted); }
         .table-pro tbody tr:hover{ background:color-mix(in srgb, var(--card) 80%, var(--wine) 4%); }
 
+        .table-pro tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
         .ticket-code{
             font-weight:800;
             letter-spacing:.02em;
@@ -176,7 +210,16 @@
             .trip-card .bottom{ padding:10px 14px 14px; }
             .pill{ font-size:.88rem; }
             .page-title{ font-size:1.15rem; line-height:1.2; }
-            .trip-card .top .text-end{ text-align:left !important; }
+
+            .hero-actions {
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            .trip-card .top .text-end {
+                text-align: left !important;
+                width: 100%;
+            }
 
             .tr-desktop{ display:none; }
             .tr-mobile{ display:table-row; }
@@ -304,19 +347,20 @@
     }
     %>
 
-    <div class="trip-card mb-3">
+    <div class="trip-card hero-trip mb-3">
         <div class="top">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
                     <div class="pill">🚌 Salida</div>
-                    <h1 class="h3 page-title mt-2">
-                        <%= directionLabel(trip.direction) %> —
-                        <span style="color: var(--wine);"><%= trip.depart_time %></span>
+                    <h1 class="h3 page-title mt-2 route-line">
+                        <span><%= directionLabel(trip.direction) %></span>
+                        <span class="subtle">→</span>
+                        <span class="route-time"><%= trip.depart_time %></span>
                     </h1>
                     <div class="subtle">Fecha: <%= trip.trip_date %></div>
                 </div>
 
-                <div class="text-end">
+                <div class="text-end hero-actions">
                     <div class="pill">🧍‍♂️ <%= used %>/<%= cap %> · <%= libres %> libres</div>
                     <div class="pill mt-2">📦 Paquetería: <%= mandados %></div>
 

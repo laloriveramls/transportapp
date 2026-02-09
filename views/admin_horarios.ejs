@@ -8,8 +8,26 @@
     }) %>
 
     <style>
-        .page-title{ letter-spacing:-.02em; font-weight:650; margin:0; }
+        main.container {
+            max-width: 1240px;
+        }
+
+        .page-title {
+            letter-spacing: -.02em;
+            font-weight: 700;
+            margin: 0;
+        }
         .subtle{ color: var(--muted); }
+
+        .hero-head {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            background: radial-gradient(780px 240px at -12% -40%, color-mix(in srgb, var(--wine) 14%, transparent), transparent 72%),
+            color-mix(in srgb, var(--card) 96%, transparent);
+            box-shadow: var(--shadow);
+        }
 
         .card-soft{
             background: var(--card);
@@ -29,13 +47,29 @@
             align-items:end;
         }
 
+        .controls > div {
+            min-width: 220px;
+        }
+
+        .form-control, .form-select {
+            min-height: 42px;
+            border-radius: 12px;
+        }
+
+        #loadBtn {
+            min-height: 42px;
+            border-radius: 12px;
+            font-weight: 650;
+            padding-inline: 1rem;
+        }
+
         .form-label{ font-weight:600; }
 
         .slots-wrap{
             border:1px solid var(--border);
             border-radius:18px;
             padding: 14px;
-            background: color-mix(in srgb, var(--card) 90%, transparent);
+            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent), color-mix(in srgb, var(--card) 92%, transparent));
         }
 
         .pill{
@@ -87,6 +121,7 @@
             background: color-mix(in srgb, var(--card) 92%, transparent);
             color: var(--text);
             font-weight:650;
+            transition: border-color .16s ease, background .16s ease;
         }
         .btn-mini:hover{
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
@@ -112,10 +147,12 @@
             align-items:center;
             gap:.5rem;
             user-select:none;
+            transition: border-color .16s ease, background .16s ease, transform .16s ease;
         }
         .tabbtn:hover{
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
             background: color-mix(in srgb, var(--card) 78%, transparent);
+            transform: translateY(-1px);
         }
         .tabbtn.is-active{
             border-color: color-mix(in srgb, var(--wine) 70%, var(--border));
@@ -181,6 +218,13 @@
             border-radius: 16px;
             background: color-mix(in srgb, var(--card) 92%, transparent);
             margin-top: 10px;
+            transition: border-color .16s ease, transform .16s ease, background .16s ease;
+        }
+
+        .slot-row:hover {
+            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
+            background: color-mix(in srgb, var(--card) 84%, transparent);
+            transform: translateY(-1px);
         }
 
         .slot-left {
@@ -701,7 +745,7 @@
         }
 
         hint.textContent = "Cargando…";
-        statusText.textContent = "Consultando BD…";
+        statusText.textContent = "";
 
         const [a, b] = await Promise.all([
             apiGet(`/admin/api/horarios?date=${encodeURIComponent(date)}&direction=${encodeURIComponent("VIC_TO_LLE")}`),
@@ -792,7 +836,7 @@
         kDir.textContent = dirLabel(direction);
 
         hint.textContent = "Cargando cancelados…";
-        statusText.textContent = "Consultando BD…";
+        statusText.textContent = "";
 
         const data = await apiGet(`/admin/api/horarios/disabled-days?direction=${encodeURIComponent(direction)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
         if (!data?.ok){
@@ -906,7 +950,7 @@
         kDir.textContent = dirLabel(direction);
 
         hint.textContent = "Cargando horarios base…";
-        statusText.textContent = "Consultando BD…";
+        statusText.textContent = "";
 
         const data = await apiGet(`/admin/api/templates?direction=${encodeURIComponent(direction)}&includeInactive=1`);
         if (!data?.ok){
@@ -1048,7 +1092,7 @@
         kDir.textContent = "—";
 
         hint.textContent = "Cargando precios…";
-        statusText.textContent = "Consultando BD…";
+        statusText.textContent = "";
 
         const data = await apiGet("/admin/api/pricing");
         if (!data?.ok){

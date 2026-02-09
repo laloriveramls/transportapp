@@ -9,81 +9,169 @@
 
 
     <style>
-        .page-title{ letter-spacing:-.02em; font-weight:650; margin:0; }
-
-        .pill{
-            display:inline-flex; align-items:center; gap:.5rem;
-            padding:.45rem .75rem; border-radius:999px;
-            border:1px solid var(--border);
-            background:var(--chip-bg);
-            color:var(--chip-text);
-            font-weight:600;
-            font-size:.9rem;
-            white-space:nowrap;
+        .page-title {
+            letter-spacing: -.02em;
+            font-weight: 700;
+            margin: 0;
         }
 
-        .stat{
-            border:1px solid var(--border);
-            background:color-mix(in srgb, var(--card) 85%, transparent);
-            border-radius:16px;
-            padding:.6rem .75rem;
-        }
-        .stat .label{ color:var(--muted); font-size:.85rem; }
-        .stat .value{ font-weight:600; }
-
-        .trip-card{
-            background:var(--card);
-            border:1px solid var(--border);
-            box-shadow:var(--shadow);
-            border-radius:20px;
-            overflow:hidden;
-        }
-        .trip-card .top{ padding:16px 16px 10px; }
-        .trip-card .bottom{
-            padding:12px 16px 16px;
-            border-top:1px solid var(--border);
-            background:color-mix(in srgb, var(--card) 88%, transparent);
+        .hero {
+            border: 1px solid var(--border);
+            background: radial-gradient(860px 240px at -8% -40%, color-mix(in srgb, var(--wine) 18%, transparent), transparent 70%),
+            color-mix(in srgb, var(--card) 92%, transparent);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            padding: 1rem;
         }
 
-        .progress-soft{
-            height:10px; border-radius:999px;
-            background:color-mix(in srgb, var(--muted) 18%, transparent);
-            overflow:hidden;
-            border:1px solid var(--border);
-        }
-        .progress-soft > span{
-            display:block; height:100%; width:var(--w,0%);
-            background:linear-gradient(90deg, var(--wine), var(--wine-2));
-            border-radius:999px;
-        }
-
-        .form-control{
-            border-radius:14px;
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-        }
-        .form-control:focus{
-            border-color:color-mix(in srgb, var(--wine) 65%, var(--border));
-            box-shadow:0 0 0 .25rem rgba(106,15,31,.15);
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .42rem .72rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            font-weight: 600;
+            font-size: .86rem;
+            white-space: nowrap;
         }
 
-        .btn-ghost{
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-            border-radius:14px;
-        }
-        .btn-ghost:hover{
-            border-color:color-mix(in srgb, var(--wine) 45%, var(--border));
-            background:color-mix(in srgb, var(--card) 80%, transparent);
-            color:var(--text);
+        .toolbar-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem;
+            align-items: center;
         }
 
-        .muted{ color:var(--muted); }
+        .stat {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            border-radius: 14px;
+            padding: .55rem .7rem;
+            min-width: 148px;
+        }
 
-        .empty-state{ display:none; }
-        .empty-state.show{ display:block; }
+        .stat .label {
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .stat .value {
+            font-weight: 600;
+        }
+
+        .trip-card {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+
+        .trip-card:hover {
+            transform: translateY(-2px);
+            border-color: color-mix(in srgb, var(--wine) 42%, var(--border));
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+        }
+
+        .trip-card .top {
+            padding: 16px 16px 12px 18px;
+        }
+
+        .trip-card .bottom {
+            padding: 12px 16px 14px 18px;
+            border-top: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+        }
+
+        .route-title {
+            margin: 0 0 2px;
+            font-size: 1.05rem;
+            font-weight: 650;
+            letter-spacing: -.01em;
+        }
+
+        .route-time {
+            color: var(--wine);
+            font-weight: 700;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+            margin-top: .7rem;
+        }
+
+        .chip-soft {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--card) 78%, transparent);
+            color: var(--text);
+            font-size: .83rem;
+            padding: .32rem .6rem;
+            font-weight: 550;
+        }
+
+        .progress-soft {
+            height: 10px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--muted) 18%, transparent);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-soft > span {
+            display: block;
+            height: 100%;
+            width: var(--w, 0%);
+            background: linear-gradient(90deg, var(--wine), var(--wine-2));
+            border-radius: 999px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            min-height: 42px;
+        }
+
+        .form-control:focus {
+            border-color: color-mix(in srgb, var(--wine) 65%, var(--border));
+            box-shadow: 0 0 0 .24rem rgba(106, 15, 31, .14);
+        }
+
+        .btn-ghost {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 12px;
+        }
+
+        .btn-ghost:hover {
+            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
+            background: color-mix(in srgb, var(--card) 80%, transparent);
+            color: var(--text);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .empty-state {
+            display: none;
+        }
+
+        .empty-state.show {
+            display: block;
+        }
     </style>
 </head>
 
@@ -93,12 +181,12 @@
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
             <span class="brand-dot"></span>
-            <span class="fw-semibold">Admin • Agenda</span>
+            <span class="fw-semibold">Admin - Agenda</span>
         </a>
 
         <div class="d-flex align-items-center gap-2">
             <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+                <span id="themeIcon">&#x1F319;</span> <span class="d-none d-sm-inline">Tema</span>
             </button>
 
             <form method="POST" action="/admin/logout" class="m-0">
@@ -114,13 +202,13 @@
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
                 <div class="pill">Agenda</div>
-                <h1 class="h3 page-title mt-2 mb-1">Salidas del día</h1>
-                <div class="subtle">Cupo, servicios de paquetería y accesos por salida.</div>
+                <h1 class="h3 page-title mt-2 mb-1">Salidas del dia</h1>
+                <div class="subtle">Cupo, servicios de paqueteria y accesos por salida.</div>
             </div>
 
             <div class="d-flex flex-wrap gap-2 align-items-center">
 
-                <form id="agendaForm" class="d-flex flex-wrap gap-2 align-items-center" method="GET" action="/admin/agenda">
+                <form id="agendaForm" class="toolbar-form" method="GET" action="/admin/agenda">
                     <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">
                     <input type="hidden" name="onlyWithTrip" id="onlyWithTripInput" value="0">
                     <button class="btn btn-wine rounded-4 px-4 fw-semibold">Ver</button>
@@ -132,7 +220,7 @@
                     <!-- ✅ “Tab” a otra página -->
                     <a class="btn btn-ghost px-3 fw-semibold"
                        href="/admin/recent">
-                        Últimos registros
+                        Ultimos registros
                     </a>
 
                     <a class="btn btn-ghost px-3 fw-semibold"
@@ -146,7 +234,7 @@
 
     <div id="emptyState" class="card-soft p-4 empty-state">
         <div class="h6 mb-1">Sin salidas con viaje</div>
-        <div class="subtle">No hay pasajeros ni servicios de paquetería en este día con el filtro activo.</div>
+        <div class="subtle">No hay pasajeros ni servicios de paqueteria en este dia con el filtro activo.</div>
     </div>
 
     <div class="row g-3" id="tripsGrid">
@@ -162,7 +250,7 @@
         <% (trips || []).forEach(t => {
             const used = Number(t.used_seats || 0);
 
-            // ✅ Cap máximo 6 en agenda (aunque DB traiga otro valor)
+            // Cap maximo 6 en agenda (aunque DB traiga otro valor)
             const capRaw = Number(t.capacity_passengers || 0);
             const cap = Math.min(6, Math.max(0, capRaw));
 
@@ -180,9 +268,9 @@
                 <div class="top">
                     <div class="d-flex justify-content-between align-items-start gap-3">
                         <div>
-                            <div class="h5 mb-1" style="font-weight:600;">
-                                <%= directionLabel(t.direction) %> —
-                                <span style="color:var(--wine);"><%= hhmm %></span>
+                            <div class="route-title">
+                                <%= directionLabel(t.direction) %> <span class="muted">→</span> <span
+                                        class="route-time"><%= hhmm %></span>
                             </div>
                             <div class="subtle small">Fecha: <%= t.trip_date %></div>
                         </div>
@@ -192,7 +280,7 @@
                                 <div class="label">Cupo</div>
                                 <div class="value">
                                     <%= used %>/<%= cap %>
-                                    <span class="muted">• <%= remaining %> libres</span>
+                                    <span class="muted">- <%= remaining %> libres</span>
                                 </div>
                             </div>
                         </div>
@@ -200,7 +288,7 @@
 
                     <div class="mt-3">
                         <div class="d-flex justify-content-between small subtle mb-1">
-                            <span>Ocupación</span>
+                            <span>Ocupacion</span>
                             <span><%= pct %>%</span>
                         </div>
                         <div class="progress-soft" style="--w:<%= pct %>%">
@@ -208,9 +296,9 @@
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <span class="chip">Pasajeros: <%= used %></span>
-                        <span class="chip">Paquetería: <%= packs %></span>
+                    <div class="chip-row">
+                        <span class="chip-soft">Pasajeros: <%= used %></span>
+                        <span class="chip-soft">Paqueteria: <%= packs %></span>
                     </div>
                 </div>
 

@@ -2,181 +2,318 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'TransportApp · Admin',
-    description: 'Acceso al panel de administración.',
+    title: 'TransportApp - Admin',
+    description: 'Acceso al panel de administracion.',
     noindex: true
     }) %>
-</head>
-
-
-<style>
-        /* Fondo con blur (glass) */
-        .bg-blur-wrap{
+    <style>
+        .admin-login-page {
             min-height: 100vh;
             position: relative;
             overflow: hidden;
-            background: var(--bg);
+            background: radial-gradient(1200px 520px at -10% -15%, color-mix(in srgb, var(--wine) 24%, transparent), transparent 72%),
+            radial-gradient(1100px 500px at 110% 110%, color-mix(in srgb, var(--wine) 15%, transparent), transparent 72%),
+            linear-gradient(180deg, color-mix(in srgb, var(--bg) 95%, black 5%), var(--bg));
         }
 
-        .bg-blur-wrap::before,
-        .bg-blur-wrap::after{
-            content:"";
-            position:absolute;
-            width: 520px;
-            height: 520px;
-            border-radius: 999px;
-            filter: blur(22px);
-            opacity: .55;
-            pointer-events:none;
+        .admin-login-page::before {
+            content: "";
+            position: absolute;
+            inset: -18%;
+            pointer-events: none;
+            background: radial-gradient(620px 340px at 16% 20%, rgba(106, 15, 31, .28), transparent 70%),
+            radial-gradient(700px 380px at 84% 82%, rgba(106, 15, 31, .24), transparent 72%),
+            radial-gradient(540px 280px at 50% 8%, rgba(106, 15, 31, .14), transparent 74%);
+            filter: blur(30px);
+            opacity: 1;
+            z-index: 0;
         }
 
-        .bg-blur-wrap::before{
-            left: -160px;
-            top: -160px;
-            background: radial-gradient(circle at 30% 30%, rgba(106,15,31,.55), rgba(106,15,31,0));
+        .login-wrap {
+            min-height: calc(100vh - 72px);
+            display: grid;
+            place-items: center;
+            padding: 1.6rem 0 2rem;
+            position: relative;
+            z-index: 1;
         }
 
-        .bg-blur-wrap::after{
-            right: -180px;
-            bottom: -180px;
-            background: radial-gradient(circle at 30% 30%, rgba(106,15,31,.35), rgba(106,15,31,0));
-        }
-
-        .glass-card{
-            background: color-mix(in srgb, var(--card) 78%, transparent);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
+        .login-card {
+            width: min(500px, 100%);
             border-radius: 22px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 90%, transparent);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 1.35rem;
         }
 
-        .admin-badge{
-            display:inline-flex;
-            align-items:center;
-            gap:.5rem;
-            padding: .45rem .75rem;
+        .login-head {
+            margin-bottom: 1rem;
+        }
+
+        .admin-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .4rem .7rem;
             border-radius: 999px;
             border: 1px solid var(--border);
             background: var(--chip-bg);
             color: var(--chip-text);
-            font-weight: 800;
-            font-size: .9rem;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .25px;
+            margin-bottom: .8rem;
         }
 
-        .form-control{
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: transparent;
+        .login-title {
+            margin: 0;
+            font-size: clamp(1.32rem, 1.6vw + 1rem, 1.75rem);
+            line-height: 1.12;
+            font-weight: 800;
             color: var(--text);
         }
-        .form-control::placeholder{
-            color: color-mix(in srgb, var(--muted) 85%, transparent);
+
+        .login-sub {
+            margin: .45rem 0 .95rem;
+            color: var(--muted);
+            font-size: .92rem;
         }
 
-        .form-control:focus{
-            border-color: color-mix(in srgb, var(--wine) 65%, var(--border));
-            box-shadow: 0 0 0 .25rem rgba(106,15,31,.15);
+        .login-divider {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin-bottom: 1rem;
         }
 
-        .btn-admin{
-            border-radius: 14px;
-            padding: .75rem 1rem;
-            font-weight: 900;
+        .input-wrap {
+            position: relative;
+            --ctrl-h: 48px;
+        }
+
+        .input-wrap.has-icon .form-control {
+            padding-left: 2.5rem;
+            padding-right: 2.5rem;
+        }
+
+        .field-icon {
+            position: absolute;
+            left: .82rem;
+            top: calc(1.6rem + (var(--ctrl-h) / 2));
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: color-mix(in srgb, var(--muted) 80%, transparent);
+            pointer-events: none;
+        }
+
+        .form-control {
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 72%, transparent);
+            color: var(--text);
+        }
+
+        .form-control::placeholder {
+            color: color-mix(in srgb, var(--muted) 88%, transparent);
+        }
+
+        .form-control:focus {
+            border-color: color-mix(in srgb, var(--wine) 66%, var(--border));
+            box-shadow: 0 0 0 .22rem rgba(106, 15, 31, .14);
+        }
+
+        .pass-toggle {
+            position: absolute;
+            right: .4rem;
+            top: calc(1.6rem + (var(--ctrl-h) / 2));
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: .5rem;
+        }
+
+        .pass-toggle:hover {
+            color: var(--text);
+            background: color-mix(in srgb, var(--card) 78%, transparent);
+        }
+
+        .pass-toggle svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+        }
+
+        .btn-admin {
+            border-radius: 12px;
+            height: 48px;
+            font-weight: 700;
             letter-spacing: .2px;
         }
 
-        .back-link{
+        .secure-note {
+            margin-top: .8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 65%, transparent);
+            padding: .7rem .8rem;
+            font-size: .83rem;
+            color: var(--muted);
+        }
+
+        .back-link {
             color: color-mix(in srgb, var(--text) 92%, transparent);
             text-decoration: none;
             opacity: .92;
         }
-        .back-link:hover{
+
+        .back-link:hover {
             opacity: 1;
             text-decoration: underline;
         }
+
+        @media (max-width: 575.98px) {
+            .login-card {
+                border-radius: 16px;
+                padding: 1rem;
+            }
+
+            .field-icon {
+                top: 2.15rem;
+            }
+        }
     </style>
 </head>
-
-<body>
+<body class="admin-login-page">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
             <span class="brand-dot"></span>
-            <span class="fw-bold">TransportApp</span>
+            <span class="fw-semibold">TransportApp</span>
         </a>
 
         <div class="d-flex align-items-center gap-2">
             <a class="back-link small d-none d-sm-inline" href="/">Volver</a>
-
             <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span>
+                <span id="themeIcon" aria-hidden="true">*</span>
                 <span class="d-none d-sm-inline">Tema</span>
             </button>
         </div>
     </div>
 </nav>
 
-<div class="bg-blur-wrap d-flex align-items-center">
-    <main class="container py-5" style="max-width: 460px; position: relative; z-index: 1;">
-        <div class="glass-card p-4 p-md-5">
+<main class="container login-wrap">
+    <section class="login-card" aria-labelledby="admin-login-title">
+        <header class="login-head">
+            <div class="admin-chip">Panel admin</div>
+            <h1 id="admin-login-title" class="login-title">Iniciar sesión</h1>
+            <p class="login-sub">Accede para gestionar agenda, pagos y tickets.</p>
+            <div class="login-divider"></div>
+        </header>
 
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <div class="admin-badge">Admin</div>
-                    <h1 class="h4 headline mt-2 mb-1">Iniciar sesión</h1>
-                    <div class="subtle small">Acceso para ver agenda, pagos y tickets.</div>
-                </div>
+        <% if (error) { %>
+            <div class="alert alert-danger mb-3" role="alert"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/admin/login" class="vstack gap-3" autocomplete="on">
+            <div class="input-wrap has-icon">
+                <label for="user" class="form-label subtle mb-1">Usuario</label>
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"></circle>
+                    <path d="M4 20c0-3.2 3.3-5 8-5s8 1.8 8 5" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round"></path>
+                </svg>
+                <input
+                        id="user"
+                        name="user"
+                        class="form-control"
+                        placeholder="Usuario"
+                        required
+                        autofocus
+                        autocomplete="username"
+                        inputmode="text"
+                        autocapitalize="none"
+                        spellcheck="false"
+                />
             </div>
 
-            <% if (error) { %>
-                <div class="alert alert-danger mb-3" role="alert"><%= error %></div>
-            <% } %>
+            <div class="input-wrap has-icon">
+                <label for="pass" class="form-label subtle mb-1">Contrasena</label>
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"></rect>
+                    <path d="M8 11V8a4 4 0 118 0v3" stroke="currentColor" stroke-width="1.8"
+                          stroke-linecap="round"></path>
+                </svg>
+                <input
+                        id="pass"
+                        name="pass"
+                        type="password"
+                        class="form-control"
+                        placeholder="Contrasena"
+                        required
+                        autocomplete="current-password"
+                />
+                <button type="button" class="pass-toggle" id="togglePass" aria-label="Mostrar contrasena"
+                        aria-pressed="false">
+                    <svg id="eyeOn" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg id="eyeOff" viewBox="0 0 24 24" aria-hidden="true" style="display:none;">
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.6 10.6a2 2 0 002.8 2.8"></path>
+                        <path d="M9.9 5.2A11.7 11.7 0 0112 5c6.4 0 10 7 10 7a14.7 14.7 0 01-3.3 4.1"></path>
+                        <path d="M6 6.7A14.4 14.4 0 002 12s3.6 6 10 6a10.7 10.7 0 004.1-.8"></path>
+                    </svg>
+                </button>
+            </div>
 
-            <form method="POST" action="/admin/login" class="vstack gap-3 mt-2" autocomplete="on">
-                <div>
-                    <label for="user" class="form-label subtle mb-1">Usuario</label>
-                    <input
-                            id="user"
-                            name="user"
-                            class="form-control"
-                            placeholder="Usuario"
-                            required
-                            autofocus
-                            autocomplete="username"
-                            inputmode="text"
-                            autocapitalize="none"
-                            spellcheck="false"
-                    />
-                </div>
+            <button class="btn btn-wine btn-admin w-100" type="submit">Entrar</button>
 
-                <div>
-                    <label for="pass" class="form-label subtle mb-1">Contraseña</label>
-                    <input
-                            id="pass"
-                            name="pass"
-                            type="password"
-                            class="form-control"
-                            placeholder="Contraseña"
-                            required
-                            autocomplete="current-password"
-                    />
-                </div>
+            <div class="secure-note">
+                Acceso restringido para administradores autorizados.
+            </div>
 
-                <button class="btn btn-wine btn-admin w-100" type="submit">Entrar</button>
-
-                <div class="text-center small subtle mt-2">
-                    Si no eres admin, regresa a
-                    <a href="/" class="text-decoration-none" style="color: var(--wine); font-weight: 800;">
-                        TransportApp
-                    </a>.
-                </div>
-            </form>
-
-        </div>
-    </main>
-</div>
+            <div class="text-center small subtle mt-1">
+                Si no eres admin, vuelve a
+                <a href="/" class="text-decoration-none" style="color: var(--wine); font-weight: 600;">TransportApp</a>.
+            </div>
+        </form>
+    </section>
+</main>
 
 <script src="/js/theme.js"></script>
+<script>
+    (function () {
+        const pass = document.getElementById("pass");
+        const btn = document.getElementById("togglePass");
+        const eyeOn = document.getElementById("eyeOn");
+        const eyeOff = document.getElementById("eyeOff");
+        if (!pass || !btn) return;
+
+        btn.addEventListener("click", function () {
+            const show = pass.type === "password";
+            pass.type = show ? "text" : "password";
+            btn.setAttribute("aria-pressed", show ? "true" : "false");
+            btn.setAttribute("aria-label", show ? "Ocultar contrasena" : "Mostrar contrasena");
+            if (eyeOn && eyeOff) {
+                eyeOn.style.display = show ? "none" : "";
+                eyeOff.style.display = show ? "" : "none";
+            }
+        });
+    })();
+</script>
 </body>
 </html>
