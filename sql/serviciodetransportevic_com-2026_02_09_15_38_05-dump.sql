@@ -1,79 +1,91 @@
--- phpMyAdmin SQL Dump
--- version 5.2.2
--- https://www.phpmyadmin.net/
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
 --
--- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 09-02-2026 a las 21:25:19
--- Versión del servidor: 11.8.3-MariaDB-log
--- Versión de PHP: 7.2.34
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- Host: 82.197.82.82    Database: u454339855_transportapp
+-- ------------------------------------------------------
+-- Server version	11.8.3-MariaDB-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT = @@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS = @@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION = @@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE = @@TIME_ZONE */;
+/*!40103 SET TIME_ZONE = '+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS = @@UNIQUE_CHECKS, UNIQUE_CHECKS = 0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS = 0 */;
+/*!40101 SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES = @@SQL_NOTES, SQL_NOTES = 0 */;
 
 --
--- Base de datos: `u454339855_transportapp`
+-- Table structure for table `transporte_admin_users`
 --
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `transporte_admin_users`
---
-
+DROP TABLE IF EXISTS `transporte_admin_users`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_admin_users`
 (
-    `id`            bigint(20) UNSIGNED     NOT NULL,
+    `id`            bigint(20) unsigned     NOT NULL AUTO_INCREMENT,
     `username`      varchar(60)             NOT NULL,
     `pass_hash`     varchar(255)            NOT NULL,
     `role`          enum ('ADMIN','VIEWER') NOT NULL DEFAULT 'ADMIN',
     `active`        tinyint(1)              NOT NULL DEFAULT 1,
     `last_login_at` timestamp               NULL     DEFAULT NULL,
     `created_at`    timestamp               NOT NULL DEFAULT current_timestamp(),
-    `updated_at`    timestamp               NULL     DEFAULT NULL ON UPDATE current_timestamp()
+    `updated_at`    timestamp               NULL     DEFAULT NULL ON UPDATE current_timestamp(),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `ux_admin_username` (`username`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 3
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_admin_users`
+-- Dumping data for table `transporte_admin_users`
 --
 
-INSERT INTO `transporte_admin_users` (`id`, `username`, `pass_hash`, `role`, `active`, `last_login_at`, `created_at`,
-                                      `updated_at`)
-VALUES (1, 'VYG', '$2b$10$xBDUilDd1DubqSE8TFJB0Oi53kImdlGXQtfpF457.t.6dWTTFDqaW', 'ADMIN', 1, '2026-02-09 20:06:22',
-        '2026-01-04 02:05:46', '2026-02-09 20:06:22'),
+LOCK TABLES `transporte_admin_users` WRITE;
+/*!40000 ALTER TABLE `transporte_admin_users`
+    DISABLE KEYS */;
+INSERT INTO `transporte_admin_users`
+VALUES (1, 'VYG', '$2b$10$xBDUilDd1DubqSE8TFJB0Oi53kImdlGXQtfpF457.t.6dWTTFDqaW', 'ADMIN', 1, '2026-02-09 21:38:04',
+        '2026-01-04 02:05:46', '2026-02-09 21:38:04'),
        (2, 'root', '$2b$10$FD3V7rnHWCdmT8SMR5c4Zus/ntO2KDQBAL6sb.D5VO/5z6Ouuge9K', 'ADMIN', 1, '2026-02-09 20:48:05',
         '2026-01-05 06:28:45', '2026-02-09 20:48:05');
-
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `transporte_admin_users`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Estructura de tabla para la tabla `transporte_departure_templates`
+-- Table structure for table `transporte_departure_templates`
 --
 
+DROP TABLE IF EXISTS `transporte_departure_templates`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_departure_templates`
 (
-    `id`                  int(11)                          NOT NULL,
+    `id`                  int(11)                          NOT NULL AUTO_INCREMENT,
     `direction`           enum ('VIC_TO_LLE','LLE_TO_VIC') NOT NULL,
     `depart_time`         time                             NOT NULL,
     `capacity_passengers` int(11)                          NOT NULL DEFAULT 7,
-    `active`              tinyint(4)                       NOT NULL DEFAULT 1
+    `active`              tinyint(4)                       NOT NULL DEFAULT 1,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `direction` (`direction`, `depart_time`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 11
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_departure_templates`
+-- Dumping data for table `transporte_departure_templates`
 --
 
-INSERT INTO `transporte_departure_templates` (`id`, `direction`, `depart_time`, `capacity_passengers`, `active`)
+LOCK TABLES `transporte_departure_templates` WRITE;
+/*!40000 ALTER TABLE `transporte_departure_templates`
+    DISABLE KEYS */;
+INSERT INTO `transporte_departure_templates`
 VALUES (1, 'VIC_TO_LLE', '06:30:00', 6, 1),
        (2, 'LLE_TO_VIC', '07:30:00', 6, 1),
        (3, 'VIC_TO_LLE', '09:00:00', 6, 1),
@@ -84,16 +96,20 @@ VALUES (1, 'VIC_TO_LLE', '06:30:00', 6, 1),
        (8, 'LLE_TO_VIC', '14:00:00', 6, 1),
        (9, 'VIC_TO_LLE', '16:00:00', 6, 1),
        (10, 'LLE_TO_VIC', '17:00:00', 6, 1);
-
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `transporte_departure_templates`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Estructura de tabla para la tabla `transporte_payments`
+-- Table structure for table `transporte_payments`
 --
 
+DROP TABLE IF EXISTS `transporte_payments`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_payments`
 (
-    `id`             bigint(20)                             NOT NULL,
+    `id`             bigint(20)                             NOT NULL AUTO_INCREMENT,
     `reservation_id` bigint(20)                             NOT NULL,
     `method`         enum ('TRANSFER','CASH')               NOT NULL,
     `amount`         decimal(10, 2)                                  DEFAULT NULL,
@@ -101,17 +117,24 @@ CREATE TABLE `transporte_payments`
     `reference`      varchar(80)                                     DEFAULT NULL,
     `proof_url`      varchar(255)                                    DEFAULT NULL,
     `verified_at`    timestamp                              NULL     DEFAULT NULL,
-    `created_at`     timestamp                              NOT NULL DEFAULT current_timestamp()
+    `created_at`     timestamp                              NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    KEY `idx_transporte_pay_res` (`reservation_id`),
+    CONSTRAINT `fk_transporte_pay_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 28
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_payments`
+-- Dumping data for table `transporte_payments`
 --
 
-INSERT INTO `transporte_payments` (`id`, `reservation_id`, `method`, `amount`, `status`, `reference`, `proof_url`,
-                                   `verified_at`, `created_at`)
+LOCK TABLES `transporte_payments` WRITE;
+/*!40000 ALTER TABLE `transporte_payments`
+    DISABLE KEYS */;
+INSERT INTO `transporte_payments`
 VALUES (1, 5, 'TRANSFER', NULL, 'VERIFIED', NULL, NULL, '2026-01-02 23:10:35', '2026-01-02 23:10:35'),
        (2, 6, 'CASH', NULL, 'VERIFIED', NULL, NULL, '2026-01-03 17:41:13', '2026-01-03 17:41:13'),
        (3, 8, 'TRANSFER', NULL, 'VERIFIED', NULL, NULL, '2026-01-04 10:33:23', '2026-01-04 10:33:23'),
@@ -139,46 +162,150 @@ VALUES (1, 5, 'TRANSFER', NULL, 'VERIFIED', NULL, NULL, '2026-01-02 23:10:35', '
        (25, 17, 'CASH', NULL, 'VERIFIED', NULL, NULL, '2026-01-06 04:03:47', '2026-01-06 04:03:47'),
        (26, 22, 'CASH', NULL, 'VERIFIED', NULL, NULL, '2026-01-06 04:10:03', '2026-01-06 04:10:03'),
        (27, 24, 'CASH', NULL, 'VERIFIED', NULL, NULL, '2026-01-06 04:24:05', '2026-01-06 04:24:05');
-
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `transporte_payments`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Estructura de tabla para la tabla `transporte_reservations`
+-- Table structure for table `transporte_reservation_passengers`
 --
 
-CREATE TABLE `transporte_reservations`
+DROP TABLE IF EXISTS `transporte_reservation_passengers`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `transporte_reservation_passengers`
 (
-    `id`                       bigint(20)                                                    NOT NULL,
-    `trip_id`                  bigint(20)                                                    NOT NULL,
-    `type`                     enum ('PASSENGER','PACKAGE')                                  NOT NULL,
-    `seats`                    int(11)                                                       NOT NULL DEFAULT 1,
-    `customer_name`            varchar(120)                                                  NOT NULL,
-    `phone`                    varchar(30)                                                   NOT NULL,
-    `package_details`          varchar(255)                                                           DEFAULT NULL,
-    `status`                   enum ('PENDING_PAYMENT','PAY_AT_BOARDING','PAID','CANCELLED') NOT NULL DEFAULT 'PENDING_PAYMENT',
-    `created_at`               timestamp                                                     NOT NULL DEFAULT current_timestamp(),
-    `folio_date`               date                                                          NOT NULL,
-    `daily_seq`                int(10) UNSIGNED                                              NOT NULL,
-    `payment_method`           enum ('TAQUILLA','TRANSFERENCIA','ONLINE')                    NOT NULL DEFAULT 'TAQUILLA',
-    `transfer_ref`             varchar(120)                                                           DEFAULT NULL,
-    `unit_price_mxn`           decimal(10, 2)                                                NOT NULL DEFAULT 120.00,
-    `amount_total_mxn`         decimal(10, 2)                                                NOT NULL DEFAULT 120.00,
-    `paid_at`                  datetime                                                               DEFAULT NULL,
-    `stripe_session_id`        varchar(255)                                                           DEFAULT NULL,
-    `stripe_payment_intent_id` varchar(255)                                                           DEFAULT NULL,
-    `public_token`             varchar(64)                                                            DEFAULT NULL
+    `id`             bigint(20)   NOT NULL AUTO_INCREMENT,
+    `reservation_id` bigint(20)   NOT NULL,
+    `passenger_name` varchar(120) NOT NULL,
+    `created_at`     timestamp    NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    KEY `reservation_id` (`reservation_id`),
+    CONSTRAINT `fk_transporte_res_passengers_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 59
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_reservations`
+-- Dumping data for table `transporte_reservation_passengers`
 --
 
-INSERT INTO `transporte_reservations` (`id`, `trip_id`, `type`, `seats`, `customer_name`, `phone`, `package_details`,
-                                       `status`, `created_at`, `folio_date`, `daily_seq`, `payment_method`,
-                                       `transfer_ref`, `unit_price_mxn`, `amount_total_mxn`, `paid_at`,
-                                       `stripe_session_id`, `stripe_payment_intent_id`, `public_token`)
+LOCK TABLES `transporte_reservation_passengers` WRITE;
+/*!40000 ALTER TABLE `transporte_reservation_passengers`
+    DISABLE KEYS */;
+INSERT INTO `transporte_reservation_passengers`
+VALUES (1, 1, 'Ladislao Rivera Mireles', '2026-01-05 02:16:29'),
+       (2, 2, 'Maria del Carmen', '2026-01-05 02:20:46'),
+       (3, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
+       (4, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
+       (5, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
+       (6, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
+       (7, 4, 'RAQUEL', '2026-01-05 04:59:56'),
+       (8, 4, 'RAQUEL', '2026-01-05 04:59:56'),
+       (9, 5, 'SILVESTRE', '2026-01-05 05:03:08'),
+       (10, 6, 'RAMIRO', '2026-01-05 05:08:10'),
+       (11, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
+       (12, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
+       (13, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
+       (14, 8, 'APARTADO', '2026-01-05 05:14:29'),
+       (15, 8, 'APARTADO', '2026-01-05 05:14:29'),
+       (16, 9, 'CAROLINA', '2026-01-05 05:17:20'),
+       (17, 10, 'ALEJANDRO', '2026-01-05 05:20:04'),
+       (18, 11, 'Antonio González', '2026-01-05 14:42:42'),
+       (19, 12, 'Jorge Luis', '2026-01-05 15:14:27'),
+       (20, 12, 'Jorge Luis', '2026-01-05 15:14:27'),
+       (21, 13, 'Perla castillo', '2026-01-05 17:13:45'),
+       (22, 14, 'Yolanda reyes', '2026-01-05 18:22:49'),
+       (23, 15, 'PANCHO LLERA', '2026-01-05 19:57:28'),
+       (24, 16, 'MARIA DEL CARMEN', '2026-01-05 20:16:14'),
+       (25, 17, 'CHENTY', '2026-01-05 20:21:01'),
+       (26, 17, 'EDUARDO', '2026-01-05 20:21:01'),
+       (27, 18, 'SRA. ESTHELA', '2026-01-05 20:29:44'),
+       (28, 18, 'SRA. ESTHELA', '2026-01-05 20:29:44'),
+       (29, 19, 'DAVID LLERA', '2026-01-05 20:51:58'),
+       (30, 20, 'DENISSE TREVIÑO', '2026-01-05 21:02:23'),
+       (31, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (32, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (33, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (34, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (35, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (36, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
+       (37, 22, 'SRA. LORENZA', '2026-01-06 01:04:59'),
+       (38, 23, 'JOSE ANGEL', '2026-01-06 03:49:18'),
+       (39, 24, 'ALMA', '2026-01-06 03:52:45'),
+       (40, 25, 'JENNY', '2026-01-06 03:56:58'),
+       (41, 26, 'JENNY', '2026-01-06 03:57:52'),
+       (42, 35, 'CELESTINO', '2026-01-07 18:14:10'),
+       (43, 35, 'ERIKA', '2026-01-07 18:14:10'),
+       (44, 66, 'Marlen Moreno', '2026-01-11 18:10:58'),
+       (45, 75, 'alma sandoval', '2026-01-12 00:45:22'),
+       (46, 75, 'genaro castillo', '2026-01-12 00:45:22'),
+       (47, 120, 'Eduardo Herrera', '2026-01-17 15:40:23'),
+       (48, 120, 'Nelly vazquez', '2026-01-17 15:40:23'),
+       (49, 120, 'Alejandra herrera', '2026-01-17 15:40:23'),
+       (50, 122, 'Má de Rosario cedillo', '2026-01-17 16:41:07'),
+       (51, 166, 'Edgar Guadalupe', '2026-01-22 23:31:16'),
+       (52, 183, 'José Waldo Castañeda Meléndez', '2026-01-24 02:37:09'),
+       (53, 184, 'Fatima', '2026-01-24 04:13:19'),
+       (54, 219, 'Viviana aguilar', '2026-01-26 02:55:30'),
+       (55, 305, 'Edna cedillo', '2026-01-31 05:11:27'),
+       (56, 305, 'Sol hernandez', '2026-01-31 05:11:27'),
+       (57, 359, 'Má de Rosario cedillo', '2026-02-04 20:34:25'),
+       (58, 359, 'Leonardo Mejia', '2026-02-04 20:34:25');
+/*!40000 ALTER TABLE `transporte_reservation_passengers`
+    ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `transporte_reservations`
+--
+
+DROP TABLE IF EXISTS `transporte_reservations`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `transporte_reservations`
+(
+    `id`                       bigint(20)                                                              NOT NULL AUTO_INCREMENT,
+    `trip_id`                  bigint(20)                                                              NOT NULL,
+    `type`                     enum ('PASSENGER','PACKAGE')                                            NOT NULL,
+    `seats`                    int(11)                                                                 NOT NULL DEFAULT 1,
+    `customer_name`            varchar(120)                                                            NOT NULL,
+    `phone`                    varchar(30)                                                             NOT NULL,
+    `package_details`          varchar(255)                                                                     DEFAULT NULL,
+    `status`                   enum ('PENDING_PAYMENT','PAY_AT_BOARDING','PAID','CANCELLED','EXPIRED') NOT NULL DEFAULT 'PENDING_PAYMENT',
+    `created_at`               timestamp                                                               NOT NULL DEFAULT current_timestamp(),
+    `folio_date`               date                                                                    NOT NULL,
+    `daily_seq`                int(10) unsigned                                                        NOT NULL,
+    `payment_method`           enum ('TAQUILLA','TRANSFERENCIA','ONLINE')                              NOT NULL DEFAULT 'TAQUILLA',
+    `transfer_ref`             varchar(120)                                                                     DEFAULT NULL,
+    `unit_price_mxn`           decimal(10, 2)                                                          NOT NULL DEFAULT 120.00,
+    `amount_total_mxn`         decimal(10, 2)                                                          NOT NULL DEFAULT 120.00,
+    `paid_at`                  datetime                                                                         DEFAULT NULL,
+    `stripe_session_id`        varchar(255)                                                                     DEFAULT NULL,
+    `stripe_payment_intent_id` varchar(255)                                                                     DEFAULT NULL,
+    `public_token`             varchar(64)                                                                      DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_res_folio_date_daily_seq` (`folio_date`, `daily_seq`),
+    UNIQUE KEY `uq_res_public_token` (`public_token`),
+    KEY `idx_transporte_res_trip` (`trip_id`),
+    KEY `idx_transporte_res_phone` (`phone`),
+    CONSTRAINT `fk_transporte_res_trip` FOREIGN KEY (`trip_id`) REFERENCES `transporte_trips` (`id`) ON UPDATE CASCADE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 402
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `transporte_reservations`
+--
+
+LOCK TABLES `transporte_reservations` WRITE;
+/*!40000 ALTER TABLE `transporte_reservations`
+    DISABLE KEYS */;
+INSERT INTO `transporte_reservations`
 VALUES (1, 1, 'PASSENGER', 1, 'Ladislao Rivera Mireles', '8341754423', NULL, 'CANCELLED', '2026-01-05 02:16:29',
         '2026-01-04', 1, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, NULL),
        (2, 11, 'PASSENGER', 1, 'Maria del Carmen', '8312415893', NULL, 'PAID', '2026-01-05 02:20:46', '2026-01-05', 1,
@@ -671,12 +798,8 @@ VALUES (1, 1, 'PASSENGER', 1, 'Ladislao Rivera Mireles', '8341754423', NULL, 'CA
        (247, 749, 'PASSENGER', 2, 'Victoria Molina', '8341492511', NULL, 'PAY_AT_BOARDING', '2026-01-28 16:48:51',
         '2026-01-28', 7, 'TAQUILLA', NULL, 120.00, 240.00, NULL, NULL, NULL, 'vt_QWoKPplJBzkjoc2yTfn6qTpfXKozN'),
        (248, 749, 'PASSENGER', 1, 'Chantal Martinez', '8341026107', NULL, 'PAY_AT_BOARDING', '2026-01-28 16:52:00',
-        '2026-01-28', 8, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'pEdy9pCZIjaOjQLzA2waoc6FzJ0xAtvz');
-INSERT INTO `transporte_reservations` (`id`, `trip_id`, `type`, `seats`, `customer_name`, `phone`, `package_details`,
-                                       `status`, `created_at`, `folio_date`, `daily_seq`, `payment_method`,
-                                       `transfer_ref`, `unit_price_mxn`, `amount_total_mxn`, `paid_at`,
-                                       `stripe_session_id`, `stripe_payment_intent_id`, `public_token`)
-VALUES (249, 748, 'PASSENGER', 1, 'Telesfora', '8342540580', NULL, 'CANCELLED', '2026-01-28 17:35:50', '2026-01-28', 9,
+        '2026-01-28', 8, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'pEdy9pCZIjaOjQLzA2waoc6FzJ0xAtvz'),
+       (249, 748, 'PASSENGER', 1, 'Telesfora', '8342540580', NULL, 'CANCELLED', '2026-01-28 17:35:50', '2026-01-28', 9,
         'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'y57FftSrmaqOmCJ2YfarKVyuxm7Eskhd'),
        (250, 750, 'PASSENGER', 1, 'Yoscelin', '8343071030', NULL, 'PAY_AT_BOARDING', '2026-01-28 17:46:23',
         '2026-01-28', 10, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'VG6BtvofhRRhZDyrJFamfuPfQIzHRXBc'),
@@ -997,131 +1120,74 @@ VALUES (249, 748, 'PASSENGER', 1, 'Telesfora', '8342540580', NULL, 'CANCELLED', 
         '2026-02-09', 13, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'NAc5KjdzJ0wea9gK68jRLcWcahMWBnFv'),
        (401, 965, 'PASSENGER', 1, 'Dilan', '8135963341', NULL, 'PAY_AT_BOARDING', '2026-02-09 20:08:24', '2026-02-09',
         14, 'TAQUILLA', NULL, 120.00, 120.00, NULL, NULL, NULL, 'MYsNO6dAFuHeIJIxmjhHeIluOx0WH32J');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `transporte_reservation_passengers`
---
-
-CREATE TABLE `transporte_reservation_passengers`
-(
-    `id`             bigint(20)   NOT NULL,
-    `reservation_id` bigint(20)   NOT NULL,
-    `passenger_name` varchar(120) NOT NULL,
-    `created_at`     timestamp    NOT NULL DEFAULT current_timestamp()
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
+/*!40000 ALTER TABLE `transporte_reservations`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Volcado de datos para la tabla `transporte_reservation_passengers`
+-- Table structure for table `transporte_settings`
 --
 
-INSERT INTO `transporte_reservation_passengers` (`id`, `reservation_id`, `passenger_name`, `created_at`)
-VALUES (1, 1, 'Ladislao Rivera Mireles', '2026-01-05 02:16:29'),
-       (2, 2, 'Maria del Carmen', '2026-01-05 02:20:46'),
-       (3, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
-       (4, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
-       (5, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
-       (6, 3, 'Rubí Quiroz', '2026-01-05 02:27:24'),
-       (7, 4, 'RAQUEL', '2026-01-05 04:59:56'),
-       (8, 4, 'RAQUEL', '2026-01-05 04:59:56'),
-       (9, 5, 'SILVESTRE', '2026-01-05 05:03:08'),
-       (10, 6, 'RAMIRO', '2026-01-05 05:08:10'),
-       (11, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
-       (12, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
-       (13, 7, 'MAGDALENA', '2026-01-05 05:11:35'),
-       (14, 8, 'APARTADO', '2026-01-05 05:14:29'),
-       (15, 8, 'APARTADO', '2026-01-05 05:14:29'),
-       (16, 9, 'CAROLINA', '2026-01-05 05:17:20'),
-       (17, 10, 'ALEJANDRO', '2026-01-05 05:20:04'),
-       (18, 11, 'Antonio González', '2026-01-05 14:42:42'),
-       (19, 12, 'Jorge Luis', '2026-01-05 15:14:27'),
-       (20, 12, 'Jorge Luis', '2026-01-05 15:14:27'),
-       (21, 13, 'Perla castillo', '2026-01-05 17:13:45'),
-       (22, 14, 'Yolanda reyes', '2026-01-05 18:22:49'),
-       (23, 15, 'PANCHO LLERA', '2026-01-05 19:57:28'),
-       (24, 16, 'MARIA DEL CARMEN', '2026-01-05 20:16:14'),
-       (25, 17, 'CHENTY', '2026-01-05 20:21:01'),
-       (26, 17, 'EDUARDO', '2026-01-05 20:21:01'),
-       (27, 18, 'SRA. ESTHELA', '2026-01-05 20:29:44'),
-       (28, 18, 'SRA. ESTHELA', '2026-01-05 20:29:44'),
-       (29, 19, 'DAVID LLERA', '2026-01-05 20:51:58'),
-       (30, 20, 'DENISSE TREVIÑO', '2026-01-05 21:02:23'),
-       (31, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (32, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (33, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (34, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (35, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (36, 21, 'DR. EDDY', '2026-01-06 00:38:28'),
-       (37, 22, 'SRA. LORENZA', '2026-01-06 01:04:59'),
-       (38, 23, 'JOSE ANGEL', '2026-01-06 03:49:18'),
-       (39, 24, 'ALMA', '2026-01-06 03:52:45'),
-       (40, 25, 'JENNY', '2026-01-06 03:56:58'),
-       (41, 26, 'JENNY', '2026-01-06 03:57:52'),
-       (42, 35, 'CELESTINO', '2026-01-07 18:14:10'),
-       (43, 35, 'ERIKA', '2026-01-07 18:14:10'),
-       (44, 66, 'Marlen Moreno', '2026-01-11 18:10:58'),
-       (45, 75, 'alma sandoval', '2026-01-12 00:45:22'),
-       (46, 75, 'genaro castillo', '2026-01-12 00:45:22'),
-       (47, 120, 'Eduardo Herrera', '2026-01-17 15:40:23'),
-       (48, 120, 'Nelly vazquez', '2026-01-17 15:40:23'),
-       (49, 120, 'Alejandra herrera', '2026-01-17 15:40:23'),
-       (50, 122, 'Má de Rosario cedillo', '2026-01-17 16:41:07'),
-       (51, 166, 'Edgar Guadalupe', '2026-01-22 23:31:16'),
-       (52, 183, 'José Waldo Castañeda Meléndez', '2026-01-24 02:37:09'),
-       (53, 184, 'Fatima', '2026-01-24 04:13:19'),
-       (54, 219, 'Viviana aguilar', '2026-01-26 02:55:30'),
-       (55, 305, 'Edna cedillo', '2026-01-31 05:11:27'),
-       (56, 305, 'Sol hernandez', '2026-01-31 05:11:27'),
-       (57, 359, 'Má de Rosario cedillo', '2026-02-04 20:34:25'),
-       (58, 359, 'Leonardo Mejia', '2026-02-04 20:34:25');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `transporte_settings`
---
-
+DROP TABLE IF EXISTS `transporte_settings`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_settings`
 (
     `id`                  tinyint(4)     NOT NULL,
     `passenger_price_mxn` decimal(10, 2) NOT NULL DEFAULT 120.00,
     `package_price_mxn`   decimal(10, 2) NOT NULL DEFAULT 120.00,
-    `updated_at`          timestamp      NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+    `updated_at`          timestamp      NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_settings`
+-- Dumping data for table `transporte_settings`
 --
 
-INSERT INTO `transporte_settings` (`id`, `passenger_price_mxn`, `package_price_mxn`, `updated_at`)
+LOCK TABLES `transporte_settings` WRITE;
+/*!40000 ALTER TABLE `transporte_settings`
+    DISABLE KEYS */;
+INSERT INTO `transporte_settings`
 VALUES (1, 120.00, 120.00, '2026-01-17 18:59:38');
-
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `transporte_settings`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Estructura de tabla para la tabla `transporte_tickets`
+-- Table structure for table `transporte_tickets`
 --
 
+DROP TABLE IF EXISTS `transporte_tickets`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_tickets`
 (
-    `id`             bigint(20) NOT NULL,
+    `id`             bigint(20) NOT NULL AUTO_INCREMENT,
     `reservation_id` bigint(20) NOT NULL,
     `code`           char(12)   NOT NULL,
-    `issued_at`      timestamp  NOT NULL DEFAULT current_timestamp()
+    `issued_at`      timestamp  NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_tickets_reservation` (`reservation_id`),
+    UNIQUE KEY `uq_tickets_code` (`code`),
+    KEY `idx_transporte_tk_res` (`reservation_id`),
+    CONSTRAINT `fk_transporte_tk_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 142
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_tickets`
+-- Dumping data for table `transporte_tickets`
 --
 
-INSERT INTO `transporte_tickets` (`id`, `reservation_id`, `code`, `issued_at`)
+LOCK TABLES `transporte_tickets` WRITE;
+/*!40000 ALTER TABLE `transporte_tickets`
+    DISABLE KEYS */;
+INSERT INTO `transporte_tickets`
 VALUES (1, 1, '636KKREA4JXJ', '2026-01-05 02:18:27'),
        (2, 7, 'N6JQZTDBXDZR', '2026-01-05 13:38:21'),
        (3, 8, 'R9FX8WD9PLYS', '2026-01-05 13:42:26'),
@@ -1263,30 +1329,42 @@ VALUES (1, 1, '636KKREA4JXJ', '2026-01-05 02:18:27'),
        (139, 379, 'BD3VVTJT', '2026-02-06 21:35:08'),
        (140, 378, 'OOFD4BVN', '2026-02-06 21:35:40'),
        (141, 399, 'CUUC1SQA', '2026-02-09 19:09:20');
-
--- --------------------------------------------------------
+/*!40000 ALTER TABLE `transporte_tickets`
+    ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Estructura de tabla para la tabla `transporte_trips`
+-- Table structure for table `transporte_trips`
 --
 
+DROP TABLE IF EXISTS `transporte_trips`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `transporte_trips`
 (
-    `id`          bigint(20)                         NOT NULL,
+    `id`          bigint(20)                         NOT NULL AUTO_INCREMENT,
     `template_id` int(11)                            NOT NULL,
     `trip_date`   date                               NOT NULL,
     `status`      enum ('OPEN','CLOSED','CANCELLED') NOT NULL DEFAULT 'OPEN',
     `notes`       varchar(255)                                DEFAULT NULL,
-    `created_at`  timestamp                          NOT NULL DEFAULT current_timestamp()
+    `created_at`  timestamp                          NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `template_id` (`template_id`, `trip_date`),
+    CONSTRAINT `fk_transporte_trips_template` FOREIGN KEY (`template_id`) REFERENCES `transporte_departure_templates` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 968
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Volcado de datos para la tabla `transporte_trips`
+-- Dumping data for table `transporte_trips`
 --
 
-INSERT INTO `transporte_trips` (`id`, `template_id`, `trip_date`, `status`, `notes`, `created_at`)
+LOCK TABLES `transporte_trips` WRITE;
+/*!40000 ALTER TABLE `transporte_trips`
+    DISABLE KEYS */;
+INSERT INTO `transporte_trips`
 VALUES (1, 1, '2026-01-04', 'OPEN', NULL, '2026-01-05 02:15:20'),
        (2, 3, '2026-01-04', 'OPEN', NULL, '2026-01-05 02:15:20'),
        (3, 5, '2026-01-04', 'OPEN', NULL, '2026-01-05 02:15:20'),
@@ -1636,163 +1714,17 @@ VALUES (1, 1, '2026-01-04', 'OPEN', NULL, '2026-01-05 02:15:20'),
        (965, 10, '2026-02-09', 'OPEN', NULL, '2026-02-09 03:45:03'),
        (966, 3, '2026-02-09', 'OPEN', NULL, '2026-02-09 05:36:20'),
        (967, 7, '2026-02-09', 'OPEN', NULL, '2026-02-09 18:21:22');
+/*!40000 ALTER TABLE `transporte_trips`
+    ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE = @OLD_TIME_ZONE */;
 
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `transporte_admin_users`
---
-ALTER TABLE `transporte_admin_users`
-    ADD PRIMARY KEY (`id`),
-    ADD UNIQUE KEY `ux_admin_username` (`username`);
-
---
--- Indices de la tabla `transporte_departure_templates`
---
-ALTER TABLE `transporte_departure_templates`
-    ADD PRIMARY KEY (`id`),
-    ADD UNIQUE KEY `direction` (`direction`, `depart_time`);
-
---
--- Indices de la tabla `transporte_payments`
---
-ALTER TABLE `transporte_payments`
-    ADD PRIMARY KEY (`id`),
-    ADD KEY `idx_transporte_pay_res` (`reservation_id`);
-
---
--- Indices de la tabla `transporte_reservations`
---
-ALTER TABLE `transporte_reservations`
-    ADD PRIMARY KEY (`id`),
-    ADD UNIQUE KEY `uq_res_folio_date_daily_seq` (`folio_date`, `daily_seq`),
-    ADD UNIQUE KEY `uq_res_public_token` (`public_token`),
-    ADD UNIQUE KEY `uk_transporte_reservations_public_token` (`public_token`),
-    ADD KEY `idx_transporte_res_trip` (`trip_id`),
-    ADD KEY `idx_transporte_res_phone` (`phone`);
-
---
--- Indices de la tabla `transporte_reservation_passengers`
---
-ALTER TABLE `transporte_reservation_passengers`
-    ADD PRIMARY KEY (`id`),
-    ADD KEY `reservation_id` (`reservation_id`);
-
---
--- Indices de la tabla `transporte_settings`
---
-ALTER TABLE `transporte_settings`
-    ADD PRIMARY KEY (`id`);
-
---
--- Indices de la tabla `transporte_tickets`
---
-ALTER TABLE `transporte_tickets`
-    ADD PRIMARY KEY (`id`),
-    ADD UNIQUE KEY `code` (`code`),
-    ADD UNIQUE KEY `uq_tickets_reservation` (`reservation_id`),
-    ADD UNIQUE KEY `uq_tickets_code` (`code`),
-    ADD UNIQUE KEY `uk_transporte_tickets_reservation_id` (`reservation_id`),
-    ADD UNIQUE KEY `uk_transporte_tickets_code` (`code`),
-    ADD KEY `idx_transporte_tk_res` (`reservation_id`);
-
---
--- Indices de la tabla `transporte_trips`
---
-ALTER TABLE `transporte_trips`
-    ADD PRIMARY KEY (`id`),
-    ADD UNIQUE KEY `template_id` (`template_id`, `trip_date`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `transporte_admin_users`
---
-ALTER TABLE `transporte_admin_users`
-    MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 3;
-
---
--- AUTO_INCREMENT de la tabla `transporte_departure_templates`
---
-ALTER TABLE `transporte_departure_templates`
-    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 11;
-
---
--- AUTO_INCREMENT de la tabla `transporte_payments`
---
-ALTER TABLE `transporte_payments`
-    MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 28;
-
---
--- AUTO_INCREMENT de la tabla `transporte_reservations`
---
-ALTER TABLE `transporte_reservations`
-    MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 402;
-
---
--- AUTO_INCREMENT de la tabla `transporte_reservation_passengers`
---
-ALTER TABLE `transporte_reservation_passengers`
-    MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 59;
-
---
--- AUTO_INCREMENT de la tabla `transporte_tickets`
---
-ALTER TABLE `transporte_tickets`
-    MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 142;
-
---
--- AUTO_INCREMENT de la tabla `transporte_trips`
---
-ALTER TABLE `transporte_trips`
-    MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    AUTO_INCREMENT = 968;
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `transporte_payments`
---
-ALTER TABLE `transporte_payments`
-    ADD CONSTRAINT `fk_transporte_pay_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `transporte_reservations`
---
-ALTER TABLE `transporte_reservations`
-    ADD CONSTRAINT `fk_transporte_res_trip` FOREIGN KEY (`trip_id`) REFERENCES `transporte_trips` (`id`) ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `transporte_reservation_passengers`
---
-ALTER TABLE `transporte_reservation_passengers`
-    ADD CONSTRAINT `fk_transporte_res_passengers_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `transporte_tickets`
---
-ALTER TABLE `transporte_tickets`
-    ADD CONSTRAINT `fk_transporte_tk_res` FOREIGN KEY (`reservation_id`) REFERENCES `transporte_reservations` (`id`) ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `transporte_trips`
---
-ALTER TABLE `transporte_trips`
-    ADD CONSTRAINT `fk_transporte_trips_template` FOREIGN KEY (`template_id`) REFERENCES `transporte_departure_templates` (`id`) ON UPDATE CASCADE;
-COMMIT;
-
+/*!40101 SET SQL_MODE = @OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS = @OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS = @OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT = @OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS = @OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES = @OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-02-09 15:38:12

@@ -203,6 +203,59 @@ function moneyMXN(n) {
     return v.toLocaleString("es-MX", {style: "currency", currency: "MXN"});
 }
 
+function isIsoDate(v) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
+}
+
+function isIsoMonth(v) {
+    return /^\d{4}-\d{2}$/.test(String(v || ""));
+}
+
+function mtyTodayIsoDate() {
+    return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
+}
+
+function mtyCurrentIsoMonth() {
+    const d = mtyTodayIsoDate();
+    return d.slice(0, 7);
+}
+
+async function getReservationStatsByDay(dayIso) {
+    if (!hasDb) return null;
+
+    const [rows] = await pool.query(
+        `
+            SELECT COUNT(*)                                                                                                       AS total_reservas,
+                   SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END)                                                             AS paid_count,
+                   SUM(CASE WHEN status = 'PENDING_PAYMENT' OR status = 'PAY_AT_BOARDING' THEN 1 ELSE 0 END)                   AS pending_count,
+                   SUM(CASE WHEN status = 'CANCELLED' OR status = 'EXPIRED' THEN 1 ELSE 0 END)                                 AS cancelled_count,
+                   COALESCE(SUM(CASE WHEN status = 'PAID' THEN amount_total_mxn ELSE 0 END), 0)                                AS paid_amount
+            FROM transporte_reservations
+            WHERE folio_date = ?
+        `,
+        [dayIso]
+    );
+    return rows?.[0] || null;
+}
+
+async function getReservationStatsByMonth(monthIso) {
+    if (!hasDb) return null;
+
+    const [rows] = await pool.query(
+        `
+            SELECT COUNT(*)                                                                                                       AS total_reservas,
+                   SUM(CASE WHEN status = 'PAID' THEN 1 ELSE 0 END)                                                             AS paid_count,
+                   SUM(CASE WHEN status = 'PENDING_PAYMENT' OR status = 'PAY_AT_BOARDING' THEN 1 ELSE 0 END)                   AS pending_count,
+                   SUM(CASE WHEN status = 'CANCELLED' OR status = 'EXPIRED' THEN 1 ELSE 0 END)                                 AS cancelled_count,
+                   COALESCE(SUM(CASE WHEN status = 'PAID' THEN amount_total_mxn ELSE 0 END), 0)                                AS paid_amount
+            FROM transporte_reservations
+            WHERE DATE_FORMAT(folio_date, '%Y-%m') = ?
+        `,
+        [monthIso]
+    );
+    return rows?.[0] || null;
+}
+
 /* =========================
    Webhook route
    ========================= */
@@ -275,7 +328,7 @@ router.post("/telegram/webhook", async (req, res) => {
             "/privacy — Privacidad\n" +
             "/time — Hora del servidor (MTY)\n\n" +
             "<i>Admin</i>:\n" +
-            "/ping /chatid /topic /test /version /errors /whoami /uptime /webhook /lastreserve",
+            "/ping /chatid /topic /test /version /errors /whoami /uptime /webhook /lastreserve /diario /mensual",
             replyOpts
         );
         return;
@@ -315,6 +368,8 @@ router.post("/telegram/webhook", async (req, res) => {
         "/uptime",
         "/webhook",
         "/lastreserve",
+        "/diario",
+        "/mensual",
     ]);
 
     if (adminCmds.has(cmd) && !isAdmin(update)) {
@@ -460,6 +515,72 @@ router.post("/telegram/webhook", async (req, res) => {
                 viewUrl ? `Ver: ${escapeHtml(viewUrl)}` : null,
             ].filter(Boolean);
 
+            await tgReply(chatId, lines.join("\n"), replyOpts);
+            return;
+        } catch (e) {
+            await tgReply(chatId, `❌ Error leyendo DB: <code>${escapeHtml(e?.code || e?.message || String(e))}</code>`, replyOpts);
+            return;
+        }
+    }
+
+    if (cmd === "/diario") {
+        if (!hasDb) {
+            await tgReply(chatId, "⚠️ DB no configurada en runtime (missing env vars).", replyOpts);
+            return;
+        }
+
+        const dayArg = String(args?.[0] || "").trim();
+        const day = dayArg || mtyTodayIsoDate();
+
+        if (!isIsoDate(day)) {
+            await tgReply(chatId, "Formato inválido. Usa: <code>/diario</code> o <code>/diario YYYY-MM-DD</code>", replyOpts);
+            return;
+        }
+
+        try {
+            const s = await getReservationStatsByDay(day);
+            const lines = [
+                `📊 <b>Corte diario</b>`,
+                `Fecha: <code>${escapeHtml(day)}</code>`,
+                `Reservas: <b>${escapeHtml(Number(s?.total_reservas || 0))}</b>`,
+                `Pagadas: <code>${escapeHtml(Number(s?.paid_count || 0))}</code>`,
+                `Pendientes: <code>${escapeHtml(Number(s?.pending_count || 0))}</code>`,
+                `Canceladas/expiradas: <code>${escapeHtml(Number(s?.cancelled_count || 0))}</code>`,
+                `Ingreso pagado: <b>${escapeHtml(moneyMXN(s?.paid_amount || 0))}</b>`,
+            ];
+            await tgReply(chatId, lines.join("\n"), replyOpts);
+            return;
+        } catch (e) {
+            await tgReply(chatId, `❌ Error leyendo DB: <code>${escapeHtml(e?.code || e?.message || String(e))}</code>`, replyOpts);
+            return;
+        }
+    }
+
+    if (cmd === "/mensual") {
+        if (!hasDb) {
+            await tgReply(chatId, "⚠️ DB no configurada en runtime (missing env vars).", replyOpts);
+            return;
+        }
+
+        const monthArg = String(args?.[0] || "").trim();
+        const month = monthArg || mtyCurrentIsoMonth();
+
+        if (!isIsoMonth(month)) {
+            await tgReply(chatId, "Formato inválido. Usa: <code>/mensual</code> o <code>/mensual YYYY-MM</code>", replyOpts);
+            return;
+        }
+
+        try {
+            const s = await getReservationStatsByMonth(month);
+            const lines = [
+                `📈 <b>Corte mensual</b>`,
+                `Mes: <code>${escapeHtml(month)}</code>`,
+                `Reservas: <b>${escapeHtml(Number(s?.total_reservas || 0))}</b>`,
+                `Pagadas: <code>${escapeHtml(Number(s?.paid_count || 0))}</code>`,
+                `Pendientes: <code>${escapeHtml(Number(s?.pending_count || 0))}</code>`,
+                `Canceladas/expiradas: <code>${escapeHtml(Number(s?.cancelled_count || 0))}</code>`,
+                `Ingreso pagado: <b>${escapeHtml(moneyMXN(s?.paid_amount || 0))}</b>`,
+            ];
             await tgReply(chatId, lines.join("\n"), replyOpts);
             return;
         } catch (e) {
