@@ -212,7 +212,7 @@ app.use((req, res) => {
     // browser-like HTML requests
     if (req.method === "GET" && wantsHtml) {
         return res.status(404).render("404", {
-            title: "Página no encontrada",
+            title: "404 · Esta página no existe",
             path: req.originalUrl,
             noindex: true
         });
