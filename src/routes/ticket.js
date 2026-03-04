@@ -707,6 +707,10 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
           w.print();
           setTimeout(() => {
             isDelegatingPrint = false;
+            try {
+              window.focus();
+              document.body && typeof document.body.focus === "function" && document.body.focus();
+            } catch {}
           }, 250);
           return true;
         } catch {
