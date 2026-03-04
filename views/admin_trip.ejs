@@ -512,7 +512,7 @@
 
                                     <% if (r.ticket_code) { %>
                                         <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>" target="_blank">👁️ Ver</a>
-                                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.id) %>" target="_blank" rel="noopener">📄 Ticket</a>
+                                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 Ticket</a>
                                     <% } %>
 
                                         <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
@@ -641,7 +641,7 @@
 
                                         <% if (r.ticket_code) { %>
                                             <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>" target="_blank">👁️ Ver</a>
-                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.id) %>" target="_blank" rel="noopener">📄 PDF</a>
+                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 PDF</a>
                                         <% } %>
 
                                             <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
