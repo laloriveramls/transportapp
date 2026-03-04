@@ -671,6 +671,14 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
         flex: 1 1 auto;
       }
     }
+    @media print {
+      .toolbar {
+        display: none;
+      }
+      .viewer {
+        height: 100vh;
+      }
+    }
   </style>
 </head>
 <body>
@@ -681,8 +689,45 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
     </div>
   </div>
   <div class="viewer">
-    <iframe src="${pdfUrl}" title="PDF del ticket"></iframe>
+    <iframe id="ticketPdfFrame" src="${pdfUrl}" title="PDF del ticket"></iframe>
   </div>
+  <script>
+    (function () {
+      const frame = document.getElementById("ticketPdfFrame");
+      if (!frame) return;
+      let isDelegatingPrint = false;
+
+      function printPdfOnly() {
+        if (isDelegatingPrint) return true;
+        try {
+          const w = frame.contentWindow;
+          if (!w) return false;
+          isDelegatingPrint = true;
+          w.focus();
+          w.print();
+          setTimeout(() => {
+            isDelegatingPrint = false;
+          }, 250);
+          return true;
+        } catch {
+          isDelegatingPrint = false;
+          return false;
+        }
+      }
+
+      window.addEventListener("keydown", (event) => {
+        const isPrintShortcut = (event.ctrlKey || event.metaKey) && String(event.key || "").toLowerCase() === "p";
+        if (!isPrintShortcut) return;
+        if (!printPdfOnly()) return;
+        event.preventDefault();
+        event.stopPropagation();
+      });
+
+      window.addEventListener("beforeprint", () => {
+        printPdfOnly();
+      });
+    })();
+  </script>
 </body>
 </html>`);
 });
