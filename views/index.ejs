@@ -494,56 +494,42 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    /* ===== Admin login oculto: mantener presionado el LOGO ===== */
+    /* ===== Admin login oculto: 3 clics sobre el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
         if (!hotspot) return;
 
-        const HOLD_MS = 1500;
-
-        let holdTimer = null;
-        let usingTouch = false;
+        const REQUIRED_CLICKS = 3;
+        const RESET_MS = 1200;
 
         function go() {
-            holdTimer = null;
             window.location.href = "/admin/login";
         }
 
-        function start(e) {
-            const isTouch = (e.type && e.type.startsWith("touch")) || e.pointerType === "touch";
-            if (isTouch && e.cancelable) e.preventDefault();
+        let clickCount = 0;
+        let resetTimer = null;
 
-            if (holdTimer) return;
+        hotspot.addEventListener("click", (e) => {
+            e.preventDefault();
 
-            if (e.type && e.type.startsWith("touch")) usingTouch = true;
-            holdTimer = setTimeout(go, HOLD_MS);
-        }
+            clickCount += 1;
 
-        function cancel() {
-            if (!holdTimer) return;
-            clearTimeout(holdTimer);
-            holdTimer = null;
-        }
+            if (resetTimer) clearTimeout(resetTimer);
 
-        hotspot.addEventListener("touchstart", start, { passive: false });
-        hotspot.addEventListener("touchend", cancel);
-        hotspot.addEventListener("touchcancel", cancel);
-        hotspot.addEventListener("touchmove", cancel);
+            if (clickCount >= REQUIRED_CLICKS) {
+                clickCount = 0;
+                resetTimer = null;
+                go();
+                return;
+            }
 
-        hotspot.addEventListener("pointerdown", (e) => {
-            if (usingTouch) return;
-            start(e);
-        }, { passive: false });
-
-        hotspot.addEventListener("pointerup", cancel);
-        hotspot.addEventListener("pointercancel", cancel);
-        hotspot.addEventListener("pointerleave", cancel);
+            resetTimer = setTimeout(() => {
+                clickCount = 0;
+                resetTimer = null;
+            }, RESET_MS);
+        });
 
         hotspot.addEventListener("contextmenu", (e) => e.preventDefault());
-
-        hotspot.addEventListener("touchend", () => {
-            setTimeout(() => { usingTouch = false; }, 0);
-        });
     })();
 
     /* ===== Próximas salidas (muestra la próxima REAL aunque esté llena + mensaje si está lleno) ===== */
