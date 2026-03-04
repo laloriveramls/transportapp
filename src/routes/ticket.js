@@ -615,8 +615,8 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 12px 16px;
+      gap: 8px;
+      padding: 8px 12px;
       background: #fff;
       border-bottom: 1px solid #e5e7eb;
       position: sticky;
@@ -626,23 +626,24 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
     .toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       flex-wrap: wrap;
     }
     .toolbar-title {
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1.1;
       font-weight: 600;
     }
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 38px;
-      padding: 8px 12px;
-      border-radius: 10px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 9px;
       border: 1px solid #d1d5db;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       color: #111827;
       background: #fff;
@@ -664,7 +665,7 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
     }
     @media (max-width: 640px) {
       .toolbar {
-        padding: 10px 12px;
+        padding: 6px 10px;
       }
       .btn {
         flex: 1 1 auto;

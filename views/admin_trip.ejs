@@ -478,7 +478,7 @@
 
                             <td>
                                 <% if (r.ticket_code) { %>
-                                    <a class="ticket-code" href="/ticket/<%= r.ticket_code %>" target="_blank"><%= r.ticket_code %></a>
+                                    <a class="ticket-code" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank"><%= r.ticket_code %></a>
 
                                     <% if (digits.length >= 10) { %>
                                         <div class="mt-2">
@@ -511,7 +511,7 @@
                                     <% } %>
 
                                     <% if (r.ticket_code) { %>
-                                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>" target="_blank">👁️ Ver</a>
+                                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank">👁️ Ver</a>
                                         <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 Ticket</a>
                                     <% } %>
 
@@ -611,7 +611,7 @@
 
                                     <div class="m-ticket-row">
                                         <% if (r.ticket_code) { %>
-                                            <a class="ticket-code" href="/ticket/<%= r.ticket_code %>" target="_blank"><%= r.ticket_code %></a>
+                                            <a class="ticket-code" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank"><%= r.ticket_code %></a>
 
                                             <% if (digits.length >= 10) { %>
                                                 <a class="btn btn-wa btn-xs" target="_blank"
@@ -640,7 +640,7 @@
                                         <% } %>
 
                                         <% if (r.ticket_code) { %>
-                                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>" target="_blank">👁️ Ver</a>
+                                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank">👁️ Ver</a>
                                             <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 PDF</a>
                                         <% } %>
 
