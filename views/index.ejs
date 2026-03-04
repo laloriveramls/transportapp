@@ -224,6 +224,7 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             touch-action: none;
+            pointer-events: none;
         }
 
         /* ===== Próximas salidas ===== */
@@ -497,7 +498,8 @@
     /* ===== Admin login oculto: 3 clics sobre el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
-        if (!hotspot) return;
+        const trigger = hotspot ? (hotspot.closest(".logo-wrap") || hotspot) : null;
+        if (!trigger) return;
 
         const REQUIRED_CLICKS = 3;
         const RESET_MS = 1200;
@@ -509,7 +511,7 @@
         let clickCount = 0;
         let resetTimer = null;
 
-        hotspot.addEventListener("click", (e) => {
+        trigger.addEventListener("click", (e) => {
             e.preventDefault();
 
             clickCount += 1;
@@ -529,7 +531,7 @@
             }, RESET_MS);
         });
 
-        hotspot.addEventListener("contextmenu", (e) => e.preventDefault());
+        trigger.addEventListener("contextmenu", (e) => e.preventDefault());
     })();
 
     /* ===== Próximas salidas (muestra la próxima REAL aunque esté llena + mensaje si está lleno) ===== */
