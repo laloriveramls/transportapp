@@ -147,6 +147,15 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
 router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     const { code } = req.params;
 
+    if (String(req.query.raw || "") !== "1") {
+        const returnParam =
+            req.query.return && String(req.query.return).startsWith("/")
+                ? `?return=${encodeURIComponent(String(req.query.return))}`
+                : "";
+
+        return res.redirect(`/ticket/${encodeURIComponent(code)}/pdf/view${returnParam}`);
+    }
+
     const [[row]] = await pool.query(
         `
             SELECT
@@ -572,7 +581,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
 
 router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
     const { code } = req.params;
-    const pdfUrl = `/ticket/${encodeURIComponent(code)}/pdf`;
+    const pdfUrl = `/ticket/${encodeURIComponent(code)}/pdf?raw=1`;
     const fallbackReturnUrl = `/ticket/${encodeURIComponent(code)}`;
     const returnUrl =
         req.query.return && String(req.query.return).startsWith("/")
@@ -682,7 +691,7 @@ router.get("/ticket/:code/print", requireDb, async (req, res) => {
     const code = req.params.code;
 
     // I'm printing the already-generated PDF by embedding it in an iframe and calling print().
-    const pdfUrl = `/ticket/${encodeURIComponent(code)}/pdf`;
+    const pdfUrl = `/ticket/${encodeURIComponent(code)}/pdf?raw=1`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
 
