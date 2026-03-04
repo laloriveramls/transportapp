@@ -495,19 +495,23 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    /* ===== Admin login oculto: mantener presionado 1.25s sobre el LOGO ===== */
+    /* ===== Admin login oculto: mantener presionado 1.25s o dar 3 clics sobre el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
         const trigger = hotspot ? (hotspot.closest(".logo-wrap") || hotspot) : null;
         if (!trigger) return;
 
         const HOLD_MS = 1250;
+        const MULTI_CLICK_WINDOW_MS = 900;
+        const REQUIRED_CLICKS = 3;
 
         function go() {
             window.location.href = "/admin/login";
         }
 
         let holdTimer = null;
+        let clickCount = 0;
+        let clickTimer = null;
 
         function startHold(e) {
             if (e.cancelable) e.preventDefault();
@@ -524,9 +528,27 @@
             holdTimer = null;
         }
 
+        function handleMultiClick() {
+            clickCount += 1;
+            if (clickTimer) clearTimeout(clickTimer);
+
+            if (clickCount >= REQUIRED_CLICKS) {
+                clickCount = 0;
+                clickTimer = null;
+                go();
+                return;
+            }
+
+            clickTimer = setTimeout(() => {
+                clickCount = 0;
+                clickTimer = null;
+            }, MULTI_CLICK_WINDOW_MS);
+        }
+
         trigger.addEventListener("mousedown", startHold);
         trigger.addEventListener("mouseup", cancelHold);
         trigger.addEventListener("mouseleave", cancelHold);
+        trigger.addEventListener("click", handleMultiClick);
 
         trigger.addEventListener("touchstart", startHold, { passive: false });
         trigger.addEventListener("touchend", cancelHold);

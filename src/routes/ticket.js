@@ -637,8 +637,8 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 42px;
-      padding: 10px 14px;
+      min-height: 38px;
+      padding: 8px 12px;
       border-radius: 10px;
       border: 1px solid #d1d5db;
       text-decoration: none;
@@ -677,7 +677,6 @@ router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
     <div class="toolbar-title">Vista previa del ticket</div>
     <div class="toolbar-actions">
       <a class="btn" href="${returnUrl}">Volver</a>
-      <a class="btn btn-primary" href="${pdfUrl}" target="_blank" rel="noopener">Abrir PDF</a>
     </div>
   </div>
   <div class="viewer">
