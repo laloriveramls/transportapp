@@ -570,6 +570,114 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     doc.end();
 });
 
+router.get("/ticket/:code/pdf/view", requireDb, async (req, res) => {
+    const { code } = req.params;
+    const pdfUrl = `/ticket/${encodeURIComponent(code)}/pdf`;
+    const fallbackReturnUrl = `/ticket/${encodeURIComponent(code)}`;
+    const returnUrl =
+        req.query.return && String(req.query.return).startsWith("/")
+            ? String(req.query.return)
+            : fallbackReturnUrl;
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+    return res.send(`<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF del ticket</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #f5f5f7;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #111827;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .toolbar-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      background: #fff;
+    }
+    .btn-primary {
+      background: #6a0f1f;
+      border-color: #6a0f1f;
+      color: #fff;
+    }
+    .viewer {
+      flex: 1;
+      min-height: 0;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    @media (max-width: 640px) {
+      .toolbar {
+        padding: 10px 12px;
+      }
+      .btn {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="toolbar-title">Vista previa del ticket</div>
+    <div class="toolbar-actions">
+      <a class="btn" href="${returnUrl}">Volver</a>
+      <a class="btn btn-primary" href="${pdfUrl}" target="_blank" rel="noopener">Abrir PDF</a>
+    </div>
+  </div>
+  <div class="viewer">
+    <iframe src="${pdfUrl}" title="PDF del ticket"></iframe>
+  </div>
+</body>
+</html>`);
+});
+
 router.get("/ticket/:code/print", requireDb, async (req, res) => {
     const code = req.params.code;
 

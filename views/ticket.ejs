@@ -502,7 +502,9 @@
                     </div>
 
                     <div class="actions">
-                        <a class="btn btn-wine btn-xs" href="/ticket/<%= row.code %>/pdf" aria-label="Descargar PDF">
+                        <a class="btn btn-wine btn-xs"
+                           href="/ticket/<%= row.code %>/pdf/view?return=<%= encodeURIComponent('/ticket/' + row.code + (returnUrl ? ('?return=' + encodeURIComponent(returnUrl)) : '')) %>"
+                           aria-label="Abrir PDF">
                             📄 PDF
                         </a>
 
