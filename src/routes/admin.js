@@ -35,6 +35,21 @@ function directionLabel(direction) {
     return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
 }
 
+/** Cambia un dia calendario en cadena YYYY-MM-DD (sin conversion de zona). */
+function shiftISODate(isoDate, deltaDays) {
+    const parts = String(isoDate || "").trim().split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    if (!y || !m || !d) return String(isoDate || "").trim();
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    dt.setUTCDate(dt.getUTCDate() + Number(deltaDays || 0));
+    const yy = dt.getUTCFullYear();
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+    const dd = String(dt.getUTCDate()).padStart(2, "0");
+    return `${yy}-${mm}-${dd}`;
+}
+
 function regenSession(req) {
     return new Promise((resolve, reject) => {
         req.session.regenerate((err) => (err ? reject(err) : resolve()));
@@ -110,6 +125,9 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
     const date =
         req.query.date ||
         new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
+    const onlyWithTrip = req.query.onlyWithTrip === "1";
+    const agendaPrevDate = shiftISODate(date, -1);
+    const agendaNextDate = shiftISODate(date, 1);
 
     const [trips] = await pool.query(
         `
@@ -163,12 +181,42 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
         0
     );
 
+    const [[cancelAgg]] = await pool.query(
+        `
+            SELECT COALESCE(SUM(CASE
+                                      WHEN r.type = 'PASSENGER' AND r.status = 'CANCELLED'
+                                          THEN COALESCE(rp.passenger_count, NULLIF(r.seats, 0), 1)
+                                      ELSE 0
+                END), 0) AS cancelled_passengers,
+                   COALESCE(SUM(CASE
+                                      WHEN r.type = 'PACKAGE' AND r.status = 'CANCELLED'
+                                          THEN COALESCE(NULLIF(r.seats, 0), 1)
+                                      ELSE 0
+                       END), 0) AS cancelled_packages
+            FROM transporte_reservations r
+                     JOIN transporte_trips t ON t.id = r.trip_id
+                     LEFT JOIN (SELECT reservation_id, COUNT(*) AS passenger_count
+                                FROM transporte_reservation_passengers
+                                GROUP BY reservation_id) rp ON rp.reservation_id = r.id
+            WHERE t.trip_date = ?
+        `,
+        [date]
+    );
+
+    const cancelledPassengers = Number(cancelAgg?.cancelled_passengers || 0);
+    const cancelledPackages = Number(cancelAgg?.cancelled_packages || 0);
+
     res.render("admin_agenda", {
         date,
         trips,
         directionLabel,
         totalPassengers,
         totalPackages,
+        cancelledPassengers,
+        cancelledPackages,
+        onlyWithTrip,
+        agendaPrevDate,
+        agendaNextDate,
     });
 });
 

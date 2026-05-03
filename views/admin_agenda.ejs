@@ -51,13 +51,41 @@
             justify-content: flex-end;
         }
 
+        .agenda-day-nav {
+            display: inline-flex;
+            align-items: stretch;
+            gap: .35rem;
+        }
+
+        .agenda-day-nav .form-control[type="date"] {
+            min-width: 10.5rem;
+        }
+
+        .agenda-day-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.35rem;
+            padding-left: .5rem;
+            padding-right: .5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1;
+            text-decoration: none;
+            border-radius: 12px;
+        }
+
+        .agenda-day-arrow:hover {
+            text-decoration: none;
+        }
+
         /* KPIs del día (hero) */
         .agenda-kpis {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
             gap: .65rem;
             margin-top: 1rem;
-            max-width: 26rem;
+            max-width: min(100%, 40rem);
         }
 
         .agenda-kpi {
@@ -100,6 +128,15 @@
                 180deg,
                 color-mix(in srgb, var(--wine-2) 90%, var(--muted)),
                 color-mix(in srgb, var(--wine) 55%, var(--muted))
+            );
+        }
+
+        .agenda-kpi--cancelled-passengers::before,
+        .agenda-kpi--cancelled-packages::before {
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, #b91c1c 85%, var(--muted)),
+                color-mix(in srgb, #7f1d1d 70%, var(--muted))
             );
         }
 
@@ -265,20 +302,39 @@
                 <div class="subtle">Cupo, servicios de paqueteria y accesos por salida.</div>
                 <div class="agenda-kpis" role="group" aria-label="Resumen del dia">
                     <div class="agenda-kpi agenda-kpi--passengers">
-                        <div class="label">Pasajeros totales (este dia)</div>
+                        <div class="label">Pasajeros totales</div>
                         <div class="value"><%= Number(totalPassengers || 0) %></div>
                     </div>
                     <div class="agenda-kpi agenda-kpi--packages">
                         <div class="label">Paquetes del dia</div>
                         <div class="value"><%= Number(totalPackages || 0) %></div>
                     </div>
+                    <div class="agenda-kpi agenda-kpi--cancelled-passengers">
+                        <div class="label">Pasajeros cancelados</div>
+                        <div class="value"><%= Number(cancelledPassengers || 0) %></div>
+                    </div>
+                    <div class="agenda-kpi agenda-kpi--cancelled-packages">
+                        <div class="label">Paquetes cancelados</div>
+                        <div class="value"><%= Number(cancelledPackages || 0) %></div>
+                    </div>
                 </div>
             </div>
 
             <div class="d-flex flex-wrap gap-2 align-items-center hero-toolbar-wrap">
 
+                <% const owtQ = onlyWithTrip ? '&onlyWithTrip=1' : ''; %>
                 <form id="agendaForm" class="toolbar-form" method="GET" action="/admin/agenda">
-                    <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">
+                    <div class="agenda-day-nav">
+                        <a class="agenda-day-arrow btn btn-ghost btn-sm rounded-4"
+                           href="/admin/agenda?date=<%= encodeURIComponent(agendaPrevDate) %><%= owtQ %>"
+                           title="Dia anterior"
+                           aria-label="Ir al dia anterior">&lt;</a>
+                        <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">
+                        <a class="agenda-day-arrow btn btn-ghost btn-sm rounded-4"
+                           href="/admin/agenda?date=<%= encodeURIComponent(agendaNextDate) %><%= owtQ %>"
+                           title="Dia siguiente"
+                           aria-label="Ir al dia siguiente">&gt;</a>
+                    </div>
                     <input type="hidden" name="onlyWithTrip" id="onlyWithTripInput" value="0">
                     <button class="btn btn-wine rounded-4 px-4 fw-semibold">Ver</button>
 
