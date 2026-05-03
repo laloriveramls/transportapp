@@ -7,18 +7,9 @@
     noindex: true
     }) %>
 
+    <link href="/css/admin.css" rel="stylesheet">
+
     <style>
-        main.container {
-            max-width: 1240px;
-        }
-
-        .page-title {
-            letter-spacing: -.02em;
-            font-weight: 700;
-            margin: 0;
-        }
-        .subtle{ color: var(--muted); }
-
         .hero-head {
             border: 1px solid var(--border);
             border-radius: 18px;
@@ -27,13 +18,6 @@
             background: radial-gradient(780px 240px at -12% -40%, color-mix(in srgb, var(--wine) 14%, transparent), transparent 72%),
             color-mix(in srgb, var(--card) 96%, transparent);
             box-shadow: var(--shadow);
-        }
-
-        .card-soft{
-            background: var(--card);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            border-radius: 18px;
         }
 
         .toolbar{
@@ -51,11 +35,6 @@
             min-width: 220px;
         }
 
-        .form-control, .form-select {
-            min-height: 42px;
-            border-radius: 12px;
-        }
-
         #loadBtn {
             min-height: 42px;
             border-radius: 12px;
@@ -63,27 +42,12 @@
             padding-inline: 1rem;
         }
 
-        .form-label{ font-weight:600; }
-
         .slots-wrap{
             border:1px solid var(--border);
             border-radius:18px;
             padding: 14px;
             background: linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent), color-mix(in srgb, var(--card) 92%, transparent));
         }
-
-        .pill{
-            display:inline-flex; align-items:center; gap:.5rem;
-            padding:.40rem .7rem; border-radius:999px;
-            border:1px solid var(--border);
-            background: var(--chip-bg);
-            color: var(--chip-text);
-            font-weight:650;
-            font-size:.92rem;
-            white-space:nowrap;
-        }
-
-        .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
         .mini{
             display:inline-flex; align-items:center; gap:.35rem;
@@ -427,7 +391,7 @@
     </style>
 </head>
 
-<body>
+<body class="admin-app">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">

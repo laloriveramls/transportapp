@@ -8,23 +8,11 @@
     noindex: true
     }) %>
 
+    <link href="/css/admin.css" rel="stylesheet">
+
     <style>
-        main.container {
-            max-width: 1220px;
-        }
-
-        .page-title{ letter-spacing:-.02em; font-weight:800; margin:0; }
-
-        .pill{
-            display:inline-flex; align-items:center; gap:.45rem;
-            padding:.42rem .7rem;
-            border-radius:999px;
-            border:1px solid var(--border);
-            background:var(--chip-bg);
-            color:var(--chip-text);
-            font-weight:700;
-            font-size:.9rem;
-            white-space:nowrap;
+        .page-title {
+            font-weight: 800;
         }
 
         .hero-trip {
@@ -77,63 +65,9 @@
             border-radius:999px;
         }
 
-        .card-soft{
-            background:var(--card);
-            border:1px solid var(--border);
-            box-shadow:var(--shadow);
-            border-radius:20px;
-            overflow:hidden;
-        }
-
         .table-wrap-pad{ padding:10px 12px; }
 
-        .table-pro{ --bs-table-bg:transparent; border-color:var(--border); }
-        .table-pro thead th{
-            font-size:.85rem; color:var(--muted);
-            font-weight:700;
-            border-bottom:1px solid var(--border);
-            white-space:nowrap;
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-        }
-        .table-pro td{
-            vertical-align:middle;
-            border-bottom:1px solid var(--border);
-            color:var(--text);
-        }
-        .table-pro thead th, .table-pro tbody td{
-            padding:.75rem .9rem !important;
-        }
-
-        @media (max-width: 576px) {
-            .table-pro thead th, .table-pro tbody td{
-                padding:.65rem .7rem !important;
-            }
-
-            /* en mobile: el thead no tiene sentido porque usamos cards */
-            .table-pro thead {
-                display: none;
-            }
-        }
-
-        .table-pro thead th:first-child, .table-pro tbody td:first-child{ padding-left:1.1rem !important; }
-        .table-pro thead th:last-child,  .table-pro tbody td:last-child{  padding-right:1.1rem !important; }
-
         .td-wrap{ max-width:360px; word-break:break-word; }
-
-        .badge-soft{
-            border:1px solid var(--border);
-            padding:.33rem .55rem;
-            border-radius:999px;
-            font-weight:700;
-            font-size:.82rem;
-            display:inline-flex;
-            align-items:center;
-            gap:.4rem;
-            white-space:nowrap;
-        }
-        .badge-paid{ background:rgba(16,216,143,.12); color:color-mix(in srgb, #10D88F 70%, var(--text)); }
-        .badge-pending{ background:rgba(241,220,33,.14); color:color-mix(in srgb, #f1dc21 60%, var(--text)); }
-        .badge-cancel{ background:rgba(148,163,184,.18); color:var(--muted); }
 
         .btn-xs{
             padding:.35rem .55rem;
@@ -145,17 +79,6 @@
             align-items:center;
             gap:.35rem;
             min-height: 32px;
-        }
-
-        .btn-ghost{
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-        }
-        .btn-ghost:hover{
-            border-color:color-mix(in srgb, var(--wine) 40%, var(--border));
-            background:color-mix(in srgb, var(--card) 70%, transparent);
-            color:var(--text);
         }
 
         .btn-wa{ background:#25D366; border-color:#25D366; color:#fff; }
@@ -177,13 +100,6 @@
             justify-content:flex-end;
             gap:.4rem;
             flex-wrap:wrap;
-        }
-
-        .subtle{ color:var(--muted); }
-        .table-pro tbody tr:hover{ background:color-mix(in srgb, var(--card) 80%, var(--wine) 4%); }
-
-        .table-pro tbody tr:last-child td {
-            border-bottom: 0;
         }
 
         .ticket-code{
@@ -293,7 +209,7 @@
     </style>
 </head>
 
-<body>
+<body class="admin-app">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda?date=<%= trip.trip_date %>">

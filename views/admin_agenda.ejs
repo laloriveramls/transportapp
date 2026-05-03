@@ -7,35 +7,40 @@
     noindex: true
     }) %>
 
+    <link href="/css/admin.css" rel="stylesheet">
 
     <style>
-        .page-title {
-            letter-spacing: -.02em;
-            font-weight: 700;
-            margin: 0;
-        }
-
         .hero {
             border: 1px solid var(--border);
-            background: radial-gradient(860px 240px at -8% -40%, color-mix(in srgb, var(--wine) 18%, transparent), transparent 70%),
-            color-mix(in srgb, var(--card) 92%, transparent);
+            background:
+                radial-gradient(720px 280px at 100% -20%, color-mix(in srgb, var(--wine) 12%, transparent), transparent 55%),
+                radial-gradient(860px 240px at -8% -40%, color-mix(in srgb, var(--wine) 18%, transparent), transparent 70%),
+                color-mix(in srgb, var(--card) 92%, transparent);
             box-shadow: var(--shadow);
             border-radius: 20px;
-            padding: 1rem;
+            padding: 1.15rem 1.2rem 1.2rem;
         }
 
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-            padding: .42rem .72rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: var(--chip-bg);
-            color: var(--chip-text);
-            font-weight: 600;
-            font-size: .86rem;
-            white-space: nowrap;
+        .hero-intro {
+            min-width: min(100%, 280px);
+        }
+
+        .hero-intro .subtle {
+            max-width: 34rem;
+            line-height: 1.45;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .agenda-kpi:hover,
+            .trip-card:hover {
+                transform: none;
+            }
+        }
+
+        .hero-toolbar-wrap {
+            flex: 1 1 260px;
+            min-width: min(100%, 280px);
+            justify-content: flex-end;
         }
 
         .toolbar-form {
@@ -43,23 +48,98 @@
             flex-wrap: wrap;
             gap: .55rem;
             align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* KPIs del día (hero) */
+        .agenda-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+            gap: .65rem;
+            margin-top: 1rem;
+            max-width: 26rem;
+        }
+
+        .agenda-kpi {
+            position: relative;
+            border-radius: 16px;
+            padding: .78rem .95rem .82rem 1.05rem;
+            border: 1px solid color-mix(in srgb, var(--border) 92%, var(--wine));
+            background: linear-gradient(
+                145deg,
+                color-mix(in srgb, var(--card) 94%, transparent),
+                color-mix(in srgb, var(--wine) 7%, var(--card))
+            );
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, .06) inset,
+                0 8px 22px rgba(0, 0, 0, .06);
+            overflow: hidden;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .18s ease;
+        }
+
+        .agenda-kpi:hover {
+            border-color: color-mix(in srgb, var(--wine) 35%, var(--border));
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, .06) inset,
+                0 10px 26px rgba(0, 0, 0, .09);
+            transform: translateY(-1px);
+        }
+
+        .agenda-kpi::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 16px 0 0 16px;
+            background: linear-gradient(180deg, var(--wine), var(--wine-2));
+        }
+
+        .agenda-kpi--packages::before {
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--wine-2) 90%, var(--muted)),
+                color-mix(in srgb, var(--wine) 55%, var(--muted))
+            );
+        }
+
+        .agenda-kpi .label {
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 600;
+            letter-spacing: .015em;
+            line-height: 1.25;
+        }
+
+        .agenda-kpi .value {
+            font-size: 1.65rem;
+            font-weight: 750;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -.035em;
+            line-height: 1.1;
+            margin-top: .25rem;
+            color: var(--text);
         }
 
         .stat {
             border: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 88%, transparent);
             border-radius: 14px;
-            padding: .55rem .7rem;
+            padding: .55rem .75rem;
             min-width: 148px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset;
         }
 
         .stat .label {
             color: var(--muted);
-            font-size: .8rem;
+            font-size: .78rem;
+            font-weight: 600;
         }
 
         .stat .value {
-            font-weight: 600;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
         }
 
         .trip-card {
@@ -115,8 +195,14 @@
             background: color-mix(in srgb, var(--card) 78%, transparent);
             color: var(--text);
             font-size: .83rem;
-            padding: .32rem .6rem;
+            padding: .32rem .62rem;
             font-weight: 550;
+            transition: border-color .15s ease, background .15s ease;
+        }
+
+        .trip-card:hover .chip-soft {
+            border-color: color-mix(in srgb, var(--wine) 22%, var(--border));
+            background: color-mix(in srgb, var(--wine) 6%, var(--card));
         }
 
         .progress-soft {
@@ -135,32 +221,6 @@
             border-radius: 999px;
         }
 
-        .form-control {
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-            min-height: 42px;
-        }
-
-        .form-control:focus {
-            border-color: color-mix(in srgb, var(--wine) 65%, var(--border));
-            box-shadow: 0 0 0 .24rem rgba(106, 15, 31, .14);
-        }
-
-        .btn-ghost {
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-            border-radius: 12px;
-        }
-
-        .btn-ghost:hover {
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 80%, transparent);
-            color: var(--text);
-        }
-
         .muted {
             color: var(--muted);
         }
@@ -176,7 +236,7 @@
 </head>
 
 
-<body>
+<body class="admin-app">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
@@ -200,13 +260,23 @@
 
     <div class="hero mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div>
+            <div class="hero-intro flex-grow-1">
                 <div class="pill">Agenda</div>
                 <h1 class="h3 page-title mt-2 mb-1">Salidas del dia</h1>
                 <div class="subtle">Cupo, servicios de paqueteria y accesos por salida.</div>
+                <div class="agenda-kpis" role="group" aria-label="Resumen del dia">
+                    <div class="agenda-kpi agenda-kpi--passengers">
+                        <div class="label">Pasajeros totales (este dia)</div>
+                        <div class="value"><%= Number(totalPassengers || 0) %></div>
+                    </div>
+                    <div class="agenda-kpi agenda-kpi--packages">
+                        <div class="label">Paquetes del dia</div>
+                        <div class="value"><%= Number(totalPackages || 0) %></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="d-flex flex-wrap gap-2 align-items-center">
+            <div class="d-flex flex-wrap gap-2 align-items-center hero-toolbar-wrap">
 
                 <form id="agendaForm" class="toolbar-form" method="GET" action="/admin/agenda">
                     <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">

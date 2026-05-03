@@ -6,6 +6,7 @@
     description: 'Acceso al panel de administracion.',
     noindex: true
     }) %>
+    <link href="/css/admin.css" rel="stylesheet">
     <style>
         .admin-login-page {
             min-height: 100vh;
@@ -110,19 +111,20 @@
             pointer-events: none;
         }
 
-        .form-control {
+        .admin-login-page .form-control {
             height: 48px;
+            min-height: 48px;
             border-radius: 12px;
             border: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 72%, transparent);
             color: var(--text);
         }
 
-        .form-control::placeholder {
+        .admin-login-page .form-control::placeholder {
             color: color-mix(in srgb, var(--muted) 88%, transparent);
         }
 
-        .form-control:focus {
+        .admin-login-page .form-control:focus {
             border-color: color-mix(in srgb, var(--wine) 66%, var(--border));
             box-shadow: 0 0 0 .22rem rgba(106, 15, 31, .14);
         }
@@ -196,7 +198,7 @@
         }
     </style>
 </head>
-<body class="admin-login-page">
+<body class="admin-app admin-login-page">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">

@@ -154,7 +154,22 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
         [MAX_CAP, MAX_CAP, date]
     );
 
-    res.render("admin_agenda", {date, trips, directionLabel});
+    const totalPassengers = trips.reduce(
+        (sum, t) => sum + Number(t.used_seats || 0),
+        0
+    );
+    const totalPackages = trips.reduce(
+        (sum, t) => sum + Number(t.packages || 0),
+        0
+    );
+
+    res.render("admin_agenda", {
+        date,
+        trips,
+        directionLabel,
+        totalPassengers,
+        totalPackages,
+    });
 });
 
 /* =========================================================

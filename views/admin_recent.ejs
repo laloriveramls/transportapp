@@ -7,77 +7,31 @@
     noindex: true
     }) %>
 
+    <link href="/css/admin.css" rel="stylesheet">
+
     <style>
-        main.container {
-            max-width: 1240px;
-        }
-
-        .page-title{ letter-spacing:-.02em; font-weight:650; margin:0; }
-
-        .subtle {
-            color: var(--muted);
-        }
-
-        .pill{
-            display:inline-flex; align-items:center; gap:.5rem;
-            padding: .45rem .75rem;
-            border-radius: 999px;
-            border:1px solid var(--border);
-            background:var(--chip-bg);
-            color:var(--chip-text);
-            font-weight: 650;
-            font-size:.9rem;
-            white-space:nowrap;
-        }
-
-        .mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-
-        .btn-ghost{
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-            border-radius:14px;
-            font-weight: 650;
-        }
-        .btn-ghost:hover{
-            border-color:color-mix(in srgb, var(--wine) 45%, var(--border));
-            background:color-mix(in srgb, var(--card) 80%, transparent);
-            color:var(--text);
-        }
-
-        .form-control, .form-select {
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: color-mix(in srgb, var(--wine) 65%, var(--border));
-            box-shadow: 0 0 0 .25rem rgba(106, 15, 31, .15);
-        }
-
         /* ===== Layout shell ===== */
         .recent-wrap {
+            --admin-nav-offset: 56px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 1rem;
         }
 
         .recent-hero {
-            background: radial-gradient(920px 300px at -10% -45%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 72%),
-            color-mix(in srgb, var(--card) 96%, transparent);
-            border:1px solid var(--border);
-            box-shadow:var(--shadow);
-            border-radius:20px;
-            padding:16px;
+            border: 1px solid var(--border);
+            background:
+                radial-gradient(720px 260px at 100% -25%, color-mix(in srgb, var(--wine) 10%, transparent), transparent 55%),
+                radial-gradient(920px 300px at -10% -45%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 72%),
+                color-mix(in srgb, var(--card) 94%, transparent);
+            box-shadow: var(--shadow);
+            border-radius: 20px;
+            padding: 1.15rem 1.2rem 1.2rem;
         }
 
         .hero-top {
             display: flex;
-            gap: 14px;
+            gap: 1rem;
             flex-wrap: wrap;
             align-items: flex-start;
             justify-content: space-between;
@@ -86,15 +40,24 @@
         .hero-title {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 0.35rem;
+            max-width: 40rem;
+        }
+
+        .hero-title .subtle {
+            line-height: 1.45;
         }
 
         .nav-pills {
             display: flex;
-            gap: 10px;
+            gap: 0.5rem;
             flex-wrap: wrap;
             align-items: center;
             justify-content: flex-end;
+            padding: 0.25rem;
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
         }
 
         /* ===== Sticky filters card ===== */
@@ -104,23 +67,50 @@
             box-shadow: var(--shadow);
             border-radius: 20px;
             overflow: hidden;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .filter-card.sticky {
+            position: sticky;
+            top: calc(var(--admin-nav-offset) + 10px);
+            z-index: 1020;
+            box-shadow:
+                0 8px 28px rgba(2, 6, 23, 0.08),
+                0 1px 0 rgba(255, 255, 255, 0.04) inset;
+        }
+
+        html[data-theme="dark"] .filter-card.sticky {
+            box-shadow:
+                0 12px 36px rgba(0, 0, 0, 0.45),
+                0 1px 0 rgba(255, 255, 255, 0.03) inset;
         }
 
         .filter-bar {
-            padding: 14px 16px;
-            border-bottom:1px solid var(--border);
-            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent), color-mix(in srgb, var(--card) 90%, transparent));
-            display:flex;
-            gap:12px;
-            flex-wrap:wrap;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--wine) 5%, var(--card)),
+                color-mix(in srgb, var(--card) 94%, transparent)
+            );
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
+        }
+
+        .filter-section-title {
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            font-size: 0.92rem;
+            color: var(--text);
         }
 
         .filter-left {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .kpis {
@@ -133,14 +123,19 @@
         .kpi {
             display: inline-flex;
             align-items: center;
-            gap: .45rem;
-            padding: .40rem .65rem;
+            gap: 0.4rem;
+            padding: 0.38rem 0.68rem;
             border-radius: 999px;
             border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 96%, transparent),
+                color-mix(in srgb, var(--card) 88%, transparent)
+            );
             font-weight: 600;
-            font-size: .85rem;
+            font-size: 0.82rem;
             white-space: nowrap;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
         }
 
         .kpi span {
@@ -149,7 +144,8 @@
         }
 
         .kpi strong {
-            font-weight: 700;
+            font-weight: 750;
+            font-variant-numeric: tabular-nums;
         }
 
         .filter-right {
@@ -170,23 +166,28 @@
         .chiplink {
             display: inline-flex;
             align-items: center;
-            gap: .45rem;
-            padding: .42rem .70rem;
+            gap: 0.45rem;
+            padding: 0.4rem 0.72rem;
             border-radius: 999px;
             border: 1px solid var(--border);
             text-decoration: none;
             font-weight: 600;
-            font-size: .85rem;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+            font-size: 0.84rem;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
             color: var(--text);
-            transition: background .15s ease, border-color .15s ease, transform .15s ease;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
         }
 
         .chiplink:hover {
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 80%, transparent);
+            background: color-mix(in srgb, var(--card) 82%, transparent);
             color: var(--text);
             transform: translateY(-1px);
+        }
+
+        .chiplink:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem var(--ring);
         }
 
         .chiplink.active {
@@ -194,20 +195,27 @@
             border-color: transparent;
             color: #fff;
             font-weight: 700;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 35%, transparent);
+        }
+
+        .chiplink.active:hover {
+            transform: translateY(-1px);
+            color: #fff;
         }
 
         .filter-form {
-            padding: 14px 16px 16px;
+            padding: 16px 18px 18px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            align-items:flex-end;
-            justify-content:space-between;
+            align-items: flex-end;
+            justify-content: space-between;
+            background: color-mix(in srgb, var(--card) 98%, transparent);
         }
 
         .form-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: flex-end;
             flex: 1;
@@ -222,164 +230,358 @@
         }
 
         .field label {
-            font-size: .82rem;
+            font-size: 0.8rem;
             font-weight: 650;
             color: var(--muted);
         }
 
         .filter-actions {
-            display:flex;
-            gap:10px;
-            flex-wrap:wrap;
-            align-items:center;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
             justify-content: flex-end;
         }
 
-        .sticky {
-            position: sticky;
-            top: 12px;
-            z-index: 9;
-        }
-
         /* ===== Table ===== */
-        .table-shell{
-            padding: 10px 12px 14px;
-            background: color-mix(in srgb, var(--card) 95%, transparent);
+        .table-shell {
+            padding: 12px 14px 16px;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 97%, transparent),
+                color-mix(in srgb, var(--card) 92%, transparent)
+            );
         }
 
-        .table-modern{
-            width:100%;
-            border-collapse:separate;
-            border-spacing:0;
-            margin:0;
-            --rowH: 72px;
+        /* Contenedor con borde único y esquinas redondeadas */
+        .table-panel {
+            border: 1px solid color-mix(in srgb, var(--border) 92%, var(--wine));
+            border-radius: 16px;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-overflow-scrolling: touch;
+            background: color-mix(in srgb, var(--card) 99%, transparent);
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.05) inset,
+                0 12px 40px rgba(2, 6, 23, 0.06);
         }
 
-        .table-modern thead th{
+        html[data-theme="dark"] .table-panel {
+            box-shadow:
+                0 1px 0 rgba(255, 255, 255, 0.04) inset,
+                0 16px 44px rgba(0, 0, 0, 0.35);
+        }
+
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0;
+            --accent-w: 3px;
+        }
+
+        .table-modern thead th {
             position: sticky;
             top: 0;
             z-index: 2;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            backdrop-filter: blur(6px);
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--wine) 8%, var(--card)),
+                color-mix(in srgb, var(--card) 94%, transparent)
+            );
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
 
-            font-size: .82rem;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.055em;
             color: var(--muted);
-            font-weight: 700;
-            letter-spacing: .01em;
+            font-weight: 750;
 
             border-bottom: 1px solid var(--border);
-            padding: .85rem .95rem !important;
+            padding: 0.48rem 0.55rem !important;
             white-space: nowrap;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
         }
 
-        .table-modern tbody td{
-            border-bottom: 1px solid var(--border);
-            padding: .85rem .95rem !important;
+        .table-modern thead th:first-child {
+            padding-left: calc(0.65rem + var(--accent-w)) !important;
+        }
+
+        .table-modern tbody td {
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+            padding: 0.42rem 0.55rem !important;
             vertical-align: middle;
         }
 
-        .table-modern tbody tr:hover{
+        .table-modern tbody td:first-child {
+            padding-left: calc(0.65rem + var(--accent-w)) !important;
+        }
+
+        .table-modern tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-modern tbody tr {
+            transition: background 0.14s ease, box-shadow 0.14s ease;
+        }
+
+        .table-modern tbody tr:hover {
             background: color-mix(in srgb, var(--wine) 6%, var(--card));
         }
 
         .table-modern tbody tr:nth-child(even) {
-            background: color-mix(in srgb, var(--card) 94%, transparent);
+            background: color-mix(in srgb, var(--card) 97%, transparent);
         }
 
-        .row-accent {
-            border-left: 3px solid transparent;
+        .table-modern tbody tr:nth-child(even):hover {
+            background: color-mix(in srgb, var(--wine) 6%, var(--card));
         }
 
-        .row-accent.is-paid {
-            border-left-color: color-mix(in srgb, #10D88F 70%, transparent);
+        /* Barra de estado en la primera columna (más nítida que border en tr) */
+        .table-modern tbody tr.row-accent td:first-child {
+            box-shadow: inset var(--accent-w) 0 0 0 transparent;
         }
 
-        .row-accent.is-pending {
-            border-left-color: color-mix(in srgb, #f1dc21 70%, transparent);
+        .table-modern tbody tr.row-accent.is-paid td:first-child {
+            box-shadow: inset var(--accent-w) 0 0 0 #10d88f;
         }
 
-        .row-accent.is-cancel {
-            border-left-color: color-mix(in srgb, #94a3b8 70%, transparent);
+        .table-modern tbody tr.row-accent.is-pending td:first-child {
+            box-shadow: inset var(--accent-w) 0 0 0 #e9c40e;
         }
 
-        .row-accent.is-board {
-            border-left-color: color-mix(in srgb, #3b82f6 70%, transparent);
+        .table-modern tbody tr.row-accent.is-cancel td:first-child {
+            box-shadow: inset var(--accent-w) 0 0 0 #94a3b8;
         }
 
-        .col-actions{ width: 170px; }
-        .col-status{ width: 150px; }
-        .col-type{ width: 150px; }
-        .col-ticket{ width: 170px; }
-        .col-pay{ width: 150px; }
-
-        .cell-main{
-            display:flex;
-            flex-direction:column;
-            gap:.2rem;
-            min-height: var(--rowH);
-            justify-content:center;
+        .table-modern tbody tr.row-accent.is-board td:first-child {
+            box-shadow: inset var(--accent-w) 0 0 0 #3b82f6;
         }
-        .main-title{
-            font-weight: 700;
-            letter-spacing: -.01em;
+
+        .col-actions {
+            width: 148px;
+        }
+
+        .col-status {
+            width: 118px;
+        }
+
+        .col-type {
+            width: 112px;
+        }
+
+        .col-ticket {
+            width: 132px;
+        }
+
+        .col-pay {
+            width: 118px;
+        }
+
+        .col-pay,
+        .col-status,
+        .col-type {
+            text-align: center;
+        }
+
+        .col-pay > span,
+        .col-status > span {
+            vertical-align: middle;
+        }
+
+        .col-ticket {
+            text-align: center;
+        }
+
+        .cell-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.12rem;
+            justify-content: center;
+        }
+
+        .cell-main--compact {
+            gap: 0;
+            min-height: 0;
+        }
+
+        .cell-main--reserva {
+            gap: 0.08rem;
+        }
+
+        .folio-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.15rem 0.45rem;
+            row-gap: 0.02rem;
+        }
+
+        .folio-meta {
+            font-size: 0.78rem;
             line-height: 1.2;
-        }
-        .main-sub{
             color: var(--muted);
-            font-size: .88rem;
+            flex: 1 1 140px;
+            min-width: 0;
+        }
+
+        .folio-name {
+            font-weight: 650;
+            color: var(--text);
+        }
+
+        .reserva-mobile {
+            margin-top: 0.45rem;
+        }
+
+        .trip-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.35rem 0.5rem;
+        }
+
+        .trip-date {
+            font-size: 0.76rem;
+            color: var(--muted);
             line-height: 1.2;
         }
 
-        .tag{
-            display:inline-flex; align-items:center; gap:.45rem;
-            padding:.35rem .6rem;
-            border-radius:999px;
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            font-weight: 600;
-            font-size:.82rem;
-            white-space:nowrap;
-        }
-        .tag-route{
-            background: color-mix(in srgb, var(--chip-bg) 85%, var(--card));
-            color: var(--chip-text);
+        .main-title {
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            font-size: 0.88rem;
         }
 
-        .ticket-link{
+        .main-sub {
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.35;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.22rem 0.48rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 94%, transparent);
+            font-weight: 650;
+            font-size: 0.74rem;
+            white-space: nowrap;
+            line-height: 1.15;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .tag-compact {
+            padding: 0.18rem 0.42rem;
+            font-size: 0.72rem;
+        }
+
+        .tag-route {
+            background: color-mix(in srgb, var(--chip-bg) 88%, var(--card));
+            color: var(--chip-text);
+            border-color: color-mix(in srgb, var(--wine) 18%, var(--border));
+        }
+
+        .badge-compact {
+            padding: 0.18rem 0.42rem !important;
+            font-size: 0.72rem !important;
+            font-weight: 650 !important;
+        }
+
+        .ticket-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 5.25rem;
+            padding: 0.22rem 0.42rem;
+            border-radius: 8px;
             color: var(--wine);
             text-decoration: none;
             font-weight: 750;
+            font-size: 0.8rem;
+            background: color-mix(in srgb, var(--wine) 8%, transparent);
+            border: 1px solid color-mix(in srgb, var(--wine) 22%, var(--border));
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
         }
-        .ticket-link:hover{ text-decoration: underline; }
 
-        .actions-row{
-            display:flex;
-            justify-content:flex-end;
-            gap:.45rem;
-            flex-wrap:wrap;
+        .ticket-link:hover {
+            background: color-mix(in srgb, var(--wine) 14%, transparent);
+            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .actions-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.35rem;
+            flex-wrap: wrap;
         }
 
         .actions-row .btn-xs {
-            min-width: 76px;
+            min-width: 68px;
+            padding: 0.28rem 0.45rem;
+            font-size: 0.76rem;
             justify-content: center;
+            border-radius: 8px;
+            font-weight: 650;
+        }
+
+        .table-modern thead th.col-pay,
+        .table-modern thead th.col-type,
+        .table-modern thead th.col-status,
+        .table-modern thead th.col-ticket {
+            text-align: center;
+        }
+
+        /* Celda vacía / sin resultados */
+        .table-empty-cell {
+            padding: 2.5rem 1.5rem !important;
+            text-align: center;
+            vertical-align: middle !important;
+            border-bottom: none !important;
+        }
+
+        .table-modern tbody td.table-empty-cell:first-child {
+            padding-left: 1.5rem !important;
+            box-shadow: none !important;
+        }
+
+        .table-empty-inner {
+            max-width: 22rem;
+            margin: 0 auto;
+            padding: 1.25rem 1rem;
+            border-radius: 14px;
+            border: 1px dashed color-mix(in srgb, var(--border) 90%, var(--wine));
+            background: color-mix(in srgb, var(--card) 96%, transparent);
+        }
+
+        .table-empty-inner .h6 {
+            font-weight: 750;
+            letter-spacing: -0.02em;
         }
 
         /* detail expand */
         details.row-detail {
-            margin-top: .25rem;
+            margin-top: 0.12rem;
         }
         details.row-detail > summary{
             list-style:none;
             cursor:pointer;
             display:inline-flex;
             align-items:center;
-            gap:.45rem;
-            padding:.25rem .55rem;
+            gap:.35rem;
+            padding:.18rem .48rem;
             border-radius:999px;
             border:1px solid var(--border);
             color:var(--muted);
             font-weight: 650;
-            font-size:.82rem;
+            font-size:.74rem;
             user-select:none;
             background: color-mix(in srgb, var(--card) 92%, transparent);
         }
@@ -390,22 +592,22 @@
             background: color-mix(in srgb, var(--wine) 6%, var(--card));
         }
         .detail-box{
-            margin-top:.55rem;
+            margin-top:.4rem;
             border:1px solid var(--border);
             background: color-mix(in srgb, var(--card) 92%, transparent);
-            border-radius:14px;
-            padding:.7rem .8rem;
+            border-radius:12px;
+            padding:.55rem .65rem;
         }
         .detail-grid{
             display:grid;
             grid-template-columns: 1fr 1fr;
-            gap:.55rem .75rem;
-            font-size:.9rem;
+            gap:.4rem .55rem;
+            font-size:.82rem;
         }
 
         .detail-k {
             color: var(--muted);
-            font-size: .82rem;
+            font-size: .74rem;
             font-weight: 650;
         }
 
@@ -415,28 +617,11 @@
         .detail-wide{ grid-column: 1 / -1; }
         .detail-v.muted{ color:var(--muted); font-weight:650; }
 
-        /* badges */
-        .badge-soft{
-            border: 1px solid var(--border);
-            padding: .33rem .55rem;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: .82rem;
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            white-space: nowrap;
-        }
-        .b-paid{ background: rgba(16, 216, 143, .12); color: color-mix(in srgb, #10D88F 70%, var(--text)); }
-        .b-pending{ background: rgba(241, 220, 33, .14); color: color-mix(in srgb, #f1dc21 60%, var(--text)); }
-        .b-cancel{ background: rgba(148, 163, 184, .18); color: var(--muted); }
-        .b-board{ background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text)); }
-
         .btn-xs{
-            padding: .38rem .60rem;
-            border-radius:12px;
+            padding: .28rem .48rem;
+            border-radius:8px;
             font-weight: 600;
-            font-size:.82rem;
+            font-size:.76rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -493,10 +678,22 @@
             font-weight: 700;
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            .chiplink:hover,
+            .chiplink.active:hover,
+            .ticket-link:hover {
+                transform: none;
+            }
+        }
+
         /* ===== Mobile cards ===== */
         @media (max-width: 768px) {
-            .sticky {
-                top: 8px;
+            .recent-wrap {
+                --admin-nav-offset: 52px;
+            }
+
+            .filter-card.sticky {
+                top: calc(var(--admin-nav-offset) + 8px);
             }
 
             .filter-form {
@@ -533,9 +730,9 @@
 
             .table-modern tr {
                 border: 1px solid var(--border);
-                border-radius: 16px;
-                margin: 10px 0;
-                padding: 12px;
+                border-radius: 14px;
+                margin: 7px 0;
+                padding: 10px;
                 background: color-mix(in srgb, var(--card) 97%, transparent);
                 box-shadow: var(--shadow);
             }
@@ -602,7 +799,7 @@
     </style>
 </head>
 
-<body>
+<body class="admin-app">
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
@@ -729,7 +926,7 @@
         <div class="filter-card sticky">
             <div class="filter-bar">
                 <div class="filter-left">
-                    <div style="font-weight:650; letter-spacing:-.01em;">Filtros & Resumen</div>
+                    <div class="filter-section-title">Filtros & Resumen</div>
                     <div class="kpis">
                         <span class="kpi"><span>Total:</span> <strong class="mono"><%= total || 0 %></strong></span>
                         <span class="kpi"><span>En página:</span> <strong
@@ -797,15 +994,15 @@
 
         <div class="filter-card">
             <div class="table-shell">
-                <div class="table-responsive">
+                <div class="table-responsive table-panel">
                     <table class="table-modern">
                         <thead>
                         <tr>
                             <th>Reserva</th>
+                            <th class="col-status">Estado</th>
                             <th>Viaje</th>
                             <th class="col-pay">Pago</th>
                             <th class="col-type">Tipo</th>
-                            <th class="col-status">Estado</th>
                             <th class="col-ticket">Ticket</th>
                             <th class="text-end col-actions">Acciones</th>
                         </tr>
@@ -814,9 +1011,11 @@
                         <tbody>
                         <% if (!rows || rows.length === 0) { %>
                             <tr>
-                                <td colspan="7" class="p-4">
-                                    <div class="h6 mb-1">Sin registros</div>
-                                    <div class="subtle"><%= hasFilters ? 'No hubo coincidencias.' : 'Aún no hay registros recientes.' %></div>
+                                <td colspan="7" class="table-empty-cell">
+                                    <div class="table-empty-inner">
+                                        <div class="h6 mb-2">Sin registros</div>
+                                        <div class="subtle mb-0"><%= hasFilters ? 'Prueba otro criterio de búsqueda o método.' : 'Cuando haya reservas aparecerán aquí.' %></div>
+                                    </div>
                                 </td>
                             </tr>
                         <% } %>
@@ -854,11 +1053,10 @@
                         <tr class="row-accent <%= accentCls %>">
                             <!-- Reserva -->
                             <td>
-                                <div class="cell-main">
-                                    <div class="main-title mono"><%= r.folio %></div>
-                                    <div class="main-sub">
-                                        <span style="font-weight:650;"><%= r.customer_name || '-' %></span>
-                                        <span class="mono"> · <%= r.phone || '-' %></span>
+                                <div class="cell-main cell-main--reserva">
+                                    <div class="folio-row">
+                                        <span class="main-title mono"><%= r.folio %></span>
+                                        <span class="main-sub folio-meta"><span class="folio-name"><%= r.customer_name || '-' %></span><span class="mono folio-phone"> · <%= r.phone || '-' %></span></span>
                                     </div>
 
                                     <details class="row-detail">
@@ -903,9 +1101,9 @@
                                     </details>
 
                                     <!-- Mobile summary -->
-                                    <div class="d-block d-md-none" style="margin-top:10px;">
+                                    <div class="d-block d-md-none reserva-mobile">
                                         <div class="m-head"
-                                             style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+                                             style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
                                             <div>
                                                 <div class="m-folio mono"><%= r.folio %></div>
                                                 <div class="m-meta mono"
@@ -914,31 +1112,31 @@
                                             </div>
                                             <div>
                                                 <% if (r.status === 'PAID') { %>
-                                                    <span class="badge-soft b-paid">✅ Pagado</span>
+                                                    <span class="badge-soft b-paid badge-compact">✅ Pagado</span>
                                                 <% } else if (r.status === 'CANCELLED') { %>
-                                                    <span class="badge-soft b-cancel">⛔ Cancelado</span>
+                                                    <span class="badge-soft b-cancel badge-compact">⛔ Cancelado</span>
                                                 <% } else if (r.status === 'PENDING_PAYMENT') { %>
-                                                    <span class="badge-soft b-pending">⏳ Pendiente</span>
+                                                    <span class="badge-soft b-pending badge-compact">⏳ Pendiente</span>
                                                 <% } else if (r.status === 'PAY_AT_BOARDING') { %>
-                                                    <span class="badge-soft b-board">💵 Taquilla</span>
+                                                    <span class="badge-soft b-board badge-compact">💵 Taquilla</span>
                                                 <% } else { %>
-                                                    <span class="badge-soft"><%= r.status %></span>
+                                                    <span class="badge-soft badge-compact"><%= r.status %></span>
                                                 <% } %>
                                             </div>
                                         </div>
 
                                         <div class="m-row"
-                                             style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                                            <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
-                                            <span class="<%= pm.cls %>"><%= pm.t %></span>
-                                            <span class="tag"><%= r.type === 'PASSENGER' ? '🧍‍♂️ Pasajero' : '📦 Paquetería' %></span>
+                                             style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                                            <span class="tag tag-route tag-compact"><%= directionLabel(r.direction) %></span>
+                                            <span class="<%= pm.cls %> tag-compact"><%= pm.t %></span>
+                                            <span class="tag tag-compact"><%= r.type === 'PASSENGER' ? '🧍 Pasajero' : '📦 Paquete' %></span>
                                             <% if (r.ticket_code) { %>
-                                                <span class="tag mono">🎫 <%= r.ticket_code %></span>
+                                                <span class="tag mono tag-compact">🎫 <%= r.ticket_code %></span>
                                             <% } %>
                                         </div>
 
                                         <div class="m-actions"
-                                             style="margin-top:10px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                             style="margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                                             <a class="btn btn-ghost btn-xs"
                                                href="/admin/trip/<%= r.trip_id %>">Salida</a>
                                             <% if (r.ticket_code) { %>
@@ -953,41 +1151,41 @@
                                 </div>
                             </td>
 
+                            <!-- Estado -->
+                            <td class="col-status d-none d-md-table-cell">
+                                <% if (r.status === 'PAID') { %>
+                                    <span class="badge-soft b-paid badge-compact">✅ Pagado</span>
+                                <% } else if (r.status === 'CANCELLED') { %>
+                                    <span class="badge-soft b-cancel badge-compact">⛔ Cancelado</span>
+                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
+                                    <span class="badge-soft b-pending badge-compact">⏳ Pendiente</span>
+                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
+                                    <span class="badge-soft b-board badge-compact">💵 Taquilla</span>
+                                <% } else { %>
+                                    <span class="badge-soft badge-compact"><%= r.status %></span>
+                                <% } %>
+                            </td>
+
                             <!-- Viaje -->
                             <td class="d-none d-md-table-cell">
-                                <div class="cell-main">
-                                    <div class="main-title">
+                                <div class="cell-main cell-main--compact">
+                                    <div class="trip-line">
                                         <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
+                                        <span class="trip-date mono"><%= r.trip_date %> · <%= hhmm %></span>
                                     </div>
-                                    <div class="main-sub mono"><%= r.trip_date %> · <%= hhmm %></div>
                                 </div>
                             </td>
 
                             <!-- Pago -->
                             <td class="col-pay d-none d-md-table-cell">
-                                <span class="<%= pm.cls %>"><%= pm.t %></span>
+                                <span class="<%= pm.cls %> tag-compact"><%= pm.t %></span>
                             </td>
 
                             <!-- Tipo -->
                             <td class="col-type d-none d-md-table-cell">
-                                <span class="tag">
-                                    <%= r.type === 'PASSENGER' ? '🧍‍♂️ Pasajero' : '📦 Paquetería' %>
+                                <span class="tag tag-compact">
+                                    <%= r.type === 'PASSENGER' ? '🧍 Pasajero' : '📦 Paquete' %>
                                 </span>
-                            </td>
-
-                            <!-- Estado -->
-                            <td class="col-status d-none d-md-table-cell">
-                                <% if (r.status === 'PAID') { %>
-                                    <span class="badge-soft b-paid">✅ Pagado</span>
-                                <% } else if (r.status === 'CANCELLED') { %>
-                                    <span class="badge-soft b-cancel">⛔ Cancelado</span>
-                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
-                                    <span class="badge-soft b-pending">⏳ Pendiente</span>
-                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
-                                    <span class="badge-soft b-board">💵 Taquilla</span>
-                                <% } else { %>
-                                    <span class="badge-soft"><%= r.status %></span>
-                                <% } %>
                             </td>
 
                             <!-- Ticket -->
