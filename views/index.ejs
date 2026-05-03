@@ -8,207 +8,447 @@
     }) %>
 
     <style>
-        .hero-min {
-            border: 1px solid var(--border);
-            border-radius: 22px;
-            padding: 18px;
-            background: radial-gradient(1200px 600px at 10% 0%, rgba(106, 15, 31, .18), transparent 55%),
-            radial-gradient(900px 500px at 90% 10%, rgba(106, 15, 31, .08), transparent 60%);
+        /* Vista más compacta: menos scroll; pestañas sticky al bajar */
+        body.home-page main.container {
+            padding-top: 0.65rem;
+            padding-bottom: 0.75rem;
         }
 
-        .title { letter-spacing: -.02em; font-weight: 650; margin: 0; }
+        @media (min-width: 768px) {
+            body.home-page main.container {
+                padding-top: 0.85rem;
+                padding-bottom: 1rem;
+            }
+        }
 
-        .sub { color: var(--muted); margin-top: 6px; font-size: .95rem; }
+        /* --- Hero --- */
+        .hero-min {
+            border: none;
+            border-radius: 22px;
+            padding: 0.85rem 1rem;
+            background:
+                radial-gradient(900px 380px at 100% -30%, rgba(106, 15, 31, .12), transparent 52%),
+                radial-gradient(1200px 600px at 10% 0%, rgba(106, 15, 31, .16), transparent 55%),
+                radial-gradient(900px 500px at 90% 10%, rgba(106, 15, 31, .07), transparent 60%);
+            box-shadow: var(--shadow);
+        }
 
-        .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .home-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            color: var(--chip-text);
+            background: var(--chip-bg);
+            border: none;
+            margin-bottom: 0.4rem;
+        }
 
-        .btn-ghost { border: 1px solid var(--border); background: transparent; color: var(--text); }
-        .btn-ghost:hover {
-            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
-            background: color-mix(in srgb, var(--card) 70%, transparent);
+        .title {
+            letter-spacing: -0.03em;
+            font-weight: 750;
+            margin: 0;
+            line-height: 1.15;
+            font-size: clamp(1.35rem, 2.5vw + 1rem, 1.85rem);
+        }
+
+        .sub {
+            color: var(--muted);
+            margin-top: 0.35rem;
+            font-size: 0.92rem;
+            line-height: 1.4;
+            max-width: 38rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            margin-top: 0.65rem;
+        }
+
+        .hero-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 14px;
+            font-weight: 650;
+            padding: 0.55rem 1.15rem;
+        }
+
+        .hero-actions .btn-ico {
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .btn-ghost {
+            border: none;
+            background: color-mix(in srgb, var(--card) 85%, transparent);
             color: var(--text);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+        }
+        .btn-ghost:hover {
+            background: color-mix(in srgb, var(--card) 78%, transparent);
+            color: var(--text);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
         }
 
         .btn-wa { background: #25D366; border-color: #25D366; color: #fff; }
         .btn-wa:hover { background: #1fb85a; border-color: #1fb85a; color: #fff; }
 
-        .tabs-card {
+        /* --- Tabs (subrayado + iconos, estilo referencia) --- */
+        .home-tabs.tabs-card {
             background: var(--card);
-            border: 1px solid var(--border);
+            border: none;
             box-shadow: var(--shadow);
             border-radius: 22px;
-            padding: 12px;
-            margin-top: 14px;
+            padding: 0;
+            margin-top: 0.65rem;
         }
 
-        .tabs-card .nav-tabs { border-bottom: 1px solid var(--border); }
+        .home-tabs .nav-tabs {
+            position: sticky;
+            top: 0;
+            z-index: 18;
+            gap: 0;
+            padding: 8px 14px 0;
+            margin: 0;
+            flex-wrap: nowrap;
+            border: none;
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+            background: var(--card);
+        }
 
-        .tabs-card .nav-tabs .nav-link {
+        .home-tabs .nav-tabs .nav-item {
+            margin: 0;
+        }
+
+        .home-tabs .nav-tabs .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
             color: var(--muted);
-            border: 0;
-            border-bottom: 2px solid transparent;
-            border-radius: 12px 12px 0 0;
+            border: none;
+            border-radius: 14px 14px 0 0;
             font-weight: 650;
-            padding: .55rem .85rem;
+            padding: 0.5rem 0.85rem;
+            margin: 0 4px 0 0;
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
         }
 
-        .tabs-card .nav-tabs .nav-link:hover { color: var(--text); }
+        .home-tabs .nav-tabs .nav-link .tab-ico {
+            font-size: 1.1rem;
+            line-height: 1;
+            opacity: 0.92;
+        }
 
-        .tabs-card .nav-tabs .nav-link.active {
+        .home-tabs .nav-tabs .nav-link:hover {
             color: var(--text);
+            background: color-mix(in srgb, var(--wine) 5%, transparent);
+        }
+
+        .home-tabs .nav-tabs .nav-link.active {
+            color: var(--wine);
             background: transparent;
             border-bottom-color: var(--wine);
+            box-shadow: none;
         }
 
-        .tab-pane { padding: 14px 6px 4px; }
+        html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
+            color: color-mix(in srgb, var(--wine) 85%, white);
+            border-bottom-color: color-mix(in srgb, var(--wine) 85%, white);
+        }
+
+        .home-tabs .tab-content {
+            padding: 0 12px 10px;
+        }
+
+        .home-tabs .tab-pane {
+            padding: 0.55rem 0 0;
+        }
 
         .routes {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 14px;
+            gap: 0.65rem;
         }
-        @media (max-width: 992px) { .routes { grid-template-columns: 1fr; } }
+        @media (max-width: 992px) {
+            .routes { grid-template-columns: 1fr; }
+        }
 
         .route-card {
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            border: 1px solid var(--border);
+            background: var(--card);
+            border: none;
             border-radius: 18px;
-            padding: 14px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+                0 10px 28px rgba(2, 6, 23, 0.06);
         }
 
-        .route-head {
+        html[data-theme="dark"] .route-card {
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent),
+                0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        .route-card-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            background: color-mix(in srgb, var(--wine) 10%, var(--card));
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+        }
+
+        html[data-theme="dark"] .route-card-strip {
+            background: color-mix(in srgb, var(--wine) 14%, var(--card));
+        }
+
+        .route-strip-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .route-car-badge {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: color-mix(in srgb, var(--wine) 22%, transparent);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, transparent);
+        }
+
+        .route-car-badge svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+
+        .route-strip-title {
+            margin: 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .route-strip-meta {
+            margin: 4px 0 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .route-card-body {
+            padding: 10px 12px 12px;
+        }
+
+        .route-body-head {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 6px;
         }
 
-        .route-name { margin: 0; font-weight: 650; letter-spacing: -.01em; }
-        .route-sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+        .route-sub {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.35;
+            margin: 0;
+        }
 
-        .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
 
-        /* Chips ahora son links */
         .chip-time {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: .5rem;
-            padding: .52rem .78rem;
+            gap: 0.35rem;
+            padding: 0.32rem 0.58rem;
             border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            color: var(--text);
-            font-weight: 600;
-            font-size: .92rem;
+            border: none;
+            background: color-mix(in srgb, var(--chip-bg) 75%, var(--card));
+            color: var(--chip-text);
+            font-weight: 650;
+            font-size: 0.88rem;
             white-space: nowrap;
             text-decoration: none;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+            transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
         }
 
         .chip-time:hover {
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 78%, transparent);
+            background: color-mix(in srgb, var(--wine) 12%, var(--card));
             color: var(--text);
             text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
         }
 
-        .chip-time:focus-visible{
-            outline: 3px solid color-mix(in srgb, var(--wine) 35%, transparent);
-            outline-offset: 2px;
+        .chip-time:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 0.22rem var(--ring);
         }
 
-        .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 992px) { .map-grid { grid-template-columns: 1fr; } }
+        .map-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+        }
+        @media (max-width: 992px) {
+            .map-grid { grid-template-columns: 1fr; }
+        }
 
         .map-card {
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 18px;
-            padding: 14px;
-            background: color-mix(in srgb, var(--card) 90%, transparent);
+            padding: 0.65rem 0.75rem;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 97%, transparent),
+                color-mix(in srgb, var(--card) 93%, transparent)
+            );
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+                0 8px 24px rgba(2, 6, 23, 0.06);
         }
 
-        .map-title { margin: 0 0 10px 0; font-weight: 650; letter-spacing: -.01em; }
+        .map-title {
+            margin: 0 0 6px 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1rem;
+        }
 
         .map-frame {
             width: 100%;
-            height: 240px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            height: clamp(160px, 30vh, 200px);
+            border: none;
+            border-radius: 14px;
             overflow: hidden;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+            background: color-mix(in srgb, var(--muted) 8%, var(--card));
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
         }
 
-        .map-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-
-        .footer-cta { position: sticky; bottom: 14px; z-index: 5; }
-        @media (min-width: 992px) { .footer-cta { position: static; } }
+        .map-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
 
         .app-footer {
-            margin-top: 18px;
-            border-top: 1px solid var(--border);
-            padding: 14px 0 18px;
+            margin-top: 0.85rem;
+            border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+            padding: 0.65rem 0 0.85rem;
             color: var(--muted);
-            font-size: .92rem;
+            font-size: 0.9rem;
         }
 
-        .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-        .footer-phone { display: inline-flex; align-items: center; gap: .5rem; }
+        .footer-phone {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
         .footer-phone code {
             color: var(--text);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-            border: 1px solid var(--border);
-            padding: .15rem .5rem;
+            background: color-mix(in srgb, var(--muted) 12%, var(--card));
+            border: none;
+            padding: 0.22rem 0.55rem;
             border-radius: 999px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: .9rem;
+            font-size: 0.88rem;
         }
 
-        .hero-split{ display:flex; align-items:center; justify-content:space-between; gap: 18px; }
+        .hero-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
 
-        .hero-left{ flex: 1 1 auto; min-width: 0; }
-        .hero-right{ flex: 0 0 auto; display:flex; align-items:center; justify-content:flex-end; }
+        .hero-left {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .hero-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
 
-        .hero-logo-big{
-            width: 280px;
-            max-width: 34vw;
+        .hero-logo-big {
+            width: auto;
+            max-width: min(248px, 34vw);
+            max-height: 152px;
             height: auto;
             object-fit: contain;
-            display:block; /* ayuda a centrar con margin auto */
+            display: block;
+            filter: drop-shadow(0 12px 28px rgba(2, 6, 23, 0.12));
         }
 
-        /* ===== móvil: centrar LOGO ===== */
-        @media (max-width: 992px){
-            .hero-split{
-                flex-direction:column;
-                align-items:stretch;
+        html[data-theme="dark"] .hero-logo-big {
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+        }
+
+        @media (max-width: 992px) {
+            .hero-split {
+                flex-direction: column;
+                align-items: stretch;
             }
-            .hero-right{
-                width:100%;
-                justify-content:center;
-                margin-top: 10px;
-                text-align:center;
+            .hero-right {
+                width: 100%;
+                justify-content: center;
+                margin-top: 6px;
+                text-align: center;
             }
-            .hero-logo-big{
-                width: min(320px, 90%);
-                max-width: 90%;
-                margin: 0 auto; /* centrado real */
+            .hero-logo-big {
+                max-width: min(280px, 90%);
+                max-height: 168px;
+                margin: 0 auto;
             }
         }
 
-        /* ===== Admin hotspot sobre el LOGO ===== */
-        .logo-wrap{
+        .logo-wrap {
             position: relative;
             display: inline-block;
         }
 
-        @media (max-width: 992px){
-            .logo-wrap{ margin: 0 auto; }
+        @media (max-width: 992px) {
+            .logo-wrap { margin: 0 auto; }
         }
 
-        .logo-wrap .admin-hotspot{
+        .logo-wrap .admin-hotspot {
             position: absolute;
             inset: 0;
             width: auto;
@@ -218,7 +458,6 @@
             background: transparent;
             opacity: 0;
             cursor: default;
-
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
@@ -227,68 +466,133 @@
             pointer-events: none;
         }
 
-        /* ===== Próximas salidas ===== */
-        .next-card{
-            border: 1px solid var(--border);
+        /* Próximas salidas */
+        .next-card {
+            border: none;
             border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 12px;
-
-            background-color: color-mix(in srgb, var(--card) 92%, transparent);
-            background-image: radial-gradient(900px 420px at 10% 0%, rgba(106, 15, 31, .10), transparent 55%);
+            padding: 0.7rem 0.85rem;
+            margin-bottom: 0.65rem;
+            background-image:
+                radial-gradient(900px 420px at 10% 0%, rgba(106, 15, 31, 0.12), transparent 55%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--wine) 6%, var(--card)),
+                    color-mix(in srgb, var(--card) 96%, transparent)
+                );
             background-repeat: no-repeat;
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent),
+                0 10px 28px rgba(2, 6, 23, 0.07);
         }
 
-        .next-title{
-            margin: 0 0 10px 0;
-            font-weight: 650;
-            letter-spacing: -.01em;
+        .next-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 8px 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1rem;
         }
 
-        .next-grid{
-            display:grid;
+        .next-title-ico {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+
+        .next-grid {
+            display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 8px;
         }
 
-        @media (max-width: 992px){
-            .next-grid{ grid-template-columns: 1fr; }
+        @media (max-width: 992px) {
+            .next-grid { grid-template-columns: 1fr; }
         }
 
-        .next-item{
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
+        .next-item {
+            border: none;
+            border-radius: 14px;
+            padding: 9px 11px;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 10px;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
         }
 
-        .next-meta{ min-width:0; }
-        .next-route{ font-weight:650; margin:0; }
-        .next-when{ color: var(--muted); font-size: .92rem; margin-top: 2px; }
+        .next-meta {
+            min-width: 0;
+        }
+        .next-route {
+            font-weight: 750;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+        .next-when {
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-top: 4px;
+            line-height: 1.35;
+        }
 
-        .next-pill{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            padding:.45rem .7rem;
+        .next-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.38rem 0.65rem;
             border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            font-weight: 650;
+            border: none;
+            background: color-mix(in srgb, var(--wine) 14%, var(--card));
+            color: var(--text);
+            font-weight: 750;
+            font-size: 0.88rem;
             white-space: nowrap;
         }
 
-        .next-actions a{
-            white-space:nowrap;
+        a.next-pill {
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        a.next-pill:hover {
+            background: color-mix(in srgb, var(--wine) 24%, var(--card));
+            color: var(--text);
+        }
+
+        @media (max-width: 576px) {
+            .home-tabs .nav-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding: 0 10px;
+                gap: 0;
+            }
+
+            .home-tabs .nav-tabs .nav-link {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 0.92rem;
+                padding: 0.55rem 0.75rem;
+            }
+
+            .route-card-strip {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chip-time:hover {
+                transform: none;
+            }
         }
     </style>
 </head>
 
-<body>
+<body class="home-page">
 <%- include('partials/body-open') %>
 <nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center position-relative">
@@ -303,18 +607,19 @@
     </div>
 </nav>
 
-<main class="container py-4">
+<main class="container">
 
     <div class="hero-min hero-split">
         <div class="hero-left">
+            <span class="home-badge"><span aria-hidden="true">🛡️</span> Viaja seguro, viaja cómodo</span>
             <h1 class="h3 title">Servicio de Transporte</h1>
             <div class="sub">Victoria ↔ Llera · Llera ↔ Victoria · 6 pasajeros · Servicios de paquetería</div>
 
             <div class="hero-actions">
-                <a class="btn btn-wine" href="/reserve">Reservar</a>
-                <a class="btn btn-wa" target="_blank"
+                <a class="btn btn-wine" href="/reserve"><span class="btn-ico" aria-hidden="true">📅</span> Reservar</a>
+                <a class="btn btn-wa" target="_blank" rel="noopener noreferrer"
                    href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
-                    WhatsApp
+                    <span class="btn-ico" aria-hidden="true">💬</span> WhatsApp
                 </a>
             </div>
         </div>
@@ -327,18 +632,18 @@
         </div>
     </div>
 
-    <div class="tabs-card">
+    <div class="tabs-card home-tabs">
         <ul class="nav nav-tabs" id="homeTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="tab-horarios" data-bs-toggle="tab" data-bs-target="#pane-horarios"
                         type="button" role="tab">
-                    Horarios
+                    <span class="tab-ico" aria-hidden="true">🗓️</span> Horarios
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tab-mapa" data-bs-toggle="tab" data-bs-target="#pane-mapa" type="button"
                         role="tab">
-                    Mapa
+                    <span class="tab-ico" aria-hidden="true">🗺️</span> Mapa
                 </button>
             </li>
         </ul>
@@ -348,7 +653,7 @@
 
                 <!-- Próximas salidas -->
                 <div class="next-card" id="nextCard" style="display:none;">
-                    <p class="next-title">Próximas salidas</p>
+                    <p class="next-title"><span class="next-title-ico" aria-hidden="true">🕐</span> Próximas salidas</p>
 
                     <div class="next-grid">
                         <div class="next-item" id="nextV2L" style="display:none;">
@@ -357,12 +662,7 @@
                                 <div class="next-when" id="nextV2LWhen">—</div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                                <span class="next-pill" id="nextV2LTime">--:--</span>
-                                <div class="next-actions">
-                                    <a class="btn btn-wine btn-sm rounded-4" id="nextV2LLink" href="/reserve">Reservar</a>
-                                </div>
-                            </div>
+                            <a class="next-pill" id="nextV2LPill" href="/reserve">--:--</a>
                         </div>
 
                         <div class="next-item" id="nextL2V" style="display:none;">
@@ -371,63 +671,86 @@
                                 <div class="next-when" id="nextL2VWhen">—</div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                                <span class="next-pill" id="nextL2VTime">--:--</span>
-                                <div class="next-actions">
-                                    <a class="btn btn-wine btn-sm rounded-4" id="nextL2VLink" href="/reserve">Reservar</a>
-                                </div>
-                            </div>
+                            <a class="next-pill" id="nextL2VPill" href="/reserve">--:--</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="routes">
 
+                    <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
+                    <% const v2lFirst = v2l.length ? String(v2l[0].depart_time || '').slice(0, 5) : ''; %>
                     <div class="route-card">
-                        <div class="route-head">
-                            <div>
-                                <p class="route-name">Victoria → Llera</p>
-                                <div class="route-sub">Salida desde Ciudad Victoria</div>
+                        <div class="route-card-strip">
+                            <div class="route-strip-main">
+                                <span class="route-car-badge" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
+                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="route-strip-title">Victoria → Llera</p>
+                                    <% if (v2lFirst) { %>
+                                        <p class="route-strip-meta">Primera salida · <%= v2lFirst %></p>
+                                    <% } %>
+                                </div>
                             </div>
-                            <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                         </div>
-
-                        <div class="chips">
-                            <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
+                        <div class="route-card-body">
+                            <div class="route-body-head">
+                                <p class="route-sub">Salida desde Ciudad Victoria</p>
+                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
+                            </div>
+                            <div class="chips">
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="VIC_TO_LLE"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
                             <% }) %>
 
                             <% if (v2l.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
                             <% } %>
+                            </div>
                         </div>
                     </div>
 
+                    <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
+                    <% const l2vFirst = l2v.length ? String(l2v[0].depart_time || '').slice(0, 5) : ''; %>
                     <div class="route-card">
-                        <div class="route-head">
-                            <div>
-                                <p class="route-name">Llera → Victoria</p>
-                                <div class="route-sub">Salida desde Llera</div>
+                        <div class="route-card-strip">
+                            <div class="route-strip-main">
+                                <span class="route-car-badge" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
+                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="route-strip-title">Llera → Victoria</p>
+                                    <% if (l2vFirst) { %>
+                                        <p class="route-strip-meta">Primera salida · <%= l2vFirst %></p>
+                                    <% } %>
+                                </div>
                             </div>
-                            <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                         </div>
-
-                        <div class="chips">
-                            <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
+                        <div class="route-card-body">
+                            <div class="route-body-head">
+                                <p class="route-sub">Salida desde Llera</p>
+                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
+                            </div>
+                            <div class="chips">
                             <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="LLE_TO_VIC"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
                             <% }) %>
 
                             <% if (l2v.length === 0) { %>
                                 <div class="subtle">Sin horarios.</div>
                             <% } %>
+                            </div>
                         </div>
                     </div>
 
@@ -466,10 +789,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="footer-cta mt-3">
-        <a class="btn btn-wine w-100 py-3 fw-bold rounded-4" href="/reserve">Reservar ahora</a>
     </div>
 
     <footer class="app-footer">
@@ -563,16 +882,14 @@
         const card = document.getElementById("nextCard");
 
         const elV2L = document.getElementById("nextV2L");
-        const elV2LTime = document.getElementById("nextV2LTime");
+        const elV2LPill = document.getElementById("nextV2LPill");
         const elV2LWhen = document.getElementById("nextV2LWhen");
-        const elV2LLink = document.getElementById("nextV2LLink");
 
         const elL2V = document.getElementById("nextL2V");
-        const elL2VTime = document.getElementById("nextL2VTime");
+        const elL2VPill = document.getElementById("nextL2VPill");
         const elL2VWhen = document.getElementById("nextL2VWhen");
-        const elL2VLink = document.getElementById("nextL2VLink");
 
-        if (!card || !elV2L || !elL2V) return;
+        if (!card || !elV2L || !elL2V || !elV2LPill || !elL2VPill) return;
 
         function todayISO_MTY() {
             return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
@@ -658,20 +975,20 @@
                 const full = Number(nextV2LReal.available || 0) <= 0;
 
                 elV2L.style.display = "";
-                elV2LTime.textContent = nextV2LReal.hhmm;
+                elV2LPill.textContent = nextV2LReal.hhmm;
 
                 if (full) {
                     elV2LWhen.textContent =
                         `Salida ${nextV2LReal.when} · Lleno` +
                         (nextV2LOk ? ` · Siguiente con cupo: ${nextV2LOk.hhmm} (${nextV2LOk.when})` : "");
 
-                    // botón se queda en "Reservar", pero si está lleno lo mando al siguiente con cupo (si existe)
-                    elV2LLink.href = nextV2LOk
+                    // la pastilla horario enlaza a reserva; si está lleno, al siguiente con cupo si existe
+                    elV2LPill.href = nextV2LOk
                         ? `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LOk.hhmm)}&date=${encodeURIComponent(nextV2LOk.dateISO)}`
                         : `/reserve?dir=VIC_TO_LLE&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
                 } else {
                     elV2LWhen.textContent = `Salida ${nextV2LReal.when}`;
-                    elV2LLink.href = `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LReal.hhmm)}&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
+                    elV2LPill.href = `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LReal.hhmm)}&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
                 }
             }
 
@@ -680,19 +997,19 @@
                 const full = Number(nextL2VReal.available || 0) <= 0;
 
                 elL2V.style.display = "";
-                elL2VTime.textContent = nextL2VReal.hhmm;
+                elL2VPill.textContent = nextL2VReal.hhmm;
 
                 if (full) {
                     elL2VWhen.textContent =
                         `Salida ${nextL2VReal.when} · Lleno` +
                         (nextL2VOk ? ` · Siguiente con cupo: ${nextL2VOk.hhmm} (${nextL2VOk.when})` : "");
 
-                    elL2VLink.href = nextL2VOk
+                    elL2VPill.href = nextL2VOk
                         ? `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VOk.hhmm)}&date=${encodeURIComponent(nextL2VOk.dateISO)}`
                         : `/reserve?dir=LLE_TO_VIC&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
                 } else {
                     elL2VWhen.textContent = `Salida ${nextL2VReal.when}`;
-                    elL2VLink.href = `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VReal.hhmm)}&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
+                    elL2VPill.href = `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VReal.hhmm)}&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
                 }
             }
 

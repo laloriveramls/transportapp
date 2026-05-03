@@ -11,7 +11,7 @@
 
     <style>
         .hero {
-            border: 1px solid var(--border);
+            border: none;
             background:
                 radial-gradient(720px 280px at 100% -20%, color-mix(in srgb, var(--wine) 12%, transparent), transparent 55%),
                 radial-gradient(860px 240px at -8% -40%, color-mix(in srgb, var(--wine) 18%, transparent), transparent 70%),
@@ -64,7 +64,7 @@
             position: relative;
             border-radius: 16px;
             padding: .78rem .95rem .82rem 1.05rem;
-            border: 1px solid color-mix(in srgb, var(--border) 92%, var(--wine));
+            border: none;
             background: linear-gradient(
                 145deg,
                 color-mix(in srgb, var(--card) 94%, transparent),
@@ -74,11 +74,10 @@
                 0 1px 0 rgba(255, 255, 255, .06) inset,
                 0 8px 22px rgba(0, 0, 0, .06);
             overflow: hidden;
-            transition: border-color .2s ease, box-shadow .2s ease, transform .18s ease;
+            transition: box-shadow .2s ease, transform .18s ease;
         }
 
         .agenda-kpi:hover {
-            border-color: color-mix(in srgb, var(--wine) 35%, var(--border));
             box-shadow:
                 0 1px 0 rgba(255, 255, 255, .06) inset,
                 0 10px 26px rgba(0, 0, 0, .09);

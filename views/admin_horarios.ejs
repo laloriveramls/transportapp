@@ -10,43 +10,141 @@
     <link href="/css/admin.css" rel="stylesheet">
 
     <style>
-        .hero-head {
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 14px 16px;
-            margin-bottom: 14px;
-            background: radial-gradient(780px 240px at -12% -40%, color-mix(in srgb, var(--wine) 14%, transparent), transparent 72%),
-            color-mix(in srgb, var(--card) 96%, transparent);
+        .horarios-hero {
+            border: none;
+            border-radius: 20px;
+            padding: 1.15rem 1.2rem 1.2rem;
+            margin-bottom: 1rem;
+            background:
+                radial-gradient(720px 260px at 100% -20%, color-mix(in srgb, var(--wine) 10%, transparent), transparent 55%),
+                radial-gradient(780px 240px at -12% -40%, color-mix(in srgb, var(--wine) 14%, transparent), transparent 72%),
+                color-mix(in srgb, var(--card) 94%, transparent);
             box-shadow: var(--shadow);
         }
 
-        .toolbar{
-            display:flex; gap:10px; flex-wrap:wrap;
-            align-items:end; justify-content:space-between;
-            margin-bottom: 14px;
+        .horarios-hero .subtle {
+            max-width: 36rem;
+            line-height: 1.45;
         }
 
-        .controls{
-            display:flex; gap:10px; flex-wrap:wrap;
-            align-items:end;
+        .horarios-hero-intro {
+            min-width: min(100%, 260px);
+        }
+
+        .horarios-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0.25rem;
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+        }
+
+        /* Un solo marco exterior (sombra); sin borde duplicado respecto a admin.css .card-soft */
+        .horarios-card.card-soft {
+            border: none !important;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .horarios-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
         }
 
         .controls > div {
-            min-width: 220px;
+            min-width: 200px;
         }
 
         #loadBtn {
             min-height: 42px;
             border-radius: 12px;
             font-weight: 650;
-            padding-inline: 1rem;
+            padding-inline: 1.15rem;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 22%, transparent);
         }
 
-        .slots-wrap{
-            border:1px solid var(--border);
-            border-radius:18px;
-            padding: 14px;
-            background: linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent), color-mix(in srgb, var(--card) 92%, transparent));
+        .horarios-tabs-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .tabs-panel {
+            flex: 1 1 280px;
+            min-width: 0;
+            padding: 6px;
+            border-radius: 14px;
+            border: none;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--wine) 4%, var(--card)),
+                color-mix(in srgb, var(--card) 96%, transparent)
+            );
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+        }
+
+        .horarios-status {
+            flex: 0 0 auto;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            max-width: min(320px, 92vw);
+            padding: 0.38rem 0.75rem;
+            border-radius: 999px;
+            border: none;
+            background: color-mix(in srgb, var(--muted) 10%, var(--card));
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            line-height: 1.25;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .slots-wrap {
+            border: none;
+            border-radius: 16px;
+            padding: 14px 16px 16px;
+            margin-top: 2px;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 98%, transparent),
+                color-mix(in srgb, var(--card) 92%, transparent)
+            );
+        }
+
+        .slots-kpi-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: none;
+        }
+
+        .slots-kpi-row .hint {
+            font-size: 0.84rem;
+            color: var(--muted);
         }
 
         .mini{
@@ -94,47 +192,65 @@
 
         .muted{ color: var(--muted); font-size:.92rem; }
 
-        /* Tabs */
-        .tabs{
-            display:flex; gap:10px; flex-wrap:wrap;
-            align-items:center;
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .tabbtn{
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+        .tabbtn {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--card) 94%, transparent);
             color: var(--text);
             border-radius: 999px;
-            padding: .45rem .8rem;
+            padding: 0.4rem 0.75rem;
             font-weight: 650;
-            line-height: 1;
-            display:inline-flex;
-            align-items:center;
-            gap:.5rem;
-            user-select:none;
-            transition: border-color .16s ease, background .16s ease, transform .16s ease;
+            font-size: 0.86rem;
+            line-height: 1.15;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            user-select: none;
+            transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
         }
-        .tabbtn:hover{
+        .tabbtn:hover {
             border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 78%, transparent);
+            background: color-mix(in srgb, var(--card) 82%, transparent);
             transform: translateY(-1px);
         }
-        .tabbtn.is-active{
-            border-color: color-mix(in srgb, var(--wine) 70%, var(--border));
-            background: color-mix(in srgb, var(--chip-bg) 70%, var(--card));
-            box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
+        .tabbtn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem var(--ring);
         }
-        .badge{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            min-width: 24px;
-            height: 20px;
-            padding: 0 .45rem;
+        .tabbtn.is-active {
+            border-color: transparent;
+            background: linear-gradient(90deg, var(--wine), var(--wine-2));
+            color: #fff;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--wine) 30%, transparent);
+        }
+        .tabbtn.is-active:hover {
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 19px;
+            padding: 0 0.4rem;
             border-radius: 999px;
             border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-            font-size: .82rem;
+            background: color-mix(in srgb, var(--card) 88%, transparent);
+            font-size: 0.76rem;
+            font-weight: 700;
             color: var(--muted);
+        }
+        .tabbtn.is-active .badge {
+            background: rgba(255, 255, 255, 0.22);
+            border-color: rgba(255, 255, 255, 0.28);
+            color: #fff;
         }
 
         /* Ops layout 2 columnas */
@@ -147,10 +263,14 @@
         }
 
         .ops-col {
-            border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+            border: none;
             border-radius: 16px;
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-            padding: 10px;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 97%, transparent),
+                color-mix(in srgb, var(--card) 93%, transparent)
+            );
+            padding: 12px;
         }
 
         .ops-col-head {
@@ -158,7 +278,9 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 4px 6px 10px;
+            padding: 2px 4px 12px;
+            border-bottom: none;
+            margin-bottom: 4px;
         }
 
         .ops-col-title {
@@ -177,18 +299,23 @@
             gap: 10px;
             align-items: center;
             justify-content: space-between;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            margin-top: 10px;
-            transition: border-color .16s ease, transform .16s ease, background .16s ease;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(
+                135deg,
+                color-mix(in srgb, var(--card) 97%, transparent),
+                color-mix(in srgb, var(--card) 92%, transparent)
+            );
+            margin-top: 8px;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+            transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
         }
 
         .slot-row:hover {
-            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
-            background: color-mix(in srgb, var(--card) 84%, transparent);
+            background: color-mix(in srgb, var(--wine) 5%, var(--card));
             transform: translateY(-1px);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 28%, var(--border)), 0 8px 22px rgba(2, 6, 23, 0.08);
         }
 
         .slot-left {
@@ -206,8 +333,8 @@
         /* Estado CANCELLED por día (visual rápido) */
         .day-cancelled {
             opacity: .78;
-            border-color: color-mix(in srgb, #dc3545 28%, var(--border));
             background: color-mix(in srgb, var(--card) 90%, rgba(220, 53, 69, .06));
+            box-shadow: 0 0 0 1px color-mix(in srgb, #dc3545 32%, transparent);
         }
 
         .day-cancelled .pill.mono {
@@ -260,9 +387,30 @@
             main.container.py-4{ padding-top: 14px !important; padding-bottom: 16px !important; }
             .card-soft.p-4{ padding: 14px !important; }
 
-            .toolbar {
-                align-items: stretch;
+            .horarios-toolbar {
                 gap: 12px;
+            }
+
+            .horarios-tabs-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tabs-panel {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .horarios-status {
+                width: 100%;
+            }
+
+            .horarios-status .status-pill {
+                max-width: none;
+                white-space: normal;
+                justify-content: center;
+                text-align: center;
             }
 
             .controls{
@@ -388,6 +536,14 @@
                 gap: 8px;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tabbtn:hover,
+            .tabbtn.is-active:hover,
+            .slot-row:hover {
+                transform: none;
+            }
+        }
     </style>
 </head>
 
@@ -402,6 +558,10 @@
         <div class="d-flex align-items-center gap-2">
             <a class="btn btn-outline-light btn-sm rounded-4" href="/admin/agenda">Volver</a>
 
+            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+                <span id="themeIcon">&#x1F319;</span> <span class="d-none d-sm-inline">Tema</span>
+            </button>
+
             <form method="POST" action="/admin/logout" class="m-0">
                 <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
             </form>
@@ -411,15 +571,22 @@
 
 <main class="container py-4">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-        <div>
-            <h1 class="h3 page-title mb-1">Administración completa de horarios</h1>
-            <div class="subtle">Configuración de horarios, desactivar por día y precios.</div>
+    <div class="horarios-hero mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1 horarios-hero-intro">
+                <div class="pill">Horarios</div>
+                <h1 class="h3 page-title mt-2 mb-1">Administración de horarios</h1>
+                <div class="subtle">Plantillas, cupos por salida, desactivar por día y precios.</div>
+            </div>
+            <div class="horarios-nav">
+                <a class="btn btn-ghost btn-sm px-3" href="/admin/agenda">Agenda</a>
+                <a class="btn btn-ghost btn-sm px-3" href="/admin/recent">Últimos registros</a>
+            </div>
         </div>
     </div>
 
-    <div class="card-soft p-4">
-        <div class="toolbar">
+    <div class="card-soft horarios-card p-4">
+        <div class="horarios-toolbar">
             <div class="controls">
                 <div id="dateWrap">
                     <label class="form-label">Fecha</label>
@@ -437,34 +604,40 @@
                 <button id="loadBtn" class="btn btn-wine" type="button">Cargar</button>
             </div>
 
-            <div class="tabs" id="tabs">
-                <button type="button" class="tabbtn is-active" data-tab="ops">
-                    Operación (por fecha) <span class="badge" id="bOps">—</span>
-                </button>
+            <div class="horarios-tabs-bar">
+                <div class="tabs-panel">
+                    <div class="tabs" id="tabs">
+                        <button type="button" class="tabbtn is-active" data-tab="ops" title="Operación por fecha">
+                            Operación <span class="badge" id="bOps">—</span>
+                        </button>
 
-                <button type="button" class="tabbtn" data-tab="disabled_day">
-                    Desactivar por día <span class="badge" id="bDisabledDay">—</span>
-                </button>
+                        <button type="button" class="tabbtn" data-tab="disabled_day" title="Desactivar salidas por día">
+                            Por día <span class="badge" id="bDisabledDay">—</span>
+                        </button>
 
-                <button type="button" class="tabbtn" data-tab="templates">
-                    Configuración de horarios <span class="badge" id="bTemplates">—</span>
-                </button>
+                        <button type="button" class="tabbtn" data-tab="templates" title="Configuración de horarios base">
+                            Plantillas <span class="badge" id="bTemplates">—</span>
+                        </button>
 
-                <button type="button" class="tabbtn" data-tab="pricing">
-                    Precios <span class="badge" id="bPricing">—</span>
-                </button>
+                        <button type="button" class="tabbtn" data-tab="pricing" title="Precios pasaje y paquetería">
+                            Precios <span class="badge" id="bPricing">—</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="horarios-status">
+                    <span class="status-pill mono" id="statusText">—</span>
+                </div>
             </div>
-
-            <div class="muted" id="statusText">—</div>
         </div>
 
         <div class="slots-wrap">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="slots-kpi-row">
                 <div class="kpi">
                     <span class="pill">📅 <span id="kDate">—</span></span>
                     <span class="pill">🧭 <span id="kDir">—</span></span>
                 </div>
-                <div class="muted" id="hint">Selecciona pestaña.</div>
+                <div class="hint" id="hint">Selecciona pestaña.</div>
             </div>
 
             <div id="list"></div>
