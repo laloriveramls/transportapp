@@ -79,19 +79,21 @@
             text-decoration: none;
         }
 
-        /* KPIs del día (hero) */
+        /* KPIs del día (hero): siempre 4 columnas en una fila (min 0 evita minimo 158px que rompia el wrap) */
         .agenda-kpis {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
-            gap: .65rem;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: .5rem;
             margin-top: 1rem;
-            max-width: min(100%, 40rem);
+            width: 100%;
+            max-width: 100%;
         }
 
         .agenda-kpi {
             position: relative;
+            min-width: 0;
             border-radius: 16px;
-            padding: .78rem .95rem .82rem 1.05rem;
+            padding: .72rem .75rem .78rem .9rem;
             border: none;
             background: linear-gradient(
                 145deg,
@@ -142,14 +144,16 @@
 
         .agenda-kpi .label {
             color: var(--muted);
-            font-size: .78rem;
+            font-size: .72rem;
             font-weight: 600;
             letter-spacing: .015em;
-            line-height: 1.25;
+            line-height: 1.2;
+            hyphens: auto;
+            overflow-wrap: anywhere;
         }
 
         .agenda-kpi .value {
-            font-size: 1.65rem;
+            font-size: clamp(1.2rem, 2.6vw + 0.6rem, 1.55rem);
             font-weight: 750;
             font-variant-numeric: tabular-nums;
             letter-spacing: -.035em;
