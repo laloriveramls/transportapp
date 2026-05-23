@@ -819,15 +819,22 @@ router.post("/api/templates/disable", requireAdmin, requireDb, async (req, res) 
 router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     try {
         const [[row]] = await pool.query(
-            `SELECT passenger_price_mxn, package_price_mxn, updated_at
+            `SELECT passenger_price_mxn, package_price_mxn, child_price_mxn, updated_at
              FROM transporte_settings
              WHERE id = 1`
         );
 
+        const passenger = Number(row?.passenger_price_mxn ?? 120);
+        const child =
+            row?.child_price_mxn != null && row?.child_price_mxn !== ""
+                ? Number(row.child_price_mxn)
+                : passenger / 2;
+
         return res.json({
             ok: true,
-            passenger_price_mxn: Number(row?.passenger_price_mxn ?? 120),
+            passenger_price_mxn: passenger,
             package_price_mxn: Number(row?.package_price_mxn ?? 120),
+            child_price_mxn: child,
             updated_at: row?.updated_at || null,
         });
     } catch (e) {
@@ -840,17 +847,20 @@ router.post("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     try {
         const passenger = Math.max(0, Number(req.body.passenger_price_mxn || 0));
         const pkg = Math.max(0, Number(req.body.package_price_mxn || 0));
+        const child = Math.max(0, Number(req.body.child_price_mxn ?? passenger / 2));
 
         await pool.query(
             `
-                INSERT INTO transporte_settings (id, passenger_price_mxn, package_price_mxn, updated_at)
-                VALUES (1, ?, ?, NOW()) ON DUPLICATE KEY
+                INSERT INTO transporte_settings (id, passenger_price_mxn, package_price_mxn, child_price_mxn,
+                                                 updated_at)
+                VALUES (1, ?, ?, ?, NOW()) ON DUPLICATE KEY
                 UPDATE
                     passenger_price_mxn =
                 VALUES (passenger_price_mxn), package_price_mxn =
-                VALUES (package_price_mxn), updated_at = NOW()
+                VALUES (package_price_mxn), child_price_mxn =
+                VALUES (child_price_mxn), updated_at = NOW()
             `,
-            [passenger, pkg]
+            [passenger, pkg, child]
         );
 
         return res.json({ok: true});

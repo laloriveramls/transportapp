@@ -222,35 +222,61 @@ async function getPricing(conn) {
     // I read pricing from transporte_settings (id=1). If missing, I fallback to 120.
     try {
         const [[row]] = await conn.query(
-            `SELECT passenger_price_mxn, package_price_mxn
+            `SELECT passenger_price_mxn, package_price_mxn, child_price_mxn
              FROM transporte_settings
              WHERE id = 1`
         );
 
         const passenger = Number(row?.passenger_price_mxn ?? 120);
         const pkg = Number(row?.package_price_mxn ?? 120);
+        const child =
+            row?.child_price_mxn != null && row?.child_price_mxn !== ""
+                ? Number(row.child_price_mxn)
+                : moneyMXN(passenger / 2);
 
         return {
             passenger_price_mxn: moneyMXN(passenger),
             package_price_mxn: moneyMXN(pkg),
+            child_price_mxn: moneyMXN(child),
         };
     } catch {
-        return {passenger_price_mxn: 120, package_price_mxn: 120};
+        return {passenger_price_mxn: 120, package_price_mxn: 120, child_price_mxn: 60};
     }
 }
 
-function computeTotalsWithPricing(type, seats, pricing) {
-    // I compute totals based on current pricing (PASSENGER is per seat, PACKAGE is fixed).
+function computeTotalsWithPricing(type, adultSeats, pricing, childSeats = 0) {
+    // PASSENGER: adults at full price, children 6-10 at child_price_mxn. PACKAGE: fixed price.
     const t = String(type || "").toUpperCase();
-    const s = Math.max(1, Number(seats || 1));
+    const adults = Math.max(0, Number(adultSeats || 0));
+    const children = Math.max(0, Number(childSeats || 0));
 
     const passengerUnit = moneyMXN(pricing.passenger_price_mxn);
     const packageUnit = moneyMXN(pricing.package_price_mxn);
+    const childUnit = moneyMXN(
+        pricing.child_price_mxn != null ? pricing.child_price_mxn : passengerUnit / 2
+    );
 
-    const unit = t === "PASSENGER" ? passengerUnit : packageUnit;
-    const total = t === "PASSENGER" ? moneyMXN(unit * s) : moneyMXN(unit);
+    if (t !== "PASSENGER") {
+        return {unit_price_mxn: packageUnit, amount_total_mxn: moneyMXN(packageUnit), child_seats: 0};
+    }
 
-    return {unit_price_mxn: unit, amount_total_mxn: total};
+    const totalPassengers = adults + children;
+    const safeAdults = totalPassengers < 1 ? 1 : adults;
+    const safeChildren = totalPassengers < 1 ? 0 : children;
+    const total = moneyMXN(safeAdults * passengerUnit + safeChildren * childUnit);
+
+    return {
+        unit_price_mxn: passengerUnit,
+        amount_total_mxn: total,
+        child_seats: safeChildren,
+    };
+}
+
+function computeTotalsFromReservation(r, pricing) {
+    const totalSeats = Number(r?.seats || 1);
+    const children = Number(r?.child_seats || 0);
+    const adults = Math.max(0, totalSeats - children);
+    return computeTotalsWithPricing(r?.type, adults, pricing, children);
 }
 
 /* =========================
@@ -557,9 +583,19 @@ router.post(
         const status = payment_method === "TAQUILLA" ? "PAY_AT_BOARDING" : "PENDING_PAYMENT";
 
         let seats = 0;
+        let childSeats = 0;
         if (type === "PASSENGER") {
-            const wanted = Number(req.body.seats || 1);
-            seats = Math.max(1, Math.min(MAX_CAP, wanted));
+            const wantedAdults = Number(req.body.seats || 1);
+            const wantedChildren = Number(req.body.child_seats || 0);
+            const adults = Math.max(0, Math.min(MAX_CAP, wantedAdults));
+            childSeats = Math.max(0, Math.min(MAX_CAP, wantedChildren));
+            seats = adults + childSeats;
+            if (seats < 1) seats = 1;
+            if (seats > MAX_CAP) {
+                return res.status(400).render("reserve", {
+                    error: `Máximo ${MAX_CAP} pasajeros por salida (adultos + niños).`,
+                });
+            }
         }
 
         let passengerNames = req.body.passenger_names || [];
@@ -597,7 +633,10 @@ router.post(
 
             // ✅ pricing source of truth (inside TX)
             const pricing = await getPricing(conn);
-            const {unit_price_mxn, amount_total_mxn} = computeTotalsWithPricing(type, seats, pricing);
+            const adultSeats = type === "PASSENGER" ? Math.max(0, seats - childSeats) : 0;
+            const {unit_price_mxn, amount_total_mxn, child_seats: childSeatsStored} =
+                computeTotalsWithPricing(type, adultSeats, pricing, childSeats);
+            childSeats = childSeatsStored;
 
             const [[template]] = await conn.query(
                 `
@@ -663,7 +702,7 @@ router.post(
                     await conn.rollback();
                     const pricing2 = await getPricing(conn).catch(() => null);
                     return res.status(400).render("reserve", {
-                        error: `Si capturas nombres, deben ser ${seats} (uno por asiento). O déjalo vacío para reservar rápido.`,
+                        error: `Si capturas nombres, deben ser ${seats} (uno por viajero). O déjalo vacío para reservar rápido.`,
                         pricing: pricing2 || undefined,
                     });
                 }
@@ -686,16 +725,17 @@ router.post(
                     dailySeq = Number(seqRow?.next_seq || 1);
 
                     const [ins] = await conn.query(
-                        `INSERT INTO transporte_reservations(trip_id, type, seats, customer_name, phone,
+                        `INSERT INTO transporte_reservations(trip_id, type, seats, child_seats, customer_name, phone,
                                                              package_details,
                                                              payment_method, transfer_ref, status,
                                                              unit_price_mxn, amount_total_mxn,
                                                              public_token, folio_date, daily_seq)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trip.id,
                             type,
                             seats,
+                            type === "PASSENGER" ? childSeats : 0,
                             customer_name,
                             phone,
                             type === "PACKAGE" ? package_details : null,
@@ -770,7 +810,13 @@ router.post(
                     "🆕 <b>Nueva reserva</b>",
                     `Folio: <code>${escapeHtml(folio)}</code>`,
                     `Tipo: ${escapeHtml(typeText)}${
-                        type === "PASSENGER" ? ` (${seats} pasajero${seats === 1 ? "" : "s"})` : ""
+                        type === "PASSENGER"
+                            ? ` (${seats} viajero${seats === 1 ? "" : "s"}${
+                                childSeats > 0
+                                    ? `, ${childSeats} niño${childSeats === 1 ? "" : "s"} 6-10`
+                                    : ""
+                            })`
+                            : ""
                     }`,
                     `Ruta: ${escapeHtml(routeText)}`,
                     `Fecha: ${escapeHtml(trip_date)}`,
@@ -861,7 +907,7 @@ router.get(
             const conn = await pool.getConnection();
             try {
                 const pricing = await getPricing(conn);
-                total = computeTotalsWithPricing(r.type, r.seats, pricing).amount_total_mxn;
+                total = computeTotalsFromReservation(r, pricing).amount_total_mxn;
             } finally {
                 conn.release();
             }
@@ -1331,7 +1377,7 @@ router.post(
             const conn = await pool.getConnection();
             try {
                 const pricing = await getPricing(conn);
-                totalMxn = computeTotalsWithPricing(r.type, r.seats, pricing).amount_total_mxn;
+                totalMxn = computeTotalsFromReservation(r, pricing).amount_total_mxn;
             } finally {
                 conn.release();
             }

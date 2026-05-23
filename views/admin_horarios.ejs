@@ -1243,6 +1243,7 @@
 
         const passenger = Number(data.passenger_price_mxn || 0).toFixed(2);
         const pkg = Number(data.package_price_mxn || 0).toFixed(2);
+        const child = Number(data.child_price_mxn ?? (Number(data.passenger_price_mxn || 0) / 2)).toFixed(2);
         const updated = data.updated_at ? String(data.updated_at) : "—";
 
         listEl.innerHTML = `
@@ -1250,6 +1251,10 @@
                 <div class="field">
                     <div class="mini">Precio Pasajero (MXN)</div>
                     <input id="pPassenger" type="number" step="0.01" min="0" value="${passenger}">
+                </div>
+                <div class="field">
+                    <div class="mini">Precio Niño 6-10 (MXN)</div>
+                    <input id="pChild" type="number" step="0.01" min="0" value="${child}">
                 </div>
                 <div class="field">
                     <div class="mini">Precio Paquetería (MXN)</div>
@@ -1260,9 +1265,6 @@
                 <div class="muted">Última actualización: ${escapeHtml(updated)}</div>
             </div>
 
-            <div class="muted mt-3">
-                Nota: el backend debe usar estos precios como “source of truth”.
-            </div>
         `;
 
         hint.textContent = "Listo.";
@@ -1274,10 +1276,12 @@
             statusText.textContent = "Guardando precios…";
 
             const passengerPrice = Number(document.getElementById("pPassenger").value || 0);
+            const childPrice = Number(document.getElementById("pChild").value || 0);
             const packagePrice = Number(document.getElementById("pPackage").value || 0);
 
             const r = await apiPost("/admin/api/pricing", {
                 passenger_price_mxn: passengerPrice,
+                child_price_mxn: childPrice,
                 package_price_mxn: packagePrice
             });
 

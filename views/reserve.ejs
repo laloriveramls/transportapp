@@ -24,17 +24,18 @@
         /* Stepper estilo "lista desplegable" (form-select) pero con + / - */
         .stepper {
             width: 100%;
+            max-width: 176px;
             display: flex;
             align-items: center;
             justify-content: space-between;
 
-            height: calc(2.375rem + 2px);
-            padding: .375rem .75rem;
+            height: 40px;
+            padding: .25rem .42rem;
             border: 1px solid var(--border);
             border-radius: .375rem;
             background: var(--card);
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06);
-            gap: 10px;
+            gap: 6px;
         }
 
         .stepper:focus-within {
@@ -44,13 +45,14 @@
         }
 
         .stepper .btn-step {
-            width: 34px;
+            width: 30px;
             height: 30px;
-            border-radius: .375rem;
+            border-radius: 10px;
             border: 1px solid var(--border);
             background: transparent;
             color: var(--text);
             font-weight: 800;
+            font-size: 1rem;
             line-height: 1;
             display: inline-flex;
             align-items: center;
@@ -68,10 +70,10 @@
         }
 
         .stepper .count {
-            flex: 1;
+            flex: 0 0 54px;
             text-align: center;
-            font-weight: 650;
-            letter-spacing: -.01em;
+            font-weight: 780;
+            font-size: 1.04rem;
             color: var(--text);
             user-select: none;
         }
@@ -104,11 +106,19 @@
         }
 
         .slot-section {
-            margin-top: 12px;
+            margin-top: 0;
+            min-width: 0;
         }
 
         .slot-section:first-child {
             margin-top: 0;
+        }
+
+        #sections {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            align-items: start;
         }
 
         .section-label {
@@ -116,31 +126,41 @@
             align-items: center;
             gap: 8px;
             color: var(--muted);
-            font-weight: 650;
-            font-size: .9rem;
-            margin-bottom: 8px;
+            font-weight: 760;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 7px;
         }
 
         .slots {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+            gap: 8px;
         }
 
         .slot-pill {
             border: 1px solid var(--border);
             background: color-mix(in srgb, var(--card) 92%, transparent);
-            border-radius: 999px;
-            padding: 10px 12px;
+            border-radius: 12px;
+            min-width: 0;
+            min-height: 54px;
+            padding: 8px 10px;
             cursor: pointer;
-            transition: transform .06s ease, border-color .12s ease, background .12s ease;
+            transition: transform .06s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
             color: var(--text);
             user-select: none;
 
-            display: inline-flex;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "time check"
+                "meta check";
+            column-gap: 10px;
+            row-gap: 3px;
             align-items: center;
-            gap: 10px;
-            line-height: 1;
+            text-align: left;
+            line-height: 1.1;
         }
 
         .slot-pill:hover {
@@ -152,25 +172,46 @@
         .slot-pill[aria-selected="true"] {
             border-color: color-mix(in srgb, var(--wine) 75%, var(--border));
             background: color-mix(in srgb, var(--chip-bg) 70%, var(--card));
-            box-shadow: 0 10px 26px rgba(2, 6, 23, .10);
+            box-shadow: 0 8px 18px rgba(2, 6, 23, .10);
         }
 
         .slot-pill .time {
-            font-weight: 650;
+            grid-area: time;
+            font-weight: 720;
+            font-size: 1.02rem;
             white-space: nowrap;
         }
 
         .slot-pill .mini {
+            grid-area: meta;
+            display: block;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 680;
+            white-space: nowrap;
+        }
+
+        .slot-pill .slot-check {
+            grid-area: check;
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
             display: inline-flex;
             align-items: center;
-            gap: .35rem;
-            padding: .18rem .5rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-            color: var(--muted);
+            justify-content: center;
+            color: transparent;
             font-size: .82rem;
-            white-space: nowrap;
+            font-weight: 900;
+        }
+
+        .slot-pill[aria-selected="true"] .slot-check {
+            border-color: color-mix(in srgb, var(--wine) 72%, var(--border));
+            background: var(--wine);
+            color: #fff;
         }
 
         .slot-pill.is-warning .mini {
@@ -405,7 +446,7 @@
         .reserve-hero {
             border: 1px solid color-mix(in srgb, var(--border) 70%, rgba(106, 15, 31, .22));
             border-radius: 22px;
-            padding: 20px;
+            padding: 18px 20px;
             background: linear-gradient(125deg, color-mix(in srgb, var(--card) 92%, #ffffff 8%), color-mix(in srgb, var(--card) 98%, transparent)),
             radial-gradient(1050px 420px at 12% -18%, rgba(106, 15, 31, .17), transparent 60%);
             box-shadow: 0 20px 40px rgba(2, 6, 23, .10);
@@ -417,24 +458,10 @@
             font-weight: 760;
         }
 
-        .reserve-tags {
-            display: flex;
-            gap: .52rem;
-            flex-wrap: wrap;
-            margin-top: 12px;
-        }
-
-        .reserve-tag {
-            display: inline-flex;
-            align-items: center;
-            padding: .33rem .62rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            color: color-mix(in srgb, var(--text) 90%, var(--muted));
-            font-size: .81rem;
-            font-weight: 700;
-            letter-spacing: .01em;
+        .reserve-hero-lead {
+            max-width: 38ch;
+            line-height: 1.45;
+            font-size: .98rem;
         }
 
         .reserve-card {
@@ -442,6 +469,7 @@
             border: 1px solid var(--border);
             background: linear-gradient(180deg, color-mix(in srgb, var(--card) 98%, transparent), color-mix(in srgb, var(--card) 94%, transparent));
             box-shadow: 0 18px 42px rgba(2, 6, 23, .09);
+            padding: clamp(1rem, 1.2vw, 1.25rem) !important;
         }
 
         .reserve-form .form-control,
@@ -500,6 +528,7 @@
 
         .slots-wrap {
             border-radius: 20px;
+            padding: clamp(12px, 1.2vw, 14px);
             background: linear-gradient(180deg, color-mix(in srgb, var(--card) 95%, transparent), color-mix(in srgb, var(--card) 90%, transparent));
         }
 
@@ -522,17 +551,13 @@
         }
 
         .wizard-wrap {
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            background: color-mix(in srgb, var(--card) 95%, transparent);
-            padding: 12px;
+            padding: 0;
         }
 
         .wizard-track {
-            height: 6px;
+            height: 4px;
             border-radius: 999px;
             background: color-mix(in srgb, var(--card) 80%, transparent);
-            border: 1px solid var(--border);
             overflow: hidden;
         }
 
@@ -544,18 +569,18 @@
         }
 
         .wizard-steps {
-            margin-top: 10px;
+            margin-top: 8px;
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 8px;
+            gap: 6px;
         }
 
         .wizard-step {
-            border: 1px solid var(--border);
+            border: 0;
             border-radius: 999px;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
+            background: transparent;
             color: var(--muted);
-            padding: .42rem .55rem;
+            padding: .24rem .4rem;
             font-size: .82rem;
             font-weight: 700;
             text-align: center;
@@ -566,8 +591,7 @@
         .wizard-step.is-active,
         .wizard-step.is-done {
             color: var(--text);
-            border-color: color-mix(in srgb, var(--wine) 34%, var(--border));
-            background: color-mix(in srgb, var(--chip-bg) 58%, var(--card));
+            background: transparent;
         }
 
         .form-step {
@@ -602,6 +626,152 @@
             font-size: 1.02rem;
             font-weight: 760;
             letter-spacing: -.01em;
+        }
+
+        .trip-step {
+            padding: 16px;
+        }
+
+        .trip-step-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .trip-step-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            margin-bottom: 5px;
+            color: color-mix(in srgb, var(--wine) 76%, var(--text));
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        .trip-step-copy {
+            display: none;
+        }
+
+        .trip-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            min-width: min(100%, 320px);
+        }
+
+        .trip-preview-item {
+            display: inline-flex;
+            align-items: center;
+            gap: .38rem;
+            padding: .34rem .58rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: color-mix(in srgb, var(--text) 92%, var(--muted));
+            font-size: .84rem;
+            font-weight: 720;
+            white-space: nowrap;
+        }
+
+        .trip-step-body {
+            padding: 0;
+        }
+
+        .trip-step .step-actions {
+            padding: 0;
+        }
+
+        .trip-group {
+            height: 100%;
+        }
+
+        .trip-group-title {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .trip-group-title h3 {
+            margin: 0;
+            font-size: .95rem;
+            font-weight: 780;
+            letter-spacing: -.005em;
+        }
+
+        .trip-group-badge {
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .route-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            gap: 8px;
+            align-items: end;
+        }
+
+        .route-arrow {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--wine) 24%, var(--border));
+            background: color-mix(in srgb, var(--chip-bg) 62%, var(--card));
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .traveler-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 176px);
+            gap: 12px;
+            align-items: start;
+            justify-content: start;
+        }
+
+        .stepper-field {
+            min-width: 0;
+        }
+
+        .trip-note {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding: 9px 11px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            color: var(--muted);
+            background: color-mix(in srgb, var(--card) 91%, transparent);
+            font-size: .86rem;
+            line-height: 1.32;
+        }
+
+        .package-panel {
+            border-color: color-mix(in srgb, #0f5da8 18%, var(--border));
+        }
+
+        .schedule-wrap.is-featured {
+            padding: 12px;
+            border-radius: 14px;
         }
 
         .step-actions {
@@ -730,12 +900,6 @@
             box-shadow: 0 22px 44px rgba(0, 0, 0, .42);
         }
 
-        html[data-theme="dark"] .reserve-tag {
-            border-color: color-mix(in srgb, #8b1530 26%, var(--border));
-            background: color-mix(in srgb, #161925 88%, var(--card));
-            color: color-mix(in srgb, #ffd6de 62%, var(--text));
-        }
-
         html[data-theme="dark"] .reserve-card {
             border-color: color-mix(in srgb, #8b1530 20%, var(--border));
             background: linear-gradient(180deg, color-mix(in srgb, #11131d 90%, var(--card) 10%), color-mix(in srgb, #0f121a 88%, var(--card) 12%));
@@ -823,9 +987,17 @@
         }
 
         html[data-theme="dark"] .slot-pill .mini {
-            border-color: color-mix(in srgb, #253349 56%, var(--border));
-            background: color-mix(in srgb, #111a29 90%, var(--card));
             color: color-mix(in srgb, #b2c2d9 66%, var(--muted));
+        }
+
+        html[data-theme="dark"] .slot-pill .slot-check {
+            border-color: color-mix(in srgb, #253349 58%, var(--border));
+        }
+
+        html[data-theme="dark"] .slot-pill[aria-selected="true"] .slot-check {
+            border-color: #8b1530;
+            background: #8b1530;
+            color: #fff;
         }
 
         html[data-theme="dark"] .tbtn {
@@ -863,6 +1035,11 @@
             background: color-mix(in srgb, #121826 90%, var(--card));
         }
 
+        html[data-theme="dark"] .wizard-wrap {
+            border-color: transparent;
+            background: transparent;
+        }
+
         html[data-theme="dark"] .wizard-track {
             border-color: color-mix(in srgb, #2a3a52 56%, var(--border));
             background: color-mix(in srgb, #0f1522 92%, var(--card));
@@ -879,6 +1056,36 @@
             border-color: color-mix(in srgb, #8b1530 40%, #2a3a52);
             background: color-mix(in srgb, #3b1220 58%, #121a2a);
             color: #ffe0e7;
+        }
+
+        html[data-theme="dark"] .trip-step-head {
+            border-bottom-color: color-mix(in srgb, #2a3a52 62%, var(--border));
+            background: linear-gradient(135deg, color-mix(in srgb, #3b1220 34%, #121826), color-mix(in srgb, #121826 90%, var(--card)));
+        }
+
+        html[data-theme="dark"] .trip-step-kicker {
+            color: #ffdfe5;
+        }
+
+        html[data-theme="dark"] .trip-preview-item {
+            border-color: color-mix(in srgb, #2a3a52 58%, var(--border));
+            background: color-mix(in srgb, #111a2a 92%, var(--card));
+        }
+
+        html[data-theme="dark"] .trip-group {
+            background: transparent;
+        }
+
+        html[data-theme="dark"] .route-arrow {
+            border-color: color-mix(in srgb, #8b1530 42%, #2a3a52);
+            background: color-mix(in srgb, #3b1220 52%, #121a2a);
+            color: #ffe0e7;
+        }
+
+        html[data-theme="dark"] .trip-note {
+            border-color: color-mix(in srgb, #2a3a52 62%, var(--border));
+            background: color-mix(in srgb, #101928 92%, var(--card));
+            color: color-mix(in srgb, #a4b8d2 68%, var(--muted));
         }
 
         html[data-theme="dark"] .confirm-pill {
@@ -914,12 +1121,58 @@
             color: color-mix(in srgb, #a4b8d2 68%, var(--muted));
         }
 
+        @media (max-width: 992px) {
+            .trip-step-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .trip-preview {
+                justify-content: flex-start;
+                min-width: 0;
+            }
+
+            .route-grid,
+            .choice-grid,
+            .traveler-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .traveler-grid {
+                justify-content: stretch;
+            }
+
+            .stepper {
+                max-width: none;
+            }
+
+            #sections {
+                grid-template-columns: 1fr;
+            }
+
+            .slot-pill {
+                min-width: 0;
+            }
+
+            .route-arrow {
+                display: none;
+            }
+        }
+
         @media (max-width: 768px) {
             .reserve-card {
                 padding: 1rem !important;
             }
 
             .wizard-steps {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .trip-step-body {
+                padding: 0;
+            }
+
+            .slots {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
@@ -944,7 +1197,8 @@
     <script id="pricingJson" type="application/json"><%- JSON.stringify(
                 (typeof pricing !== "undefined" && pricing) ? pricing : {
                     passenger_price_mxn: 120,
-                    package_price_mxn: 120
+                    package_price_mxn: 120,
+                    child_price_mxn: 60
                 }
         ) %></script>
 </head>
@@ -969,13 +1223,9 @@
     <div class="hero reserve-hero mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
             <div>
-                <h1 class="h3 headline mb-1">Reservar</h1>
-                <div class="subtle">Elige ruta, fecha y cantidad. Te mostramos solo horarios con cupo.</div>
-                <div class="reserve-tags">
-                    <span class="reserve-tag">Proceso guiado</span>
-                    <span class="reserve-tag">Confirmación inmediata</span>
-                    <span class="reserve-tag">Hasta 6 pasajeros</span>
-                </div>
+                <h1 class="h3 headline mb-2">Reservar</h1>
+                <p class="subtle mb-0 reserve-hero-lead">Elige ruta, fecha y horario. Solo verás salidas con cupo
+                    disponible.</p>
             </div>
             <a class="btn btn-wine" href="/">Volver</a>
         </div>
@@ -996,111 +1246,169 @@
                             <button type="button" class="wizard-step is-active" data-step-target="1">1. Viaje</button>
                             <button type="button" class="wizard-step" data-step-target="2">2. Contacto</button>
                             <button type="button" class="wizard-step" data-step-target="3">3. Pago</button>
-                            <button type="button" class="wizard-step" data-step-target="4">4. Confirmar</button>
+                            <button type="button" class="wizard-step" data-step-target="4">4.
+                                Confirmar
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-12 form-step is-active" data-step="1">
-                    <div class="step-card">
-                        <h2 class="step-title">Ruta y horario</h2>
-                        <div class="row g-3">
-                            <!-- 1) Origen -->
-                            <div class="col-md-6">
-                                <label class="form-label">¿De dónde sales?</label>
-                                <select id="from_city" class="form-select" required>
-                                    <option value="VIC" selected>Ciudad Victoria</option>
-                                    <option value="LLE">Llera</option>
-                                </select>
+                    <div class="step-card trip-step">
+                        <div class="trip-step-head">
+                            <div>
+                                <h2 class="step-title mb-0">Viaje</h2>
                             </div>
-
-                            <!-- 2) Destino -->
-                            <div class="col-md-6">
-                                <label class="form-label">¿Hacia dónde vas?</label>
-                                <select id="to_city" class="form-select" required>
-                                    <option value="LLE" selected>Llera</option>
-                                    <option value="VIC">Ciudad Victoria</option>
-                                </select>
+                            <div class="trip-preview" aria-label="Resumen rápido del viaje">
+                                <span class="trip-preview-item" id="tripPreviewRoute">Victoria → Llera</span>
+                                <span class="trip-preview-item" id="tripPreviewDate">Hoy</span>
+                                <span class="trip-preview-item" id="tripPreviewPax">1 viajero</span>
                             </div>
+                        </div>
 
-                            <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
+                        <div class="trip-step-body">
+                            <div class="row g-3">
+                                <div class="col-lg-6">
+                                    <div class="trip-group">
+                                        <div class="route-grid">
+                                            <div>
+                                                <label class="form-label">Origen</label>
+                                                <select id="from_city" class="form-select" required>
+                                                    <option value="VIC" selected>Ciudad Victoria</option>
+                                                    <option value="LLE">Llera</option>
+                                                </select>
+                                            </div>
 
-                            <!-- 3) Fecha -->
-                            <div class="col-md-4">
-                                <label class="form-label">¿Cuándo viajas?</label>
-                                <input id="trip_date" name="trip_date" type="date" class="form-control" required/>
-                                <div class="form-text subtle">Por defecto se coloca el día de hoy.</div>
-                            </div>
+                                            <div class="route-arrow" aria-hidden="true">→</div>
 
-                            <!-- 4) Tipo -->
-                            <div class="col-md-4">
-                                <label class="form-label">¿Qué quieres reservar?</label>
-                                <select id="type" name="type" class="form-select" required>
-                                    <option value="PASSENGER" selected>Pasajero</option>
-                                    <option value="PACKAGE">Paquetería</option>
-                                </select>
-                            </div>
-
-                            <!-- 5) Cuántos viajan -->
-                            <div class="col-md-4" id="seatsWrap">
-                                <label class="form-label">¿Cuántos viajan?</label>
-
-                                <div class="stepper">
-                                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir">−
-                                    </button>
-                                    <div class="count"><span id="seatsText">1</span></div>
-                                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar">+</button>
-
-                                    <!-- ✅ SOLO 1–6 -->
-                                    <select id="seats" name="seats" class="d-none">
-                                        <option value="1" selected>1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-text subtle">Máximo 6 pasajeros por salida.</div>
-                            </div>
-
-                            <!-- PAQUETERÍA -->
-                            <div class="col-12" id="packageWrap">
-                                <label class="form-label">Detalle paquetería (obligatorio)</label>
-                                <input id="package_details" name="package_details" class="form-control"
-                                       placeholder="Ej: sobre, refacciones, etc."/>
-                            </div>
-
-                            <!-- Horarios -->
-                            <div class="col-12">
-                                <label class="form-label">Hora (según cupo)</label>
-                                <input type="hidden" id="depart_time" name="depart_time" value="">
-
-                                <div class="slots-wrap schedule-wrap">
-                                    <div class="slots-head">
-                                        <p class="slots-title mb-0">Horarios disponibles</p>
-                                        <div class="slots-sub" id="slotsHint">Selecciona fecha y ruta.</div>
-                                    </div>
-
-                                    <div id="slotsLoading" class="help">—</div>
-
-                                    <div id="sections" class="d-none">
-                                        <div class="slot-section" id="morningSection">
-                                            <div class="section-label">🌤️ Mañana</div>
-                                            <div id="morningSlots" class="slots"></div>
+                                            <div>
+                                                <label class="form-label">Destino</label>
+                                                <select id="to_city" class="form-select" required>
+                                                    <option value="LLE" selected>Llera</option>
+                                                    <option value="VIC">Ciudad Victoria</option>
+                                                </select>
+                                            </div>
                                         </div>
 
-                                        <div class="slot-section" id="afternoonSection">
-                                            <div class="section-label">🌇 Tarde</div>
-                                            <div id="afternoonSlots" class="slots"></div>
+                                        <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="trip-group">
+                                        <div class="choice-grid">
+                                            <div>
+                                                <label class="form-label">¿Cuándo viajas?</label>
+                                                <input id="trip_date" name="trip_date" type="date" class="form-control"
+                                                       required/>
+                                            </div>
+
+                                            <div>
+                                                <label class="form-label">¿Qué servicio necesitas?</label>
+                                                <select id="type" name="type" class="form-select" required>
+                                                    <option value="PASSENGER" selected>Pasaje</option>
+                                                    <option value="PACKAGE">Paquetería</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="form-text subtle mt-2">Te mostramos horarios con cupo para tu selección.
+                                <div class="col-12" id="passengerGroup">
+                                    <div class="trip-group">
+                                        <div class="traveler-grid">
+                                            <div class="stepper-field" id="seatsWrap">
+                                                <label class="form-label">Adultos</label>
+
+                                                <div class="stepper">
+                                                    <button id="minusBtn" type="button" class="btn-step"
+                                                            aria-label="Disminuir adultos">−
+                                                    </button>
+                                                    <div class="count"><span id="seatsText">1</span></div>
+                                                    <button id="plusBtn" type="button" class="btn-step"
+                                                            aria-label="Aumentar adultos">+
+                                                    </button>
+
+                                                    <select id="seats" name="seats" class="d-none">
+                                                        <option value="0">0</option>
+                                                        <option value="1" selected>1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                        <option value="6">6</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="stepper-field" id="childSeatsWrap">
+                                                <label class="form-label">Niños 6-10 años</label>
+
+                                                <div class="stepper">
+                                                    <button id="childMinusBtn" type="button" class="btn-step"
+                                                            aria-label="Disminuir niños">−
+                                                    </button>
+                                                    <div class="count"><span id="childSeatsText">0</span></div>
+                                                    <button id="childPlusBtn" type="button" class="btn-step"
+                                                            aria-label="Aumentar niños">+
+                                                    </button>
+
+                                                    <select id="child_seats" name="child_seats" class="d-none">
+                                                        <option value="0" selected>0</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                        <option value="6">6</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="trip-note" id="passengerCapHint">
+                                            <span aria-hidden="true">ℹ</span>
+                                            <span>La disponibilidad se calcula con adultos + niños.</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="departTimeError" class="step-inline-error d-none"></div>
+
+                                <div class="col-12" id="packageWrap">
+                                    <div class="trip-group package-panel">
+                                        <label class="form-label">Detalle paquetería</label>
+                                        <input id="package_details" name="package_details" class="form-control"
+                                               placeholder="Ej: sobre, refacciones, etc."/>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Hora (según cupo)</label>
+                                    <input type="hidden" id="depart_time" name="depart_time" value="">
+
+                                    <div class="slots-wrap schedule-wrap is-featured">
+                                        <div class="slots-head">
+                                            <div>
+                                                <p class="slots-title mb-0">Horarios disponibles</p>
+                                            </div>
+                                        </div>
+
+                                        <div id="slotsLoading" class="help">—</div>
+
+                                        <div id="sections" class="d-none">
+                                            <div class="slot-section" id="morningSection">
+                                                <div class="section-label">🌤️ Mañana</div>
+                                                <div id="morningSlots" class="slots"></div>
+                                            </div>
+
+                                            <div class="slot-section" id="afternoonSection">
+                                                <div class="section-label">🌇 Tarde</div>
+                                                <div id="afternoonSlots" class="slots"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="departTimeError" class="step-inline-error d-none"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="step-actions">
@@ -1349,10 +1657,19 @@
     const typeSel = document.getElementById("type");
 
     const seatsWrap = document.getElementById("seatsWrap");
+    const childSeatsWrap = document.getElementById("childSeatsWrap");
+    const passengerCapHint = document.getElementById("passengerCapHint");
+    const passengerGroup = document.getElementById("passengerGroup");
     const seatsSel = document.getElementById("seats");
     const seatsText = document.getElementById("seatsText");
     const plusBtn = document.getElementById("plusBtn");
     const minusBtn = document.getElementById("minusBtn");
+    const childSeatsSel = document.getElementById("child_seats");
+    const childSeatsText = document.getElementById("childSeatsText");
+    const childPlusBtn = document.getElementById("childPlusBtn");
+    const childMinusBtn = document.getElementById("childMinusBtn");
+    const childPriceHint = document.getElementById("childPriceHint");
+    const MAX_PASSENGERS = 6;
 
     const customerName = document.getElementById("customer_name");
 
@@ -1412,9 +1729,10 @@
             return {
                 passenger_price_mxn: Number(obj?.passenger_price_mxn ?? 120),
                 package_price_mxn: Number(obj?.package_price_mxn ?? 120),
+                child_price_mxn: Number(obj?.child_price_mxn ?? 60),
             };
         } catch {
-            return {passenger_price_mxn: 120, package_price_mxn: 120};
+            return {passenger_price_mxn: 120, package_price_mxn: 120, child_price_mxn: 60};
         }
     }
 
@@ -1442,6 +1760,7 @@
                 trip_date: tripDate.value || "",
                 type: typeSel.value || "PASSENGER",
                 seats: seatsSel.value || "1",
+                child_seats: childSeatsSel?.value || "0",
                 customer_name: customerName.value || "",
                 phone: document.getElementById("phone")?.value || "",
                 names_toggle: !!namesToggle?.checked,
@@ -1474,7 +1793,8 @@
         if (draft.to_city) toCity.value = String(draft.to_city);
         if (draft.trip_date) tripDate.value = String(draft.trip_date);
         if (draft.type) typeSel.value = String(draft.type);
-        if (draft.seats) seatsSel.value = String(draft.seats);
+        if (draft.seats != null) seatsSel.value = String(draft.seats);
+        if (childSeatsSel && draft.child_seats != null) childSeatsSel.value = String(draft.child_seats);
         if (typeof draft.customer_name === "string") customerName.value = draft.customer_name;
 
         const phoneEl = document.getElementById("phone");
@@ -1527,6 +1847,7 @@
                 PRICING = {
                     passenger_price_mxn: Number(data.passenger_price_mxn ?? PRICING.passenger_price_mxn ?? 120),
                     package_price_mxn: Number(data.package_price_mxn ?? PRICING.package_price_mxn ?? 120),
+                    child_price_mxn: Number(data.child_price_mxn ?? PRICING.child_price_mxn ?? 60),
                 };
                 PRICING_OK = true;
             } else {
@@ -1552,17 +1873,61 @@
         return isNaN(hh) ? 0 : hh;
     }
 
-    function setSeats(n) {
-        const value = Math.max(1, Math.min(6, Number(n || 1)));
-        seatsSel.value = String(value);
-        seatsText.textContent = String(value);
+    function getAdultSeats() {
+        return Math.max(0, Math.min(MAX_PASSENGERS, Number(seatsSel.value || 0)));
+    }
 
-        minusBtn.disabled = value <= 1;
-        plusBtn.disabled = value >= 6;
+    function getChildSeats() {
+        return Math.max(0, Math.min(MAX_PASSENGERS, Number(childSeatsSel?.value || 0)));
+    }
+
+    function getTotalPassengers() {
+        return getAdultSeats() + getChildSeats();
+    }
+
+    function syncPassengerSteppers() {
+        let adults = getAdultSeats();
+        let children = getChildSeats();
+        let total = adults + children;
+
+        if (total < 1) {
+            if (adults < 1) adults = 1;
+            children = 0;
+            total = 1;
+        }
+
+        if (total > MAX_PASSENGERS) {
+            const overflow = total - MAX_PASSENGERS;
+            children = Math.max(0, children - overflow);
+            total = adults + children;
+            if (total > MAX_PASSENGERS) {
+                adults = Math.max(1, adults - (total - MAX_PASSENGERS));
+            }
+        }
+
+        seatsSel.value = String(adults);
+        seatsText.textContent = String(adults);
+        if (childSeatsSel) childSeatsSel.value = String(children);
+        if (childSeatsText) childSeatsText.textContent = String(children);
+
+        minusBtn.disabled = adults <= 0 || (adults <= 1 && children <= 0);
+        plusBtn.disabled = adults + children >= MAX_PASSENGERS;
+        if (childMinusBtn) childMinusBtn.disabled = children <= 0;
+        if (childPlusBtn) childPlusBtn.disabled = adults + children >= MAX_PASSENGERS;
 
         updatePriceUI();
         updateSummary();
         writeDraft();
+    }
+
+    function setAdultSeats(n) {
+        seatsSel.value = String(Math.max(0, Math.min(MAX_PASSENGERS, Number(n || 0))));
+        syncPassengerSteppers();
+    }
+
+    function setChildSeats(n) {
+        if (childSeatsSel) childSeatsSel.value = String(Math.max(0, Math.min(MAX_PASSENGERS, Number(n || 0))));
+        syncPassengerSteppers();
     }
 
     function syncDirection() {
@@ -1639,6 +2004,9 @@
         const isPassenger = typeSel.value === "PASSENGER";
 
         seatsWrap.style.display = isPassenger ? "" : "none";
+        if (childSeatsWrap) childSeatsWrap.style.display = isPassenger ? "" : "none";
+        if (passengerCapHint) passengerCapHint.style.display = isPassenger ? "" : "none";
+        if (passengerGroup) passengerGroup.style.display = isPassenger ? "" : "none";
 
         // I show the "capture names" switch only for passengers.
         namesToggleWrap.style.display = isPassenger ? "" : "none";
@@ -1678,7 +2046,7 @@
 
     function renderPassengerInputs() {
         const isPassenger = typeSel.value === "PASSENGER";
-        const seats = Number(seatsSel.value || 1);
+        const seats = getTotalPassengers();
 
         passengerNames.innerHTML = "";
 
@@ -1744,13 +2112,13 @@
         }
 
         const extra = (seatsNeeded > 0)
-            ? `<span class="mini">para ${seatsNeeded}</span>`
-            : `<span class="mini">Paquetería</span>`;
+            ? `${available} libres · ${seatsNeeded} lugar${seatsNeeded === 1 ? "" : "es"}`
+            : "Paquetería";
 
         btn.innerHTML = `
-            <span class="time">🕒 ${hhmm}</span>
-            <span class="mini">👥 ${available} libres</span>
-            ${extra}
+            <span class="time">${hhmm}</span>
+            <span class="mini">${extra}</span>
+            <span class="slot-check" aria-hidden="true">✓</span>
         `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));
@@ -1819,7 +2187,7 @@
         }
 
         const seatsNeeded = (typeSel.value === "PASSENGER")
-            ? Number(seatsSel.value || 1)
+            ? getTotalPassengers()
             : 0;
 
         slotsLoading.textContent = "Cargando horarios...";
@@ -1851,7 +2219,9 @@
         const date = tripDate.value || "-";
         const time = departTimeHidden.value || "(sin horario aún)";
         const type = (typeSel.value === "PASSENGER") ? "Pasaje" : "Paquetería";
-        const seats = Number(seatsSel.value || 1);
+        const adults = getAdultSeats();
+        const children = getChildSeats();
+        const totalPax = adults + children;
 
         const totalText = priceTotal?.textContent || "";
         const contact = (customerName?.value || "").trim();
@@ -1869,7 +2239,7 @@
             `Ruta: ${dir}`,
             `Fecha: ${date}`,
             `Hora: ${time}`,
-            `Tipo: ${type}${typeSel.value === "PASSENGER" ? ` (${seats} pasajero(s))` : ""}`,
+            `Tipo: ${type}${typeSel.value === "PASSENGER" ? ` (${totalPax} viajero(s)${children > 0 ? `, ${children} niño(s) 6-10` : ""})` : ""}`,
             `Total: ${totalText}`,
             "",
             "Nota: El folio se genera al finalizar la reserva."
@@ -1898,21 +2268,32 @@
 
     function updatePriceUI() {
         const isPassenger = typeSel.value === "PASSENGER";
-        const seats = Number(seatsSel.value || 1);
+        const adults = getAdultSeats();
+        const children = getChildSeats();
+        const adultUnit = Number(PRICING.passenger_price_mxn || 0);
+        const childUnit = Number(
+            PRICING.child_price_mxn != null ? PRICING.child_price_mxn : adultUnit / 2
+        );
+        const packageUnit = Number(PRICING.package_price_mxn || 0);
 
-        const unit = isPassenger
-            ? Number(PRICING.passenger_price_mxn || 0)
-            : Number(PRICING.package_price_mxn || 0);
+        if (childPriceHint) {
+            childPriceHint.textContent = formatMXN(childUnit).replace(" MXN", "");
+        }
 
-        const total = isPassenger ? (unit * seats) : unit;
+        const total = isPassenger
+            ? (adultUnit * adults + childUnit * children)
+            : packageUnit;
 
         priceTotal.textContent = formatMXN(total);
 
         if (isPassenger) {
-            priceBreakdown.textContent = `${formatMXN(unit)} x ${seats} pasajero(s)`;
+            const parts = [];
+            if (adults > 0) parts.push(`${formatMXN(adultUnit)} x ${adults} adulto(s)`);
+            if (children > 0) parts.push(`${formatMXN(childUnit)} x ${children} niño(s) 6-10`);
+            priceBreakdown.textContent = parts.length ? parts.join(" + ") : "Selecciona viajeros";
             priceHint.textContent = PRICING_OK ? "Pasaje (precio actual)" : "Pasaje (estimado)";
         } else {
-            priceBreakdown.textContent = `${formatMXN(unit)} (costo fijo)`;
+            priceBreakdown.textContent = `${formatMXN(packageUnit)} (costo fijo)`;
             priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
         }
 
@@ -1988,6 +2369,28 @@
         return "-";
     }
 
+    function updateStepOnePreview() {
+        const routeEl = document.getElementById("tripPreviewRoute");
+        const dateEl = document.getElementById("tripPreviewDate");
+        const paxEl = document.getElementById("tripPreviewPax");
+        if (!routeEl || !dateEl || !paxEl) return;
+
+        routeEl.textContent = routeLabel(directionInput.value || "");
+
+        if (tripDate.value) {
+            dateEl.textContent = tripDate.value === todayISO() ? "Hoy" : tripDate.value;
+        } else {
+            dateEl.textContent = "Sin fecha";
+        }
+
+        if (typeSel.value === "PASSENGER") {
+            const total = getTotalPassengers();
+            paxEl.textContent = `${total} ${total === 1 ? "viajero" : "viajeros"}`;
+        } else {
+            paxEl.textContent = "Paquetería";
+        }
+    }
+
     function updateSummary() {
         const sumRoute = document.getElementById("sumRoute");
         const sumDate = document.getElementById("sumDate");
@@ -1998,6 +2401,8 @@
         const sumTotal = document.getElementById("sumTotal");
         const sumContact = document.getElementById("sumContact");
 
+        updateStepOnePreview();
+
         if (!sumRoute) return;
 
         const isPassenger = typeSel.value === "PASSENGER";
@@ -2005,7 +2410,15 @@
         sumDate.textContent = tripDate.value || "-";
         sumTime.textContent = departTimeHidden.value || "Sin seleccionar";
         sumType.textContent = isPassenger ? "Pasajero" : "Paqueteria";
-        sumSeats.textContent = isPassenger ? String(seatsSel.value || "1") : "N/A";
+        if (isPassenger) {
+            const adults = getAdultSeats();
+            const children = getChildSeats();
+            sumSeats.textContent = children > 0
+                ? `${adults + children} (${adults} adulto(s), ${children} niño(s) 6-10)`
+                : String(adults + children);
+        } else {
+            sumSeats.textContent = "N/A";
+        }
         sumPayment.textContent = paymentLabel(paymentMethod.value);
         sumTotal.textContent = priceTotal.textContent || "-";
         sumContact.textContent = (customerName.value || "").trim() || "-";
@@ -2198,13 +2611,25 @@
     });
 
     plusBtn.addEventListener("click", () => {
-        setSeats(Number(seatsSel.value || 1) + 1);
+        setAdultSeats(getAdultSeats() + 1);
         renderPassengerInputs();
         loadAvailability();
     });
 
     minusBtn.addEventListener("click", () => {
-        setSeats(Number(seatsSel.value || 1) - 1);
+        setAdultSeats(getAdultSeats() - 1);
+        renderPassengerInputs();
+        loadAvailability();
+    });
+
+    childPlusBtn?.addEventListener("click", () => {
+        setChildSeats(getChildSeats() + 1);
+        renderPassengerInputs();
+        loadAvailability();
+    });
+
+    childMinusBtn?.addEventListener("click", () => {
+        setChildSeats(getChildSeats() - 1);
         renderPassengerInputs();
         loadAvailability();
     });
@@ -2224,7 +2649,7 @@
 
     if (!tripDate.value) tripDate.value = todayISO();
 
-    setSeats(Number(seatsSel.value || 1));
+    syncPassengerSteppers();
     renderPassengerInputs();
 
     // ✅ pintar precio inmediato con lo que vino del server
