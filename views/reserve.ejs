@@ -247,6 +247,51 @@
             white-space: nowrap;
         }
 
+        .price-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .price-total-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .price-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .price-breakdown-item {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .38rem .62rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--card) 92%, transparent);
+            color: var(--text);
+            font-size: .85rem;
+            font-weight: 650;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .price-breakdown-item .mini-tag {
+            padding: .14rem .38rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--chip-bg) 70%, var(--card));
+            color: color-mix(in srgb, var(--text) 86%, var(--muted));
+            font-size: .74rem;
+            font-weight: 800;
+            letter-spacing: .01em;
+            white-space: nowrap;
+        }
+
         .transfer-actions {
             display: flex;
             gap: 10px;
@@ -1489,9 +1534,11 @@
                                         <div class="slots-sub" id="priceHint">Cargando precio…</div>
                                     </div>
 
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <span class="pill">💰 <span id="priceTotal">$0</span></span>
-                                        <span class="help" id="priceBreakdown"></span>
+                                    <div class="price-summary">
+                                        <div class="price-total-row">
+                                            <span class="pill">💰 <span id="priceTotal">$0</span></span>
+                                        </div>
+                                        <div class="price-breakdown" id="priceBreakdown"></div>
                                     </div>
                                 </div>
                             </div>
@@ -2288,12 +2335,16 @@
 
         if (isPassenger) {
             const parts = [];
-            if (adults > 0) parts.push(`${formatMXN(adultUnit)} x ${adults} adulto(s)`);
-            if (children > 0) parts.push(`${formatMXN(childUnit)} x ${children} niño(s) 6-10`);
-            priceBreakdown.textContent = parts.length ? parts.join(" + ") : "Selecciona viajeros";
+            if (adults > 0) {
+                parts.push(`<span class="price-breakdown-item"><span class="mini-tag">${adults} adulto${adults === 1 ? "" : "s"}</span><span>${formatMXN(adultUnit)} c/u</span></span>`);
+            }
+            if (children > 0) {
+                parts.push(`<span class="price-breakdown-item"><span class="mini-tag">${children} niño${children === 1 ? "" : "s"}</span><span>${formatMXN(childUnit)} c/u</span></span>`);
+            }
+            priceBreakdown.innerHTML = parts.length ? parts.join("") : '<span class="help">Selecciona viajeros para ver el desglose.</span>';
             priceHint.textContent = PRICING_OK ? "Pasaje (precio actual)" : "Pasaje (estimado)";
         } else {
-            priceBreakdown.textContent = `${formatMXN(packageUnit)} (costo fijo)`;
+            priceBreakdown.innerHTML = `<span class="price-breakdown-item"><span class="mini-tag">Fijo</span><span>${formatMXN(packageUnit)}</span></span>`;
             priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
         }
 
