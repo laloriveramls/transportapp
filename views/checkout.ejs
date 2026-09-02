@@ -110,6 +110,9 @@
                 <ul class="kv mb-3">
                     <li><span class="k">Folio</span><span class="v mono"><%= folio %></span></li>
                     <li><span class="k">Ruta</span><span class="v"><%= directionLabel(r.direction) %></span></li>
+                    <% if (typeof vicLocationLabel !== "undefined" && vicLocationLabel) { %>
+                        <li><span class="k">Ubicación</span><span class="v"><%= vicLocationLabel %></span></li>
+                    <% } %>
                     <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
                     <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
 

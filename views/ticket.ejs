@@ -228,6 +228,9 @@
                         <ul class="kv">
                             <li><span class="k">Ruta</span><span class="v"><%= directionLabel(row.direction) %></span>
                             </li>
+                            <% if (typeof vicLocationLabel !== "undefined" && vicLocationLabel) { %>
+                                <li><span class="k">Ubicación</span><span class="v"><%= vicLocationLabel %></span></li>
+                            <% } %>
                             <li><span class="k">Fecha</span><span class="v"><%= row.trip_date %></span></li>
                             <li><span class="k">Hora</span><span class="v"><%= row.depart_time %></span></li>
 

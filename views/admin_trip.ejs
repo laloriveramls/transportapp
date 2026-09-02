@@ -347,7 +347,12 @@
                              DESKTOP ROW (normal)
                         ========================== -->
                         <tr class="tr-desktop">
-                            <td><%= r.customer_name %></td>
+                            <td>
+                                <%= r.customer_name %>
+                                <% if (r.vic_location) { %>
+                                    <div class="small subtle"><%= resolveVicLocationLabel(r.vic_location) %></div>
+                                <% } %>
+                            </td>
                             <td class="subtle"><%= r.phone %></td>
 
                             <td>
@@ -480,6 +485,9 @@
                                     <div class="m-row-top">
                                         <div>
                                             <div class="m-name"><%= r.customer_name %></div>
+                                            <% if (r.vic_location) { %>
+                                                <div class="m-meta"><%= resolveVicLocationLabel(r.vic_location) %></div>
+                                            <% } %>
                                             <div class="m-meta">
                                                 <%= r.phone %> · <%= r.type === "PASSENGER" ? "🧍‍♂️ Pasajero" : "📦 Paquetería" %>
                                             </div>
