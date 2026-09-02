@@ -5,6 +5,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
+const {resolveVicLocationLabel} = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
 const crypto = require("crypto");
 
@@ -259,6 +260,7 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
         directionLabel,
         onlyPending,
         baseUrl: process.env.BASE_URL,
+        resolveVicLocationLabel,
     });
 });
 

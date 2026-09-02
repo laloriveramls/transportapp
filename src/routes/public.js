@@ -21,6 +21,12 @@ const {
     previewAvailability,
 } = require("../dev/previewData");
 const {sendTelegram, escapeHtml} = require("../notifications/telegram");
+const {
+    getVicLocations,
+    resolveVicLocation,
+    resolveVicLocationLabel,
+    pricingForVicLocation,
+} = require("../locations");
 
 const router = express.Router();
 
@@ -274,7 +280,15 @@ function computeTotalsFromReservation(r, pricing) {
     const totalSeats = Number(r?.seats || 1);
     const children = Number(r?.child_seats || 0);
     const adults = Math.max(0, totalSeats - children);
-    return computeTotalsWithPricing(r?.type, adults, pricing, children);
+    const effectivePricing = pricingForVicLocation(pricing, r?.vic_location);
+    return computeTotalsWithPricing(r?.type, adults, effectivePricing, children);
+}
+
+function reserveViewData(extra = {}) {
+    return {
+        vicLocations: getVicLocations(),
+        ...extra,
+    };
 }
 
 /* =========================
@@ -422,7 +436,10 @@ router.get(
     requireDb,
     safe(async (req, res) => {
         if (isPreviewMode()) {
-            return res.render("index", {templates: previewTemplates()});
+            return res.render("index", {
+                templates: previewTemplates(),
+                vicLocations: getVicLocations(),
+            });
         }
 
         const [templates] = await pool.query(`
@@ -432,7 +449,7 @@ router.get(
             ORDER BY depart_time
         `);
 
-        res.render("index", {templates});
+        res.render("index", {templates, vicLocations: getVicLocations()});
     })
 );
 
@@ -441,14 +458,14 @@ router.get(
     requireDb,
     safe(async (req, res) => {
         if (isPreviewMode()) {
-            return res.render("reserve", {error: null, pricing: previewPricing()});
+            return res.render("reserve", reserveViewData({error: null, pricing: previewPricing()}));
         }
 
         // I pass pricing to the UI so it can show correct totals.
         const conn = await pool.getConnection();
         try {
             const pricing = await getPricing(conn);
-            res.render("reserve", {error: null, pricing});
+            res.render("reserve", reserveViewData({error: null, pricing}));
         } finally {
             conn.release();
         }
@@ -577,20 +594,26 @@ router.post(
             package_details,
             payment_method,
             transfer_ref,
+            vic_location,
         } = req.body;
 
         customer_name = String(customer_name || "").trim();
         phone = String(phone || "").trim();
         package_details = String(package_details || "").trim();
+        vic_location = String(vic_location || "").trim().toUpperCase() || null;
 
         type = String(type || "PASSENGER").trim().toUpperCase();
         if (!ALLOWED_TYPES.has(type)) {
-            return res.status(400).render("reserve", {error: "Tipo de reserva no válido."});
+            return res.status(400).render("reserve", reserveViewData({error: "Tipo de reserva no válido."}));
         }
 
         payment_method = String(payment_method || "TAQUILLA").trim().toUpperCase();
         if (!ALLOWED_PAYMENT_METHODS.has(payment_method)) {
-            return res.status(400).render("reserve", {error: "Método de pago no válido."});
+            return res.status(400).render("reserve", reserveViewData({error: "Método de pago no válido."}));
+        }
+
+        if (vic_location && !resolveVicLocation(vic_location)) {
+            return res.status(400).render("reserve", reserveViewData({error: "Ubicación de Ciudad Victoria no válida."}));
         }
 
         transfer_ref = String(transfer_ref || "").trim();
@@ -608,9 +631,9 @@ router.post(
             seats = adults + childSeats;
             if (seats < 1) seats = 1;
             if (seats > MAX_CAP) {
-                return res.status(400).render("reserve", {
+                return res.status(400).render("reserve", reserveViewData({
                     error: `Máximo ${MAX_CAP} pasajeros por salida (adultos + niños).`,
-                });
+                }));
             }
         }
 
@@ -626,20 +649,20 @@ router.post(
         const nowHHMM = nowHHMM_MTY();
 
         if (!trip_date) {
-            return res.status(400).render("reserve", {error: "Selecciona una fecha válida."});
+            return res.status(400).render("reserve", reserveViewData({error: "Selecciona una fecha válida."}));
         }
         if (!depart_time) {
-            return res.status(400).render("reserve", {error: "Selecciona un horario disponible."});
+            return res.status(400).render("reserve", reserveViewData({error: "Selecciona un horario disponible."}));
         }
 
         if (trip_date < today) {
-            return res.status(400).render("reserve", {error: "No puedes reservar en fechas pasadas."});
+            return res.status(400).render("reserve", reserveViewData({error: "No puedes reservar en fechas pasadas."}));
         }
 
         if (trip_date === today) {
             const depHHMM = toHHMM_24(depart_time);
             if (depHHMM <= nowHHMM) {
-                return res.status(400).render("reserve", {error: "Ese horario ya pasó. Elige otra hora."});
+                return res.status(400).render("reserve", reserveViewData({error: "Ese horario ya pasó. Elige otra hora."}));
             }
         }
 
@@ -649,10 +672,12 @@ router.post(
 
             // ✅ pricing source of truth (inside TX)
             const pricing = await getPricing(conn);
+            const effectivePricing = pricingForVicLocation(pricing, vic_location);
             const adultSeats = type === "PASSENGER" ? Math.max(0, seats - childSeats) : 0;
             const {unit_price_mxn, amount_total_mxn, child_seats: childSeatsStored} =
-                computeTotalsWithPricing(type, adultSeats, pricing, childSeats);
+                computeTotalsWithPricing(type, adultSeats, effectivePricing, childSeats);
             childSeats = childSeatsStored;
+            const vicLocationLabel = resolveVicLocationLabel(vic_location);
 
             const [[template]] = await conn.query(
                 `
@@ -677,10 +702,10 @@ router.post(
             if (st !== "OPEN") {
                 await conn.rollback();
                 const pricing2 = await getPricing(conn).catch(() => null);
-                return res.status(400).render("reserve", {
+                return res.status(400).render("reserve", reserveViewData({
                     error: "Ese horario está deshabilitado para esa fecha. Elige otra hora.",
                     pricing: pricing2 || undefined,
-                });
+                }));
             }
 
             const available = await computeAvailable(conn, trip.id);
@@ -688,39 +713,39 @@ router.post(
             if (type === "PASSENGER" && available < seats) {
                 await conn.rollback();
                 const pricing2 = await getPricing(conn).catch(() => null);
-                return res.status(409).render("reserve", {
+                return res.status(409).render("reserve", reserveViewData({
                     error: "Ya no hay cupo para esa salida. Elige otra hora.",
                     pricing: pricing2 || undefined,
-                });
+                }));
             }
 
             if (!customer_name) {
                 await conn.rollback();
                 const pricing2 = await getPricing(conn).catch(() => null);
-                return res.status(400).render("reserve", {
+                return res.status(400).render("reserve", reserveViewData({
                     error: "Completa el nombre de contacto.",
                     pricing: pricing2 || undefined,
-                });
+                }));
             }
 
             if (type === "PACKAGE") {
                 if (!package_details) {
                     await conn.rollback();
                     const pricing2 = await getPricing(conn).catch(() => null);
-                    return res.status(400).render("reserve", {
+                    return res.status(400).render("reserve", reserveViewData({
                         error: "Completa el detalle de paquetería.",
                         pricing: pricing2 || undefined,
-                    });
+                    }));
                 }
                 passengerNames = [];
             } else {
                 if (passengerNames.length > 0 && passengerNames.length !== seats) {
                     await conn.rollback();
                     const pricing2 = await getPricing(conn).catch(() => null);
-                    return res.status(400).render("reserve", {
+                    return res.status(400).render("reserve", reserveViewData({
                         error: `Si capturas nombres, deben ser ${seats} (uno por viajero). O déjalo vacío para reservar rápido.`,
                         pricing: pricing2 || undefined,
-                    });
+                    }));
                 }
             }
 
@@ -742,11 +767,11 @@ router.post(
 
                     const [ins] = await conn.query(
                         `INSERT INTO transporte_reservations(trip_id, type, seats, child_seats, customer_name, phone,
-                                                             package_details,
+                                                             package_details, vic_location,
                                                              payment_method, transfer_ref, status,
                                                              unit_price_mxn, amount_total_mxn,
                                                              public_token, folio_date, daily_seq)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trip.id,
                             type,
@@ -755,6 +780,7 @@ router.post(
                             customer_name,
                             phone,
                             type === "PACKAGE" ? package_details : null,
+                            vic_location,
                             payment_method,
                             transfer_ref,
                             status,
@@ -835,6 +861,7 @@ router.post(
                             : ""
                     }`,
                     `Ruta: ${escapeHtml(routeText)}`,
+                    vicLocationLabel ? `Ubicación: ${escapeHtml(vicLocationLabel)}` : null,
                     `Fecha: ${escapeHtml(trip_date)}`,
                     `Hora: ${escapeHtml(depart_time)}`,
                     `Contacto: ${escapeHtml(customer_name || "-")}`,
@@ -879,7 +906,7 @@ router.post(
             } catch {
             }
 
-            return res.status(500).render("reserve", {error: e.message, pricing: pricing || undefined});
+            return res.status(500).render("reserve", reserveViewData({error: e.message, pricing: pricing || undefined}));
         } finally {
             conn.release();
         }
@@ -944,6 +971,7 @@ router.get(
             directionLabel,
             stripePublishableKey,
             publicToken: token,
+            vicLocationLabel: resolveVicLocationLabel(r.vic_location),
         });
     })
 );
@@ -1006,6 +1034,7 @@ router.get(
                     ticketCode,
                     publicToken: token,
                     expired: true,
+                    vicLocationLabel: resolveVicLocationLabel(r.vic_location),
                 });
             }
             return res.redirect(`/checkout/t/${encodeURIComponent(token)}`);
@@ -1014,7 +1043,14 @@ router.get(
         if (st === "PAID" && !ticketCode) ticketCode = await ensureTicketForReservation(r.id);
 
         const folio = folioFromReservation(r.id, r.trip_date, r.daily_seq);
-        return res.render("pay", {r, folio, directionLabel, ticketCode, publicToken: token});
+        return res.render("pay", {
+            r,
+            folio,
+            directionLabel,
+            ticketCode,
+            publicToken: token,
+            vicLocationLabel: resolveVicLocationLabel(r.vic_location),
+        });
     })
 );
 
@@ -1038,6 +1074,7 @@ router.get(
                        r.type,
                        r.seats,
                        r.package_details,
+                       r.vic_location,
                        r.payment_method,
                        r.daily_seq,
                        r.unit_price_mxn,
@@ -1080,7 +1117,15 @@ router.get(
                 ? String(req.query.return)
                 : "/";
 
-        res.render("ticket", {row, folio, qrDataUrl, directionLabel, url, returnUrl});
+        res.render("ticket", {
+            row,
+            folio,
+            qrDataUrl,
+            directionLabel,
+            url,
+            returnUrl,
+            vicLocationLabel: resolveVicLocationLabel(row.vic_location),
+        });
     })
 );
 
@@ -1100,6 +1145,7 @@ router.get(
                        r.type,
                        r.seats,
                        r.package_details,
+                       r.vic_location,
                        r.payment_method,
                        r.daily_seq,
                        r.unit_price_mxn,
@@ -1342,7 +1388,7 @@ router.get(
         const conn = await pool.getConnection();
         try {
             const pricing = await getPricing(conn);
-            return res.json({ok: true, ...pricing});
+            return res.json({ok: true, ...pricing, vic_locations: getVicLocations()});
         } finally {
             conn.release();
         }

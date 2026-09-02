@@ -15,6 +15,9 @@
                     child_price_mxn: 60
                 }
         ) %></script>
+    <script id="vicLocationsJson" type="application/json"><%- JSON.stringify(
+                (typeof vicLocations !== "undefined" && vicLocations) ? vicLocations : []
+        ) %></script>
 </head>
 
 <body class="page-reserve">
@@ -94,6 +97,19 @@
                                         </div>
 
                                         <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 d-none" id="vicLocationWrap">
+                                    <div class="trip-group">
+                                        <label class="form-label" id="vicLocationLabel">Ubicación en Ciudad Victoria</label>
+                                        <select id="vic_location" name="vic_location" class="form-select">
+                                            <option value="">Ciudad Victoria — tarifa estándar</option>
+                                            <% (vicLocations || []).forEach(function(loc) { %>
+                                                <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
+                                            <% }) %>
+                                        </select>
+                                        <div class="form-text subtle">Elige el ejido o punto de referencia en la zona de Victoria.</div>
                                     </div>
                                 </div>
 
@@ -399,6 +415,10 @@
                                     <span class="confirm-k">Ruta</span>
                                     <span class="confirm-v" id="sumRoute">-</span>
                                 </div>
+                                <div class="confirm-item d-none" id="sumLocationRow">
+                                    <span class="confirm-k">Ubicación</span>
+                                    <span class="confirm-v" id="sumLocation">-</span>
+                                </div>
                                 <div class="confirm-item">
                                     <span class="confirm-k">Fecha</span>
                                     <span class="confirm-v" id="sumDate">-</span>
@@ -458,6 +478,9 @@
     const fromCity = document.getElementById("from_city");
     const toCity = document.getElementById("to_city");
     const directionInput = document.getElementById("direction");
+    const vicLocationWrap = document.getElementById("vicLocationWrap");
+    const vicLocationLabel = document.getElementById("vicLocationLabel");
+    const vicLocationSel = document.getElementById("vic_location");
 
     const typeSel = document.getElementById("type");
 
@@ -544,6 +567,41 @@
     let PRICING = parsePricingFromServer();
     let PRICING_OK = true;
 
+    function parseVicLocationsFromServer() {
+        try {
+            const el = document.getElementById("vicLocationsJson");
+            const raw = el ? el.textContent : "[]";
+            const list = JSON.parse(raw || "[]");
+            return Array.isArray(list) ? list : [];
+        } catch {
+            return [];
+        }
+    }
+
+    const VIC_LOCATIONS = parseVicLocationsFromServer();
+
+    function getEffectivePricing() {
+        const locCode = String(vicLocationSel?.value || "").trim();
+        if (!locCode) return PRICING;
+
+        const loc = VIC_LOCATIONS.find((item) => item.code === locCode);
+        if (!loc) return PRICING;
+
+        const adult = Number(loc.price_mxn || 0);
+        return {
+            passenger_price_mxn: adult,
+            package_price_mxn: adult,
+            child_price_mxn: adult / 2,
+        };
+    }
+
+    function selectedVicLocationLabel() {
+        const locCode = String(vicLocationSel?.value || "").trim();
+        if (!locCode) return "Ciudad Victoria";
+        const loc = VIC_LOCATIONS.find((item) => item.code === locCode);
+        return loc ? loc.label : "Ciudad Victoria";
+    }
+
     function readDraft() {
         try {
             const raw = localStorage.getItem(DRAFT_KEY);
@@ -572,6 +630,7 @@
                 passenger_names: passengerInputs.map((x) => x.value || ""),
                 payment_method: paymentMethod.value || "TAQUILLA",
                 package_details: packageDetails.value || "",
+                vic_location: vicLocationSel?.value || "",
                 transfer_ref: document.getElementById("transfer_ref")?.value || "",
                 depart_time: departTimeHidden.value || ""
             };
@@ -609,6 +668,7 @@
 
         if (paymentMethod && draft.payment_method) paymentMethod.value = String(draft.payment_method);
         if (typeof draft.package_details === "string") packageDetails.value = draft.package_details;
+        if (vicLocationSel && typeof draft.vic_location === "string") vicLocationSel.value = draft.vic_location;
 
         const transferRefEl = document.getElementById("transfer_ref");
         if (transferRefEl && typeof draft.transfer_ref === "string") transferRefEl.value = draft.transfer_ref;
@@ -735,6 +795,19 @@
         syncPassengerSteppers();
     }
 
+    function syncVicLocationUI() {
+        if (!vicLocationWrap) return;
+
+        const show = fromCity.value === "VIC" || toCity.value === "VIC";
+        vicLocationWrap.classList.toggle("d-none", !show);
+
+        if (vicLocationLabel) {
+            vicLocationLabel.textContent = fromCity.value === "VIC"
+                ? "Punto de abordaje en Ciudad Victoria"
+                : "Punto de descenso en Ciudad Victoria";
+        }
+    }
+
     function syncDirection() {
         const f = fromCity.value;
         const t = toCity.value;
@@ -745,6 +818,8 @@
         const to = toCity.value;
 
         directionInput.value = (from === "VIC" && to === "LLE") ? "VIC_TO_LLE" : "LLE_TO_VIC";
+        syncVicLocationUI();
+        updatePriceUI();
         updateSummary();
         writeDraft();
     }
@@ -1075,11 +1150,12 @@
         const isPassenger = typeSel.value === "PASSENGER";
         const adults = getAdultSeats();
         const children = getChildSeats();
-        const adultUnit = Number(PRICING.passenger_price_mxn || 0);
+        const pricing = getEffectivePricing();
+        const adultUnit = Number(pricing.passenger_price_mxn || 0);
         const childUnit = Number(
-            PRICING.child_price_mxn != null ? PRICING.child_price_mxn : adultUnit / 2
+            pricing.child_price_mxn != null ? pricing.child_price_mxn : adultUnit / 2
         );
-        const packageUnit = Number(PRICING.package_price_mxn || 0);
+        const packageUnit = Number(pricing.package_price_mxn || 0);
 
         if (childPriceHint) {
             childPriceHint.textContent = formatMXN(childUnit).replace(" MXN", "");
@@ -1202,6 +1278,8 @@
 
     function updateSummary() {
         const sumRoute = document.getElementById("sumRoute");
+        const sumLocationRow = document.getElementById("sumLocationRow");
+        const sumLocation = document.getElementById("sumLocation");
         const sumDate = document.getElementById("sumDate");
         const sumTime = document.getElementById("sumTime");
         const sumType = document.getElementById("sumType");
@@ -1216,6 +1294,11 @@
 
         const isPassenger = typeSel.value === "PASSENGER";
         sumRoute.textContent = routeLabel(directionInput.value || "");
+        if (sumLocationRow && sumLocation) {
+            const showLocation = fromCity.value === "VIC" || toCity.value === "VIC";
+            sumLocationRow.classList.toggle("d-none", !showLocation);
+            sumLocation.textContent = showLocation ? selectedVicLocationLabel() : "-";
+        }
         sumDate.textContent = tripDate.value || "-";
         sumTime.textContent = departTimeHidden.value || "Sin seleccionar";
         sumType.textContent = isPassenger ? "Pasajero" : "Paqueteria";
@@ -1397,6 +1480,11 @@
     toCity.addEventListener("change", () => {
         syncDirection();
         loadAvailability();
+    });
+    vicLocationSel?.addEventListener("change", () => {
+        updatePriceUI();
+        updateSummary();
+        writeDraft();
     });
 
     tripDate.addEventListener("change", () => {

@@ -115,6 +115,16 @@
                                 <p class="route-sub">Salida desde Ciudad Victoria</p>
                                 <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                             </div>
+                            <% if (vicLocations && vicLocations.length) { %>
+                                <div class="ejido-tariffs subtle mb-2">
+                                    <p class="mb-1"><strong>Tarifas por ejido:</strong></p>
+                                    <ul class="ejido-tariff-list mb-0">
+                                        <% vicLocations.forEach(function(loc) { %>
+                                            <li><%= loc.label %> — $<%= loc.price_mxn %></li>
+                                        <% }) %>
+                                    </ul>
+                                </div>
+                            <% } %>
                             <div class="chips">
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
