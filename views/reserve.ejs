@@ -213,12 +213,12 @@
 
                                         <div id="sections" class="d-none">
                                             <div class="slot-section" id="morningSection">
-                                                <div class="section-label">🌤️ Mañana</div>
+                                                <div class="section-label"><%- include('partials/icon', { name: 'sun-rise', size: 16 }) %> Mañana</div>
                                                 <div id="morningSlots" class="slots"></div>
                                             </div>
 
                                             <div class="slot-section" id="afternoonSection">
-                                                <div class="section-label">🌇 Tarde</div>
+                                                <div class="section-label"><%- include('partials/icon', { name: 'sun-set', size: 16 }) %> Tarde</div>
                                                 <div id="afternoonSlots" class="slots"></div>
                                             </div>
                                         </div>
@@ -308,7 +308,7 @@
 
                                     <div class="price-summary">
                                         <div class="price-total-row">
-                                            <span class="pill">💰 <span id="priceTotal">$0</span></span>
+                                            <span class="pill"><%- include('partials/icon', { name: 'money', size: 16 }) %> <span id="priceTotal">$0</span></span>
                                         </div>
                                         <div class="price-breakdown" id="priceBreakdown"></div>
                                     </div>
@@ -1031,7 +1031,7 @@
         btn.innerHTML = `
             <span class="time">${hhmm}</span>
             <span class="mini">${extra}</span>
-            <span class="slot-check" aria-hidden="true">✓</span>
+            <span class="slot-check" aria-hidden="true"><img src="/assets/icons/check-light.svg" alt="" class="ico" width="12" height="12"></span>
         `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));

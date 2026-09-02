@@ -18,15 +18,15 @@
 
     <header class="hero-min hero-split">
         <div class="hero-left">
-            <span class="home-badge"><span aria-hidden="true">🛡️</span> Viaja seguro, viaja cómodo</span>
+            <span class="home-badge"><%- include('partials/icon', { name: 'shield', size: 18, icoClass: 'home-badge-ico' }) %> Viaja seguro, viaja cómodo</span>
             <h1 class="h3 title">Servicio de Transporte</h1>
             <div class="sub">Victoria ↔ Llera · Llera ↔ Victoria · 6 pasajeros · Servicios de paquetería</div>
 
             <div class="hero-actions">
-                <a class="btn btn-wine" href="/reserve"><span class="btn-ico" aria-hidden="true">📅</span> Reservar</a>
+                <a class="btn btn-wine" href="/reserve"><span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span> Reservar</a>
                 <a class="btn btn-wa" target="_blank" rel="noopener noreferrer"
                    href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
-                    <span class="btn-ico" aria-hidden="true">💬</span> WhatsApp
+                    <span class="btn-ico"><%- include('partials/icon', { name: 'whatsapp-light', size: 20 }) %></span> WhatsApp
                 </a>
             </div>
         </div>
@@ -46,14 +46,14 @@
                     <button class="nav-link active" id="tab-horarios" data-bs-toggle="tab"
                             data-bs-target="#pane-horarios"
                             type="button" role="tab">
-                        <span class="tab-ico" aria-hidden="true">🗓️</span> Horarios
+                        <span class="tab-ico"><%- include('partials/icon', { name: 'schedule', size: 20 }) %></span> Horarios
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab-mapa" data-bs-toggle="tab" data-bs-target="#pane-mapa"
                             type="button"
                             role="tab">
-                        <span class="tab-ico" aria-hidden="true">🗺️</span> Mapa
+                        <span class="tab-ico"><%- include('partials/icon', { name: 'map', size: 20 }) %></span> Mapa
                     </button>
                 </li>
             </ul>
@@ -67,7 +67,7 @@
 
                 <!-- Próximas salidas -->
                 <div class="next-card is-loading" id="nextCard">
-                    <p class="next-title"><span class="next-title-ico" aria-hidden="true">🕐</span> Próximas salidas</p>
+                    <p class="next-title"><span class="next-title-ico"><%- include('partials/icon', { name: 'clock', size: 20 }) %></span> Próximas salidas</p>
 
                     <div class="next-grid">
                         <div class="next-item" id="nextV2L">
@@ -115,22 +115,12 @@
                                 <p class="route-sub">Salida desde Ciudad Victoria</p>
                                 <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                             </div>
-                            <% if (vicLocations && vicLocations.length) { %>
-                                <div class="ejido-tariffs subtle mb-2">
-                                    <p class="mb-1"><strong>Tarifas por ejido:</strong></p>
-                                    <ul class="ejido-tariff-list mb-0">
-                                        <% vicLocations.forEach(function(loc) { %>
-                                            <li><%= loc.label %> — $<%= loc.price_mxn %></li>
-                                        <% }) %>
-                                    </ul>
-                                </div>
-                            <% } %>
                             <div class="chips">
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="VIC_TO_LLE"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
+                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%- include('partials/icon', { name: 'clock', size: 16 }) %> <%= hhmm %></a>
                             <% }) %>
 
                             <% if (v2l.length === 0) { %>
@@ -168,7 +158,7 @@
                             <a class="chip-time"
                                data-dir="LLE_TO_VIC"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
+                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%- include('partials/icon', { name: 'clock', size: 16 }) %> <%= hhmm %></a>
                             <% }) %>
 
                             <% if (l2v.length === 0) { %>

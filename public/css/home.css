@@ -74,6 +74,10 @@ html[data-theme="dark"] .hero-min {
     margin-bottom: 0.4rem;
 }
 
+.home-badge .ico {
+    filter: none;
+}
+
 .title {
     letter-spacing: -0.03em;
     font-weight: 750;
@@ -130,6 +134,40 @@ html[data-theme="dark"] .hero-min {
 
 .btn-wa { background: #25D366; border-color: #25D366; color: #fff; }
 .btn-wa:hover { background: #1fb85a; border-color: #1fb85a; color: #fff; }
+
+/* --- Icons (replace emojis) --- */
+.ico {
+    display: inline-block;
+    flex: 0 0 auto;
+    vertical-align: -0.15em;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.ico-theme {
+    vertical-align: middle;
+}
+
+.btn-ico .ico,
+.tab-ico .ico,
+.next-title-ico .ico {
+    vertical-align: -0.2em;
+}
+
+.chip-time .ico {
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.12em;
+    margin-right: 0.15rem;
+}
+
+html[data-theme="dark"] .ico:not(.ico-theme):not([src*="whatsapp"]) {
+    filter: brightness(0) invert(0.88);
+}
+
+html[data-theme="dark"] .home-badge .ico {
+    filter: none;
+}
 
 /* --- Tabs (subrayado + iconos, estilo referencia) --- */
 .home-tabs.tabs-card {
@@ -711,18 +749,4 @@ body.home-page .app-navbar .theme-btn {
 body.home-page .app-navbar .theme-btn:hover {
     background: rgba(255, 255, 255, .08);
     border-color: rgba(255, 255, 255, .28);
-}
-
-.ejido-tariff-list {
-    columns: 1;
-    padding-left: 1.1rem;
-    font-size: 0.88rem;
-    line-height: 1.45;
-}
-
-@media (min-width: 768px) {
-    .ejido-tariff-list {
-        columns: 2;
-        column-gap: 1.5rem;
-    }
 }

@@ -102,9 +102,9 @@
             <div class="header-row">
                 <div class="header-left">
                     <div class="pills">
-                        <div class="pill <%= statusClass() %>">✅ Reserva creada</div>
-                        <div class="pill">🧾 <%= statusText() %></div>
-                        <div class="pill">💳 <%= paymentLabel() %></div>
+                        <div class="pill <%= statusClass() %>"><%- include('partials/icon', { name: 'check', size: 16 }) %> Reserva creada</div>
+                        <div class="pill"><%- include('partials/icon', { name: 'receipt', size: 16 }) %> <%= statusText() %></div>
+                        <div class="pill"><%- include('partials/icon', { name: 'credit-card', size: 16 }) %> <%= paymentLabel() %></div>
                     </div>
 
                     <h1 class="h3 title mt-2">Listo</h1>
@@ -114,14 +114,14 @@
                 <div class="btn-group-top">
                     <% if (isPaid && hasTicket) { %>
                         <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener">
-                            🎫 Ver ticket
+                            <%- include('partials/icon', { name: 'ticket', size: 16 }) %> Ver ticket
                         </a>
                         <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank" rel="noopener">
-                            📄 PDF
+                            <%- include('partials/icon', { name: 'pdf', size: 16 }) %> PDF
                         </a>
                     <% } %>
 
-                        <a class="btn btn-wa btn-xs" id="waBtn" target="_blank" rel="noopener" href="#">💬 WhatsApp</a>
+                        <a class="btn btn-wa btn-xs" id="waBtn" target="_blank" rel="noopener" href="#"><%- include('partials/icon', { name: 'whatsapp-light', size: 16 }) %> WhatsApp</a>
                 </div>
             </div>
 
@@ -133,8 +133,8 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                        <button type="button" class="btn btn-ghost btn-xs" id="copyBtn">📋 Copiar</button>
-                        <span class="copy-toast" id="copyToast">Copiado ✓</span>
+                        <button type="button" class="btn btn-ghost btn-xs" id="copyBtn"><%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar</button>
+                        <span class="copy-toast" id="copyToast"><img src="/assets/icons/check.svg" alt="" class="ico" width="14" height="14" aria-hidden="true"> Copiado</span>
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
             <div class="summary">
                 <% if (isPendingOnline) { %>
                     <div class="note-strong">
-                        <div class="note-title">💳 Pago en línea pendiente</div>
+                        <div class="note-title"><%- include('partials/icon', { name: 'credit-card', size: 16 }) %> Pago en línea pendiente</div>
                         <div class="mt-1" style="color: var(--muted);">
                             Total a pagar:
                             <span style="color: var(--text); font-weight: 650;"><%= fmtMXN(total) %></span>
@@ -154,23 +154,23 @@
                         <div class="sub-actions">
                             <a class="btn btn-wine btn-xs"
                                href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">
-                                🔒 Pagar ahora
+                                <%- include('partials/icon', { name: 'lock', size: 16 }) %> Pagar ahora
                             </a>
-                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn">🔄 Actualizar
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn"><%- include('partials/icon', { name: 'refresh', size: 16 }) %> Actualizar
                             </button>
-                            <a class="btn btn-ghost btn-xs" href="/reserve">➕ Nueva reserva</a>
+                            <a class="btn btn-ghost btn-xs" href="/reserve"><%- include('partials/icon', { name: 'plus', size: 16 }) %> Nueva reserva</a>
                         </div>
                     </div>
                 <% } %>
 
                 <% if (isPaid && !hasTicket) { %>
                     <div class="note-strong">
-                        <div class="note-title">✅ Pago confirmado</div>
+                        <div class="note-title"><%- include('partials/icon', { name: 'check', size: 16 }) %> Pago confirmado</div>
                         <div class="mt-1" style="color: var(--muted);">
                             Estamos generando tu ticket. Si no aparece todavía, presiona Actualizar.
                         </div>
                         <div class="sub-actions">
-                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2">🔄 Actualizar
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2"><%- include('partials/icon', { name: 'refresh', size: 16 }) %> Actualizar
                             </button>
                         </div>
                     </div>
@@ -178,15 +178,15 @@
 
                 <% if (isPaid && hasTicket) { %>
                     <div class="note-strong">
-                        <div class="note-title">🎫 Ticket listo</div>
+                        <div class="note-title"><%- include('partials/icon', { name: 'ticket', size: 16 }) %> Ticket listo</div>
                         <div class="mt-1" style="color: var(--muted);">
                             Ya puedes abrir tu ticket o descargar el PDF.
                         </div>
                         <div class="sub-actions">
-                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener">🎫
+                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'ticket', size: 16 }) %>
                                 Ver ticket</a>
                             <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank"
-                               rel="noopener">📄 PDF</a>
+                               rel="noopener"><%- include('partials/icon', { name: 'pdf', size: 16 }) %> PDF</a>
                         </div>
                     </div>
                 <% } %>
@@ -238,8 +238,8 @@
             </div>
 
             <div class="mt-3 bottom-actions">
-                <a class="btn btn-ghost btn-xs" href="/reserve">➕ Nueva reserva</a>
-                <a class="btn btn-ghost btn-xs" href="/">🏠 Volver al inicio</a>
+                <a class="btn btn-ghost btn-xs" href="/reserve"><%- include('partials/icon', { name: 'plus', size: 16 }) %> Nueva reserva</a>
+                <a class="btn btn-ghost btn-xs" href="/"><%- include('partials/icon', { name: 'home', size: 16 }) %> Volver al inicio</a>
             </div>
         </div>
     </div>

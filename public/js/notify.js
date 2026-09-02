@@ -34,15 +34,18 @@
             danger: "Error"
         };
         const icons = {
-            dark: "✅",
-            success: "✅",
-            info: "ℹ️",
-            warning: "⚠️",
-            danger: "⛔"
+            dark: "check",
+            success: "check",
+            info: "info",
+            warning: "warning",
+            danger: "ban"
         };
 
         if (titleEl) titleEl.textContent = opts.title || titles[variant] || "Listo";
-        if (iconEl) iconEl.textContent = icons[variant] || "ℹ️";
+        if (iconEl) {
+            const iconName = icons[variant] || "info";
+            iconEl.innerHTML = `<img src="/assets/icons/${iconName}.svg" alt="" class="ico ico-toast" width="18" height="18" decoding="async" aria-hidden="true">`;
+        }
         msgEl.textContent = msg;
 
         if (!hasBootstrapToast()) {

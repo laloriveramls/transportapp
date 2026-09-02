@@ -201,20 +201,20 @@
                         <a class="btn btn-wine btn-xs"
                            href="/ticket/<%= row.code %>/pdf/view?return=<%= encodeURIComponent('/ticket/' + row.code + (returnUrl ? ('?return=' + encodeURIComponent(returnUrl)) : '')) %>"
                            aria-label="Abrir PDF">
-                            📄 PDF
+                            <%- include('partials/icon', { name: 'pdf', size: 16 }) %> PDF
                         </a>
 
                         <a class="btn btn-ghost btn-xs"
                            href="/ticket/<%= row.code %>/print"
                            target="_blank" rel="noopener"
                            aria-label="Imprimir ticket">
-                            🖨️ Imprimir
+                            <%- include('partials/icon', { name: 'print', size: 16 }) %> Imprimir
                         </a>
 
                         <a class="btn btn-ghost btn-xs"
                            href="<%= returnUrl || '/' %>"
                            aria-label="Volver">
-                            ↩️ Volver
+                            <%- include('partials/icon', { name: 'arrow-back', size: 16 }) %> Volver
                         </a>
                     </div>
                 </div>
@@ -269,7 +269,7 @@
                     <div class="qr-card">
                         <div class="qr-wrap">
                             <img src="<%= qrDataUrl %>" alt="QR"/>
-                            <div class="qr-badge" title="TransportApp">🚗</div>
+                            <div class="qr-badge" title="TransportApp"><%- include('partials/icon', { name: 'car', size: 22 }) %></div>
                         </div>
                         <div class="qr-hint">Escanea para validar</div>
                     </div>
@@ -283,9 +283,9 @@
 
                     <div class="d-flex align-items-center justify-content-end gap-2">
                         <button type="button" class="btn btn-ghost btn-xs" id="copyBtn" aria-label="Copiar link">
-                            📋 Copiar
+                            <%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar
                         </button>
-                        <span class="copy-toast" id="copyToast">Copiado ✓</span>
+                        <span class="copy-toast" id="copyToast"><img src="/assets/icons/check.svg" alt="" class="ico" width="14" height="14" aria-hidden="true"> Copiado</span>
                     </div>
                 </div>
             </div>

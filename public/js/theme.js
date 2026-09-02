@@ -8,7 +8,10 @@
     function applyTheme(theme){
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        if (icon) {
+            icon.src = theme === 'dark' ? '/assets/icons/sun.svg' : '/assets/icons/moon.svg';
+            icon.alt = theme === 'dark' ? 'Modo claro' : 'Modo oscuro';
+        }
     }
 
     // init

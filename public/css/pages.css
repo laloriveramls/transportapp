@@ -37,6 +37,13 @@
     color: color-mix(in srgb, #991b1b 70%, var(--text));
 }
 
+.pill .ico,
+.btn-xs .ico,
+.note-title .ico {
+    margin-right: 0.35rem;
+    vertical-align: -0.2em;
+}
+
 .btn-xs {
     padding: 0.55rem 0.85rem;
     border-radius: 14px;
@@ -894,6 +901,18 @@
             place-items: center;
             font-weight: 900;
             line-height: 1;
+            padding: 0;
+        }
+
+.page-checkout .note-with-ico {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+.page-checkout .note-ico {
+            flex: 0 0 auto;
+            margin-top: 1px;
         }
 
 .page-checkout .close-btn:hover {
@@ -1579,6 +1598,14 @@ body.page-checkout.drawer-open {
             color: transparent;
             font-size: .82rem;
             font-weight: 900;
+        }
+
+.page-reserve .slot-pill .slot-check .ico {
+            opacity: 0;
+        }
+
+.page-reserve .slot-pill[aria-selected="true"] .slot-check .ico {
+            opacity: 1;
         }
 
 .page-reserve .slot-pill[aria-selected="true"] .slot-check {
