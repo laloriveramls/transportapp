@@ -12,15 +12,22 @@
 
 <body class="home-page">
 <%- include('partials/body-open') %>
-<%- include('partials/navbar') %>
+<%- include('partials/navbar', { variant: 'home' }) %>
 
 <main class="container">
 
     <header class="hero-min hero-split">
         <div class="hero-left">
-            <span class="home-badge"><span aria-hidden="true">🛡️</span> Viaja seguro, viaja cómodo</span>
+            <span class="home-badge">
+                <img class="home-badge-logo" src="/assets/logo-32.png" alt="" width="18" height="18" decoding="async">
+                Viaja seguro, viaja cómodo
+            </span>
             <h1 class="h3 title">Servicio de Transporte</h1>
-            <div class="sub">Victoria ↔ Llera · Llera ↔ Victoria · 6 pasajeros · Servicios de paquetería</div>
+            <p class="sub sub-route">Victoria ↔ Llera · Llera ↔ Victoria</p>
+            <div class="hero-tags" aria-label="Características del servicio">
+                <span class="hero-tag"><span aria-hidden="true">👥</span> 6 pasajeros</span>
+                <span class="hero-tag"><span aria-hidden="true">📦</span> Servicios de paquetería</span>
+            </div>
 
             <div class="hero-actions">
                 <a class="btn btn-wine" href="/reserve"><span class="btn-ico" aria-hidden="true">📅</span> Reservar</a>
@@ -39,7 +46,25 @@
         </div>
     </header>
 
-    <section class="tabs-card home-tabs" aria-label="Horarios y ubicación">
+    <nav class="home-quick-nav" aria-label="Accesos rápidos">
+        <button type="button" class="quick-nav-item quick-nav-item--wine" data-home-tab="horarios">
+            <span class="quick-nav-ico" aria-hidden="true">🗓️</span>
+            <span class="quick-nav-label">Horarios</span>
+            <span class="quick-nav-sub">Ver salidas ›</span>
+        </button>
+        <button type="button" class="quick-nav-item quick-nav-item--map" data-home-tab="mapa">
+            <span class="quick-nav-ico" aria-hidden="true">🗺️</span>
+            <span class="quick-nav-label">Mapa</span>
+            <span class="quick-nav-sub">Ver ruta ›</span>
+        </button>
+        <a class="quick-nav-item quick-nav-item--phone" href="tel:+528344756376">
+            <span class="quick-nav-ico" aria-hidden="true">📞</span>
+            <span class="quick-nav-label">Teléfono</span>
+            <span class="quick-nav-sub">834 475 6376 ›</span>
+        </a>
+    </nav>
+
+    <section class="tabs-card home-tabs" id="homeHorarios" aria-label="Horarios y ubicación">
         <div class="home-tabs-head">
             <ul class="nav nav-tabs" id="homeTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -67,10 +92,14 @@
 
                 <!-- Próximas salidas -->
                 <div class="next-card is-loading" id="nextCard">
-                    <p class="next-title"><span class="next-title-ico" aria-hidden="true">🕐</span> Próximas salidas</p>
+                    <div class="next-head">
+                        <p class="next-title"><span class="next-title-ico" aria-hidden="true">🕐</span> Próximas salidas</p>
+                        <a class="next-all" href="#routesSection">Ver todas ›</a>
+                    </div>
 
                     <div class="next-grid">
                         <div class="next-item" id="nextV2L">
+                            <span class="next-dir-ico" aria-hidden="true">↗</span>
                             <div class="next-meta">
                                 <p class="next-route">Victoria → Llera</p>
                                 <div class="next-when" id="nextV2LWhen">—</div>
@@ -80,6 +109,7 @@
                         </div>
 
                         <div class="next-item" id="nextL2V">
+                            <span class="next-dir-ico next-dir-ico--back" aria-hidden="true">↙</span>
                             <div class="next-meta">
                                 <p class="next-route">Llera → Victoria</p>
                                 <div class="next-when" id="nextL2VWhen">—</div>
@@ -90,11 +120,11 @@
                     </div>
                 </div>
 
-                <div class="routes">
+                <div class="routes" id="routesSection">
 
                     <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                     <% const v2lFirst = v2l.length ? String(v2l[0].depart_time || '').slice(0, 5) : ''; %>
-                    <div class="route-card">
+                    <div class="route-card route-card--featured">
                         <div class="route-card-strip">
                             <div class="route-strip-main">
                                 <span class="route-car-badge" aria-hidden="true">
@@ -105,7 +135,7 @@
                                 <div>
                                     <p class="route-strip-title">Victoria → Llera</p>
                                     <% if (v2lFirst) { %>
-                                        <p class="route-strip-meta">Primera salida · <%= v2lFirst %></p>
+                                        <p class="route-strip-meta"><span class="route-badge">Primera salida</span> · <%= v2lFirst %></p>
                                     <% } %>
                                 </div>
                             </div>
@@ -113,19 +143,9 @@
                         <div class="route-card-body">
                             <div class="route-body-head">
                                 <p class="route-sub">Salida desde Ciudad Victoria</p>
-                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
+                                <a class="btn btn-ghost btn-sm rounded-4 route-cupo-btn" href="/reserve">Ver cupo</a>
                             </div>
-                            <% if (vicLocations && vicLocations.length) { %>
-                                <div class="ejido-tariffs subtle mb-2">
-                                    <p class="mb-1"><strong>Tarifas por ejido:</strong></p>
-                                    <ul class="ejido-tariff-list mb-0">
-                                        <% vicLocations.forEach(function(loc) { %>
-                                            <li><%= loc.label %> — $<%= loc.price_mxn %></li>
-                                        <% }) %>
-                                    </ul>
-                                </div>
-                            <% } %>
-                            <div class="chips">
+                            <div class="chips chips-timeline" data-timeline>
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="VIC_TO_LLE"
@@ -153,7 +173,7 @@
                                 <div>
                                     <p class="route-strip-title">Llera → Victoria</p>
                                     <% if (l2vFirst) { %>
-                                        <p class="route-strip-meta">Primera salida · <%= l2vFirst %></p>
+                                        <p class="route-strip-meta"><span class="route-badge">Primera salida</span> · <%= l2vFirst %></p>
                                     <% } %>
                                 </div>
                             </div>
@@ -217,7 +237,37 @@
         </div>
     </section>
 
+    <section class="home-features" aria-label="Beneficios del servicio">
+        <div class="home-feature">
+            <span class="home-feature-ico" aria-hidden="true">🛡️</span>
+            <p class="home-feature-title">Seguro</p>
+            <p class="home-feature-sub">Viaja con confianza en cada trayecto</p>
+        </div>
+        <div class="home-feature">
+            <span class="home-feature-ico" aria-hidden="true">💺</span>
+            <p class="home-feature-title">Cómodo</p>
+            <p class="home-feature-sub">Asientos cómodos y salidas puntuales</p>
+        </div>
+        <div class="home-feature">
+            <span class="home-feature-ico" aria-hidden="true">📦</span>
+            <p class="home-feature-title">Paquetería</p>
+            <p class="home-feature-sub">Envía paquetes entre Victoria y Llera</p>
+        </div>
+        <div class="home-feature">
+            <span class="home-feature-ico" aria-hidden="true">👥</span>
+            <p class="home-feature-title">6 pasajeros</p>
+            <p class="home-feature-sub">Grupos pequeños, atención personal</p>
+        </div>
+    </section>
+
 </main>
+
+<footer class="home-footer">
+    <a class="home-footer-link" href="https://serviciodetransportevic.com" target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">🌐</span> serviciodetransportevic.com
+    </a>
+    <span class="home-footer-tag"><span aria-hidden="true">🛡️</span> Viaja seguro, viaja cómodo</span>
+</footer>
 
 <script src="/js/theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -442,12 +492,27 @@
         });
     })();
 
-    /* ===== Recordar pestaña activa (Horarios / Mapa) ===== */
+    /* ===== Recordar pestaña activa (Horarios / Mapa) + accesos rápidos ===== */
     (function () {
         const storageKey = "homeTab";
         const tabMap = document.getElementById("tab-mapa");
         const tabHorarios = document.getElementById("tab-horarios");
         if (!tabMap || !tabHorarios || !window.bootstrap) return;
+
+        function showTab(which) {
+            const tab = which === "mapa" ? tabMap : tabHorarios;
+            bootstrap.Tab.getOrCreateInstance(tab).show();
+            document.getElementById("homeHorarios")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        document.querySelectorAll("[data-home-tab]").forEach((el) => {
+            el.addEventListener("click", () => {
+                const which = el.getAttribute("data-home-tab");
+                if (which) showTab(which);
+                const offcanvas = document.getElementById("homeNavMenu");
+                if (offcanvas) bootstrap.Offcanvas.getInstance(offcanvas)?.hide();
+            });
+        });
 
         const saved = sessionStorage.getItem(storageKey);
         if (saved === "mapa") {
@@ -457,6 +522,14 @@
         document.getElementById("homeTabs")?.addEventListener("shown.bs.tab", (ev) => {
             const id = ev.target?.id || "";
             sessionStorage.setItem(storageKey, id === "tab-mapa" ? "mapa" : "horarios");
+        });
+    })();
+
+    /* ===== Timeline móvil: resalta primer horario ===== */
+    (function () {
+        document.querySelectorAll("[data-timeline]").forEach((wrap) => {
+            const first = wrap.querySelector(".chip-time");
+            if (first) first.classList.add("is-active");
         });
     })();
 </script>
