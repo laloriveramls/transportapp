@@ -6,49 +6,698 @@
     description: 'Horarios, reservas y ubicación de salidas. 6 pasajeros · Servicios de paquetería',
     canonicalUrl: 'https://serviciodetransportevic.com/'
     }) %>
-    <link href="/css/home.css" rel="stylesheet">
+
+    <style>
+        /* Vista más compacta: menos scroll; pestañas sticky al bajar */
+        body.home-page main.container {
+            padding-top: 0.65rem;
+            padding-bottom: 0.75rem;
+        }
+
+        @media (min-width: 768px) {
+            body.home-page main.container {
+                padding-top: 0.85rem;
+                padding-bottom: 1rem;
+            }
+        }
+
+        /* --- Hero (foto carretera en todo el card + velos para legibilidad) --- */
+        .hero-min {
+            border: none;
+            border-radius: 22px;
+            padding: 0.85rem 1rem;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            box-shadow: var(--shadow);
+            background-color: var(--card);
+            background-image:
+                radial-gradient(ellipse 95% 140% at 88% 28%, rgba(106, 15, 31, .14), transparent 58%),
+                linear-gradient(
+                    95deg,
+                    color-mix(in srgb, var(--card) 94%, transparent) 0%,
+                    color-mix(in srgb, var(--card) 52%, transparent) 38%,
+                    color-mix(in srgb, var(--card) 14%, transparent) 56%,
+                    transparent 74%
+                ),
+                url("/assets/hero-road.jpg");
+            background-size: cover, cover, cover;
+            background-position: center, center, 62% 72%;
+            background-repeat: no-repeat;
+        }
+
+        html[data-theme="dark"] .hero-min {
+            background-image:
+                radial-gradient(ellipse 95% 140% at 88% 28%, rgba(106, 15, 31, .28), transparent 58%),
+                linear-gradient(
+                    95deg,
+                    color-mix(in srgb, var(--card) 97%, transparent) 0%,
+                    color-mix(in srgb, var(--card) 78%, transparent) 44%,
+                    color-mix(in srgb, var(--card) 36%, transparent) 62%,
+                    transparent 82%
+                ),
+                url("/assets/hero-road.jpg");
+            background-size: cover, cover, cover;
+            background-position: center, center, 62% 72%;
+            background-repeat: no-repeat;
+        }
+
+        .home-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            color: var(--chip-text);
+            background: var(--chip-bg);
+            border: none;
+            margin-bottom: 0.4rem;
+        }
+
+        .title {
+            letter-spacing: -0.03em;
+            font-weight: 750;
+            margin: 0;
+            line-height: 1.15;
+            font-size: clamp(1.35rem, 2.5vw + 1rem, 1.85rem);
+        }
+
+        .sub {
+            color: var(--muted);
+            margin-top: 0.35rem;
+            font-size: 0.92rem;
+            line-height: 1.4;
+            max-width: 38rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            margin-top: 0.65rem;
+        }
+
+        .hero-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border-radius: 14px;
+            font-weight: 650;
+            padding: 0.55rem 1.15rem;
+        }
+
+        .hero-actions .btn-ico {
+            font-size: 1.05rem;
+            line-height: 1;
+        }
+
+        .btn-ghost {
+            border: none;
+            background: color-mix(in srgb, var(--card) 85%, transparent);
+            color: var(--text);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+        }
+        .btn-ghost:hover {
+            background: color-mix(in srgb, var(--card) 78%, transparent);
+            color: var(--text);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+        }
+
+        .btn-wa { background: #25D366; border-color: #25D366; color: #fff; }
+        .btn-wa:hover { background: #1fb85a; border-color: #1fb85a; color: #fff; }
+
+        /* --- Tabs (subrayado + iconos, estilo referencia) --- */
+        .home-tabs.tabs-card {
+            background: var(--card);
+            border: none;
+            box-shadow: var(--shadow);
+            border-radius: 22px;
+            padding: 0;
+            margin-top: 0.65rem;
+        }
+
+        .home-tabs-head {
+            position: sticky;
+            top: 0;
+            z-index: 18;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 14px 0;
+            margin: 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+            background: var(--card);
+        }
+
+        .home-tabs .nav-tabs {
+            flex: 1 1 auto;
+            min-width: 0;
+            gap: 0;
+            padding: 0;
+            margin: 0;
+            flex-wrap: nowrap;
+            border: none;
+            border-bottom: none;
+            background: transparent;
+        }
+
+        .home-tabs-wa {
+            flex: 0 0 auto;
+            align-self: flex-end;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 6px;
+            text-decoration: none;
+            color: inherit;
+            line-height: 1.2;
+        }
+
+        .home-tabs-wa:hover .home-tabs-wa-phone {
+            background: color-mix(in srgb, var(--wine) 14%, var(--card));
+            color: var(--wine);
+        }
+
+        .home-tabs-wa-phone {
+            font-size: 0.92rem;
+            font-weight: 750;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: var(--text);
+            background: color-mix(in srgb, var(--muted) 12%, var(--card));
+            border: none;
+            padding: 0.18rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        .home-tabs .nav-tabs .nav-item {
+            margin: 0;
+        }
+
+        .home-tabs .nav-tabs .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--muted);
+            border: none;
+            border-radius: 14px 14px 0 0;
+            font-weight: 650;
+            padding: 0.5rem 0.85rem;
+            margin: 0 4px 0 0;
+            border-bottom: 3px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .home-tabs .nav-tabs .nav-link .tab-ico {
+            font-size: 1.1rem;
+            line-height: 1;
+            opacity: 0.92;
+        }
+
+        .home-tabs .nav-tabs .nav-link:hover {
+            color: var(--text);
+            background: color-mix(in srgb, var(--wine) 5%, transparent);
+        }
+
+        .home-tabs .nav-tabs .nav-link.active {
+            color: var(--wine);
+            background: transparent;
+            border-bottom-color: var(--wine);
+            box-shadow: none;
+        }
+
+        html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
+            color: color-mix(in srgb, var(--wine) 85%, white);
+            border-bottom-color: color-mix(in srgb, var(--wine) 85%, white);
+        }
+
+        .home-tabs .tab-content {
+            padding: 0 12px 10px;
+        }
+
+        .home-tabs .tab-pane {
+            padding: 0.55rem 0 0;
+        }
+
+        .routes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+        }
+        @media (max-width: 992px) {
+            .routes { grid-template-columns: 1fr; }
+        }
+
+        .route-card {
+            background: var(--card);
+            border: none;
+            border-radius: 18px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+                0 10px 28px rgba(2, 6, 23, 0.06);
+        }
+
+        html[data-theme="dark"] .route-card {
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent),
+                0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+
+        .route-card-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            background: color-mix(in srgb, var(--wine) 10%, var(--card));
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+        }
+
+        html[data-theme="dark"] .route-card-strip {
+            background: color-mix(in srgb, var(--wine) 14%, var(--card));
+        }
+
+        .route-strip-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .route-car-badge {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: color-mix(in srgb, var(--wine) 22%, transparent);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, transparent);
+        }
+
+        .route-car-badge svg {
+            width: 22px;
+            height: 22px;
+            display: block;
+        }
+
+        .route-strip-title {
+            margin: 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .route-strip-meta {
+            margin: 4px 0 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .route-card-body {
+            padding: 10px 12px 12px;
+        }
+
+        .route-body-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .route-sub {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip-time {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            padding: 0.32rem 0.58rem;
+            border-radius: 999px;
+            border: none;
+            background: color-mix(in srgb, var(--chip-bg) 75%, var(--card));
+            color: var(--chip-text);
+            font-weight: 650;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            text-decoration: none;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+            transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        .chip-time:hover {
+            background: color-mix(in srgb, var(--wine) 12%, var(--card));
+            color: var(--text);
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+        }
+
+        .chip-time:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 0.22rem var(--ring);
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+        }
+        @media (max-width: 992px) {
+            .map-grid { grid-template-columns: 1fr; }
+        }
+
+        .map-card {
+            border: none;
+            border-radius: 18px;
+            padding: 0.65rem 0.75rem;
+            background: linear-gradient(
+                180deg,
+                color-mix(in srgb, var(--card) 97%, transparent),
+                color-mix(in srgb, var(--card) 93%, transparent)
+            );
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+                0 8px 24px rgba(2, 6, 23, 0.06);
+        }
+
+        .map-title {
+            margin: 0 0 6px 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1rem;
+        }
+
+        .map-frame {
+            width: 100%;
+            height: clamp(160px, 30vh, 200px);
+            border: none;
+            border-radius: 14px;
+            overflow: hidden;
+            background: color-mix(in srgb, var(--muted) 8%, var(--card));
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+        }
+
+        .map-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .hero-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .hero-left {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .hero-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .hero-logo-big {
+            width: auto;
+            max-width: min(320px, 42vw);
+            max-height: 200px;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            filter:
+                drop-shadow(0 0 0 1px rgba(255, 255, 255, 0.55))
+                drop-shadow(0 2px 6px rgba(2, 6, 23, 0.22))
+                drop-shadow(0 10px 32px rgba(2, 6, 23, 0.28));
+        }
+
+        html[data-theme="dark"] .hero-logo-big {
+            filter:
+                drop-shadow(0 0 0 1px rgba(255, 255, 255, 0.14))
+                drop-shadow(0 3px 10px rgba(0, 0, 0, 0.55))
+                drop-shadow(0 14px 40px rgba(0, 0, 0, 0.45));
+        }
+
+        @media (max-width: 992px) {
+            .hero-split {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .hero-right {
+                width: 100%;
+                justify-content: center;
+                margin-top: 6px;
+                text-align: center;
+            }
+            .hero-logo-big {
+                max-width: min(340px, 92%);
+                max-height: 220px;
+                margin: 0 auto;
+            }
+        }
+
+        .logo-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        @media (max-width: 992px) {
+            .logo-wrap { margin: 0 auto; }
+        }
+
+        .logo-wrap .admin-hotspot {
+            position: absolute;
+            inset: 0;
+            width: auto;
+            height: auto;
+            border-radius: 18px;
+            border: 0;
+            background: transparent;
+            opacity: 0;
+            cursor: default;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+            pointer-events: none;
+        }
+
+        /* Próximas salidas */
+        .next-card {
+            border: none;
+            border-radius: 18px;
+            padding: 0.7rem 0.85rem;
+            margin-bottom: 0.65rem;
+            background-image:
+                radial-gradient(900px 420px at 10% 0%, rgba(106, 15, 31, 0.12), transparent 55%),
+                linear-gradient(
+                    180deg,
+                    color-mix(in srgb, var(--wine) 6%, var(--card)),
+                    color-mix(in srgb, var(--card) 96%, transparent)
+                );
+            background-repeat: no-repeat;
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent),
+                0 10px 28px rgba(2, 6, 23, 0.07);
+        }
+
+        .next-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin: 0 0 8px 0;
+            font-weight: 750;
+            letter-spacing: -0.02em;
+            font-size: 1rem;
+        }
+
+        .next-title-ico {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+
+        .next-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        @media (max-width: 992px) {
+            .next-grid { grid-template-columns: 1fr; }
+        }
+
+        .next-item {
+            border: none;
+            border-radius: 14px;
+            padding: 9px 11px;
+            background: color-mix(in srgb, var(--card) 94%, transparent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+        }
+
+        .next-meta {
+            min-width: 0;
+        }
+        .next-route {
+            font-weight: 750;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+        .next-when {
+            color: var(--muted);
+            font-size: 0.86rem;
+            margin-top: 4px;
+            line-height: 1.35;
+        }
+
+        .next-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.38rem 0.65rem;
+            border-radius: 999px;
+            border: none;
+            background: color-mix(in srgb, var(--wine) 14%, var(--card));
+            color: var(--text);
+            font-weight: 750;
+            font-size: 0.88rem;
+            white-space: nowrap;
+        }
+
+        a.next-pill {
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        a.next-pill:hover {
+            background: color-mix(in srgb, var(--wine) 24%, var(--card));
+            color: var(--text);
+        }
+
+        @media (max-width: 576px) {
+            .home-tabs-head {
+                padding-left: 10px;
+                padding-right: 10px;
+                gap: 6px;
+            }
+
+            .home-tabs .nav-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .home-tabs .nav-tabs .nav-link {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 0.92rem;
+                padding: 0.55rem 0.75rem;
+            }
+
+            .home-tabs-wa-phone {
+                font-size: 0.86rem;
+            }
+
+            .route-card-strip {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chip-time:hover {
+                transform: none;
+            }
+        }
+    </style>
 </head>
 
 <body class="home-page">
 <%- include('partials/body-open') %>
-<%- include('partials/navbar') %>
+<nav class="navbar navbar-dark app-navbar">
+    <div class="container d-flex justify-content-between align-items-center position-relative">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <span class="brand-dot" aria-hidden="true"></span>
+            <span class="fw-bold">TransportApp</span>
+        </a>
+
+        <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+            <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+        </button>
+    </div>
+</nav>
 
 <main class="container">
 
-    <header class="home-hero">
-        <div class="home-hero-content">
-            <p class="home-eyebrow">Victoria ↔ Llera</p>
-            <h1 class="home-title">Servicio de Transporte</h1>
-            <p class="home-sub">6 pasajeros · Paquetería · Salidas diarias</p>
+    <div class="hero-min hero-split">
+        <div class="hero-left">
+            <span class="home-badge"><span aria-hidden="true">🛡️</span> Viaja seguro, viaja cómodo</span>
+            <h1 class="h3 title">Servicio de Transporte</h1>
+            <div class="sub">Victoria ↔ Llera · Llera ↔ Victoria · 6 pasajeros · Servicios de paquetería</div>
 
-            <div class="home-actions">
-                <a class="btn btn-wine" href="/reserve">Reservar</a>
+            <div class="hero-actions">
+                <a class="btn btn-wine" href="/reserve"><span class="btn-ico" aria-hidden="true">📅</span> Reservar</a>
                 <a class="btn btn-wa" target="_blank" rel="noopener noreferrer"
                    href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
-                    WhatsApp
+                    <span class="btn-ico" aria-hidden="true">💬</span> WhatsApp
                 </a>
             </div>
         </div>
 
-        <div class="home-logo-wrap logo-wrap">
-            <img class="home-logo" src="/assets/logo.png" alt="Servicio de transporte">
-            <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
+        <div class="hero-right">
+            <div class="logo-wrap">
+                <img class="hero-logo-big" src="/assets/logo.png" alt="Servicio de transporte">
+                <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
+            </div>
         </div>
-    </header>
+    </div>
 
-    <section class="home-section home-tabs">
+    <div class="tabs-card home-tabs">
         <div class="home-tabs-head">
             <ul class="nav nav-tabs" id="homeTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="tab-horarios" data-bs-toggle="tab"
-                            data-bs-target="#pane-horarios" type="button" role="tab">
-                        Horarios
+                            data-bs-target="#pane-horarios"
+                            type="button" role="tab">
+                        <span class="tab-ico" aria-hidden="true">🗓️</span> Horarios
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab-mapa" data-bs-toggle="tab"
-                            data-bs-target="#pane-mapa" type="button" role="tab">
-                        Ubicación
+                    <button class="nav-link" id="tab-mapa" data-bs-toggle="tab" data-bs-target="#pane-mapa"
+                            type="button"
+                            role="tab">
+                        <span class="tab-ico" aria-hidden="true">🗺️</span> Mapa
                     </button>
                 </li>
             </ul>
@@ -60,82 +709,109 @@
         <div class="tab-content" id="homeTabsContent">
             <div class="tab-pane fade show active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
 
+                <!-- Próximas salidas -->
                 <div class="next-card" id="nextCard" style="display:none;">
-                    <p class="next-title">Próximas salidas</p>
+                    <p class="next-title"><span class="next-title-ico" aria-hidden="true">🕐</span> Próximas salidas</p>
+
                     <div class="next-grid">
                         <div class="next-item" id="nextV2L" style="display:none;">
                             <div class="next-meta">
                                 <p class="next-route">Victoria → Llera</p>
                                 <div class="next-when" id="nextV2LWhen">—</div>
                             </div>
+
                             <a class="next-pill" id="nextV2LPill" href="/reserve">--:--</a>
                         </div>
+
                         <div class="next-item" id="nextL2V" style="display:none;">
                             <div class="next-meta">
                                 <p class="next-route">Llera → Victoria</p>
                                 <div class="next-when" id="nextL2VWhen">—</div>
                             </div>
+
                             <a class="next-pill" id="nextL2VPill" href="/reserve">--:--</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="routes">
+
                     <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                     <% const v2lFirst = v2l.length ? String(v2l[0].depart_time || '').slice(0, 5) : ''; %>
-                    <article class="route-card">
-                        <header class="route-card-header">
-                            <h2 class="route-title">Victoria → Llera</h2>
-                            <% if (v2lFirst) { %>
-                                <p class="route-meta">Primera salida · <%= v2lFirst %></p>
-                            <% } %>
-                        </header>
+                    <div class="route-card">
+                        <div class="route-card-strip">
+                            <div class="route-strip-main">
+                                <span class="route-car-badge" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
+                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="route-strip-title">Victoria → Llera</p>
+                                    <% if (v2lFirst) { %>
+                                        <p class="route-strip-meta">Primera salida · <%= v2lFirst %></p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
                         <div class="route-card-body">
                             <div class="route-body-head">
                                 <p class="route-sub">Salida desde Ciudad Victoria</p>
-                                <a class="btn btn-ghost btn-sm" href="/reserve">Ver cupo</a>
+                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                             </div>
                             <div class="chips">
                             <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="VIC_TO_LLE"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
                             <% }) %>
+
                             <% if (v2l.length === 0) { %>
-                                <span class="subtle">Sin horarios.</span>
+                                <div class="subtle">Sin horarios.</div>
                             <% } %>
                             </div>
                         </div>
-                    </article>
+                    </div>
 
                     <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
                     <% const l2vFirst = l2v.length ? String(l2v[0].depart_time || '').slice(0, 5) : ''; %>
-                    <article class="route-card">
-                        <header class="route-card-header">
-                            <h2 class="route-title">Llera → Victoria</h2>
-                            <% if (l2vFirst) { %>
-                                <p class="route-meta">Primera salida · <%= l2vFirst %></p>
-                            <% } %>
-                        </header>
+                    <div class="route-card">
+                        <div class="route-card-strip">
+                            <div class="route-strip-main">
+                                <span class="route-car-badge" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
+                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p class="route-strip-title">Llera → Victoria</p>
+                                    <% if (l2vFirst) { %>
+                                        <p class="route-strip-meta">Primera salida · <%= l2vFirst %></p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
                         <div class="route-card-body">
                             <div class="route-body-head">
                                 <p class="route-sub">Salida desde Llera</p>
-                                <a class="btn btn-ghost btn-sm" href="/reserve">Ver cupo</a>
+                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
                             </div>
                             <div class="chips">
                             <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
                             <a class="chip-time"
                                data-dir="LLE_TO_VIC"
                                data-time="<%= hhmm %>"
-                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><span aria-hidden="true">🕒</span> <%= hhmm %></a>
                             <% }) %>
+
                             <% if (l2v.length === 0) { %>
-                                <span class="subtle">Sin horarios.</span>
+                                <div class="subtle">Sin horarios.</div>
                             <% } %>
                             </div>
                         </div>
-                    </article>
+                    </div>
+
                 </div>
             </div>
 
@@ -145,12 +821,12 @@
                         <p class="map-title">Salida Victoria</p>
                         <iframe class="map-frame" loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
-                                src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"
-                                title="Mapa salida Victoria"></iframe>
+                                src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
+
                         <div class="map-actions">
-                            <a class="btn btn-wine btn-sm" target="_blank" rel="noopener"
-                               href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir mapa</a>
-                            <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener"
+                            <a class="btn btn-wine btn-sm rounded-4" target="_blank"
+                               href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir</a>
+                            <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
                                href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo llegar</a>
                         </div>
                     </div>
@@ -159,19 +835,19 @@
                         <p class="map-title">Salida Llera</p>
                         <iframe class="map-frame" loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
-                                src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"
-                                title="Mapa salida Llera"></iframe>
+                                src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
+
                         <div class="map-actions">
-                            <a class="btn btn-wine btn-sm" target="_blank" rel="noopener"
-                               href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir mapa</a>
-                            <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener"
+                            <a class="btn btn-wine btn-sm rounded-4" target="_blank"
+                               href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir</a>
+                            <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
                                href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">Cómo llegar</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
 </main>
 
@@ -179,6 +855,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    /* ===== Admin login oculto: mantener presionado 1.25s o dar 3 clics sobre el LOGO ===== */
     (function () {
         const hotspot = document.getElementById("adminHotspot");
         const trigger = hotspot ? (hotspot.closest(".logo-wrap") || hotspot) : null;
@@ -188,7 +865,9 @@
         const MULTI_CLICK_WINDOW_MS = 900;
         const REQUIRED_CLICKS = 3;
 
-        function go() { window.location.href = "/admin/login"; }
+        function go() {
+            window.location.href = "/admin/login";
+        }
 
         let holdTimer = null;
         let clickCount = 0;
@@ -197,7 +876,10 @@
         function startHold(e) {
             if (e.cancelable) e.preventDefault();
             if (holdTimer) return;
-            holdTimer = setTimeout(() => { holdTimer = null; go(); }, HOLD_MS);
+            holdTimer = setTimeout(() => {
+                holdTimer = null;
+                go();
+            }, HOLD_MS);
         }
 
         function cancelHold() {
@@ -209,31 +891,41 @@
         function handleMultiClick() {
             clickCount += 1;
             if (clickTimer) clearTimeout(clickTimer);
+
             if (clickCount >= REQUIRED_CLICKS) {
                 clickCount = 0;
                 clickTimer = null;
                 go();
                 return;
             }
-            clickTimer = setTimeout(() => { clickCount = 0; clickTimer = null; }, MULTI_CLICK_WINDOW_MS);
+
+            clickTimer = setTimeout(() => {
+                clickCount = 0;
+                clickTimer = null;
+            }, MULTI_CLICK_WINDOW_MS);
         }
 
         trigger.addEventListener("mousedown", startHold);
         trigger.addEventListener("mouseup", cancelHold);
         trigger.addEventListener("mouseleave", cancelHold);
         trigger.addEventListener("click", handleMultiClick);
+
         trigger.addEventListener("touchstart", startHold, { passive: false });
         trigger.addEventListener("touchend", cancelHold);
         trigger.addEventListener("touchcancel", cancelHold);
         trigger.addEventListener("touchmove", cancelHold);
+
         trigger.addEventListener("contextmenu", (e) => e.preventDefault());
     })();
 
+    /* ===== Próximas salidas (muestra la próxima REAL aunque esté llena + mensaje si está lleno) ===== */
     (function () {
         const card = document.getElementById("nextCard");
+
         const elV2L = document.getElementById("nextV2L");
         const elV2LPill = document.getElementById("nextV2LPill");
         const elV2LWhen = document.getElementById("nextV2LWhen");
+
         const elL2V = document.getElementById("nextL2V");
         const elL2VPill = document.getElementById("nextL2VPill");
         const elL2VWhen = document.getElementById("nextL2VWhen");
@@ -241,13 +933,14 @@
         if (!card || !elV2L || !elL2V || !elV2LPill || !elL2VPill) return;
 
         function todayISO_MTY() {
-            return new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" });
+            return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
         }
 
         function addDaysISO(baseISO, days) {
             const [y, m, d] = String(baseISO).split("-").map(Number);
             const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
             dt.setUTCDate(dt.getUTCDate() + Number(days || 0));
+
             const yy = dt.getUTCFullYear();
             const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
             const dd = String(dt.getUTCDate()).padStart(2, "0");
@@ -266,34 +959,53 @@
         }
 
         async function fetchAvailability(dateISO, dir, seats) {
-            const url = `/availability?date=${encodeURIComponent(dateISO)}&direction=${encodeURIComponent(dir)}&seats=${encodeURIComponent(seats)}`;
-            const res = await fetch(url, { headers: { Accept: "application/json" } });
+            // seats=0 => informativo: incluye horarios aunque estén llenos
+            const url =
+                `/availability?date=${encodeURIComponent(dateISO)}` +
+                `&direction=${encodeURIComponent(dir)}` +
+                `&seats=${encodeURIComponent(seats)}`;
+
+            const res = await fetch(url, {headers: {Accept: "application/json"}});
             const data = await res.json();
             return Array.isArray(data?.results) ? data.results : [];
         }
 
         async function findNext(dir, seats) {
             const base = todayISO_MTY();
+
             for (let offset = 0; offset <= 7; offset++) {
                 const dateISO = addDaysISO(base, offset);
+
                 let results = [];
-                try { results = await fetchAvailability(dateISO, dir, seats); } catch { results = []; }
+                try {
+                    results = await fetchAvailability(dateISO, dir, seats);
+                } catch {
+                    results = [];
+                }
+
                 const slots = results
-                    .map(r => ({ hhmm: toHHMM(r.time ?? r.depart_time ?? ""), available: Number(r.available ?? 0) }))
+                    .map(r => ({
+                        hhmm: toHHMM(r.time ?? r.depart_time ?? ""),
+                        available: Number(r.available ?? 0),
+                    }))
                     .filter(x => x.hhmm)
                     .sort((a, b) => a.hhmm.localeCompare(b.hhmm));
+
                 if (slots.length) {
                     const when = offset === 0 ? "hoy" : offset === 1 ? "mañana" : dateISO;
                     const first = slots[0];
-                    return { dateISO, when, hhmm: first.hhmm, available: first.available };
+                    return {dateISO, when, hhmm: first.hhmm, available: first.available};
                 }
             }
+
             return null;
         }
 
         Promise.all([
+            // next REAL (even if full)
             findNext("VIC_TO_LLE", 0),
             findNext("LLE_TO_VIC", 0),
+            // next reservable (needs >=1 seat)
             findNext("VIC_TO_LLE", 1),
             findNext("LLE_TO_VIC", 1),
         ]).then(([nextV2LReal, nextL2VReal, nextV2LOk, nextL2VOk]) => {
@@ -302,11 +1014,16 @@
             if (nextV2LReal) {
                 any = true;
                 const full = Number(nextV2LReal.available || 0) <= 0;
+
                 elV2L.style.display = "";
                 elV2LPill.textContent = nextV2LReal.hhmm;
+
                 if (full) {
-                    elV2LWhen.textContent = `Salida ${nextV2LReal.when} · Lleno` +
+                    elV2LWhen.textContent =
+                        `Salida ${nextV2LReal.when} · Lleno` +
                         (nextV2LOk ? ` · Siguiente con cupo: ${nextV2LOk.hhmm} (${nextV2LOk.when})` : "");
+
+                    // la pastilla horario enlaza a reserva; si está lleno, al siguiente con cupo si existe
                     elV2LPill.href = nextV2LOk
                         ? `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LOk.hhmm)}&date=${encodeURIComponent(nextV2LOk.dateISO)}`
                         : `/reserve?dir=VIC_TO_LLE&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
@@ -319,11 +1036,15 @@
             if (nextL2VReal) {
                 any = true;
                 const full = Number(nextL2VReal.available || 0) <= 0;
+
                 elL2V.style.display = "";
                 elL2VPill.textContent = nextL2VReal.hhmm;
+
                 if (full) {
-                    elL2VWhen.textContent = `Salida ${nextL2VReal.when} · Lleno` +
+                    elL2VWhen.textContent =
+                        `Salida ${nextL2VReal.when} · Lleno` +
                         (nextL2VOk ? ` · Siguiente con cupo: ${nextL2VOk.hhmm} (${nextL2VOk.when})` : "");
+
                     elL2VPill.href = nextL2VOk
                         ? `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VOk.hhmm)}&date=${encodeURIComponent(nextL2VOk.dateISO)}`
                         : `/reserve?dir=LLE_TO_VIC&date=${encodeURIComponent(nextL2VReal.dateISO)}`;

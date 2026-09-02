@@ -469,7 +469,20 @@
 
 <body>
 <%- include('partials/body-open') %>
-<%- include('partials/navbar') %>
+<nav class="navbar navbar-dark app-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+            <span class="brand-dot"></span>
+            <span class="fw-semibold">TransportApp</span>
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+            </button>
+        </div>
+    </div>
+</nav>
 
 <main class="container py-4">
     <div class="ticket-shell">
