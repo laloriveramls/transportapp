@@ -226,7 +226,7 @@
                 <div class="details">
                     <div>
                         <ul class="kv">
-                            <li><span class="k">Ruta</span><span class="v"><%= directionLabel(row.direction) %></span>
+                            <li><span class="k">Ruta</span><span class="v"><%= typeof routeLabel !== "undefined" ? routeLabel : directionLabel(row.direction) %></span>
                             </li>
                             <li><span class="k">Fecha</span><span class="v"><%= row.trip_date %></span></li>
                             <li><span class="k">Hora</span><span class="v"><%= row.depart_time %></span></li>

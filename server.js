@@ -231,6 +231,27 @@ app.use((req, res) => {
    ========================= */
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Running on ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
-});
+
+async function start() {
+    if (hasDb && pool) {
+        try {
+            const {ensureSchema} = require("./src/db/migrations");
+            const results = await ensureSchema(pool);
+            const applied = results.filter((r) => r.applied);
+            if (applied.length) {
+                console.log(
+                    "Schema actualizado:",
+                    applied.map((r) => r.column).join(", ")
+                );
+            }
+        } catch (e) {
+            console.error("No pude aplicar migraciones de schema:", e.message || e);
+        }
+    }
+
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Running on ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
+    });
+}
+
+start();
