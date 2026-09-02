@@ -1,53 +1,12 @@
-<%
-const isHomeNav = (typeof variant !== 'undefined' && variant === 'home');
-%>
-<nav class="navbar navbar-dark app-navbar<%= isHomeNav ? ' app-navbar--home' : '' %>">
+<nav class="navbar navbar-dark app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-            <% if (isHomeNav) { %>
-                <img class="brand-logo" src="/assets/logo-32.png" alt="" width="32" height="32" decoding="async">
-                <span class="brand-wordmark" aria-label="TransportApp">
-                    <span class="brand-transport">Transport</span><span class="brand-app">App</span>
-                </span>
-            <% } else { %>
-                <span class="brand-dot"></span>
-                <span class="fw-bold">TransportApp</span>
-            <% } %>
+            <span class="brand-dot"></span>
+            <span class="fw-bold">TransportApp</span>
         </a>
 
-        <div class="nav-actions d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span>
-                <span class="d-none d-sm-inline">Tema</span>
-            </button>
-
-            <% if (isHomeNav) { %>
-                <button class="theme-btn nav-menu-btn d-md-none" type="button"
-                        data-bs-toggle="offcanvas" data-bs-target="#homeNavMenu"
-                        aria-controls="homeNavMenu" aria-label="Abrir menú">
-                    <span aria-hidden="true">☰</span>
-                </button>
-            <% } %>
-        </div>
+        <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+            <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
+        </button>
     </div>
 </nav>
-
-<% if (isHomeNav) { %>
-<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="homeNavMenu" aria-labelledby="homeNavMenuLabel">
-    <div class="offcanvas-header border-bottom border-secondary">
-        <h2 class="offcanvas-title h5" id="homeNavMenuLabel">Menú</h2>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-    </div>
-    <div class="offcanvas-body">
-        <nav class="nav flex-column gap-1">
-            <a class="nav-link text-white" href="/">Inicio</a>
-            <a class="nav-link text-white" href="/reserve">Reservar</a>
-            <a class="nav-link text-white" href="#homeHorarios" data-home-tab="horarios">Horarios</a>
-            <a class="nav-link text-white" href="#homeMapa" data-home-tab="mapa">Mapa</a>
-            <a class="nav-link text-white" target="_blank" rel="noopener noreferrer"
-               href="https://wa.me/528344756376?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">WhatsApp</a>
-            <a class="nav-link text-white-50" href="tel:+528344756376">834 475 6376</a>
-        </nav>
-    </div>
-</div>
-<% } %>
