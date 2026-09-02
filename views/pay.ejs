@@ -208,11 +208,8 @@
                     <% } %>
 
                     <li><span class="k">Ruta</span><span
-                                class="v"><%= r.direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria" %></span>
+                                class="v"><%= typeof routeLabel !== "undefined" ? routeLabel : (r.direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria") %></span>
                     </li>
-                    <% if (typeof vicLocationLabel !== "undefined" && vicLocationLabel) { %>
-                        <li><span class="k">Ubicación</span><span class="v"><%= vicLocationLabel %></span></li>
-                    <% } %>
                     <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
                     <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
 
@@ -256,6 +253,7 @@
         folio,
         public_token: (publicToken || ""),
         direction: r.direction,
+        route_label: (typeof routeLabel !== "undefined" ? routeLabel : ""),
         trip_date: r.trip_date,
         depart_time: r.depart_time,
         customer_name: r.customer_name,
@@ -295,6 +293,7 @@
     }
 
     function niceRoute(dir){
+        if (data.route_label) return String(data.route_label).replace(" → ", " a ");
         return dir === "VIC_TO_LLE" ? "Victoria a Llera" : "Llera a Victoria";
     }
 
