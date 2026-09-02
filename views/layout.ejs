@@ -2,30 +2,12 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head') %>
-    <link href="/css/theme.css" rel="stylesheet">
     <title><%= title || "TransportApp" %></title>
-
-    <!-- Si quieres conservar el estilo clásico del layout -->
-    <style>
-        body.bg-light { background: #f8f9fa; }
-    </style>
 </head>
 
-<body class="bg-light">
+<body>
 <%- include('partials/body-open') %>
-<nav class="navbar navbar-dark bg-dark">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-            <span class="brand-dot"></span>
-            <span>TransportApp</span>
-        </a>
-
-        <!-- Opcional: botón de tema (si tu theme.js lo maneja) -->
-        <button id="themeToggle" class="btn btn-sm btn-outline-light" type="button" aria-label="Cambiar tema">
-            <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-        </button>
-    </div>
-</nav>
+<%- include('partials/navbar') %>
 
 <main class="container py-4">
     <%- body %>

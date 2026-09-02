@@ -10,24 +10,7 @@
     <style>
         .admin-login-page {
             min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-            background: radial-gradient(1200px 520px at -10% -15%, color-mix(in srgb, var(--wine) 24%, transparent), transparent 72%),
-            radial-gradient(1100px 500px at 110% 110%, color-mix(in srgb, var(--wine) 15%, transparent), transparent 72%),
-            linear-gradient(180deg, color-mix(in srgb, var(--bg) 95%, black 5%), var(--bg));
-        }
-
-        .admin-login-page::before {
-            content: "";
-            position: absolute;
-            inset: -18%;
-            pointer-events: none;
-            background: radial-gradient(620px 340px at 16% 20%, rgba(106, 15, 31, .28), transparent 70%),
-            radial-gradient(700px 380px at 84% 82%, rgba(106, 15, 31, .24), transparent 72%),
-            radial-gradient(540px 280px at 50% 8%, rgba(106, 15, 31, .14), transparent 74%);
-            filter: blur(30px);
-            opacity: 1;
-            z-index: 0;
+            background: var(--bg);
         }
 
         .login-wrap {
@@ -40,14 +23,12 @@
         }
 
         .login-card {
-            width: min(500px, 100%);
-            border-radius: 22px;
+            width: min(420px, 100%);
+            border-radius: var(--radius);
             border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            padding: 1.35rem;
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
         }
 
         .login-head {
@@ -199,17 +180,30 @@
     </style>
 </head>
 <body class="admin-app admin-login-page">
-<nav class="navbar navbar-dark app-navbar">
+<nav class="navbar app-navbar">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-            <span class="brand-dot"></span>
-            <span class="fw-semibold">TransportApp</span>
+            <span class="brand-dot" aria-hidden="true"></span>
+            <span>TransportApp</span>
         </a>
 
         <div class="d-flex align-items-center gap-2">
             <a class="back-link small d-none d-sm-inline" href="/">Volver</a>
             <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon" aria-hidden="true">*</span>
+                <svg class="theme-icon theme-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <svg class="theme-icon theme-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
                 <span class="d-none d-sm-inline">Tema</span>
             </button>
         </div>
