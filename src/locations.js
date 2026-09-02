@@ -3,7 +3,7 @@
 const VIC_LOCATIONS = [
     {code: 'SISAL', label: 'Ej. Sisal', price_mxn: 50},
     {code: 'EBANO', label: 'Ej. Ébano', price_mxn: 50},
-    {code: 'SAN_FRANCISCO', label: 'Ej. San Francisco (Pasadero)', price_mxn: 60},
+    {code: 'SAN_FRANCISCO', label: 'Ej. San Francisco (Panadero)', price_mxn: 60},
     {code: 'ALBERCA', label: 'Ej. Alberca', price_mxn: 60},
     {code: 'TROPICO_CANCER', label: 'Trópico de Cáncer', price_mxn: 60},
     {code: 'RANCHO_NUEVO_NORTE', label: 'Ej. Rancho Nuevo Norte', price_mxn: 120},
