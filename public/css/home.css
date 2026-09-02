@@ -1,0 +1,714 @@
+/* public/css/home.css — Landing (estilo original mejorado) */
+
+:root {
+    --home-nav-offset: 56px;
+}
+
+/* Vista más compacta: menos scroll; pestañas sticky al bajar */
+body.home-page main.container {
+    padding-top: 0.65rem;
+    padding-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    body.home-page main.container {
+        padding-top: 0.85rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* --- Hero (foto carretera en todo el card + velos para legibilidad) --- */
+.hero-min {
+    border: none;
+    border-radius: 22px;
+    padding: clamp(0.9rem, 2vw, 1.25rem) clamp(1rem, 2.5vw, 1.4rem);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: var(--shadow);
+    background-color: var(--card);
+    background-image:
+        radial-gradient(ellipse 95% 140% at 88% 28%, rgba(106, 15, 31, .14), transparent 58%),
+        linear-gradient(
+            95deg,
+            color-mix(in srgb, var(--card) 96%, transparent) 0%,
+            color-mix(in srgb, var(--card) 58%, transparent) 36%,
+            color-mix(in srgb, var(--card) 18%, transparent) 54%,
+            transparent 72%
+        ),
+        url("/assets/hero-road.jpg");
+    background-size: cover, cover, cover;
+    background-position: center, center, 62% 72%;
+    background-repeat: no-repeat;
+}
+
+html[data-theme="dark"] .hero-min {
+    background-image:
+        radial-gradient(ellipse 95% 140% at 88% 28%, rgba(106, 15, 31, .28), transparent 58%),
+        linear-gradient(
+            95deg,
+            color-mix(in srgb, var(--card) 97%, transparent) 0%,
+            color-mix(in srgb, var(--card) 78%, transparent) 44%,
+            color-mix(in srgb, var(--card) 36%, transparent) 62%,
+            transparent 82%
+        ),
+        url("/assets/hero-road.jpg");
+    background-size: cover, cover, cover;
+    background-position: center, center, 62% 72%;
+    background-repeat: no-repeat;
+}
+
+.home-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.38rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    color: var(--chip-text);
+    background: var(--chip-bg);
+    border: 1px solid color-mix(in srgb, var(--wine) 18%, var(--border));
+    margin-bottom: 0.4rem;
+}
+
+.title {
+    letter-spacing: -0.03em;
+    font-weight: 750;
+    margin: 0;
+    line-height: 1.15;
+    font-size: clamp(1.35rem, 2.5vw + 1rem, 1.85rem);
+}
+
+.sub {
+    color: var(--muted);
+    margin-top: 0.35rem;
+    font-size: 0.92rem;
+    line-height: 1.4;
+    max-width: 38rem;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    margin-top: 0.65rem;
+}
+
+.hero-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 14px;
+    font-weight: 650;
+    padding: 0.55rem 1.15rem;
+    transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.hero-actions .btn:active {
+    transform: scale(0.98);
+}
+
+.hero-actions .btn-ico {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+.btn-ghost {
+    border: none;
+    background: color-mix(in srgb, var(--card) 85%, transparent);
+    color: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+}
+.btn-ghost:hover {
+    background: color-mix(in srgb, var(--card) 78%, transparent);
+    color: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+}
+
+.btn-wa { background: #25D366; border-color: #25D366; color: #fff; }
+.btn-wa:hover { background: #1fb85a; border-color: #1fb85a; color: #fff; }
+
+/* --- Tabs (subrayado + iconos, estilo referencia) --- */
+.home-tabs.tabs-card {
+    background: var(--card);
+    border: none;
+    box-shadow: var(--shadow);
+    border-radius: 22px;
+    padding: 0;
+    margin-top: 0.65rem;
+}
+
+.home-tabs-head {
+    position: sticky;
+    top: var(--home-nav-offset);
+    z-index: 18;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 14px 0;
+    margin: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.home-tabs .nav-tabs {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    flex-wrap: nowrap;
+    border: none;
+    border-bottom: none;
+    background: transparent;
+}
+
+.home-tabs-wa {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: inherit;
+    line-height: 1.2;
+}
+
+.home-tabs-wa:hover .home-tabs-wa-phone {
+    background: color-mix(in srgb, var(--wine) 14%, var(--card));
+    color: var(--wine);
+}
+
+.home-tabs-wa-phone {
+    font-size: 0.92rem;
+    font-weight: 750;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    color: var(--text);
+    background: color-mix(in srgb, var(--muted) 12%, var(--card));
+    border: none;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    transition: background .15s ease, color .15s ease;
+}
+
+.home-tabs .nav-tabs .nav-item {
+    margin: 0;
+}
+
+.home-tabs .nav-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--muted);
+    border: none;
+    border-radius: 14px 14px 0 0;
+    font-weight: 650;
+    padding: 0.5rem 0.85rem;
+    margin: 0 4px 0 0;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.home-tabs .nav-tabs .nav-link .tab-ico {
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0.92;
+}
+
+.home-tabs .nav-tabs .nav-link:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--wine) 5%, transparent);
+}
+
+.home-tabs .nav-tabs .nav-link.active {
+    color: var(--wine);
+    background: transparent;
+    border-bottom-color: var(--wine);
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
+    color: color-mix(in srgb, var(--wine) 85%, white);
+    border-bottom-color: color-mix(in srgb, var(--wine) 85%, white);
+}
+
+.home-tabs .tab-content {
+    padding: 0 12px 10px;
+}
+
+.home-tabs .tab-pane {
+    padding: 0.55rem 0 0;
+}
+
+.routes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+}
+@media (max-width: 992px) {
+    .routes { grid-template-columns: 1fr; }
+}
+
+.route-card {
+    background: var(--card);
+    border: none;
+    border-radius: 18px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+        0 10px 28px rgba(2, 6, 23, 0.06);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.route-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--wine) 22%, var(--border)),
+        0 14px 32px rgba(2, 6, 23, 0.09);
+}
+
+html[data-theme="dark"] .route-card {
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent),
+        0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .route-card:hover {
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--wine) 28%, var(--border)),
+        0 16px 36px rgba(0, 0, 0, 0.42);
+}
+
+.route-card-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--wine) 10%, var(--card));
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+html[data-theme="dark"] .route-card-strip {
+    background: color-mix(in srgb, var(--wine) 14%, var(--card));
+}
+
+.route-strip-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.route-car-badge {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--wine) 22%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, transparent);
+}
+
+.route-car-badge svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.route-strip-title {
+    margin: 0;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+
+.route-strip-meta {
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.route-card-body {
+    padding: 10px 12px 12px;
+}
+
+.route-body-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.route-sub {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip-time {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.36rem 0.62rem;
+    min-height: 36px;
+    border-radius: 999px;
+    border: none;
+    background: color-mix(in srgb, var(--chip-bg) 75%, var(--card));
+    color: var(--chip-text);
+    font-weight: 650;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    text-decoration: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+    transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.chip-time:hover {
+    background: color-mix(in srgb, var(--wine) 12%, var(--card));
+    color: var(--text);
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+}
+
+.chip-time:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.22rem var(--ring);
+}
+
+.map-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+}
+@media (max-width: 992px) {
+    .map-grid { grid-template-columns: 1fr; }
+}
+
+.map-card {
+    border: none;
+    border-radius: 18px;
+    padding: 0.65rem 0.75rem;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--card) 97%, transparent),
+        color-mix(in srgb, var(--card) 93%, transparent)
+    );
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
+        0 8px 24px rgba(2, 6, 23, 0.06);
+}
+
+.map-title {
+    margin: 0 0 6px 0;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    font-size: 1rem;
+}
+
+.map-frame {
+    width: 100%;
+    height: clamp(160px, 30vh, 200px);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.map-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.hero-split {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.hero-left {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.hero-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.hero-logo-big {
+    width: auto;
+    max-width: min(320px, 42vw);
+    max-height: 200px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    filter:
+        drop-shadow(0 0 0 1px rgba(255, 255, 255, 0.55))
+        drop-shadow(0 2px 6px rgba(2, 6, 23, 0.22))
+        drop-shadow(0 10px 32px rgba(2, 6, 23, 0.28));
+}
+
+html[data-theme="dark"] .hero-logo-big {
+    filter:
+        drop-shadow(0 0 0 1px rgba(255, 255, 255, 0.14))
+        drop-shadow(0 3px 10px rgba(0, 0, 0, 0.55))
+        drop-shadow(0 14px 40px rgba(0, 0, 0, 0.45));
+}
+
+@media (max-width: 992px) {
+    .hero-split {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .hero-right {
+        width: 100%;
+        justify-content: center;
+        margin-top: 6px;
+        text-align: center;
+    }
+    .hero-logo-big {
+        max-width: min(340px, 92%);
+        max-height: 220px;
+        margin: 0 auto;
+    }
+}
+
+.logo-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+@media (max-width: 992px) {
+    .logo-wrap { margin: 0 auto; }
+}
+
+.logo-wrap .admin-hotspot {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: 18px;
+    border: 0;
+    background: transparent;
+    opacity: 0;
+    cursor: default;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    pointer-events: none;
+}
+
+/* Próximas salidas */
+.next-card {
+    border: none;
+    border-radius: 18px;
+    padding: 0.7rem 0.85rem;
+    margin-bottom: 0.65rem;
+    background-image:
+        radial-gradient(900px 420px at 10% 0%, rgba(106, 15, 31, 0.12), transparent 55%),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--wine) 6%, var(--card)),
+            color-mix(in srgb, var(--card) 96%, transparent)
+        );
+    background-repeat: no-repeat;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent),
+        0 10px 28px rgba(2, 6, 23, 0.07);
+}
+
+.next-card.is-loading .next-grid {
+    opacity: 0.55;
+}
+
+.next-card.is-loading .next-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.next-card.is-loading .next-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--card) 40%, transparent),
+        transparent
+    );
+    animation: home-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes home-shimmer {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+}
+
+.next-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 8px 0;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    font-size: 1rem;
+}
+
+.next-title-ico {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.next-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+@media (max-width: 992px) {
+    .next-grid { grid-template-columns: 1fr; }
+}
+
+.next-item {
+    border: none;
+    border-radius: 14px;
+    padding: 9px 11px;
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+.next-meta {
+    min-width: 0;
+}
+.next-route {
+    font-weight: 750;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+.next-when {
+    color: var(--muted);
+    font-size: 0.86rem;
+    margin-top: 4px;
+    line-height: 1.35;
+}
+
+.next-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.38rem 0.65rem;
+    border-radius: 999px;
+    border: none;
+    background: color-mix(in srgb, var(--wine) 14%, var(--card));
+    color: var(--text);
+    font-weight: 750;
+    font-size: 0.88rem;
+    white-space: nowrap;
+}
+
+a.next-pill {
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+a.next-pill:hover {
+    background: color-mix(in srgb, var(--wine) 24%, var(--card));
+    color: var(--text);
+}
+
+@media (max-width: 576px) {
+    .home-tabs-head {
+        padding-left: 10px;
+        padding-right: 10px;
+        gap: 6px;
+    }
+
+    .home-tabs .nav-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .home-tabs .nav-tabs .nav-link {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-size: 0.92rem;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .home-tabs-wa-phone {
+        font-size: 0.86rem;
+    }
+
+    .route-card-strip {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chip-time:hover,
+    .route-card:hover {
+        transform: none;
+    }
+
+    .hero-actions .btn:active {
+        transform: none;
+    }
+
+    .next-card.is-loading .next-item::after {
+        animation: none;
+    }
+}
+
+/* Navbar sticky en home */
+body.home-page .app-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+body.home-page .app-navbar .theme-btn {
+    border-color: rgba(255, 255, 255, .18);
+    transition: background .15s ease, border-color .15s ease;
+}
+
+body.home-page .app-navbar .theme-btn:hover {
+    background: rgba(255, 255, 255, .08);
+    border-color: rgba(255, 255, 255, .28);
+}
