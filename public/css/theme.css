@@ -344,4 +344,13 @@ html[data-theme="dark"] .card-soft:hover {
         transition-duration: .001ms !important;
         scroll-behavior: auto !important;
     }
+
+    .btn-wine:active,
+    .hero-actions .btn:active {
+        transform: none;
+    }
+
+    .card-soft:hover {
+        box-shadow: var(--shadow);
+    }
 }
