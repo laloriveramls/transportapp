@@ -26,6 +26,11 @@ const {
     resolveVicLocation,
     resolveVicLocationLabel,
     pricingForVicLocation,
+    directionFromStops,
+    vicLocationFromStops,
+    routeFromStops,
+    formatRouteLabel,
+    isValidStop,
 } = require("../locations");
 
 const router = express.Router();
@@ -586,7 +591,6 @@ router.post(
     safe(async (req, res) => {
         let {
             trip_date,
-            direction,
             depart_time,
             customer_name,
             phone,
@@ -594,13 +598,15 @@ router.post(
             package_details,
             payment_method,
             transfer_ref,
-            vic_location,
+            from_stop,
+            to_stop,
         } = req.body;
 
         customer_name = String(customer_name || "").trim();
         phone = String(phone || "").trim();
         package_details = String(package_details || "").trim();
-        vic_location = String(vic_location || "").trim().toUpperCase() || null;
+        from_stop = String(from_stop || "").trim().toUpperCase();
+        to_stop = String(to_stop || "").trim().toUpperCase();
 
         type = String(type || "PASSENGER").trim().toUpperCase();
         if (!ALLOWED_TYPES.has(type)) {
@@ -612,9 +618,19 @@ router.post(
             return res.status(400).render("reserve", reserveViewData({error: "Método de pago no válido."}));
         }
 
-        if (vic_location && !resolveVicLocation(vic_location)) {
-            return res.status(400).render("reserve", reserveViewData({error: "Ubicación de Ciudad Victoria no válida."}));
+        if (!isValidStop(from_stop) || !isValidStop(to_stop)) {
+            return res.status(400).render("reserve", reserveViewData({error: "Origen o destino no válido."}));
         }
+
+        const direction = directionFromStops(from_stop, to_stop);
+        if (!direction) {
+            return res.status(400).render("reserve", reserveViewData({
+                error: "El origen y destino deben ser distintos (Victoria/ejidos ↔ Llera).",
+            }));
+        }
+
+        const vic_location = vicLocationFromStops(from_stop, to_stop);
+        const routeLabelText = formatRouteLabel(direction, vic_location, " - ");
 
         transfer_ref = String(transfer_ref || "").trim();
         if (!transfer_ref) transfer_ref = null;
@@ -677,7 +693,6 @@ router.post(
             const {unit_price_mxn, amount_total_mxn, child_seats: childSeatsStored} =
                 computeTotalsWithPricing(type, adultSeats, effectivePricing, childSeats);
             childSeats = childSeatsStored;
-            const vicLocationLabel = resolveVicLocationLabel(vic_location);
 
             const [[template]] = await conn.query(
                 `
@@ -818,7 +833,7 @@ router.post(
 
             // ✅ I notify the admin after commit (so I never notify on failed TX).
             try {
-                const routeText = direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
+                const routeText = routeLabelText;
                 const typeText = type === "PACKAGE" ? "Paquetería" : "Pasaje";
 
                 const payText =
@@ -861,7 +876,6 @@ router.post(
                             : ""
                     }`,
                     `Ruta: ${escapeHtml(routeText)}`,
-                    vicLocationLabel ? `Ubicación: ${escapeHtml(vicLocationLabel)}` : null,
                     `Fecha: ${escapeHtml(trip_date)}`,
                     `Hora: ${escapeHtml(depart_time)}`,
                     `Contacto: ${escapeHtml(customer_name || "-")}`,
@@ -971,7 +985,7 @@ router.get(
             directionLabel,
             stripePublishableKey,
             publicToken: token,
-            vicLocationLabel: resolveVicLocationLabel(r.vic_location),
+            routeLabel: formatRouteLabel(r.direction, r.vic_location),
         });
     })
 );
@@ -1034,7 +1048,7 @@ router.get(
                     ticketCode,
                     publicToken: token,
                     expired: true,
-                    vicLocationLabel: resolveVicLocationLabel(r.vic_location),
+                    routeLabel: formatRouteLabel(r.direction, r.vic_location),
                 });
             }
             return res.redirect(`/checkout/t/${encodeURIComponent(token)}`);
@@ -1049,7 +1063,7 @@ router.get(
             directionLabel,
             ticketCode,
             publicToken: token,
-            vicLocationLabel: resolveVicLocationLabel(r.vic_location),
+            routeLabel: formatRouteLabel(r.direction, r.vic_location),
         });
     })
 );
@@ -1124,7 +1138,7 @@ router.get(
             directionLabel,
             url,
             returnUrl,
-            vicLocationLabel: resolveVicLocationLabel(row.vic_location),
+            routeLabel: formatRouteLabel(row.direction, row.vic_location),
         });
     })
 );

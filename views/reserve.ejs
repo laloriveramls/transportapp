@@ -74,13 +74,18 @@
 
                         <div class="trip-step-body">
                             <div class="row g-3">
-                                <div class="col-lg-6">
+                                <div class="col-12">
                                     <div class="trip-group">
                                         <div class="route-grid">
                                             <div>
                                                 <label class="form-label">Origen</label>
-                                                <select id="from_city" class="form-select" required>
-                                                    <option value="VIC" selected>Ciudad Victoria</option>
+                                                <select id="from_city" name="from_stop" class="form-select" required>
+                                                    <option value="VIC" selected>Ciudad Victoria — $<%= Number((pricing && pricing.passenger_price_mxn) || 120) %></option>
+                                                    <optgroup label="Ejidos">
+                                                        <% (vicLocations || []).forEach(function(loc) { %>
+                                                            <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
+                                                        <% }) %>
+                                                    </optgroup>
                                                     <option value="LLE">Llera</option>
                                                 </select>
                                             </div>
@@ -89,27 +94,20 @@
 
                                             <div>
                                                 <label class="form-label">Destino</label>
-                                                <select id="to_city" class="form-select" required>
+                                                <select id="to_city" name="to_stop" class="form-select" required>
                                                     <option value="LLE" selected>Llera</option>
-                                                    <option value="VIC">Ciudad Victoria</option>
+                                                    <option value="VIC">Ciudad Victoria — $<%= Number((pricing && pricing.passenger_price_mxn) || 120) %></option>
+                                                    <optgroup label="Ejidos">
+                                                        <% (vicLocations || []).forEach(function(loc) { %>
+                                                            <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
+                                                        <% }) %>
+                                                    </optgroup>
                                                 </select>
                                             </div>
                                         </div>
 
                                         <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6 d-none" id="vicLocationWrap">
-                                    <div class="trip-group">
-                                        <label class="form-label" id="vicLocationLabel">Ubicación en Ciudad Victoria</label>
-                                        <select id="vic_location" name="vic_location" class="form-select">
-                                            <option value="">Ciudad Victoria — tarifa estándar</option>
-                                            <% (vicLocations || []).forEach(function(loc) { %>
-                                                <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
-                                            <% }) %>
-                                        </select>
-                                        <div class="form-text subtle">Elige el ejido o punto de referencia en la zona de Victoria.</div>
+                                        <input type="hidden" id="vic_location" name="vic_location" value="">
                                     </div>
                                 </div>
 
@@ -415,10 +413,6 @@
                                     <span class="confirm-k">Ruta</span>
                                     <span class="confirm-v" id="sumRoute">-</span>
                                 </div>
-                                <div class="confirm-item d-none" id="sumLocationRow">
-                                    <span class="confirm-k">Ubicación</span>
-                                    <span class="confirm-v" id="sumLocation">-</span>
-                                </div>
                                 <div class="confirm-item">
                                     <span class="confirm-k">Fecha</span>
                                     <span class="confirm-v" id="sumDate">-</span>
@@ -478,9 +472,7 @@
     const fromCity = document.getElementById("from_city");
     const toCity = document.getElementById("to_city");
     const directionInput = document.getElementById("direction");
-    const vicLocationWrap = document.getElementById("vicLocationWrap");
-    const vicLocationLabel = document.getElementById("vicLocationLabel");
-    const vicLocationSel = document.getElementById("vic_location");
+    const vicLocationHidden = document.getElementById("vic_location");
 
     const typeSel = document.getElementById("type");
 
@@ -580,8 +572,52 @@
 
     const VIC_LOCATIONS = parseVicLocationsFromServer();
 
+    function isLlera(code) {
+        return String(code || "").trim().toUpperCase() === "LLE";
+    }
+
+    function isVicCenter(code) {
+        return String(code || "").trim().toUpperCase() === "VIC";
+    }
+
+    function isVicSide(code) {
+        const key = String(code || "").trim().toUpperCase();
+        return isVicCenter(key) || VIC_LOCATIONS.some((item) => item.code === key);
+    }
+
+    function stopLabel(code) {
+        const key = String(code || "").trim().toUpperCase();
+        if (isLlera(key)) return "Llera";
+        if (isVicCenter(key)) return "Ciudad Victoria";
+        const loc = VIC_LOCATIONS.find((item) => item.code === key);
+        return loc ? loc.label : key;
+    }
+
+    function deriveRoute(from, to) {
+        const fromKey = String(from || "").trim().toUpperCase();
+        const toKey = String(to || "").trim().toUpperCase();
+        let vicLocation = null;
+
+        if (isLlera(fromKey) && isVicSide(toKey)) {
+            vicLocation = isVicCenter(toKey) ? null : toKey;
+            return {direction: "LLE_TO_VIC", vic_location: vicLocation};
+        }
+        if (isVicSide(fromKey) && isLlera(toKey)) {
+            vicLocation = isVicCenter(fromKey) ? null : fromKey;
+            return {direction: "VIC_TO_LLE", vic_location: vicLocation};
+        }
+        return {direction: "", vic_location: null};
+    }
+
+    function routeLabelFromStops(from, to) {
+        const route = deriveRoute(from, to);
+        if (!route.direction) return "-";
+        return `${stopLabel(from)} → ${stopLabel(to)}`;
+    }
+
     function getEffectivePricing() {
-        const locCode = String(vicLocationSel?.value || "").trim();
+        const route = deriveRoute(fromCity.value, toCity.value);
+        const locCode = route.vic_location || "";
         if (!locCode) return PRICING;
 
         const loc = VIC_LOCATIONS.find((item) => item.code === locCode);
@@ -593,13 +629,6 @@
             package_price_mxn: adult,
             child_price_mxn: adult / 2,
         };
-    }
-
-    function selectedVicLocationLabel() {
-        const locCode = String(vicLocationSel?.value || "").trim();
-        if (!locCode) return "Ciudad Victoria";
-        const loc = VIC_LOCATIONS.find((item) => item.code === locCode);
-        return loc ? loc.label : "Ciudad Victoria";
     }
 
     function readDraft() {
@@ -630,7 +659,6 @@
                 passenger_names: passengerInputs.map((x) => x.value || ""),
                 payment_method: paymentMethod.value || "TAQUILLA",
                 package_details: packageDetails.value || "",
-                vic_location: vicLocationSel?.value || "",
                 transfer_ref: document.getElementById("transfer_ref")?.value || "",
                 depart_time: departTimeHidden.value || ""
             };
@@ -668,7 +696,6 @@
 
         if (paymentMethod && draft.payment_method) paymentMethod.value = String(draft.payment_method);
         if (typeof draft.package_details === "string") packageDetails.value = draft.package_details;
-        if (vicLocationSel && typeof draft.vic_location === "string") vicLocationSel.value = draft.vic_location;
 
         const transferRefEl = document.getElementById("transfer_ref");
         if (transferRefEl && typeof draft.transfer_ref === "string") transferRefEl.value = draft.transfer_ref;
@@ -795,30 +822,26 @@
         syncPassengerSteppers();
     }
 
-    function syncVicLocationUI() {
-        if (!vicLocationWrap) return;
+    function syncDirection(changedSide) {
+        let from = fromCity.value;
+        let to = toCity.value;
 
-        const show = fromCity.value === "VIC" || toCity.value === "VIC";
-        vicLocationWrap.classList.toggle("d-none", !show);
-
-        if (vicLocationLabel) {
-            vicLocationLabel.textContent = fromCity.value === "VIC"
-                ? "Punto de abordaje en Ciudad Victoria"
-                : "Punto de descenso en Ciudad Victoria";
+        if (from === to) {
+            toCity.value = isLlera(from) ? "VIC" : "LLE";
+            to = toCity.value;
         }
-    }
 
-    function syncDirection() {
-        const f = fromCity.value;
-        const t = toCity.value;
+        if (!isLlera(from) && !isLlera(to)) {
+            if (changedSide === "from") toCity.value = "LLE";
+            else fromCity.value = "LLE";
+            from = fromCity.value;
+            to = toCity.value;
+        }
 
-        if (f === t) toCity.value = (f === "VIC") ? "LLE" : "VIC";
+        const route = deriveRoute(from, to);
+        directionInput.value = route.direction || "VIC_TO_LLE";
+        if (vicLocationHidden) vicLocationHidden.value = route.vic_location || "";
 
-        const from = fromCity.value;
-        const to = toCity.value;
-
-        directionInput.value = (from === "VIC" && to === "LLE") ? "VIC_TO_LLE" : "LLE_TO_VIC";
-        syncVicLocationUI();
         updatePriceUI();
         updateSummary();
         writeDraft();
@@ -835,11 +858,21 @@
             // Normalizo HH:MM (si viene 6:30 => 06:30)
             const time = timeRaw ? toHHMM(timeRaw) : "";
 
+            const fromStop = (qs.get("from") || qs.get("from_stop") || "").trim().toUpperCase();
+            const toStop = (qs.get("to") || qs.get("to_stop") || "").trim().toUpperCase();
+
+            if (fromStop && (isLlera(fromStop) || isVicSide(fromStop))) {
+                fromCity.value = fromStop;
+            }
+            if (toStop && (isLlera(toStop) || isVicSide(toStop))) {
+                toCity.value = toStop;
+            }
+
             // Aplico dirección a selects (para que syncDirection() ya deje bien el hidden)
-            if (dir === "VIC_TO_LLE") {
+            if (!fromStop && !toStop && dir === "VIC_TO_LLE") {
                 fromCity.value = "VIC";
                 toCity.value = "LLE";
-            } else if (dir === "LLE_TO_VIC") {
+            } else if (!fromStop && !toStop && dir === "LLE_TO_VIC") {
                 fromCity.value = "LLE";
                 toCity.value = "VIC";
             }
@@ -1095,7 +1128,7 @@
         const owner = document.getElementById("bankOwner")?.textContent?.trim() || "";
         const card = document.getElementById("bankClabe")?.textContent?.trim() || "";
 
-        const dir = (directionInput.value === "VIC_TO_LLE") ? "Victoria - Llera" : "Llera - Victoria";
+        const dir = routeLabelFromStops(fromCity.value, toCity.value).replace(" → ", " - ");
         const date = tripDate.value || "-";
         const time = departTimeHidden.value || "(sin horario aún)";
         const type = (typeSel.value === "PASSENGER") ? "Pasaje" : "Paquetería";
@@ -1244,7 +1277,7 @@
     }
 
     function routeLabel(dir) {
-        return dir === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
+        return routeLabelFromStops(fromCity.value, toCity.value);
     }
 
     function paymentLabel(v) {
@@ -1278,8 +1311,6 @@
 
     function updateSummary() {
         const sumRoute = document.getElementById("sumRoute");
-        const sumLocationRow = document.getElementById("sumLocationRow");
-        const sumLocation = document.getElementById("sumLocation");
         const sumDate = document.getElementById("sumDate");
         const sumTime = document.getElementById("sumTime");
         const sumType = document.getElementById("sumType");
@@ -1293,12 +1324,7 @@
         if (!sumRoute) return;
 
         const isPassenger = typeSel.value === "PASSENGER";
-        sumRoute.textContent = routeLabel(directionInput.value || "");
-        if (sumLocationRow && sumLocation) {
-            const showLocation = fromCity.value === "VIC" || toCity.value === "VIC";
-            sumLocationRow.classList.toggle("d-none", !showLocation);
-            sumLocation.textContent = showLocation ? selectedVicLocationLabel() : "-";
-        }
+        sumRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
         sumDate.textContent = tripDate.value || "-";
         sumTime.textContent = departTimeHidden.value || "Sin seleccionar";
         sumType.textContent = isPassenger ? "Pasajero" : "Paqueteria";
@@ -1474,17 +1500,12 @@
     });
 
     fromCity.addEventListener("change", () => {
-        syncDirection();
+        syncDirection("from");
         loadAvailability();
     });
     toCity.addEventListener("change", () => {
-        syncDirection();
+        syncDirection("to");
         loadAvailability();
-    });
-    vicLocationSel?.addEventListener("change", () => {
-        updatePriceUI();
-        updateSummary();
-        writeDraft();
     });
 
     tripDate.addEventListener("change", () => {
