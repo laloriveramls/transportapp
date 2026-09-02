@@ -2,474 +2,92 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: title || '404 · Esta página no existe',
+    title: title || '404 · Página no encontrada',
     description: 'Página no encontrada. Regresa al inicio.',
     noindex: true
     }) %>
 
     <style>
-        /* I keep the page aligned to TransportApp: wine accent, calm UI tokens, no beige, no generic doodles. */
-
-        :root {
-            /* I fallback to safe values if theme tokens are missing. */
-            --bg-404: var(--bg, #0f1115);
-            --card-404: var(--card, rgba(255, 255, 255, .06));
-            --text-404: var(--text, #e9edf3);
-            --muted-404: var(--muted, rgba(233, 237, 243, .68));
-            --border-404: var(--border, rgba(255, 255, 255, .12));
-            --shadow-404: var(--shadow, 0 18px 45px rgba(0, 0, 0, .35));
-
-            --wine-404: var(--wine, #6a0f1f);
-            --r-404: 22px;
-        }
-
-        body {
-            background: var(--bg-404);
-            color: var(--text-404);
-        }
-
         .page404 {
-            min-height: 78vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(18px, 2.8vw, 44px);
-
-            /* subtle brand ambience */
-            background: radial-gradient(1100px 520px at 14% 18%, color-mix(in srgb, var(--wine-404) 22%, transparent), transparent 55%),
-            radial-gradient(900px 520px at 86% 28%, color-mix(in srgb, var(--wine-404) 14%, transparent), transparent 62%),
-            var(--bg-404);
+            padding: 2rem 1rem;
         }
 
-        .wrap {
-            width: min(1200px, 100%);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: clamp(18px, 3.2vw, 54px);
+        .page404-inner {
+            width: min(420px, 100%);
+            text-align: center;
         }
 
-        .left {
-            flex: 1 1 560px;
-            padding-left: clamp(0px, 1vw, 10px);
-        }
-
-        .kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: .55rem;
-            padding: .45rem .78rem;
-            border-radius: 999px;
-            border: 1px solid color-mix(in srgb, var(--wine-404) 28%, var(--border-404));
-            background: color-mix(in srgb, var(--wine-404) 14%, transparent);
-            color: color-mix(in srgb, var(--text-404) 88%, var(--muted-404));
-            font-weight: 650;
-            font-size: .92rem;
-            letter-spacing: -.01em;
-        }
-
-        .h404 {
-            margin: 12px 0 0;
-            font-weight: 780;
+        .page404-code {
+            font-size: 4rem;
+            font-weight: 600;
             letter-spacing: -0.04em;
-            font-size: clamp(52px, 7.2vw, 92px);
-            line-height: .95;
-        }
-
-        .title {
-            margin: 8px 0 0;
-            font-weight: 760;
-            letter-spacing: -0.04em;
-            font-size: clamp(44px, 6.6vw, 86px);
-            line-height: 1.02;
-        }
-
-        .small {
-            margin: 12px 0 0;
-            color: var(--muted-404);
-            font-size: .98rem;
-            line-height: 1.55;
-            max-width: 46ch;
-        }
-
-        .cta {
-            margin-top: clamp(18px, 2.3vw, 26px);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn-404 {
-            appearance: none;
-            border: 1px solid color-mix(in srgb, var(--wine-404) 30%, var(--border-404));
-            background: transparent;
-            color: var(--text-404);
-            border-radius: 999px;
-            padding: 12px 18px;
-            font-weight: 700;
-            letter-spacing: -.01em;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: .55rem;
-            transition: transform .15s ease, background .15s ease, border-color .15s ease;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-404:hover {
-            transform: translateY(-1px);
-            background: color-mix(in srgb, var(--wine-404) 16%, transparent);
-            border-color: color-mix(in srgb, var(--wine-404) 55%, var(--border-404));
-        }
-
-        .btn-404:focus-visible {
-            outline: 3px solid color-mix(in srgb, var(--wine-404) 28%, transparent);
-            outline-offset: 3px;
-        }
-
-        .details {
-            margin-top: 12px;
-            color: var(--muted-404);
-            font-size: .92rem;
-        }
-
-        .details summary {
-            cursor: pointer;
-            user-select: none;
-            width: fit-content;
-        }
-
-        .mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            color: color-mix(in srgb, var(--text-404) 82%, var(--muted-404));
-        }
-
-        .right {
-            flex: 1 1 520px;
-            position: relative;
-            min-height: clamp(280px, 34vw, 420px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            isolation: isolate; /* I keep z-index stacking predictable */
-        }
-
-        /* Chat bubbles */
-        .bubble {
-            position: absolute;
-            z-index: 2; /* I keep bubbles above the image */
-            max-width: min(380px, 78%);
-            background: color-mix(in srgb, var(--card-404) 72%, transparent);
-            border: 1px solid color-mix(in srgb, var(--wine-404) 18%, var(--border-404));
-            border-radius: 14px;
-            padding: 12px 14px;
-            box-shadow: var(--shadow-404);
-            color: color-mix(in srgb, var(--text-404) 92%, var(--muted-404));
-            backdrop-filter: blur(8px);
-        }
-
-        .bubble::after {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            background: color-mix(in srgb, var(--card-404) 72%, transparent);
-            border-right: 1px solid color-mix(in srgb, var(--wine-404) 18%, var(--border-404));
-            border-bottom: 1px solid color-mix(in srgb, var(--wine-404) 18%, var(--border-404));
-            transform: rotate(45deg);
-            bottom: -7px;
-            right: 18px;
-            border-radius: 2px;
-        }
-
-        .bubble.top {
-            top: 18px;
-            right: 8px;
-        }
-
-        .bubble.bottom {
-            bottom: 1px;
-            left: 10px;
-        }
-
-        .b-row {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            justify-content: space-between;
-        }
-
-        .b-text {
+            line-height: 1;
+            color: var(--muted);
             margin: 0;
-            font-size: 1rem;
-            line-height: 1.35;
         }
 
-        .b-time {
-            margin-left: 10px;
-            font-size: .82rem;
-            color: color-mix(in srgb, var(--text-404) 45%, transparent);
-            white-space: nowrap;
+        .page404-title {
+            margin: 0.75rem 0 0;
+            font-weight: 600;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
         }
 
-        /* 404 image */
-        .img404 {
-            position: absolute;
-            z-index: 1;
-            right: -18px; /* I let it overflow a bit so it feels bigger */
-            top: 50%;
-            transform: translateY(-42%); /* I lift it slightly */
-            width: clamp(320px, 36vw, 720px);
-            height: auto;
-            opacity: .98;
-            filter: drop-shadow(0 22px 46px rgba(0, 0, 0, .26));
-            user-select: none;
-            pointer-events: none;
+        .page404-sub {
+            margin: 0.5rem 0 0;
+            color: var(--muted);
+            font-size: 0.875rem;
+            line-height: 1.5;
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            .btn-404 {
-                transition: none;
-            }
-
-            .btn-404:hover {
-                transform: none;
-            }
+        .page404-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
         }
 
-        .details {
-            margin-top: 12px;
-            position: relative;
+        .page404-detail {
+            margin-top: 1rem;
+            font-size: 0.8125rem;
+            color: var(--muted);
         }
 
-        .details-btn {
-            appearance: none;
-            border: 0;
-            background: transparent;
-            color: var(--muted-404);
-            font-size: .92rem;
-            padding: 0;
+        .page404-detail summary {
             cursor: pointer;
             user-select: none;
         }
 
-        .details-btn:hover {
-            color: color-mix(in srgb, var(--text-404) 72%, var(--muted-404));
-            text-decoration: underline;
+        .page404-detail .mono {
+            display: block;
+            margin-top: 0.35rem;
+            word-break: break-all;
         }
-
-        .details-panel {
-            position: absolute;
-            left: 0;
-            top: calc(100% + 10px);
-            width: min(520px, 92vw);
-            padding: 12px 14px;
-            border-radius: 14px;
-            border: 1px solid color-mix(in srgb, var(--wine-404) 18%, var(--border-404));
-            background: color-mix(in srgb, var(--card-404) 76%, transparent);
-            box-shadow: var(--shadow-404);
-            backdrop-filter: blur(10px);
-
-            transform: translateY(-6px);
-            opacity: 0;
-            pointer-events: none;
-
-            transition: opacity .18s ease, transform .18s ease;
-        }
-
-        .details-panel.is-open {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* =========================
-   Mobile layout (single source of truth)
-   ========================= */
-
-        @media (max-width: 920px) {
-            /* I stack sections and avoid flex-basis becoming height. */
-            .wrap {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .left, .right {
-                flex: 0 0 auto;
-                min-height: 0;
-            }
-
-            /* I reduce the space under "Ver detalle". */
-            .details {
-                margin-top: 10px;
-                margin-bottom: 2px;
-            }
-
-            /* I make the right column flow: bubble → image → bubble (no absolute). */
-            .right {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                align-items: stretch;
-                justify-content: flex-start;
-                position: relative;
-                padding-top: 0;
-                margin-top: -2px; /* I pull it a bit closer to the left section */
-            }
-
-            .bubble {
-                position: relative;
-                inset: auto;
-                width: 100%;
-                max-width: 100%;
-            }
-
-            .bubble::after {
-                display: none;
-            }
-
-            .bubble.top {
-                order: 1;
-            }
-
-            .img404 {
-                order: 2;
-            }
-
-            .bubble.bottom {
-                order: 3;
-            }
-
-            .img404 {
-                position: relative;
-                right: auto;
-                top: auto;
-                transform: none;
-                width: min(420px, 92vw);
-                height: auto;
-                margin: 0 auto;
-            }
-        }
-
-        /* Optional: extra-tight on very small phones */
-        @media (max-width: 420px) {
-            .right {
-                gap: 8px;
-            }
-
-            .details {
-                margin-bottom: 0;
-            }
-        }
-
-        /* I avoid overlap: the details panel should push content down on mobile. */
-        @media (max-width: 920px) {
-            .details {
-                position: static; /* overrides relative */
-            }
-
-            .details-panel {
-                position: static; /* overrides absolute */
-                width: 100%;
-                margin-top: 10px;
-                transform: none; /* I disable float animation in mobile */
-                opacity: 1; /* visible when not hidden */
-                pointer-events: auto;
-            }
-
-            /* I keep your open/close class, but only fade (no translate). */
-            .details-panel {
-                transition: opacity .18s ease;
-            }
-
-            .details-panel.is-open {
-                opacity: 1;
-            }
-        }
-
-
-
     </style>
 </head>
 
 <body>
 <main class="page404">
-    <div class="wrap">
-        <section class="left" aria-label="Página no encontrada">
-            <span class="kicker">TransportApp · 404</span>
+    <div class="page404-inner">
+        <p class="page404-code">404</p>
+        <h1 class="page404-title">Página no encontrada</h1>
+        <p class="page404-sub">El enlace puede estar incorrecto o la página ya no existe.</p>
 
-            <h1 class="h404">404.</h1>
-            <h2 class="title">Esta página<br/>no existe.</h2>
+        <div class="page404-actions">
+            <a class="btn btn-wine" href="/">Volver al inicio</a>
+        </div>
 
-            <p class="small">
-                Tal vez el enlace está mal o ya cambió. Vuelve al inicio y continúa tu reserva.
-            </p>
-
-            <div class="cta">
-                <a class="btn-404" href="/" aria-label="Volver al inicio">Volver al inicio</a>
-            </div>
-
-            <div class="details">
-                <button class="details-btn" type="button" id="toggleDetails" aria-expanded="false">
-                    Ver detalle
-                </button>
-
-                <div class="details-panel" id="detailsPanel" hidden>
-                    Ruta solicitada:
-                    <span class="mono"><%= path %></span>
-                </div>
-            </div>
-        </section>
-
-        <section class="right" aria-label="Mensajes y marca">
-            <div class="bubble top" aria-hidden="true">
-                <div class="b-row">
-                    <p class="b-text">Has llegado a una página 404</p>
-                    <span class="b-time">11:59</span>
-                </div>
-            </div>
-
-            <div class="bubble bottom" aria-hidden="true">
-                <div class="b-row">
-                    <p class="b-text">No pasa nada. Regresa al inicio y continúa tu reserva.</p>
-                    <span class="b-time">12:00</span>
-                </div>
-            </div>
-
-            <img
-                    class="img404"
-                    src="/assets/404.png"
-                    alt="404"
-                    loading="eager"
-                    decoding="async"
-            />
-        </section>
+        <details class="page404-detail">
+            <summary>Ver ruta solicitada</summary>
+            <span class="mono"><%= path %></span>
+        </details>
     </div>
 </main>
+<script src="/js/theme.js"></script>
 </body>
-<script>
-    (function () {
-        const btn = document.getElementById("toggleDetails");
-        const panel = document.getElementById("detailsPanel");
-        if (!btn || !panel) return;
-
-        btn.addEventListener("click", () => {
-            const open = btn.getAttribute("aria-expanded") === "true";
-            btn.setAttribute("aria-expanded", String(!open));
-
-            if (open) {
-                panel.classList.remove("is-open");
-                // I wait for the animation to finish, then hide.
-                setTimeout(() => (panel.hidden = true), 180);
-            } else {
-                panel.hidden = false;
-                requestAnimationFrame(() => panel.classList.add("is-open"));
-            }
-        });
-    })();
-</script>
 </html>
