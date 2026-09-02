@@ -17,6 +17,23 @@ const DB_NAME = cleanEnv(process.env.DB_NAME);
 
 const hasDb = !!DB_HOST && !!DB_USER && !!DB_NAME && !!DB_PASS;
 
+function truthyEnv(name) {
+    const v = cleanEnv(process.env[name]).toLowerCase();
+    return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}
+
+function falsyEnv(name) {
+    const v = cleanEnv(process.env[name]).toLowerCase();
+    return v === '0' || v === 'false' || v === 'no' || v === 'off';
+}
+
+// I allow UI preview in local/dev when DB env vars are missing.
+function skipDbRequire() {
+    if (truthyEnv('SKIP_DB_REQUIRE')) return true;
+    if (falsyEnv('SKIP_DB_REQUIRE')) return false;
+    return cleanEnv(process.env.NODE_ENV).toLowerCase() !== 'production';
+}
+
 let pool = null;
 
 if (hasDb) {
@@ -31,4 +48,4 @@ if (hasDb) {
     });
 }
 
-module.exports = { pool, hasDb };
+module.exports = { pool, hasDb, skipDbRequire };

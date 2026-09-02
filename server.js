@@ -30,7 +30,7 @@ const envInfo = loadEnv();
 const express = require("express");
 const session = require("express-session");
 
-const { pool, hasDb } = require("./src/db");
+const { pool, hasDb, skipDbRequire } = require("./src/db");
 
 // Routers
 const telegramWebhookRouter = require("./src/routes/telegramWebhook");
@@ -176,7 +176,10 @@ app.get("/health", async (req, res) => {
     };
 
     if (!hasDb) {
-        return res.json({ ...base, note: "DB not configured yet (missing env vars in runtime)" });
+        const note = skipDbRequire()
+            ? "DB not configured; UI preview mode enabled (SKIP_DB_REQUIRE)"
+            : "DB not configured yet (missing env vars in runtime)";
+        return res.json({ ...base, previewMode: skipDbRequire() && !hasDb, note });
     }
 
     const t0 = Date.now();

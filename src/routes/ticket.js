@@ -6,20 +6,13 @@ const PDFDocument = require("pdfkit");
 const path = require("path");
 const fs = require("fs");
 const { pool, hasDb } = require("../db");
+const { requireDb } = require("../middleware/requireDb");
 
 const router = express.Router();
 
 /* -----------------------------
    Helpers
 ----------------------------- */
-
-function requireDb(req, res, next) {
-    if (hasDb) return next();
-    return res.status(503).render("maintenance", {
-        title: "Sitio en configuración",
-        message: "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
-    });
-}
 
 function directionLabel(direction) {
     return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
