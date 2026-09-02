@@ -210,24 +210,7 @@
 </head>
 
 <body class="admin-app">
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda?date=<%= trip.trip_date %>">
-            <span class="brand-dot"></span>
-            <span class="fw-bold">← Agenda</span>
-        </a>
-
-        <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
-
-            <form method="POST" action="/admin/logout" class="m-0">
-                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
-            </form>
-        </div>
-    </div>
-</nav>
+<%- include('partials/navbar-admin', { adminNavTitle: '← Agenda', adminNavHome: '/admin/agenda?date=' + trip.trip_date }) %>
 
 <main class="container py-4">
     <%

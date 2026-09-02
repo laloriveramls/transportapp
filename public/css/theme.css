@@ -1,44 +1,62 @@
-/* public/css/theme.css */
+/* public/css/theme.css — Minimal design system */
 
-/* ===== Theme tokens (global) ===== */
-:root{
-    --wine: #6a0f1f;
-    --wine-2:#8b1530;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-    --bg: #f5f6f8;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
+/* ===== Tokens ===== */
+:root {
+    --wine: #7c1d2e;
+    --wine-hover: #6a1927;
 
-    --border: rgba(15, 23, 42, .10);
-    --shadow: 0 12px 30px rgba(2,6,23,.08);
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --text: #171717;
+    --muted: #737373;
+    --border: #e5e5e5;
+    --border-strong: #d4d4d4;
 
-    --chip-bg: rgba(106,15,31,.10);
-    --chip-text: #5a0d1a;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
-    --nav: #0b0b0f;
+    --chip-bg: #f5f5f5;
+    --chip-text: #525252;
 
-    --radius: 18px;
+    --nav-bg: rgba(250, 250, 250, 0.92);
+    --nav-text: #171717;
+
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+
+    --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --toast-duration: 1800ms;
+    --ring: rgba(124, 29, 46, 0.18);
 
-    /* I keep a consistent focus ring token. */
-    --ring: color-mix(in srgb, var(--wine) 22%, transparent);
+    /* Legacy aliases used across views */
+    --card: var(--surface);
+    --nav: var(--nav-bg);
 }
 
-/* Dark theme overrides */
-html[data-theme="dark"]{
-    --bg:#0b0b0f;
-    --card:#111218;
-    --text:#f1f5f9;
-    --muted:#a3adc2;
+html[data-theme="dark"] {
+    --wine: #e8798a;
+    --wine-hover: #f4a0ad;
 
-    --border: rgba(255,255,255,.10);
-    --shadow: 0 16px 36px rgba(0,0,0,.35);
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --text: #fafafa;
+    --muted: #a3a3a3;
+    --border: #262626;
+    --border-strong: #404040;
 
-    --chip-bg: rgba(139,21,48,.22);
-    --chip-text: #ffd6de;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
-    --nav:#000;
+    --chip-bg: #1f1f1f;
+    --chip-text: #d4d4d4;
+
+    --nav-bg: rgba(10, 10, 10, 0.92);
+    --nav-text: #fafafa;
+
+    --ring: rgba(232, 121, 138, 0.22);
 }
 
 /* ===== Base ===== */
@@ -47,149 +65,228 @@ html, body {
     -webkit-font-smoothing: antialiased;
 }
 
-body{
+body {
     background: var(--bg) !important;
     color: var(--text);
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    line-height: 1.35;
+    font-family: var(--font);
+    font-size: 0.9375rem;
+    line-height: 1.5;
     min-height: 100vh;
 }
 
-.subtle{ color: var(--muted); }
+.subtle { color: var(--muted); }
 
-/* I keep links consistent across pages. */
 a {
     color: var(--wine);
+    text-decoration: none;
 }
 
 a:hover {
-    color: var(--wine-2);
+    color: var(--wine-hover);
 }
 
-a:active {
-    opacity: .9;
-}
-
-/* I improve mobile tap feel. */
 * {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* I add a consistent focus ring across the app. */
 :where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
     outline: none;
-    box-shadow: 0 0 0 .25rem var(--ring);
-    border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* ===== Layout ===== */
+.container {
+    max-width: 1080px;
+}
+
+main.container {
+    padding-top: 1.5rem;
+    padding-bottom: 2.5rem;
 }
 
 /* ===== Navbar ===== */
-.app-navbar{
-    background: linear-gradient(90deg, var(--nav), #151521) !important;
+.app-navbar {
+    background: var(--nav-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
 }
 
-.brand-dot{
-    width:10px; height:10px; border-radius:999px;
+.app-navbar .navbar-brand {
+    color: var(--nav-text) !important;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: -0.01em;
+}
+
+.brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
     background: var(--wine);
-    display:inline-block;
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--wine) 18%, transparent);
+    display: inline-block;
+}
+
+.theme-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: var(--font);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.theme-btn:hover {
+    border-color: var(--border-strong);
+    background: var(--chip-bg);
+}
+
+.theme-btn .theme-icon {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
 }
 
 /* ===== Cards ===== */
-.card-soft{
-    background: var(--card);
+.card-soft {
+    background: var(--surface);
     border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
 }
 
-/* ===== Hero ===== */
-.hero{
-    background:
-            radial-gradient(1200px 600px at 10% 0%, rgba(106,15,31,.20), transparent 55%),
-            radial-gradient(900px 500px at 90% 10%, rgba(106,15,31,.10), transparent 60%);
-    border-radius: calc(var(--radius) + 4px);
-    padding: 22px;
+/* ===== Hero (generic) ===== */
+.hero {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
     border: 1px solid var(--border);
 }
 
 /* ===== Buttons ===== */
-.btn-wine{
+.btn {
+    font-family: var(--font);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-wine {
     background: var(--wine);
     border-color: var(--wine);
-    color:#fff;
-}
-.btn-wine:hover{
-    background: var(--wine-2);
-    border-color: var(--wine-2);
-    color:#fff;
-}
-
-/* ===== Chips ===== */
-.chip{
-    display:inline-flex;
-    align-items:center;
-    gap:.5rem;
-    padding:.45rem .7rem;
-    border-radius:999px;
-    background: var(--chip-bg);
-    color: var(--chip-text);
-    border: 1px solid var(--border);
-    font-weight:600;
-    font-size:.9rem;
-    margin:.3rem .35rem 0 0;
-    white-space:nowrap;
-}
-
-/* ===== Theme toggle button ===== */
-/* I keep it readable anywhere (not only on navbar). */
-.theme-btn{
-    border:1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-    padding:.35rem .6rem;
-    border-radius: 12px;
-}
-
-/* I force white only inside navbar. */
-.app-navbar .theme-btn {
     color: #fff;
 }
 
-/* Sticky CTA helper (optional) */
-.footer-cta{
+.btn-wine:hover,
+.btn-wine:focus {
+    background: var(--wine-hover);
+    border-color: var(--wine-hover);
+    color: #fff;
+}
+
+.btn-ghost {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+}
+
+.btn-ghost:hover {
+    border-color: var(--border-strong);
+    background: var(--chip-bg);
+    color: var(--text);
+}
+
+.btn-wa {
+    background: #128c41;
+    border-color: #128c41;
+    color: #fff;
+}
+
+.btn-wa:hover {
+    background: #0f7536;
+    border-color: #0f7536;
+    color: #fff;
+}
+
+/* ===== Chips & pills ===== */
+.chip,
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border: 1px solid var(--border);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+/* ===== Forms ===== */
+.form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text);
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--radius-sm);
+    border-color: var(--border);
+    font-family: var(--font);
+    font-size: 0.9375rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--wine);
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* ===== Footer CTA ===== */
+.footer-cta {
     position: sticky;
     bottom: 14px;
     z-index: 5;
 }
-@media (min-width: 992px){
-    .footer-cta{ position: static; }
+
+@media (min-width: 992px) {
+    .footer-cta { position: static; }
 }
 
-/* =========================
-   Toast Host (unificado: toast-stack + bootstrap containers)
-   ========================= */
+/* ===== Toast ===== */
 .toast-stack,
 #toastHost,
 .toast-host,
 .toast-container,
 .toast-container.position-fixed,
-.toast-container.p-3{
+.toast-container.p-3 {
     position: fixed;
     top: 16px;
     right: 16px;
     display: grid;
-    gap: 10px;
+    gap: 8px;
     z-index: 9999;
 }
 
-@media (max-width:576px){
+@media (max-width: 576px) {
     .toast-stack,
     #toastHost,
     .toast-host,
     .toast-container,
     .toast-container.position-fixed,
-    .toast-container.p-3{
+    .toast-container.p-3 {
         left: 12px;
         right: 12px;
         top: auto;
@@ -197,123 +294,112 @@ a:active {
     }
 }
 
-/* =========================
-   Toast
-   ========================= */
-.toast.app-toast{
-    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--card) 82%, transparent);
+.toast.app-toast {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
     color: var(--text);
-    box-shadow: 0 14px 40px rgba(2,6,23,.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    overflow: hidden;
-
-    /* ✅ FIX: no min-width en móvil */
+    box-shadow: var(--shadow);
     min-width: 0;
-    max-width: 420px;
+    max-width: 380px;
 }
 
-@media (max-width:576px){
-    .toast.app-toast{
+@media (max-width: 576px) {
+    .toast.app-toast {
         width: 100%;
         max-width: none;
-        border-radius: 18px;
     }
 }
 
-.app-toast-inner{
-    display:flex;
-    align-items:flex-start;
-    gap: 12px;
-    padding: 12px 12px 10px 12px;
+.app-toast-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
 }
 
-.app-toast-icon{
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size: 18px;
-    background: color-mix(in srgb, var(--chip-bg) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+.app-toast-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
     flex: 0 0 auto;
 }
 
-.app-toast-content{ flex: 1 1 auto; min-width: 0; }
-.app-toast-title{ font-weight: 750; letter-spacing: -.01em; line-height: 1.1; margin-top: 2px; }
-.app-toast-body{
-    margin-top: 4px;
+.app-toast-content { flex: 1 1 auto; min-width: 0; }
+.app-toast-title { font-weight: 600; font-size: 0.875rem; line-height: 1.2; }
+.app-toast-body {
+    margin-top: 2px;
     color: var(--muted);
-    font-size: .93rem;
-    line-height: 1.25;
+    font-size: 0.8125rem;
+    line-height: 1.35;
     word-break: break-word;
 }
 
-@media (max-width:576px){
-    .app-toast-body{ font-size: .95rem; }
-}
+.app-toast-close { opacity: 0.6; }
+.app-toast-close:hover { opacity: 1; }
 
-.app-toast-close{ opacity: .75; margin-top: 2px; }
-.app-toast-close:hover{ opacity: 1; }
-
-/* Progress bar */
-.app-toast-progress{
-    height: 3px;
+.app-toast-progress {
+    height: 2px;
     width: 100%;
-    background: color-mix(in srgb, var(--border) 70%, transparent);
+    background: var(--border);
     position: relative;
 }
-.app-toast-progress::before{
-    content:"";
-    position:absolute;
-    inset:0;
+
+.app-toast-progress::before {
+    content: "";
+    position: absolute;
+    inset: 0;
     width: 100%;
     transform-origin: left;
     transform: scaleX(0);
-    background: color-mix(in srgb, var(--wine) 80%, white);
+    background: var(--wine);
     animation: toastProgress var(--toast-duration, 1800ms) linear forwards;
-    border-radius: 999px;
 }
 
-@keyframes toastProgress{ to { transform: scaleX(1); } }
+@keyframes toastProgress { to { transform: scaleX(1); } }
 
-/* Variants via data-variant */
-.toast.app-toast[data-variant="dark"] .app-toast-icon{ background: color-mix(in srgb, var(--chip-bg) 70%, transparent); }
-.toast.app-toast[data-variant="dark"] .app-toast-progress::before{ background: color-mix(in srgb, var(--wine) 80%, white); }
+.toast.app-toast[data-variant="success"] .app-toast-progress::before { background: #16a34a; }
+.toast.app-toast[data-variant="warning"] .app-toast-progress::before { background: #ca8a04; }
+.toast.app-toast[data-variant="danger"] .app-toast-progress::before { background: #dc2626; }
+.toast.app-toast[data-variant="info"] .app-toast-progress::before { background: #2563eb; }
 
-.toast.app-toast[data-variant="success"] .app-toast-icon{ background: rgba(16,216,143,.14); }
-.toast.app-toast[data-variant="success"] .app-toast-progress::before{ background: rgba(16,216,143,.95); }
+.toast .toast-body { padding: 12px; font-weight: 500; }
+.toast .btn-close { opacity: 0.6; }
+.toast .btn-close:hover { opacity: 1; }
 
-.toast.app-toast[data-variant="warning"] .app-toast-icon{ background: rgba(241,220,33,.16); }
-.toast.app-toast[data-variant="warning"] .app-toast-progress::before{ background: rgba(241,220,33,.95); }
-
-.toast.app-toast[data-variant="danger"] .app-toast-icon{ background: rgba(252,127,139,.16); }
-.toast.app-toast[data-variant="danger"] .app-toast-progress::before{ background: rgba(252,127,139,.95); }
-
-.toast.app-toast[data-variant="info"] .app-toast-icon{ background: rgba(84,156,255,.14); }
-.toast.app-toast[data-variant="info"] .app-toast-progress::before{ background: rgba(84,156,255,.95); }
-
-/* ===== Bootstrap toast compatibility (si usas .toast-body y .btn-close) ===== */
-.toast .toast-body{
-    padding: 12px 14px;
-    font-weight: 650;
+/* ===== Utilities ===== */
+.mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
 }
-.toast .btn-close{
-    filter: none;
-    opacity: .7;
-}
-.toast .btn-close:hover{ opacity: 1; }
 
-/* I respect reduced motion preferences (animations/transitions). */
+.page-title {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+    line-height: 1.25;
+}
+
+.section-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
-        animation-duration: .001ms !important;
+        animation-duration: 0.001ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .001ms !important;
+        transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
 }
