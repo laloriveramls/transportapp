@@ -30,7 +30,7 @@ function previewTemplates() {
 }
 
 function previewPricing() {
-    return { ...DEV_PRICING };
+    return {...DEV_PRICING};
 }
 
 function previewAvailability(direction) {
