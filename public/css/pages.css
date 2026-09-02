@@ -37,6 +37,13 @@
     color: color-mix(in srgb, #991b1b 70%, var(--text));
 }
 
+.pill .ico,
+.btn-xs .ico,
+.note-title .ico {
+    margin-right: 0.35rem;
+    vertical-align: -0.2em;
+}
+
 .btn-xs {
     padding: 0.55rem 0.85rem;
     border-radius: 14px;

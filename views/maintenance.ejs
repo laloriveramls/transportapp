@@ -15,7 +15,7 @@
 <main class="maint-wrap">
     <section class="maint-card" role="status" aria-live="polite">
         <header class="maint-top">
-            <div class="pill">🛠️ Modo mantenimiento</div>
+            <div class="pill"><%- include('partials/icon', { name: 'wrench', size: 16 }) %> Modo mantenimiento</div>
             <h1 class="h3 title"><%= title || "Mantenimiento" %></h1>
             <p class="sub"><%= message || "Estamos preparando el sitio. Intenta de nuevo en unos minutos." %></p>
         </header>
@@ -29,11 +29,11 @@
             </div>
 
             <div class="actions">
-                <a class="btn-wine" href="/" aria-label="Volver al inicio">🏠 Volver al inicio</a>
-                <a class="btn-soft" href="javascript:location.reload()" aria-label="Recargar página">🔄 Reintentar</a>
+                <a class="btn-wine" href="/" aria-label="Volver al inicio"><%- include('partials/icon', { name: 'home-light', size: 16 }) %> Volver al inicio</a>
+                <a class="btn-soft" href="javascript:location.reload()" aria-label="Recargar página"><%- include('partials/icon', { name: 'refresh', size: 16 }) %> Reintentar</a>
                 <a class="btn-soft" target="_blank"
                    href="https://wa.me/528344756376?text=<%= encodeURIComponent('Hola, el sitio está en mantenimiento. ¿Me pueden apoyar?') %>">
-                    💬 WhatsApp
+                    <%- include('partials/icon', { name: 'whatsapp', size: 16 }) %> WhatsApp
                 </a>
             </div>
 

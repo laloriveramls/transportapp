@@ -183,6 +183,9 @@ a:active {
     padding:.35rem .6rem;
     border-radius: 12px;
     transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .theme-btn:hover {
@@ -350,6 +353,19 @@ a:active {
     opacity: .7;
 }
 .toast .btn-close:hover{ opacity: 1; }
+
+/* --- Icons --- */
+.ico {
+    display: inline-block;
+    flex: 0 0 auto;
+    vertical-align: -0.15em;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+html[data-theme="dark"] .ico:not(.ico-theme):not([src*="whatsapp"]) {
+    filter: brightness(0) invert(0.88);
+}
 
 /* I respect reduced motion preferences (animations/transitions). */
 @media (prefers-reduced-motion: reduce) {
