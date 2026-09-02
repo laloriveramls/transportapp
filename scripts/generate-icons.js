@@ -95,6 +95,11 @@ const icons = {
     plus: { stroke: WINE, paths: ['M12 5v14M5 12h14'] },
     'credit-card': { stroke: WINE, paths: ['M3 8h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z', 'M3 10h18', 'M7 15h3'] },
     'arrow-back': { stroke: WINE, paths: ['M10 5 4 12l6 7', 'M4 12h16'] },
+    close: { stroke: MUTED, paths: ['M6 6l12 12M18 6 6 18'] },
+    info: { stroke: '#549cff', paths: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z', 'M12 10v6', 'M12 8h.01'] },
+    warning: { stroke: '#c9a100', paths: ['M12 9v4', 'M12 17h.01', 'M10.3 3.6 1.8 18.2A2 2 0 0 0 3.6 21h16.8a2 2 0 0 0 1.8-2.8L13.7 3.6a2 2 0 0 0-3.4 0Z'] },
+    ban: { stroke: '#e04555', paths: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z', 'M4.9 4.9l14.2 14.2'] },
+    'check-light': { stroke: WHITE, paths: ['M20 6 9 17l-5-5'] },
 };
 
 function svgStroke(name, def) {

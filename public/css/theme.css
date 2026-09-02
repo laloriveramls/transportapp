@@ -289,6 +289,10 @@ a:active {
     flex: 0 0 auto;
 }
 
+.app-toast-icon .ico-toast {
+    display: block;
+}
+
 .app-toast-content{ flex: 1 1 auto; min-width: 0; }
 .app-toast-title{ font-weight: 750; letter-spacing: -.01em; line-height: 1.1; margin-top: 2px; }
 .app-toast-body{

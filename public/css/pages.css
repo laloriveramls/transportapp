@@ -901,6 +901,18 @@
             place-items: center;
             font-weight: 900;
             line-height: 1;
+            padding: 0;
+        }
+
+.page-checkout .note-with-ico {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+.page-checkout .note-ico {
+            flex: 0 0 auto;
+            margin-top: 1px;
         }
 
 .page-checkout .close-btn:hover {
@@ -1586,6 +1598,14 @@ body.page-checkout.drawer-open {
             color: transparent;
             font-size: .82rem;
             font-weight: 900;
+        }
+
+.page-reserve .slot-pill .slot-check .ico {
+            opacity: 0;
+        }
+
+.page-reserve .slot-pill[aria-selected="true"] .slot-check .ico {
+            opacity: 1;
         }
 
 .page-reserve .slot-pill[aria-selected="true"] .slot-check {
