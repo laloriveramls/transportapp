@@ -51,7 +51,7 @@ body{
     background: var(--bg) !important;
     color: var(--text);
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    line-height: 1.45;
+    line-height: 1.35;
     min-height: 100vh;
 }
 
@@ -86,13 +86,6 @@ a:active {
 .app-navbar{
     background: linear-gradient(90deg, var(--nav), #151521) !important;
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 1030;
-}
-
-.app-navbar .navbar-brand {
-    letter-spacing: -0.01em;
 }
 
 .brand-dot{
@@ -108,15 +101,6 @@ a:active {
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
     border-radius: var(--radius);
-    transition: box-shadow .18s ease;
-}
-
-.card-soft:hover {
-    box-shadow: 0 14px 34px rgba(2, 6, 23, .10);
-}
-
-html[data-theme="dark"] .card-soft:hover {
-    box-shadow: 0 16px 38px rgba(0, 0, 0, .4);
 }
 
 /* ===== Hero ===== */
@@ -134,16 +118,11 @@ html[data-theme="dark"] .card-soft:hover {
     background: var(--wine);
     border-color: var(--wine);
     color:#fff;
-    transition: background .15s ease, border-color .15s ease, transform .12s ease;
 }
 .btn-wine:hover{
     background: var(--wine-2);
     border-color: var(--wine-2);
     color:#fff;
-}
-
-.btn-wine:active {
-    transform: scale(0.98);
 }
 
 /* ===== Chips ===== */
@@ -170,18 +149,11 @@ html[data-theme="dark"] .card-soft:hover {
     color: var(--text);
     padding:.35rem .6rem;
     border-radius: 12px;
-    transition: background .15s ease, border-color .15s ease;
 }
 
 /* I force white only inside navbar. */
 .app-navbar .theme-btn {
     color: #fff;
-    border-color: rgba(255, 255, 255, .18);
-}
-
-.app-navbar .theme-btn:hover {
-    background: rgba(255, 255, 255, .08);
-    border-color: rgba(255, 255, 255, .28);
 }
 
 /* Sticky CTA helper (optional) */
@@ -343,14 +315,5 @@ html[data-theme="dark"] .card-soft:hover {
         animation-iteration-count: 1 !important;
         transition-duration: .001ms !important;
         scroll-behavior: auto !important;
-    }
-
-    .btn-wine:active,
-    .hero-actions .btn:active {
-        transform: none;
-    }
-
-    .card-soft:hover {
-        box-shadow: var(--shadow);
     }
 }
