@@ -8,481 +8,177 @@
     }) %>
 
     <style>
-        /* I keep the screen UI clean and modern, and I avoid heavy bold usage. */
-
-        /* =========================
-           Screen UI
-           ========================= */
-        .ticket-shell {
-            max-width: 980px;
-            margin: 0 auto;
-        }
-
-        .ticket-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            border-radius: 22px;
-            overflow: hidden;
-        }
-
-        .ticket-top {
-            padding: 18px 18px 14px;
-            background: radial-gradient(1000px 520px at 10% 0%, rgba(106, 15, 31, .18), transparent 55%),
-            radial-gradient(800px 420px at 90% 10%, rgba(106, 15, 31, .10), transparent 60%);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .ticket-body {
-            padding: 18px;
-        }
-
-        .ticket-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 14px;
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
-        .head-left {
-            min-width: 260px;
-        }
-
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            padding: .42rem .72rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: var(--chip-bg);
-            color: var(--chip-text);
-            font-weight: 600;
-            font-size: .88rem;
-            white-space: nowrap;
-        }
-
-        .title {
-            letter-spacing: -.02em;
-            font-weight: 650;
-            margin: .55rem 0 .2rem;
-            line-height: 1.1;
-        }
-
-        .accent {
-            color: var(--wine);
-            font-weight: 650;
-        }
-
-        .meta {
-            color: var(--muted);
-            font-size: .94rem;
-            font-weight: 500;
-        }
-
-        .meta .code {
-            color: var(--text);
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: .92em;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .btn-xs {
-            padding: .48rem .75rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: .92rem;
-            line-height: 1;
-            display: inline-flex;
-            align-items: center;
-            gap: .45rem;
-        }
-
-        .btn-ghost {
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text);
-        }
-
-        .btn-ghost:hover {
-            border-color: color-mix(in srgb, var(--wine) 40%, var(--border));
-            background: color-mix(in srgb, var(--card) 70%, transparent);
-            color: var(--text);
-        }
-
-        .btn-wine {
-            border: 1px solid color-mix(in srgb, var(--wine) 55%, var(--border));
-            background: linear-gradient(180deg,
-            color-mix(in srgb, var(--wine) 88%, white 0%) 0%,
-            color-mix(in srgb, var(--wine) 74%, white 0%) 100%);
-            color: #fff;
-        }
-
-        .btn-wine:hover {
-            filter: brightness(.98);
-        }
-
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 14px 0 0;
-        }
-
-        /* Details block */
-        .details {
-            display: grid;
-            grid-template-columns:1.25fr .85fr;
-            gap: 16px;
-            align-items: start;
-        }
-
-        @media (max-width: 992px) {
-            .details {
-                grid-template-columns:1fr;
-            }
-        }
-
-        .kv {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            gap: .6rem;
-        }
-
-        .kv li {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            padding: .62rem .75rem;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-            transition: transform .12s ease, border-color .12s ease, background .12s ease;
-        }
-
-        .kv li:hover {
-            border-color: color-mix(in srgb, var(--wine) 25%, var(--border));
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-            transform: translateY(-1px);
-        }
-
-        .kv .k {
-            color: var(--muted);
-            font-weight: 550;
-            font-size: .95rem;
-        }
-
-        .kv .v {
-            font-weight: 550;
-            color: var(--text);
-            text-align: right;
-            max-width: 60%;
-            word-break: break-word;
-        }
-
-        /* QR */
-        .qr-card {
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            border-radius: 18px;
-            padding: 14px;
-            text-align: center;
-        }
-
-        .qr-wrap {
-            display: inline-block;
-            padding: 12px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 84%, transparent);
-            position: relative;
-        }
-
-        .qr-wrap img {
-            display: block;
-            width: min(260px, 68vw);
-            height: auto;
-        }
-
-        .qr-badge {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
-            width: 42px;
-            height: 42px;
-            border-radius: 14px;
-            display: grid;
-            place-items: center;
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 22px rgba(0, 0, 0, .12);
-            font-size: 20px;
-            user-select: none;
-        }
-
-        .qr-hint {
-            margin-top: 10px;
-            color: var(--muted);
-            font-size: .92rem;
-            font-weight: 500;
-        }
-
-        /* Link box */
-        .url-box {
-            margin-top: 16px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .url-left {
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: .92rem;
-            color: var(--muted);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .copy-toast {
-            display: none;
-            margin-left: 8px;
-            font-size: .9rem;
-            color: color-mix(in srgb, var(--wine) 78%, var(--text));
-            font-weight: 600;
-        }
-
-        @media (max-width: 576px) {
-            .ticket-top {
-                padding: 16px 16px 12px;
-            }
-
-            .ticket-body {
-                padding: 16px;
-            }
-
-            .actions {
-                width: 100%;
-            }
-
-            .url-box {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .mono {
-                white-space: normal;
-                word-break: break-word;
-            }
-        }
-
-        /* =========================
-           PRINT: Ticket 58mm x 210mm (GRANDE, NEGRO, RECIBO)
-           ========================= */
         @media print {
-            @page {
-                size: 58mm 210mm;
-                margin: 0;
-            }
-
-            * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
-
-            html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #fff !important;
-                color: #000 !important;
-                font-size: 20px !important;
-                line-height: 1.12 !important;
-            }
-
-            nav.navbar,
-            #themeToggle,
-            .btn,
-            .theme-btn,
-            #copyBtn {
-                display: none !important;
-            }
-
-            main.container {
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 58mm !important;
-                max-width: 58mm !important;
-            }
-
-            .ticket-card {
-                width: 48mm !important;
-                max-width: 48mm !important;
-                margin: 0 !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-                background: #fff !important;
-                overflow: hidden !important;
-            }
-
-            .ticket-top,
-            .ticket-body {
-                padding: 2mm !important;
-                border: 0 !important;
-                background: transparent !important;
-            }
-
-            .pill {
-                display: inline-block !important;
-                font-size: 15px !important;
-                font-weight: 900 !important;
-                color: #000 !important;
-                background: transparent !important;
-                border: 2px solid #000 !important;
-                border-radius: 0 !important;
-                padding: 1.8mm 2.2mm !important;
-                margin: 0 0 1.6mm 0 !important;
-            }
-
-            .title {
-                font-size: 24px !important;
-                font-weight: 950 !important;
-                margin: 0 0 1mm 0 !important;
-                color: #000 !important;
-                letter-spacing: 0 !important;
-            }
-
-            .meta {
-                font-size: 14px !important;
-                font-weight: 900 !important;
-                color: #000 !important;
-            }
-
-            .details {
-                display: block !important;
-            }
-
-            .kv {
-                margin: 2mm 0 0 0 !important;
-                gap: 0 !important;
-            }
-
-            .kv li {
-                border: 0 !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-                border-bottom: 2px dashed #000 !important;
-                padding: 2mm 0 !important;
-            }
-
-            .kv .k {
-                color: #000 !important;
-                font-weight: 900 !important;
-                font-size: 14px !important;
-            }
-
-            .kv .v {
-                color: #000 !important;
-                font-weight: 900 !important;
-                font-size: 14px !important;
-                text-align: right !important;
-                max-width: 26mm !important;
-                word-break: break-word !important;
-            }
-
-            .qr-card {
-                border: 0 !important;
-                background: transparent !important;
-                padding: 0 !important;
-                margin-top: 3mm !important;
-            }
-
-            .qr-wrap {
-                margin-top: 0 !important;
-                padding: 1.8mm !important;
-                border: 2px solid #000 !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-            }
-
-            .qr-wrap img {
-                width: 44mm !important;
-                max-width: 44mm !important;
-                height: auto !important;
-                display: block !important;
-                margin: 0 auto !important;
-            }
-
-            .qr-badge {
-                width: 9mm !important;
-                height: 9mm !important;
-                right: 1.6mm !important;
-                bottom: 1.6mm !important;
-                border-radius: 0 !important;
-                font-size: 16px !important;
-                background: #fff !important;
-                border: 2px solid #000 !important;
-                box-shadow: none !important;
-            }
-
-            .url-box {
-                margin-top: 3mm !important;
-                padding: 0 !important;
-                border: 0 !important;
-                background: transparent !important;
-                display: block !important;
-            }
-
-            .mono {
-                color: #000 !important;
-                font-size: 12.5px !important;
-                white-space: normal !important;
-                overflow: visible !important;
-                text-overflow: unset !important;
-                word-break: break-word !important;
-            }
-        }
+                    @page {
+                        size: 58mm 210mm;
+                        margin: 0;
+                    }
+        
+                    * {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                        box-shadow: none !important;
+                        text-shadow: none !important;
+                    }
+        
+                    html, body {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #fff !important;
+                        color: #000 !important;
+                        font-size: 20px !important;
+                        line-height: 1.12 !important;
+                    }
+        
+                    nav.navbar,
+                    #themeToggle,
+                    .btn,
+                    .theme-btn,
+                    #copyBtn {
+                        display: none !important;
+                    }
+        
+                    main.container {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        width: 58mm !important;
+                        max-width: 58mm !important;
+                    }
+        
+                    .ticket-card {
+                        width: 48mm !important;
+                        max-width: 48mm !important;
+                        margin: 0 !important;
+                        border: 0 !important;
+                        border-radius: 0 !important;
+                        background: #fff !important;
+                        overflow: hidden !important;
+                    }
+        
+                    .ticket-top,
+                    .ticket-body {
+                        padding: 2mm !important;
+                        border: 0 !important;
+                        background: transparent !important;
+                    }
+        
+                    .pill {
+                        display: inline-block !important;
+                        font-size: 15px !important;
+                        font-weight: 900 !important;
+                        color: #000 !important;
+                        background: transparent !important;
+                        border: 2px solid #000 !important;
+                        border-radius: 0 !important;
+                        padding: 1.8mm 2.2mm !important;
+                        margin: 0 0 1.6mm 0 !important;
+                    }
+        
+                    .title {
+                        font-size: 24px !important;
+                        font-weight: 950 !important;
+                        margin: 0 0 1mm 0 !important;
+                        color: #000 !important;
+                        letter-spacing: 0 !important;
+                    }
+        
+                    .meta {
+                        font-size: 14px !important;
+                        font-weight: 900 !important;
+                        color: #000 !important;
+                    }
+        
+                    .details {
+                        display: block !important;
+                    }
+        
+                    .kv {
+                        margin: 2mm 0 0 0 !important;
+                        gap: 0 !important;
+                    }
+        
+                    .kv li {
+                        border: 0 !important;
+                        border-radius: 0 !important;
+                        background: transparent !important;
+                        border-bottom: 2px dashed #000 !important;
+                        padding: 2mm 0 !important;
+                    }
+        
+                    .kv .k {
+                        color: #000 !important;
+                        font-weight: 900 !important;
+                        font-size: 14px !important;
+                    }
+        
+                    .kv .v {
+                        color: #000 !important;
+                        font-weight: 900 !important;
+                        font-size: 14px !important;
+                        text-align: right !important;
+                        max-width: 26mm !important;
+                        word-break: break-word !important;
+                    }
+        
+                    .qr-card {
+                        border: 0 !important;
+                        background: transparent !important;
+                        padding: 0 !important;
+                        margin-top: 3mm !important;
+                    }
+        
+                    .qr-wrap {
+                        margin-top: 0 !important;
+                        padding: 1.8mm !important;
+                        border: 2px solid #000 !important;
+                        border-radius: 0 !important;
+                        background: transparent !important;
+                    }
+        
+                    .qr-wrap img {
+                        width: 44mm !important;
+                        max-width: 44mm !important;
+                        height: auto !important;
+                        display: block !important;
+                        margin: 0 auto !important;
+                    }
+        
+                    .qr-badge {
+                        width: 9mm !important;
+                        height: 9mm !important;
+                        right: 1.6mm !important;
+                        bottom: 1.6mm !important;
+                        border-radius: 0 !important;
+                        font-size: 16px !important;
+                        background: #fff !important;
+                        border: 2px solid #000 !important;
+                        box-shadow: none !important;
+                    }
+        
+                    .url-box {
+                        margin-top: 3mm !important;
+                        padding: 0 !important;
+                        border: 0 !important;
+                        background: transparent !important;
+                        display: block !important;
+                    }
+        
+                    .mono {
+                        color: #000 !important;
+                        font-size: 12.5px !important;
+                        white-space: normal !important;
+                        overflow: visible !important;
+                        text-overflow: unset !important;
+                        word-break: break-word !important;
+                    }
+                }
     </style>
 </head>
 
 
-<body>
+<body class="page-ticket">
 <%- include('partials/body-open') %>
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-            <span class="brand-dot"></span>
-            <span class="fw-semibold">TransportApp</span>
-        </a>
-
-        <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
-        </div>
-    </div>
-</nav>
+<%- include('partials/navbar') %>
 
 <main class="container py-4">
     <div class="ticket-shell">

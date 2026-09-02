@@ -13,6 +13,13 @@ const PDFDocument = require("pdfkit");
 const Stripe = require("stripe");
 
 const {pool, hasDb} = require("../db");
+const {requireDb} = require("../middleware/requireDb");
+const {
+    isPreviewMode,
+    previewTemplates,
+    previewPricing,
+    previewAvailability,
+} = require("../dev/previewData");
 const {sendTelegram, escapeHtml} = require("../notifications/telegram");
 
 const router = express.Router();
@@ -34,15 +41,6 @@ const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
 /* =========================
    Middleware / wrappers
    ========================= */
-
-function requireDb(req, res, next) {
-    if (hasDb) return next();
-    return res.status(503).render("maintenance", {
-        title: "Sitio en configuración",
-        message:
-            "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
-    });
-}
 
 function safe(handler) {
     return async (req, res, next) => {
@@ -423,6 +421,10 @@ router.get(
     "/",
     requireDb,
     safe(async (req, res) => {
+        if (isPreviewMode()) {
+            return res.render("index", {templates: previewTemplates()});
+        }
+
         const [templates] = await pool.query(`
             SELECT direction, depart_time
             FROM transporte_departure_templates
@@ -438,6 +440,10 @@ router.get(
     "/reserve",
     requireDb,
     safe(async (req, res) => {
+        if (isPreviewMode()) {
+            return res.render("reserve", {error: null, pricing: previewPricing()});
+        }
+
         // I pass pricing to the UI so it can show correct totals.
         const conn = await pool.getConnection();
         try {
@@ -457,6 +463,16 @@ router.get(
 
         if (!date || !direction) {
             return res.status(400).json({ok: false, message: "Faltan parámetros: date, direction"});
+        }
+
+        if (isPreviewMode()) {
+            const seatsWanted = Math.max(0, Math.min(MAX_CAP, Number(req.query.seats || 1)));
+            return res.json({
+                date,
+                direction,
+                seatsWanted,
+                results: previewAvailability(direction),
+            });
         }
 
         // I allow 0 for PACKAGE and clamp up to MAX_CAP.

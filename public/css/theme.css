@@ -86,6 +86,19 @@ a:active {
 .app-navbar{
     background: linear-gradient(90deg, var(--nav), #151521) !important;
     border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.app-navbar .navbar-brand {
+    transition: opacity 0.15s ease;
+}
+
+.app-navbar .navbar-brand:hover {
+    opacity: 0.92;
 }
 
 .brand-dot{
@@ -101,6 +114,26 @@ a:active {
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
     border-radius: var(--radius);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* ===== Forms (global polish) ===== */
+.form-control,
+.form-select {
+    border-radius: 12px;
+    border-color: var(--border);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
+    box-shadow: 0 0 0 0.25rem var(--ring);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.35rem;
 }
 
 /* ===== Hero ===== */
@@ -149,6 +182,16 @@ a:active {
     color: var(--text);
     padding:.35rem .6rem;
     border-radius: 12px;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.theme-btn:hover {
+    background: color-mix(in srgb, var(--card) 20%, transparent);
+    border-color: color-mix(in srgb, var(--wine) 35%, var(--border));
+}
+
+.theme-btn:active {
+    transform: scale(0.97);
 }
 
 /* I force white only inside navbar. */

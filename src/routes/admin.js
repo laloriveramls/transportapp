@@ -5,6 +5,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
+const {requireDb} = require("../middleware/requireDb");
 const crypto = require("crypto");
 
 const router = express.Router();
@@ -14,15 +15,6 @@ const MAX_CAP = 6; // I keep system capacity clamped to 6.
 /* -----------------------------
    Middleware
 ----------------------------- */
-function requireDb(req, res, next) {
-    if (hasDb) return next();
-    return res.status(503).render("maintenance", {
-        title: "Sitio en configuración",
-        message:
-            "El sitio está activo, pero la base de datos aún no está configurada. Intenta más tarde.",
-    });
-}
-
 function requireAdmin(req, res, next) {
     if (req.session?.admin?.role === "ADMIN") return next();
     return res.redirect("/admin/login");
