@@ -1,0 +1,12 @@
+<%
+const selectedStop = String(typeof selected !== 'undefined' ? selected : '').trim().toUpperCase();
+%>
+<optgroup label="Ciudades">
+    <option value="VIC" <%= selectedStop === 'VIC' ? 'selected' : '' %>>Ciudad Victoria</option>
+    <option value="LLE" <%= selectedStop === 'LLE' ? 'selected' : '' %>>Llera</option>
+</optgroup>
+<optgroup label="Paradas">
+    <% (vicLocations || []).forEach(function(loc) { %>
+        <option value="<%= loc.code %>" <%= selectedStop === loc.code ? 'selected' : '' %>><%= loc.label %></option>
+    <% }) %>
+</optgroup>

@@ -32,6 +32,7 @@ const {
     formatRouteLabel,
     isValidStop,
 } = require("../locations");
+const seo = require("../seo");
 
 const router = express.Router();
 
@@ -290,9 +291,13 @@ function computeTotalsFromReservation(r, pricing) {
 }
 
 function reserveViewData(extra = {}) {
+    const pricing = extra.pricing || null;
+    const baseUrl = extra.baseUrl || process.env.BASE_URL || "";
     return {
         vicLocations: getVicLocations(),
+        seoPage: "reserve",
         ...extra,
+        jsonLd: extra.jsonLd || seo.reserveJsonLd({baseUrl, pricing}),
     };
 }
 
@@ -441,9 +446,21 @@ router.get(
     requireDb,
     safe(async (req, res) => {
         if (isPreviewMode()) {
+            const pricing = previewPricing();
+            const templates = previewTemplates();
+            const vicLocations = getVicLocations();
             return res.render("index", {
-                templates: previewTemplates(),
-                vicLocations: getVicLocations(),
+                templates,
+                vicLocations,
+                pricing,
+                seoPage: "home",
+                faqs: seo.homeFaqs(pricing, vicLocations),
+                jsonLd: seo.homeJsonLd({
+                    baseUrl: buildBaseUrl(req),
+                    templates,
+                    pricing,
+                    vicLocations,
+                }),
             });
         }
 
@@ -454,7 +471,26 @@ router.get(
             ORDER BY depart_time
         `);
 
-        res.render("index", {templates, vicLocations: getVicLocations()});
+        const conn = await pool.getConnection();
+        try {
+            const pricing = await getPricing(conn);
+            const vicLocations = getVicLocations();
+            res.render("index", {
+                templates,
+                vicLocations,
+                pricing,
+                seoPage: "home",
+                faqs: seo.homeFaqs(pricing, vicLocations),
+                jsonLd: seo.homeJsonLd({
+                    baseUrl: buildBaseUrl(req),
+                    templates,
+                    pricing,
+                    vicLocations,
+                }),
+            });
+        } finally {
+            conn.release();
+        }
     })
 );
 

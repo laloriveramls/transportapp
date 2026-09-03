@@ -1,7 +1,7 @@
 {
   "name": "Servicio de Transporte Victoria ↔ Llera",
   "short_name": "TransportApp",
-  "description": "Horarios, reservas y ubicación de salidas. Servicio diario de pasaje y paquetería.",
+  "description": "Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios y 6 asientos.",
   "id": "/?source=pwa",
   "start_url": "/?utm_source=pwa",
   "scope": "/",
@@ -71,7 +71,7 @@
       "name": "Contacto",
       "short_name": "Contacto",
       "description": "WhatsApp y ubicación",
-      "url": "/#contacto",
+      "url": "/#preguntas",
       "icons": [
         {
           "src": "/assets/android-chrome-192.png",

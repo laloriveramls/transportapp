@@ -37,14 +37,16 @@
             dark: "check",
             success: "check",
             info: "info",
-            warning: "warning",
+            warning: "triangle-alert",
             danger: "ban"
         };
 
         if (titleEl) titleEl.textContent = opts.title || titles[variant] || "Listo";
         if (iconEl) {
             const iconName = icons[variant] || "info";
-            iconEl.innerHTML = `<img src="/assets/icons/${iconName}.svg" alt="" class="ico ico-toast" width="18" height="18" decoding="async" aria-hidden="true">`;
+            iconEl.innerHTML = (window.Icons && typeof window.Icons.svg === "function")
+                ? window.Icons.svg(iconName, { size: 18, className: "ico-toast" })
+                : "";
         }
         msgEl.textContent = msg;
 

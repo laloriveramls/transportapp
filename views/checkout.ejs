@@ -16,7 +16,7 @@
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
-<main class="container py-4 page-wrap">
+<main class="container py-3 page-wrap">
     <%
     const type = String(r.type || "").toUpperCase();
     const isPassenger = type === "PASSENGER";
@@ -217,7 +217,7 @@
             </div>
 
             <button id="drawerClose" class="close-btn" type="button" data-close-drawer="1" aria-label="Cerrar">
-                <%- include('partials/icon', { name: 'close', size: 18 }) %>
+                <%- include('partials/icon', { name: 'x', size: 18 }) %>
             </button>
         </div>
 

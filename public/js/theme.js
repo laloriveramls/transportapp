@@ -2,15 +2,13 @@
 
 (function(){
     const root = document.documentElement;
-    const icon = document.getElementById('themeIcon');
     const btn = document.getElementById('themeToggle');
 
     function applyTheme(theme){
         root.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
-        if (icon) {
-            icon.src = theme === 'dark' ? '/assets/icons/sun.svg' : '/assets/icons/moon.svg';
-            icon.alt = theme === 'dark' ? 'Modo claro' : 'Modo oscuro';
+        if (btn) {
+            btn.setAttribute('aria-label', theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
         }
     }
 

@@ -338,6 +338,30 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
     const page = Math.min(pageReq, totalPages);
     const offset = (page - 1) * pageSize;
 
+    const [statusRows] = await pool.query(
+        `
+            SELECT r.status, COUNT(*) AS n
+            FROM transporte_reservations r
+                     JOIN transporte_trips t ON t.id = r.trip_id
+                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                ${whereSql}
+            GROUP BY r.status
+        `,
+        params
+    );
+    const statusCounts = {
+        PAID: 0,
+        PENDING_PAYMENT: 0,
+        PAY_AT_BOARDING: 0,
+        CANCELLED: 0,
+    };
+    for (const row of statusRows || []) {
+        const key = String(row.status || "");
+        if (Object.prototype.hasOwnProperty.call(statusCounts, key)) {
+            statusCounts[key] = Number(row.n || 0);
+        }
+    }
+
     const [recentRows] = await pool.query(
         `
             SELECT r.id,
@@ -402,6 +426,7 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
         pages: totalPages,
         from,
         to,
+        statusCounts,
     });
 
 });

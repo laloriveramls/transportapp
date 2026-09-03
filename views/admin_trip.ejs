@@ -8,228 +8,16 @@
     noindex: true
     }) %>
 
-    <link href="/css/admin.css" rel="stylesheet">
-
-    <style>
-        .page-title {
-            font-weight: 800;
-        }
-
-        .hero-trip {
-            background: radial-gradient(760px 260px at -10% -35%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 70%),
-            var(--card);
-        }
-
-        .route-line {
-            display: flex;
-            align-items: center;
-            gap: .45rem;
-            flex-wrap: wrap;
-        }
-
-        .route-time {
-            color: var(--wine);
-            font-weight: 800;
-        }
-
-        .hero-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: .5rem;
-        }
-
-        .trip-card{
-            background:var(--card);
-            border:1px solid var(--border);
-            box-shadow:var(--shadow);
-            border-radius:20px;
-            overflow:hidden;
-        }
-        .trip-card .top{ padding:16px 16px 12px; }
-        .trip-card .bottom{
-            padding:12px 16px 16px;
-            border-top:1px solid var(--border);
-            background:color-mix(in srgb, var(--card) 88%, transparent);
-        }
-
-        .progress-soft{
-            height:10px; border-radius:999px;
-            background:color-mix(in srgb, var(--muted) 18%, transparent);
-            overflow:hidden; border:1px solid var(--border);
-        }
-        .progress-soft > span{
-            display:block; height:100%;
-            width:var(--w,0%);
-            background:linear-gradient(90deg, var(--wine), var(--wine-2));
-            border-radius:999px;
-        }
-
-        .table-wrap-pad{ padding:10px 12px; }
-
-        .td-wrap{ max-width:360px; word-break:break-word; }
-
-        .btn-xs{
-            padding:.35rem .55rem;
-            border-radius:12px;
-            font-weight:700;
-            font-size:.82rem;
-            line-height:1.1;
-            display:inline-flex;
-            align-items:center;
-            gap:.35rem;
-            min-height: 32px;
-        }
-
-        .btn-wa{ background:#25D366; border-color:#25D366; color:#fff; }
-        .btn-wa:hover{ background:#1fb85a; border-color:#1fb85a; color:#fff; }
-
-        .btn-pdf{
-            border:1px solid color-mix(in srgb, var(--wine) 40%, var(--border));
-            background:color-mix(in srgb, var(--wine) 12%, transparent);
-            color:var(--text);
-        }
-        .btn-pdf:hover{
-            border-color:var(--wine);
-            background:color-mix(in srgb, var(--wine) 18%, transparent);
-            color:var(--text);
-        }
-
-        .actions{
-            display:flex;
-            justify-content:flex-end;
-            gap:.4rem;
-            flex-wrap:wrap;
-        }
-
-        .ticket-code{
-            font-weight:800;
-            letter-spacing:.02em;
-            color:var(--wine);
-            text-decoration:none;
-        }
-        .ticket-code:hover{ text-decoration:underline; }
-
-        .tr-mobile {
-            display: none;
-        }
-
-        /* desktop: escondo mobile row */
-
-        @media (max-width: 576px) {
-            .app-navbar .navbar-brand .fw-bold {
-                font-size: .95rem;
-            }
-            .theme-btn{ padding:.35rem .55rem; border-radius:12px; }
-
-            .trip-card .top{ padding:14px 14px 10px; }
-            .trip-card .bottom{ padding:10px 14px 14px; }
-            .pill{ font-size:.88rem; }
-            .page-title{ font-size:1.15rem; line-height:1.2; }
-
-            .hero-actions {
-                align-items: flex-start;
-                width: 100%;
-            }
-
-            .trip-card .top .text-end {
-                text-align: left !important;
-                width: 100%;
-            }
-
-            .tr-desktop{ display:none; }
-            .tr-mobile{ display:table-row; }
-
-            .tr-mobile td {
-                padding: 0 !important;
-                border: 0 !important;
-            }
-
-            .m-card{
-                background:var(--card);
-                border:1px solid var(--border);
-                border-radius:16px;
-                box-shadow:var(--shadow);
-                overflow:hidden;
-                margin:10px 0;
-                padding:10px 12px;
-            }
-
-            .m-row-top{
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-start;
-                gap:10px;
-            }
-            .m-name{
-                font-weight:800;
-                font-size:.98rem;
-                line-height:1.2;
-            }
-            .m-meta{
-                color:var(--muted);
-                font-size:.85rem;
-                margin-top:2px;
-            }
-
-            .m-divider{
-                border-top:1px dashed color-mix(in srgb, var(--border) 75%, transparent);
-                margin:8px 0;
-            }
-
-            .m-detail{ color:var(--text); font-size:.9rem; }
-            .m-detail .subtle{ font-size:.85rem; }
-
-            .m-ticket-row{
-                display:flex;
-                gap:8px;
-                flex-wrap:wrap;
-                align-items:center;
-            }
-            .m-ticket-row .btn-wa{ width:100%; justify-content:center; }
-
-            .actions{
-                justify-content:flex-start;
-                display:grid;
-                grid-template-columns: 1fr 1fr;
-                gap:8px;
-            }
-            .actions > *{ width:100%; }
-            .btn-xs{
-                width:100%;
-                justify-content:center;
-                padding:.52rem .6rem;
-                border-radius:14px;
-            }
-
-            .table-wrap-pad {
-                padding: 6px 8px;
-            }
-        }
-    </style>
+    <%- include('partials/admin-assets') %>
 </head>
 
-<body class="admin-app">
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda?date=<%= trip.trip_date %>">
-            <span class="brand-dot"></span>
-            <span class="fw-bold">← Agenda</span>
-        </a>
+<body class="home-page admin-app page-trip">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+<%- include('partials/admin-hero', { heading: 'Salida', tag: 'Reservas, cupo y tickets' }) %>
 
-        <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
-
-            <form method="POST" action="/admin/logout" class="m-0">
-                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
-            </form>
-        </div>
-    </div>
-</nav>
-
-<main class="container py-4">
+<main class="home-main admin-main">
+<section class="container">
     <%
     const isActive = (x) => x.status !== 'CANCELLED';
 
@@ -246,7 +34,6 @@
     const capRaw = Number(trip.capacity_passengers || 0);
     const cap = Math.min(6, Math.max(0, capRaw));
     const used = Math.min(usedRaw, cap);
-
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     const libres = Math.max(0, cap - used);
 
@@ -256,367 +43,267 @@
 
     function pmLabelOf(v) {
         const pm = String(v || '').toUpperCase();
-        return pm === 'ONLINE' ? '💳 Online'
-                : pm === 'TRANSFERENCIA' ? '🏦 Transfer'
-                        : pm === 'TAQUILLA' ? '💵 Taquilla'
-                                : (v || '-');
+        if (pm === 'ONLINE') return { icon: 'credit-card', text: 'Online' };
+        if (pm === 'TRANSFERENCIA') return { icon: 'landmark', text: 'Transfer' };
+        if (pm === 'TAQUILLA') return { icon: 'banknote', text: 'Taquilla' };
+        return { icon: '', text: (v || '—') };
+    }
+
+    function toISODate(v) {
+        if (!v) return '';
+        if (typeof v === 'string') return v.slice(0, 10);
+        try {
+            return new Date(v).toLocaleDateString('en-CA', { timeZone: 'America/Monterrey' });
+        } catch {
+            return String(v);
+        }
+    }
+
+    function formatTripDate(iso) {
+        const s = toISODate(iso);
+        if (!s) return '';
+        try {
+            const d = new Date(s + 'T12:00:00');
+            if (isNaN(d.getTime())) return s;
+            const raw = new Intl.DateTimeFormat('es-MX', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+            }).format(d);
+            return raw.charAt(0).toUpperCase() + raw.slice(1);
+        } catch {
+            return s;
+        }
+    }
+
+    const tripDateISO = toISODate(trip.trip_date);
+    const todayISO = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Monterrey' });
+    const isToday = tripDateISO === todayISO;
+    const datePretty = formatTripDate(tripDateISO);
+    const hhmm = String(trip.depart_time || '').slice(0, 5);
+    const dir = String(trip.direction || '');
+    const fromLabel = dir === 'LLE_TO_VIC' ? 'Llera' : 'Victoria';
+    const toLabel = dir === 'LLE_TO_VIC' ? 'Victoria' : 'Llera';
+
+    let tone = 'empty';
+    if (cap > 0 && used >= cap) tone = 'full';
+    else if (used > 0 && libres <= 2) tone = 'tight';
+    else if (used > 0) tone = 'ok';
+
+    let status = 'Vacía';
+    if (tone === 'full') status = 'Llena';
+    else if (tone === 'tight' || tone === 'ok') status = libres + (libres === 1 ? ' libre' : ' libres');
+    if (mandados > 0 && used === 0) status = 'Solo paquetería';
+
+    const rows = reservations || [];
+    const pendingCount = rows.filter((x) => {
+        const st = String(x.status || '').toUpperCase();
+        return st === 'PENDING_PAYMENT' || st === 'PAY_AT_BOARDING';
+    }).length;
+
+    function statusInfo(stU) {
+        if (stU === 'PAID') return { cls: 'badge-paid', icon: 'check', label: 'Pagado', tone: 'paid' };
+        if (stU === 'CANCELLED') return { cls: 'badge-cancel', icon: 'ban', label: 'Cancelado', tone: 'cancel' };
+        if (stU === 'PENDING_PAYMENT') return { cls: 'badge-pending', icon: 'hourglass', label: 'Pendiente', tone: 'pending' };
+        if (stU === 'PAY_AT_BOARDING') return { cls: 'b-board', icon: 'banknote', label: 'Taquilla', tone: 'board' };
+        return { cls: '', icon: '', label: stU || '—', tone: 'other' };
     }
     %>
 
-    <div class="trip-card hero-trip mb-3">
-        <div class="top">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <div class="pill">🚌 Salida</div>
-                    <h1 class="h3 page-title mt-2 route-line">
-                        <span><%= directionLabel(trip.direction) %></span>
-                        <span class="subtle">→</span>
-                        <span class="route-time"><%= trip.depart_time %></span>
-                    </h1>
-                    <div class="subtle">Fecha: <%= trip.trip_date %></div>
+    <div class="tabs-card home-tabs admin-shell">
+        <div class="home-tabs-head">
+            <h2 class="home-section-title">Salida</h2>
+            <div class="home-tabs-tools">
+                <a class="btn btn-ghost btn-sm" href="/admin/agenda?date=<%= encodeURIComponent(tripDateISO) %>">
+                    <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %>
+                    Agenda
+                </a>
+                <%- include('partials/admin-nav', { adminNav: 'trip' }) %>
+            </div>
+        </div>
+        <div class="home-tabs-body">
+
+    <div class="trip-head is-<%= tone %>">
+        <div class="trip-head-top">
+            <div class="trip-head-copy">
+                <div class="trip-kicker">
+                    <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
+                    <%= isToday ? 'Hoy' : 'Salida' %>
                 </div>
-
-                <div class="text-end hero-actions">
-                    <div class="pill">🧍‍♂️ <%= used %>/<%= cap %> · <%= libres %> libres</div>
-                    <div class="pill mt-2">📦 Paquetería: <%= mandados %></div>
-
-                    <a class="btn btn-sm <%= onlyPending ? 'btn-wine' : 'btn-ghost' %> rounded-4 mt-2"
-                       href="/admin/trip/<%= trip.trip_id %>?onlyPending=<%= onlyPending ? 0 : 1 %>">
-                        <%= onlyPending ? 'Ver todos' : 'Solo pendientes' %>
-                    </a>
+                <div class="trip-date-label"><%= datePretty %></div>
+                <div class="trip-route">
+                    <span><%= fromLabel %></span>
+                    <span class="trip-route-mid"><%- include('partials/icon', { name: 'arrow-left-right', size: 16 }) %></span>
+                    <span><%= toLabel %></span>
+                    <span class="trip-head-time mono"><%= hhmm %></span>
                 </div>
             </div>
-
-            <div class="mt-3">
-                <div class="d-flex justify-content-between small subtle mb-1">
-                    <span>Ocupación</span>
-                    <span><%= pct %>%</span>
-                </div>
-                <div class="progress-soft" style="--w:<%= pct %>%"><span></span></div>
+            <div class="trip-head-tools">
+                <% if (onlyPending) { %>
+                    <a class="trip-chip is-on" href="/admin/trip/<%= trip.trip_id %>">Ver todas</a>
+                <% } else { %>
+                    <a class="trip-chip" href="/admin/trip/<%= trip.trip_id %>?onlyPending=1">Solo pendientes</a>
+                <% } %>
             </div>
         </div>
 
-        <div class="bottom">
-            <div class="subtle small">
-                Marcar pagos, abrir ticket, descargar PDF, enviar por WhatsApp y cancelar reservaciones.
+        <div class="trip-head-stats">
+            <div class="trip-stat">
+                <div class="trip-stat-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></div>
+                <div>
+                    <div class="label">Cupo</div>
+                    <div class="value mono"><%= used %>/<%= cap %></div>
+                </div>
+            </div>
+            <div class="trip-stat">
+                <div class="trip-stat-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
+                <div>
+                    <div class="label">Paquetería</div>
+                    <div class="value mono"><%= mandados %></div>
+                </div>
+            </div>
+            <div class="trip-stat trip-stat-occ">
+                <div class="trip-occ-top">
+                    <span><%= status %></span>
+                    <span class="mono"><%= pct %>%</span>
+                </div>
+                <div class="trip-meter" style="--w:<%= pct %>%" aria-hidden="true"><span></span></div>
+                <span class="trip-seats" aria-hidden="true">
+                    <% for (let i = 0; i < cap; i++) { %>
+                        <span class="trip-seat <%= i < used ? 'is-on' : '' %>"></span>
+                    <% } %>
+                </span>
             </div>
         </div>
     </div>
 
-    <div class="card-soft p-0">
-        <div class="table-wrap-pad">
-            <div class="table-responsive">
-                <table class="table table-sm table-pro align-middle mb-0">
-                    <thead>
-                    <tr>
-                        <th>Contacto</th>
-                        <th>Tel</th>
-                        <th>Tipo</th>
-                        <th class="td-wrap">Detalle</th>
-                        <th>Método</th>
-                        <th>Estado</th>
-                        <th>Ticket</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                    </thead>
+    <div class="trip-list-head">
+        <h3 class="trip-list-title">Reservaciones</h3>
+        <span class="trip-list-count"><%= rows.length %> reserva<%= rows.length === 1 ? '' : 's' %><% if (!onlyPending && pendingCount) { %> · <%= pendingCount %> pendiente<%= pendingCount === 1 ? '' : 's' %><% } %><% if (onlyPending) { %> pendiente<%= rows.length === 1 ? '' : 's' %><% } %></span>
+    </div>
 
-                    <tbody>
-                    <% if (!reservations || reservations.length === 0) { %>
-                        <tr>
-                            <td colspan="8" class="p-4">
-                                <div class="h6 mb-1">Sin reservaciones</div>
-                                <div class="subtle">Aún no hay registros para esta salida.</div>
-                            </td>
-                        </tr>
+    <% if (!rows.length) { %>
+        <div class="trip-empty">
+            <div class="trip-empty-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ticket', size: 22 }) %></div>
+            <div class="h6 mb-1"><%= onlyPending ? 'Sin pendientes' : 'Sin reservaciones' %></div>
+            <div class="subtle"><%= onlyPending
+                ? 'No hay pagos pendientes ni taquilla en esta salida.'
+                : 'Aún no hay registros para esta salida.' %></div>
+            <% if (onlyPending) { %>
+                <a class="trip-chip" href="/admin/trip/<%= trip.trip_id %>">Ver todas</a>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="trip-res-list">
+            <% rows.forEach((r) => {
+                const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
+                const rawNames = String(r.passenger_names || '').trim();
+                const displayNames = rawNames ? rawNames : Array.from({ length: shown }, (_, i) => `Pasajero ${i + 1}`).join(', ');
+                const digits = (r.phone || '').replace(/\D/g, '');
+                const stU = String(r.status || '').toUpperCase();
+                const pmU = String(r.payment_method || '').toUpperCase();
+                const isPaid = stU === 'PAID';
+                const isPaidOnline = isPaid && pmU === 'ONLINE';
+                const st = statusInfo(stU);
+                const pm = pmLabelOf(r.payment_method);
+                const returnTo = encodeURIComponent('/admin/trip/' + trip.trip_id);
+            %>
+            <article class="trip-res is-<%= st.tone %>">
+                <div class="trip-res-top">
+                    <div class="trip-res-who">
+                        <div class="trip-res-name"><%= r.customer_name %></div>
+                        <div class="trip-res-meta">
+                            <% if (r.phone) { %><span><%= r.phone %></span><% } %>
+                            <% if (r.vic_location) { %>
+                                <span><%= resolveVicLocationLabel(r.vic_location) %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <span class="badge-soft <%= st.cls %>">
+                        <% if (st.icon) { %><%- include('partials/icon', { name: st.icon, size: 14 }) %><% } %>
+                        <%= st.label %>
+                    </span>
+                </div>
+
+                <div class="trip-res-tags">
+                    <span class="trip-tag">
+                        <%- include('partials/icon', { name: r.type === 'PASSENGER' ? 'user' : 'package', size: 14 }) %>
+                        <%= r.type === 'PASSENGER' ? (shown + (shown === 1 ? ' pasajero' : ' pasajeros')) : 'Paquetería' %>
+                    </span>
+                    <span class="trip-tag">
+                        <% if (pm.icon) { %><%- include('partials/icon', { name: pm.icon, size: 14 }) %><% } %>
+                        <%= pm.text %>
+                    </span>
+                    <% if (r.ticket_code) { %>
+                        <a class="trip-ticket" href="/ticket/<%= r.ticket_code %>?return=<%= returnTo %>" target="_blank"><%= r.ticket_code %></a>
+                    <% } %>
+                </div>
+
+                <div class="trip-res-detail">
+                    <% if (r.type === 'PASSENGER') { %>
+                        <%= displayNames %>
+                    <% } else { %>
+                        <%= r.package_details || '—' %>
+                    <% } %>
+                </div>
+
+                <div class="trip-res-actions">
+                    <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                            <input type="hidden" name="method" value="CASH">
+                            <button class="btn btn-wine btn-xs" type="submit"><%- include('partials/icon', { name: 'banknote', size: 14 }) %> Efectivo</button>
+                        </form>
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                            <input type="hidden" name="method" value="TRANSFER">
+                            <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transfer</button>
+                        </form>
                     <% } %>
 
-                    <% (reservations || []).forEach(r => { %>
-                        <%
-                            const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
-                            const rawNames = String(r.passenger_names || '').trim();
-                            const displayNames = rawNames ? rawNames : Array.from({ length: shown }, (_, i) => `Pasajero ${i + 1}`).join(', ');
-                            const digits = (r.phone || '').replace(/\D/g, '');
+                    <% if (r.ticket_code) { %>
+                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= returnTo %>" target="_blank"><%- include('partials/icon', { name: 'eye', size: 14 }) %> Ver</a>
+                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= returnTo %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'file-text', size: 14 }) %> PDF</a>
+                        <% if (digits.length >= 10) { %>
+                            <a class="btn btn-wa btn-xs" target="_blank"
+                               href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
+                                       'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
+                               ) %>"><%- include('partials/icon', { name: 'message-circle', size: 14 }) %> WhatsApp</a>
+                        <% } %>
+                    <% } %>
 
-                            const stU = String(r.status || '').toUpperCase();
-                            const pmU = String(r.payment_method || '').toUpperCase();
-                            const isPaid = stU === 'PAID';
-                            const isPaidOnline = isPaid && pmU === 'ONLINE';
-                        %>
+                    <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                              class="m-0"
+                              onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
+                            <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
+                        </form>
+                        <a class="btn btn-outline-danger btn-xs"
+                           href="/admin/reservation/<%= r.id %>/stripe-refund"
+                           target="_blank" rel="noopener">
+                            <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> Stripe
+                        </a>
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                              class="m-0"
+                              onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
+                            <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> Ya reembolsé</button>
+                        </form>
+                    <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
+                              onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
+                            <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
+                        </form>
+                    <% } %>
+                </div>
+            </article>
+            <% }) %>
+        </div>
+    <% } %>
 
-                        <!-- =========================
-                             DESKTOP ROW (normal)
-                        ========================== -->
-                        <tr class="tr-desktop">
-                            <td>
-                                <%= r.customer_name %>
-                                <% if (r.vic_location) { %>
-                                    <div class="small subtle"><%= resolveVicLocationLabel(r.vic_location) %></div>
-                                <% } %>
-                            </td>
-                            <td class="subtle"><%= r.phone %></td>
-
-                            <td>
-                                <span class="pill">
-                                  <%= r.type === "PASSENGER" ? "🧍‍♂️ Pasajero" : "📦 Paquetería" %>
-                                </span>
-                            </td>
-
-                            <td class="td-wrap">
-                                <% if (r.type === "PASSENGER") { %>
-                                    <div class="small">
-                                        <div class="subtle"><%= shown %> pasajero(s)</div>
-                                        <div class="subtle"><%= displayNames %></div>
-                                    </div>
-                                <% } else { %>
-                                    <div class="small subtle"><div><%= r.package_details || "-" %></div></div>
-                                <% } %>
-                            </td>
-
-                            <td>
-                                <span class="badge-soft" style="background: rgba(148,163,184,.12); color: var(--text);">
-                                  <%= pmLabelOf(r.payment_method) %>
-                                </span>
-                            </td>
-
-                            <td>
-                                <% if (stU === 'PAID') { %>
-                                    <span class="badge-soft badge-paid">✅ Pagado</span>
-                                <% } else if (stU === 'CANCELLED') { %>
-                                    <span class="badge-soft badge-cancel">⛔ Cancelado</span>
-                                <% } else if (stU === 'PENDING_PAYMENT') { %>
-                                    <span class="badge-soft badge-pending">⏳ Pendiente</span>
-                                <% } else if (stU === 'PAY_AT_BOARDING') { %>
-                                    <span class="badge-soft"
-                                          style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
-                                        💵 Pagar en taquilla
-                                    </span>
-                                <% } else { %>
-                                    <span class="badge-soft" style="background: transparent; color: var(--muted);">
-                                        <%= r.status %>
-                                    </span>
-                                <% } %>
-                            </td>
-
-                            <td>
-                                <% if (r.ticket_code) { %>
-                                    <a class="ticket-code" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank"><%= r.ticket_code %></a>
-
-                                    <% if (digits.length >= 10) { %>
-                                        <div class="mt-2">
-                                            <a class="btn btn-wa btn-xs" target="_blank"
-                                               href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
-                                                       'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
-                                               ) %>">
-                                                💬 WhatsApp
-                                            </a>
-                                        </div>
-                                    <% } %>
-                                <% } else { %>
-                                    <span class="subtle">-</span>
-                                <% } %>
-                            </td>
-
-                            <td class="text-end">
-                                <div class="actions">
-
-                                    <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
-                                            <input type="hidden" name="method" value="CASH">
-                                            <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
-                                        </form>
-
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
-                                            <input type="hidden" name="method" value="TRANSFER">
-                                            <button class="btn btn-ghost btn-xs" type="submit">🏦 Transfer</button>
-                                        </form>
-                                    <% } %>
-
-                                    <% if (r.ticket_code) { %>
-                                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank">👁️ Ver</a>
-                                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 Ticket</a>
-                                    <% } %>
-
-                                        <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
-                                        <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
-
-                                            <!-- 1) Cancelar (con confirmación) -->
-                                            <!-- NOTA: tu backend /cancel en ONLINE+PAID NO cancela; solo redirige a Stripe -->
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
-                                                  class="m-0"
-                                                  onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
-                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar
-                                                </button>
-                                            </form>
-
-                                            <!-- 2) Reembolsar (Stripe) -->
-                                            <a class="btn btn-outline-danger btn-xs"
-                                               href="/admin/reservation/<%= r.id %>/stripe-refund"
-                                               target="_blank" rel="noopener">
-                                                ↩️ Reembolsar (Stripe)
-                                            </a>
-
-                                            <!-- 3) Ya reembolsé (con confirmación) -->
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
-                                                  class="m-0"
-                                                  onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
-                                                <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
-                                                </button>
-                                            </form>
-
-                                        <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
-
-                                        <!-- No pagado => cancelar normal -->
-                                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
-                                              onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
-                                            <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar</button>
-                                        </form>
-
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- =========================
-                             MOBILE ROW (card)
-                        ========================== -->
-                        <tr class="tr-mobile">
-                            <td colspan="8">
-                                <div class="m-card">
-                                    <div class="m-row-top">
-                                        <div>
-                                            <div class="m-name"><%= r.customer_name %></div>
-                                            <% if (r.vic_location) { %>
-                                                <div class="m-meta"><%= resolveVicLocationLabel(r.vic_location) %></div>
-                                            <% } %>
-                                            <div class="m-meta">
-                                                <%= r.phone %> · <%= r.type === "PASSENGER" ? "🧍‍♂️ Pasajero" : "📦 Paquetería" %>
-                                            </div>
-                                        </div>
-
-                                        <div style="text-align:right;">
-                                            <% if (stU === 'PAID') { %>
-                                                <span class="badge-soft badge-paid">✅ Pagado</span>
-                                            <% } else if (stU === 'CANCELLED') { %>
-                                                <span class="badge-soft badge-cancel">⛔ Cancelado</span>
-                                            <% } else if (stU === 'PENDING_PAYMENT') { %>
-                                                <span class="badge-soft badge-pending">⏳ Pendiente</span>
-                                            <% } else if (stU === 'PAY_AT_BOARDING') { %>
-                                                <span class="badge-soft"
-                                                      style="background: rgba(59,130,246,.12); color: color-mix(in srgb, #3b82f6 70%, var(--text));">
-                                                    💵 Taquilla
-                                                </span>
-                                            <% } else { %>
-                                                <span class="badge-soft" style="background: transparent; color: var(--muted);">
-                                                    <%= r.status %>
-                                                </span>
-                                            <% } %>
-
-                                            <div class="mt-2">
-                                                <span class="badge-soft"
-                                                      style="background: rgba(148,163,184,.12); color: var(--text);">
-                                                    <%= pmLabelOf(r.payment_method) %>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="m-divider"></div>
-
-                                    <div class="m-detail">
-                                        <% if (r.type === "PASSENGER") { %>
-                                            <div class="subtle"><%= shown %> pasajero(s)</div>
-                                            <div class="subtle"><%= displayNames %></div>
-                                        <% } else { %>
-                                            <div class="subtle"><%= r.package_details || "-" %></div>
-                                        <% } %>
-                                    </div>
-
-                                    <div class="m-divider"></div>
-
-                                    <div class="m-ticket-row">
-                                        <% if (r.ticket_code) { %>
-                                            <a class="ticket-code" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank"><%= r.ticket_code %></a>
-
-                                            <% if (digits.length >= 10) { %>
-                                                <a class="btn btn-wa btn-xs" target="_blank"
-                                                   href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
-                                                           'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
-                                                   ) %>">💬 WhatsApp</a>
-                                            <% } %>
-                                        <% } else { %>
-                                            <span class="subtle">Sin ticket</span>
-                                        <% } %>
-                                    </div>
-
-                                    <div class="m-divider"></div>
-
-                                    <div class="actions">
-                                        <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
-                                                <input type="hidden" name="method" value="CASH">
-                                                <button class="btn btn-wine btn-xs" type="submit">💵 Efectivo</button>
-                                            </form>
-
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
-                                                <input type="hidden" name="method" value="TRANSFER">
-                                                <button class="btn btn-ghost btn-xs" type="submit">🏦 Transfer</button>
-                                            </form>
-                                        <% } %>
-
-                                        <% if (r.ticket_code) { %>
-                                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank">👁️ Ver</a>
-                                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= encodeURIComponent('/admin/trip/' + trip.trip_id) %>" target="_blank" rel="noopener">📄 PDF</a>
-                                        <% } %>
-
-                                            <!-- ✅ ONLINE + PAID => 1) Cancelar  2) Stripe  3) Ya reembolsé -->
-                                            <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
-
-                                                <!-- 1) Cancelar -->
-                                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
-                                                      class="m-0"
-                                                      onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
-                                                    <button class="btn btn-outline-danger btn-xs" type="submit">⛔
-                                                        Cancelar
-                                                    </button>
-                                                </form>
-
-                                                <!-- 2) Stripe -->
-                                                <a class="btn btn-outline-danger btn-xs"
-                                                   href="/admin/reservation/<%= r.id %>/stripe-refund"
-                                                   target="_blank" rel="noopener">
-                                                    ↩️ Reembolsar (Stripe)
-                                                </a>
-
-                                                <!-- 3) Ya reembolsé -->
-                                                <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
-                                                      class="m-0"
-                                                      onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
-                                                    <button class="btn btn-ghost btn-xs" type="submit">✅ Ya reembolsé
-                                                    </button>
-                                                </form>
-
-                                            <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
-
-                                            <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
-                                                  onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
-                                                <button class="btn btn-outline-danger btn-xs" type="submit">⛔ Cancelar</button>
-                                            </form>
-
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-
-                    <% }) %>
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
-
+</section>
 </main>
 
+<%- include('partials/admin-footer') %>
 <script src="/js/theme.js"></script>
 </body>
 </html>

@@ -1,0 +1,23 @@
+<%
+const current = (typeof adminNav !== "undefined" && adminNav) ? String(adminNav) : "";
+%>
+<ul class="nav nav-tabs home-seg admin-seg" role="tablist" aria-label="Secciones de administración">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link <%= current === 'agenda' || current === 'trip' ? 'active' : '' %>"
+           href="/admin/agenda"
+           role="tab"
+           aria-selected="<%= current === 'agenda' || current === 'trip' ? 'true' : 'false' %>">Agenda</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link <%= current === 'horarios' ? 'active' : '' %>"
+           href="/admin/horarios"
+           role="tab"
+           aria-selected="<%= current === 'horarios' ? 'true' : 'false' %>">Horarios</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link <%= current === 'recent' ? 'active' : '' %>"
+           href="/admin/recent"
+           role="tab"
+           aria-selected="<%= current === 'recent' ? 'true' : 'false' %>">Registros</a>
+    </li>
+</ul>

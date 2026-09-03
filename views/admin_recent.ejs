@@ -7,814 +7,16 @@
     noindex: true
     }) %>
 
-    <link href="/css/admin.css" rel="stylesheet">
-
-    <style>
-        /* ===== Layout shell ===== */
-        .recent-wrap {
-            --admin-nav-offset: 56px;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .recent-hero {
-            border: none;
-            background:
-                radial-gradient(720px 260px at 100% -25%, color-mix(in srgb, var(--wine) 10%, transparent), transparent 55%),
-                radial-gradient(920px 300px at -10% -45%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 72%),
-                color-mix(in srgb, var(--card) 94%, transparent);
-            box-shadow: var(--shadow);
-            border-radius: 20px;
-            padding: 1.15rem 1.2rem 1.2rem;
-        }
-
-        .hero-top {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-
-        .hero-title {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-            max-width: 40rem;
-        }
-
-        .hero-title .subtle {
-            line-height: 1.45;
-        }
-
-        .nav-pills {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0.25rem;
-            border-radius: 14px;
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-        }
-
-        /* ===== Sticky filters card ===== */
-        .filter-card {
-            background: var(--card);
-            border: none;
-            box-shadow: var(--shadow);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-
-        .filter-card.sticky {
-            position: sticky;
-            top: calc(var(--admin-nav-offset) + 10px);
-            z-index: 1020;
-            box-shadow:
-                0 8px 28px rgba(2, 6, 23, 0.08),
-                0 1px 0 rgba(255, 255, 255, 0.04) inset;
-        }
-
-        html[data-theme="dark"] .filter-card.sticky {
-            box-shadow:
-                0 12px 36px rgba(0, 0, 0, 0.45),
-                0 1px 0 rgba(255, 255, 255, 0.03) inset;
-        }
-
-        .filter-bar {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--wine) 5%, var(--card)),
-                color-mix(in srgb, var(--card) 94%, transparent)
-            );
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .filter-section-title {
-            font-weight: 650;
-            letter-spacing: -0.01em;
-            font-size: 0.92rem;
-            color: var(--text);
-        }
-
-        .filter-left {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .kpis {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .kpi {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.38rem 0.68rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--card) 96%, transparent),
-                color-mix(in srgb, var(--card) 88%, transparent)
-            );
-            font-weight: 600;
-            font-size: 0.82rem;
-            white-space: nowrap;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-        }
-
-        .kpi span {
-            color: var(--muted);
-            font-weight: 600;
-        }
-
-        .kpi strong {
-            font-weight: 750;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .filter-right {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .quick-filters {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .chiplink {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.4rem 0.72rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.84rem;
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-            color: var(--text);
-            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .chiplink:hover {
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 82%, transparent);
-            color: var(--text);
-            transform: translateY(-1px);
-        }
-
-        .chiplink:focus-visible {
-            outline: none;
-            box-shadow: 0 0 0 0.2rem var(--ring);
-        }
-
-        .chiplink.active {
-            background: linear-gradient(90deg, var(--wine), var(--wine-2));
-            border-color: transparent;
-            color: #fff;
-            font-weight: 700;
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 35%, transparent);
-        }
-
-        .chiplink.active:hover {
-            transform: translateY(-1px);
-            color: #fff;
-        }
-
-        .filter-form {
-            padding: 16px 18px 18px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            justify-content: space-between;
-            background: color-mix(in srgb, var(--card) 98%, transparent);
-        }
-
-        .form-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            flex: 1;
-            min-width: 280px;
-        }
-
-        .form-row .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 210px;
-        }
-
-        .field label {
-            font-size: 0.8rem;
-            font-weight: 650;
-            color: var(--muted);
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        /* ===== Table ===== */
-        .table-shell {
-            padding: 12px 14px 16px;
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--card) 97%, transparent),
-                color-mix(in srgb, var(--card) 92%, transparent)
-            );
-        }
-
-        /* Sin borde extra: el marco lo da .filter-card padre */
-        .table-panel {
-            border: none;
-            border-radius: 16px;
-            overflow-x: auto;
-            overflow-y: visible;
-            -webkit-overflow-scrolling: touch;
-            background: transparent;
-            box-shadow: none;
-        }
-
-        html[data-theme="dark"] .table-panel {
-            box-shadow: none;
-        }
-
-        .table-modern {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin: 0;
-            --accent-w: 3px;
-        }
-
-        .table-modern thead th {
-            position: sticky;
-            top: 0;
-            z-index: 2;
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--wine) 8%, var(--card)),
-                color-mix(in srgb, var(--card) 94%, transparent)
-            );
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 0.055em;
-            color: var(--muted);
-            font-weight: 750;
-
-            border-bottom: 1px solid var(--border);
-            padding: 0.48rem 0.55rem !important;
-            white-space: nowrap;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
-        }
-
-        .table-modern thead th:first-child {
-            padding-left: calc(0.65rem + var(--accent-w)) !important;
-        }
-
-        .table-modern tbody td {
-            border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
-            padding: 0.42rem 0.55rem !important;
-            vertical-align: middle;
-        }
-
-        .table-modern tbody td:first-child {
-            padding-left: calc(0.65rem + var(--accent-w)) !important;
-        }
-
-        .table-modern tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .table-modern tbody tr {
-            transition: background 0.14s ease, box-shadow 0.14s ease;
-        }
-
-        .table-modern tbody tr:hover {
-            background: color-mix(in srgb, var(--wine) 6%, var(--card));
-        }
-
-        .table-modern tbody tr:nth-child(even) {
-            background: color-mix(in srgb, var(--card) 97%, transparent);
-        }
-
-        .table-modern tbody tr:nth-child(even):hover {
-            background: color-mix(in srgb, var(--wine) 6%, var(--card));
-        }
-
-        /* Barra de estado en la primera columna (más nítida que border en tr) */
-        .table-modern tbody tr.row-accent td:first-child {
-            box-shadow: inset var(--accent-w) 0 0 0 transparent;
-        }
-
-        .table-modern tbody tr.row-accent.is-paid td:first-child {
-            box-shadow: inset var(--accent-w) 0 0 0 #10d88f;
-        }
-
-        .table-modern tbody tr.row-accent.is-pending td:first-child {
-            box-shadow: inset var(--accent-w) 0 0 0 #e9c40e;
-        }
-
-        .table-modern tbody tr.row-accent.is-cancel td:first-child {
-            box-shadow: inset var(--accent-w) 0 0 0 #94a3b8;
-        }
-
-        .table-modern tbody tr.row-accent.is-board td:first-child {
-            box-shadow: inset var(--accent-w) 0 0 0 #3b82f6;
-        }
-
-        .col-actions {
-            width: 148px;
-        }
-
-        .col-status {
-            width: 118px;
-        }
-
-        .col-type {
-            width: 112px;
-        }
-
-        .col-ticket {
-            width: 132px;
-        }
-
-        .col-pay {
-            width: 118px;
-        }
-
-        .col-pay,
-        .col-status,
-        .col-type {
-            text-align: center;
-        }
-
-        .col-pay > span,
-        .col-status > span {
-            vertical-align: middle;
-        }
-
-        .col-ticket {
-            text-align: center;
-        }
-
-        .cell-main {
-            display: flex;
-            flex-direction: column;
-            gap: 0.12rem;
-            justify-content: center;
-        }
-
-        .cell-main--compact {
-            gap: 0;
-            min-height: 0;
-        }
-
-        .cell-main--reserva {
-            gap: 0.08rem;
-        }
-
-        .folio-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: baseline;
-            gap: 0.15rem 0.45rem;
-            row-gap: 0.02rem;
-        }
-
-        .folio-meta {
-            font-size: 0.78rem;
-            line-height: 1.2;
-            color: var(--muted);
-            flex: 1 1 140px;
-            min-width: 0;
-        }
-
-        .folio-name {
-            font-weight: 650;
-            color: var(--text);
-        }
-
-        .reserva-mobile {
-            margin-top: 0.45rem;
-        }
-
-        .trip-line {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.35rem 0.5rem;
-        }
-
-        .trip-date {
-            font-size: 0.76rem;
-            color: var(--muted);
-            line-height: 1.2;
-        }
-
-        .main-title {
-            font-weight: 750;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            font-size: 0.88rem;
-        }
-
-        .main-sub {
-            color: var(--muted);
-            font-size: 0.84rem;
-            line-height: 1.35;
-        }
-
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.22rem 0.48rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-            font-weight: 650;
-            font-size: 0.74rem;
-            white-space: nowrap;
-            line-height: 1.15;
-            transition: border-color 0.15s ease, background 0.15s ease;
-        }
-
-        .tag-compact {
-            padding: 0.18rem 0.42rem;
-            font-size: 0.72rem;
-        }
-
-        .tag-route {
-            background: color-mix(in srgb, var(--chip-bg) 88%, var(--card));
-            color: var(--chip-text);
-            border-color: color-mix(in srgb, var(--wine) 18%, var(--border));
-        }
-
-        .badge-compact {
-            padding: 0.18rem 0.42rem !important;
-            font-size: 0.72rem !important;
-            font-weight: 650 !important;
-        }
-
-        .ticket-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 5.25rem;
-            padding: 0.22rem 0.42rem;
-            border-radius: 8px;
-            color: var(--wine);
-            text-decoration: none;
-            font-weight: 750;
-            font-size: 0.8rem;
-            background: color-mix(in srgb, var(--wine) 8%, transparent);
-            border: 1px solid color-mix(in srgb, var(--wine) 22%, var(--border));
-            transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
-        }
-
-        .ticket-link:hover {
-            background: color-mix(in srgb, var(--wine) 14%, transparent);
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            text-decoration: none;
-            transform: translateY(-1px);
-        }
-
-        .actions-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.35rem;
-            flex-wrap: wrap;
-        }
-
-        .actions-row .btn-xs {
-            min-width: 68px;
-            padding: 0.28rem 0.45rem;
-            font-size: 0.76rem;
-            justify-content: center;
-            border-radius: 8px;
-            font-weight: 650;
-        }
-
-        .table-modern thead th.col-pay,
-        .table-modern thead th.col-type,
-        .table-modern thead th.col-status,
-        .table-modern thead th.col-ticket {
-            text-align: center;
-        }
-
-        /* Celda vacía / sin resultados */
-        .table-empty-cell {
-            padding: 2.5rem 1.5rem !important;
-            text-align: center;
-            vertical-align: middle !important;
-            border-bottom: none !important;
-        }
-
-        .table-modern tbody td.table-empty-cell:first-child {
-            padding-left: 1.5rem !important;
-            box-shadow: none !important;
-        }
-
-        .table-empty-inner {
-            max-width: 22rem;
-            margin: 0 auto;
-            padding: 1.25rem 1rem;
-            border-radius: 14px;
-            border: 1px dashed color-mix(in srgb, var(--border) 90%, var(--wine));
-            background: color-mix(in srgb, var(--card) 96%, transparent);
-        }
-
-        .table-empty-inner .h6 {
-            font-weight: 750;
-            letter-spacing: -0.02em;
-        }
-
-        /* detail expand */
-        details.row-detail {
-            margin-top: 0.12rem;
-        }
-        details.row-detail > summary{
-            list-style:none;
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            gap:.35rem;
-            padding:.18rem .48rem;
-            border-radius:999px;
-            border:1px solid var(--border);
-            color:var(--muted);
-            font-weight: 650;
-            font-size:.74rem;
-            user-select:none;
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-        }
-        details.row-detail > summary::-webkit-details-marker{ display:none; }
-        details.row-detail[open] > summary{
-            color:var(--text);
-            border-color: color-mix(in srgb, var(--wine) 30%, var(--border));
-            background: color-mix(in srgb, var(--wine) 6%, var(--card));
-        }
-        .detail-box{
-            margin-top:.4rem;
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            border-radius:12px;
-            padding:.55rem .65rem;
-        }
-        .detail-grid{
-            display:grid;
-            grid-template-columns: 1fr 1fr;
-            gap:.4rem .55rem;
-            font-size:.82rem;
-        }
-
-        .detail-k {
-            color: var(--muted);
-            font-size: .74rem;
-            font-weight: 650;
-        }
-
-        .detail-v {
-            font-weight: 700;
-        }
-        .detail-wide{ grid-column: 1 / -1; }
-        .detail-v.muted{ color:var(--muted); font-weight:650; }
-
-        .btn-xs{
-            padding: .28rem .48rem;
-            border-radius:8px;
-            font-weight: 600;
-            font-size:.76rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* pagination */
-        .pager{
-            display:flex;
-            gap:10px;
-            flex-wrap:wrap;
-            align-items:center;
-            justify-content:space-between;
-            padding: 14px 16px;
-            border-top: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-        }
-        .pager-left{ color:var(--muted); font-size:.9rem; }
-        .pager-right{
-            display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;
-        }
-        .page-btn{
-            border:1px solid var(--border);
-            background:transparent;
-            color:var(--text);
-            border-radius:12px;
-            padding:.38rem .62rem;
-            font-weight: 600;
-            font-size:.85rem;
-            text-decoration:none;
-            display:inline-flex;
-            align-items:center;
-            gap:.35rem;
-        }
-        .page-btn:hover{
-            border-color:color-mix(in srgb, var(--wine) 45%, var(--border));
-            background:color-mix(in srgb, var(--card) 80%, transparent);
-            color:var(--text);
-        }
-        .page-btn.active{
-            background: linear-gradient(90deg, var(--wine), var(--wine-2));
-            border-color: transparent;
-            color:#fff;
-            font-weight: 700;
-        }
-
-        .page-btn.disabled {
-            pointer-events: none;
-            opacity: .45;
-        }
-
-        .dots {
-            color: var(--muted);
-            padding: 0 .25rem;
-            font-weight: 700;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .chiplink:hover,
-            .chiplink.active:hover,
-            .ticket-link:hover {
-                transform: none;
-            }
-        }
-
-        /* ===== Mobile cards ===== */
-        @media (max-width: 768px) {
-            .recent-wrap {
-                --admin-nav-offset: 52px;
-            }
-
-            .filter-card.sticky {
-                top: calc(var(--admin-nav-offset) + 8px);
-            }
-
-            .filter-form {
-                gap: 12px;
-            }
-
-            .form-row {
-                width: 100%;
-                min-width: 0;
-            }
-
-            .form-row .field {
-                min-width: 0;
-                width: 100%;
-            }
-
-            .filter-actions {
-                width: 100%;
-                justify-content: stretch;
-            }
-
-            .filter-actions > * {
-                width: 100%;
-            }
-
-            .table-modern thead {
-                display: none;
-            }
-
-            .table-modern, .table-modern tbody, .table-modern tr, .table-modern td {
-                display: block;
-                width: 100%;
-            }
-
-            .table-modern tr {
-                border: 1px solid var(--border);
-                border-radius: 14px;
-                margin: 7px 0;
-                padding: 10px;
-                background: color-mix(in srgb, var(--card) 97%, transparent);
-                box-shadow: var(--shadow);
-            }
-
-            .table-modern tbody td {
-                border-bottom: none;
-                padding: 0 !important;
-            }
-
-            .m-head {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: 10px;
-            }
-
-            .m-folio {
-                font-weight: 750;
-            }
-
-            .m-meta {
-                margin-top: 6px;
-                color: var(--muted);
-                font-size: .88rem;
-            }
-
-            .m-row {
-                margin-top: 10px;
-                display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
-                align-items: center;
-            }
-
-            .m-actions {
-                margin-top: 10px;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .m-actions a {
-                width: 100%;
-                text-align: center;
-                justify-content: center;
-            }
-
-            .cell-main {
-                min-height: auto;
-            }
-
-            .actions-row {
-                justify-content: flex-start;
-            }
-
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
-
-            details.row-detail > summary {
-                margin-top: 10px;
-            }
-        }
-    </style>
+    <%- include('partials/admin-assets') %>
 </head>
 
-<body class="admin-app">
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
-            <span class="brand-dot"></span>
-            <span class="fw-semibold">Admin • Agenda</span>
-        </a>
+<body class="home-page admin-app page-recent">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+<%- include('partials/admin-hero', { heading: 'Registros', tag: 'Folios, pagos y tickets' }) %>
 
-        <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">🌙</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
-
-            <form method="POST" action="/admin/logout" class="m-0">
-                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
-            </form>
-        </div>
-    </div>
-</nav>
-
-<main class="container py-4">
+<main class="home-main admin-main">
+<section class="container">
 
     <%
     const _pm = String(pm || '').toUpperCase();
@@ -822,6 +24,7 @@
     const _ps = Number(pageSize || 25);
     const _page = Number(page || 1);
     const _pages = Number(pages || 1);
+    const rows = recentRows || [];
 
     const qsBase = [];
     if (_q) qsBase.push('q=' + encodeURIComponent(_q));
@@ -849,16 +52,23 @@
         }
     };
 
-    const payChip = (pm) => {
-        const p = String(pm || '').toUpperCase();
-        if (p === 'TAQUILLA') return {t: '💵 Taquilla', cls: 'tag'};
-        if (p === 'TRANSFERENCIA') return {t: '🏦 Transfer', cls: 'tag'};
-        if (p === 'ONLINE') return {t: '🌐 Online', cls: 'tag'};
-        if (p === 'TRANSFER') return {t: '🏦 Transfer', cls: 'tag'};
-        return {t: p || '—', cls: 'tag'};
+    const payChip = (method) => {
+        const p = String(method || '').toUpperCase();
+        if (p === 'TAQUILLA') return { html: renderIcon('banknote', { size: 14 }) + ' Taquilla', cls: 'recent-tag' };
+        if (p === 'TRANSFERENCIA' || p === 'TRANSFER') return { html: renderIcon('landmark', { size: 14 }) + ' Transfer', cls: 'recent-tag' };
+        if (p === 'ONLINE') return { html: renderIcon('credit-card', { size: 14 }) + ' Online', cls: 'recent-tag' };
+        return { html: (p || '—'), cls: 'recent-tag' };
     };
 
-    // I format MySQL datetime strings (UTC) to America/Monterrey for display.
+    const statusMeta = (status) => {
+        const st = String(status || '');
+        if (st === 'PAID') return { label: 'Pagado', cls: 'is-paid', badge: 'b-paid', icon: 'check' };
+        if (st === 'CANCELLED') return { label: 'Cancelado', cls: 'is-cancel', badge: 'b-cancel', icon: 'ban' };
+        if (st === 'PENDING_PAYMENT') return { label: 'Pendiente', cls: 'is-pending', badge: 'b-pending', icon: 'hourglass' };
+        if (st === 'PAY_AT_BOARDING') return { label: 'Taquilla', cls: 'is-board', badge: 'b-board', icon: 'banknote' };
+        return { label: st || '—', cls: '', badge: '', icon: 'info' };
+    };
+
     const fmtMty = (mysqlStr) => {
         try {
             const s = String(mysqlStr || '').trim();
@@ -868,18 +78,40 @@
             return new Intl.DateTimeFormat('es-MX', {
                 timeZone: 'America/Monterrey',
                 dateStyle: 'medium',
-                timeStyle: 'medium',
+                timeStyle: 'short',
             }).format(d);
         } catch {
             return String(mysqlStr || '');
         }
     };
 
-    const rows = recentRows || [];
-    const kPaid = rows.filter(x => x.status === 'PAID').length;
-    const kPend = rows.filter(x => x.status === 'PENDING_PAYMENT').length;
-    const kBoard = rows.filter(x => x.status === 'PAY_AT_BOARDING').length;
-    const kCancel = rows.filter(x => x.status === 'CANCELLED').length;
+    const formatTripWhen = (dateVal, timeStr) => {
+        const hhmm = String(timeStr || '').slice(0, 5);
+        let raw = String(dateVal || '').trim();
+        if (raw.length > 10) raw = raw.slice(0, 10);
+        let day = raw;
+        try {
+            const d = new Date(raw + 'T12:00:00');
+            if (!isNaN(d.getTime())) {
+                day = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short' }).format(d);
+            }
+        } catch {}
+        return hhmm ? (day + ' · ' + hhmm) : day;
+    };
+
+    const countsFromRoute = (typeof statusCounts === 'undefined') ? null : statusCounts;
+    const counts = Object.assign({
+        PAID: 0,
+        PENDING_PAYMENT: 0,
+        PAY_AT_BOARDING: 0,
+        CANCELLED: 0,
+    }, countsFromRoute || {});
+    if (!countsFromRoute) {
+        counts.PAID = rows.filter(x => x.status === 'PAID').length;
+        counts.PENDING_PAYMENT = rows.filter(x => x.status === 'PENDING_PAYMENT').length;
+        counts.PAY_AT_BOARDING = rows.filter(x => x.status === 'PAY_AT_BOARDING').length;
+        counts.CANCELLED = rows.filter(x => x.status === 'CANCELLED').length;
+    }
 
     const windowPages = [];
     if (_pages <= 7) {
@@ -896,363 +128,263 @@
 
     const hasFilters = !!(_q || _pm);
     const clearHref = '/admin/recent?page=1&pageSize=' + encodeURIComponent(_ps);
+    const totalN = Number(total || 0);
     %>
 
-    <div class="recent-wrap">
+    <div class="tabs-card home-tabs admin-shell">
+        <div class="home-tabs-head">
+            <h2 class="home-section-title">Últimos registros</h2>
+            <div class="home-tabs-tools">
+                <%- include('partials/admin-nav', { adminNav: 'recent' }) %>
+            </div>
+        </div>
+        <div class="home-tabs-body">
 
-        <div class="recent-hero">
-            <div class="hero-top">
-                <div class="hero-title">
-                    <div class="pill">Agenda</div>
-                    <h1 class="h3 page-title">Últimos registros</h1>
-                    <div class="subtle">
-                        Busca por folio / ticket / teléfono y filtra por método.
-                        <span class="mono">Ej: RES-20260104-000123</span>
-                    </div>
-                </div>
-
-                <div class="nav-pills">
-                    <a class="btn btn-ghost px-3" href="/admin/agenda">Salidas del día</a>
-                    <a class="btn btn-wine px-3" href="/admin/recent">Últimos registros</a>
-                </div>
+    <div class="recent-toolbar">
+        <div class="recent-intro">
+            <div class="recent-kicker">
+                <%- include('partials/icon', { name: 'receipt', size: 16 }) %>
+                <%= hasFilters ? 'Filtrado' : 'Registros' %>
+            </div>
+            <div class="recent-title"><%= totalN %> resultado<%= totalN === 1 ? '' : 's' %></div>
+            <div class="recent-meta subtle">
+                <% if (totalN === 0) { %>
+                    Sin coincidencias en esta búsqueda
+                <% } else { %>
+                    Mostrando <%= from || 0 %>–<%= to || 0 %>
+                    · Página <%= _page %>/<%= _pages %>
+                <% } %>
             </div>
         </div>
 
-        <div class="filter-card sticky">
-            <div class="filter-bar">
-                <div class="filter-left">
-                    <div class="filter-section-title">Filtros & Resumen</div>
-                    <div class="kpis">
-                        <span class="kpi"><span>Total:</span> <strong class="mono"><%= total || 0 %></strong></span>
-                        <span class="kpi"><span>En página:</span> <strong
-                                    class="mono"><%= rows.length %></strong></span>
-                        <span class="kpi"><span>✅</span> <strong class="mono"><%= kPaid %></strong></span>
-                        <span class="kpi"><span>⏳</span> <strong class="mono"><%= kPend %></strong></span>
-                        <span class="kpi"><span>💵</span> <strong class="mono"><%= kBoard %></strong></span>
-                        <span class="kpi"><span>⛔</span> <strong class="mono"><%= kCancel %></strong></span>
-                    </div>
-                </div>
+        <form class="recent-toolbar-form" method="GET" action="/admin/recent" id="filterForm">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="pm" value="<%= _pm %>">
 
-                <div class="filter-right">
-                    <div class="quick-filters">
-                        <a class="chiplink <%= !_pm ? 'active' : '' %>" href="<%= linkAll %>">Todos</a>
-                        <a class="chiplink <%= _pm === 'TAQUILLA' ? 'active' : '' %>" href="<%= linkPm('TAQUILLA') %>">💵
-                            Taquilla</a>
-                        <a class="chiplink <%= _pm === 'TRANSFERENCIA' ? 'active' : '' %>"
-                           href="<%= linkPm('TRANSFERENCIA') %>">🏦 Transfer</a>
-                        <a class="chiplink <%= _pm === 'ONLINE' ? 'active' : '' %>" href="<%= linkPm('ONLINE') %>">🌐
-                            Online</a>
-                    </div>
-                </div>
+            <label class="recent-search">
+                <span class="recent-search-ico"><%- include('partials/icon', { name: 'search', size: 16 }) %></span>
+                <span class="visually-hidden">Buscar folio, ticket o teléfono</span>
+                <input class="form-control" name="q" value="<%= _q %>"
+                       placeholder="Folio, ticket o teléfono"
+                       autocomplete="off">
+            </label>
+
+            <div class="recent-filters" role="group" aria-label="Método de pago">
+                <a class="recent-chip <%= !_pm ? 'is-on' : '' %>" href="<%= linkAll %>" <%= !_pm ? 'aria-current="true"' : '' %>>Todos</a>
+                <a class="recent-chip <%= _pm === 'TAQUILLA' ? 'is-on' : '' %>" href="<%= linkPm('TAQUILLA') %>" <%= _pm === 'TAQUILLA' ? 'aria-current="true"' : '' %>>
+                    <%- include('partials/icon', { name: 'banknote', size: 14 }) %> Taquilla
+                </a>
+                <a class="recent-chip <%= _pm === 'TRANSFERENCIA' ? 'is-on' : '' %>" href="<%= linkPm('TRANSFERENCIA') %>" <%= _pm === 'TRANSFERENCIA' ? 'aria-current="true"' : '' %>>
+                    <%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transfer
+                </a>
+                <a class="recent-chip <%= _pm === 'ONLINE' ? 'is-on' : '' %>" href="<%= linkPm('ONLINE') %>" <%= _pm === 'ONLINE' ? 'aria-current="true"' : '' %>>
+                    <%- include('partials/icon', { name: 'credit-card', size: 14 }) %> Online
+                </a>
+                <% if (hasFilters) { %>
+                    <a class="recent-chip" href="<%= clearHref %>">
+                        <%- include('partials/icon', { name: 'x', size: 14 }) %> Limpiar
+                    </a>
+                <% } %>
             </div>
 
-            <form class="filter-form" method="GET" action="/admin/recent" id="filterForm">
-                <input type="hidden" name="page" value="1">
-
-                <div class="form-row">
-                    <div class="field" style="min-width:320px;">
-                        <label>Buscar</label>
-                        <input class="form-control" name="q" value="<%= _q %>"
-                               placeholder="Folio / ticket / teléfono...">
-                    </div>
-
-                    <div class="field">
-                        <label>Método</label>
-                        <select class="form-select" name="pm">
-                            <option value="" <%= !_pm ? 'selected' : '' %>>Todos</option>
-                            <option value="TAQUILLA" <%= _pm === 'TAQUILLA' ? 'selected' : '' %>>💵 Taquilla</option>
-                            <option value="TRANSFERENCIA" <%= _pm === 'TRANSFERENCIA' ? 'selected' : '' %>>🏦
-                                Transferencia
-                            </option>
-                            <option value="ONLINE" <%= _pm === 'ONLINE' ? 'selected' : '' %>>🌐 Online</option>
-                        </select>
-                    </div>
-
-                    <div class="field" style="min-width:160px;">
-                        <label>Por página</label>
-                        <select class="form-select" name="pageSize" id="pageSizeSelect">
-                            <option value="25" <%= _ps === 25 ? 'selected' : '' %>>25</option>
-                            <option value="50" <%= _ps === 50 ? 'selected' : '' %>>50</option>
-                            <option value="100" <%= _ps === 100 ? 'selected' : '' %>>100</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="filter-actions">
-                    <button class="btn btn-wine rounded-4 px-4" type="submit">Aplicar</button>
-                    <% if (hasFilters) { %>
-                        <a class="btn btn-ghost px-3" href="<%= clearHref %>">Limpiar</a>
-                    <% } %>
-                </div>
-            </form>
-        </div>
-
-        <div class="filter-card">
-            <div class="table-shell">
-                <div class="table-responsive table-panel">
-                    <table class="table-modern">
-                        <thead>
-                        <tr>
-                            <th>Reserva</th>
-                            <th class="col-status">Estado</th>
-                            <th>Viaje</th>
-                            <th class="col-pay">Pago</th>
-                            <th class="col-type">Tipo</th>
-                            <th class="col-ticket">Ticket</th>
-                            <th class="text-end col-actions">Acciones</th>
-                        </tr>
-                        </thead>
-
-                        <tbody>
-                        <% if (!rows || rows.length === 0) { %>
-                            <tr>
-                                <td colspan="7" class="table-empty-cell">
-                                    <div class="table-empty-inner">
-                                        <div class="h6 mb-2">Sin registros</div>
-                                        <div class="subtle mb-0"><%= hasFilters ? 'Prueba otro criterio de búsqueda o método.' : 'Cuando haya reservas aparecerán aquí.' %></div>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% } %>
-
-                        <% rows.forEach(r => {
-                            const hhmm = String(r.depart_time || '').slice(0, 5);
-
-                            const qs = [];
-                            if (_q) qs.push('q=' + encodeURIComponent(_q));
-                            if (_pm) qs.push('pm=' + encodeURIComponent(_pm));
-                            if (_ps) qs.push('pageSize=' + encodeURIComponent(_ps));
-                            if (_page) qs.push('page=' + encodeURIComponent(_page));
-                            const returnBack = '/admin/recent' + (qs.length ? ('?' + qs.join('&')) : '');
-
-                            const pm = payChip(r.payment_method);
-                            const paxShown = Number(r.passenger_count || 0) || Number(r.seats || 0) || 0;
-
-                            const isPassenger = r.type === 'PASSENGER';
-                            const hasNames = String(r.passenger_names || '').trim();
-                            const detailTitle = isPassenger ? 'Pasajeros' : 'Paquete';
-                            const detailValue = isPassenger ? (hasNames ? r.passenger_names : (r.customer_name || '-')) : (r.package_details || '-');
-
-                            const created = r.created_at ? fmtMty(r.created_at) : '';
-                            const totalRow = (r.amount_total_mxn != null && r.amount_total_mxn !== '') ? Number(r.amount_total_mxn) : null;
-
-                            const st = String(r.status || '');
-                            const accentCls =
-                                    st === 'PAID' ? 'is-paid'
-                                            : st === 'PENDING_PAYMENT' ? 'is-pending'
-                                                    : st === 'PAY_AT_BOARDING' ? 'is-board'
-                                                            : st === 'CANCELLED' ? 'is-cancel'
-                                                                    : '';
-                        %>
-
-                        <tr class="row-accent <%= accentCls %>">
-                            <!-- Reserva -->
-                            <td>
-                                <div class="cell-main cell-main--reserva">
-                                    <div class="folio-row">
-                                        <span class="main-title mono"><%= r.folio %></span>
-                                        <span class="main-sub folio-meta"><span class="folio-name"><%= r.customer_name || '-' %></span><span class="mono folio-phone"> · <%= r.phone || '-' %></span></span>
-                                    </div>
-
-                                    <details class="row-detail">
-                                        <summary>Ver detalle</summary>
-                                        <div class="detail-box">
-                                            <div class="detail-grid">
-                                                <div>
-                                                    <div class="detail-k">Total</div>
-                                                    <div class="detail-v"><%= totalRow != null ? money(totalRow) : '—' %></div>
-                                                </div>
-
-                                                <div>
-                                                    <div class="detail-k">Método</div>
-                                                    <div class="detail-v"><%= String(r.payment_method || '—') %></div>
-                                                </div>
-
-                                                <div>
-                                                    <div class="detail-k"><%= detailTitle %></div>
-                                                    <div class="detail-v muted"><%= detailValue %></div>
-                                                </div>
-
-                                                <div>
-                                                    <div class="detail-k"><%= isPassenger ? 'Cantidad' : 'Piezas' %></div>
-                                                    <div class="detail-v"><%= isPassenger ? (paxShown || 1) : 1 %></div>
-                                                </div>
-
-                                                <% if (String(r.transfer_ref || '').trim()) { %>
-                                                    <div class="detail-wide">
-                                                        <div class="detail-k">Referencia transferencia</div>
-                                                        <div class="detail-v mono"><%= r.transfer_ref %></div>
-                                                    </div>
-                                                <% } %>
-
-                                                <% if (created) { %>
-                                                    <div class="detail-wide">
-                                                        <div class="detail-k">Creado</div>
-                                                        <div class="detail-v mono"><%= created %></div>
-                                                    </div>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                    </details>
-
-                                    <!-- Mobile summary -->
-                                    <div class="d-block d-md-none reserva-mobile">
-                                        <div class="m-head"
-                                             style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                                            <div>
-                                                <div class="m-folio mono"><%= r.folio %></div>
-                                                <div class="m-meta mono"
-                                                     style="margin-top:6px; color:var(--muted); font-size:.88rem;"><%= r.trip_date %>
-                                                    · <%= hhmm %></div>
-                                            </div>
-                                            <div>
-                                                <% if (r.status === 'PAID') { %>
-                                                    <span class="badge-soft b-paid badge-compact">✅ Pagado</span>
-                                                <% } else if (r.status === 'CANCELLED') { %>
-                                                    <span class="badge-soft b-cancel badge-compact">⛔ Cancelado</span>
-                                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
-                                                    <span class="badge-soft b-pending badge-compact">⏳ Pendiente</span>
-                                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
-                                                    <span class="badge-soft b-board badge-compact">💵 Taquilla</span>
-                                                <% } else { %>
-                                                    <span class="badge-soft badge-compact"><%= r.status %></span>
-                                                <% } %>
-                                            </div>
-                                        </div>
-
-                                        <div class="m-row"
-                                             style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                                            <span class="tag tag-route tag-compact"><%= directionLabel(r.direction) %></span>
-                                            <span class="<%= pm.cls %> tag-compact"><%= pm.t %></span>
-                                            <span class="tag tag-compact"><%= r.type === 'PASSENGER' ? '🧍 Pasajero' : '📦 Paquete' %></span>
-                                            <% if (r.ticket_code) { %>
-                                                <span class="tag mono tag-compact">🎫 <%= r.ticket_code %></span>
-                                            <% } %>
-                                        </div>
-
-                                        <div class="m-actions"
-                                             style="margin-top:8px; display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                                            <a class="btn btn-ghost btn-xs"
-                                               href="/admin/trip/<%= r.trip_id %>">Salida</a>
-                                            <% if (r.ticket_code) { %>
-                                                <a class="btn btn-wine btn-xs"
-                                                   href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">Ticket</a>
-                                            <% } else { %>
-                                                <a class="btn btn-ghost btn-xs disabled"
-                                                   style="opacity:.5; pointer-events:none;" href="#">Sin ticket</a>
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Estado -->
-                            <td class="col-status d-none d-md-table-cell">
-                                <% if (r.status === 'PAID') { %>
-                                    <span class="badge-soft b-paid badge-compact">✅ Pagado</span>
-                                <% } else if (r.status === 'CANCELLED') { %>
-                                    <span class="badge-soft b-cancel badge-compact">⛔ Cancelado</span>
-                                <% } else if (r.status === 'PENDING_PAYMENT') { %>
-                                    <span class="badge-soft b-pending badge-compact">⏳ Pendiente</span>
-                                <% } else if (r.status === 'PAY_AT_BOARDING') { %>
-                                    <span class="badge-soft b-board badge-compact">💵 Taquilla</span>
-                                <% } else { %>
-                                    <span class="badge-soft badge-compact"><%= r.status %></span>
-                                <% } %>
-                            </td>
-
-                            <!-- Viaje -->
-                            <td class="d-none d-md-table-cell">
-                                <div class="cell-main cell-main--compact">
-                                    <div class="trip-line">
-                                        <span class="tag tag-route"><%= directionLabel(r.direction) %></span>
-                                        <span class="trip-date mono"><%= r.trip_date %> · <%= hhmm %></span>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Pago -->
-                            <td class="col-pay d-none d-md-table-cell">
-                                <span class="<%= pm.cls %> tag-compact"><%= pm.t %></span>
-                            </td>
-
-                            <!-- Tipo -->
-                            <td class="col-type d-none d-md-table-cell">
-                                <span class="tag tag-compact">
-                                    <%= r.type === 'PASSENGER' ? '🧍 Pasajero' : '📦 Paquete' %>
-                                </span>
-                            </td>
-
-                            <!-- Ticket -->
-                            <td class="col-ticket mono d-none d-md-table-cell">
-                                <% if (r.ticket_code) { %>
-                                    <a class="ticket-link"
-                                       href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
-                                        <%= r.ticket_code %>
-                                    </a>
-                                <% } else { %>
-                                    <span class="subtle">—</span>
-                                <% } %>
-                            </td>
-
-                            <!-- Acciones -->
-                            <td class="text-end col-actions d-none d-md-table-cell">
-                                <div class="actions-row">
-                                    <a class="btn btn-ghost btn-xs" href="/admin/trip/<%= r.trip_id %>">Salida</a>
-                                    <% if (r.ticket_code) { %>
-                                        <a class="btn btn-wine btn-xs"
-                                           href="/ticket/<%= r.ticket_code %>?return=<%= encodeURIComponent(returnBack) %>">
-                                            Ticket
-                                        </a>
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-                        <% }) %>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="recent-form-actions">
+                <label class="recent-pagesize">
+                    <span class="visually-hidden">Resultados por página</span>
+                    <select class="form-select" name="pageSize" id="pageSizeSelect" aria-label="Resultados por página">
+                        <option value="25" <%= _ps === 25 ? 'selected' : '' %>>25 / pág.</option>
+                        <option value="50" <%= _ps === 50 ? 'selected' : '' %>>50 / pág.</option>
+                        <option value="100" <%= _ps === 100 ? 'selected' : '' %>>100 / pág.</option>
+                    </select>
+                </label>
+                <button class="btn btn-wine recent-apply" type="submit">Buscar</button>
             </div>
-
-            <div class="pager">
-                <div class="pager-left">
-                    Mostrando <span class="mono"><%= from || 0 %></span>–<span class="mono"><%= to || 0 %></span>
-                    de <span class="mono"><%= total || 0 %></span>
-                    · Página <span class="mono"><%= _page %></span>/<span class="mono"><%= _pages %></span>
-                </div>
-
-                <div class="pager-right">
-                    <a class="page-btn <%= _page <= 1 ? 'disabled' : '' %>"
-                       href="<%= buildUrl(Math.max(1, _page - 1)) %>">←</a>
-
-                    <% windowPages.forEach(p => { %>
-                        <% if (p === '...') { %>
-                            <span class="dots">…</span>
-                        <% } else { %>
-                            <a class="page-btn <%= Number(p) === _page ? 'active' : '' %>"
-                               href="<%= buildUrl(p) %>"><%= p %></a>
-                        <% } %>
-                    <% }) %>
-
-                    <a class="page-btn <%= _page >= _pages ? 'disabled' : '' %>"
-                       href="<%= buildUrl(Math.min(_pages, _page + 1)) %>">→</a>
-                </div>
-            </div>
-
-        </div>
-
+        </form>
     </div>
 
+    <div class="recent-kpis" role="group" aria-label="Resumen de estados">
+        <div class="recent-kpi recent-kpi--paid">
+            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 18 }) %></div>
+            <div>
+                <div class="label">Pagados</div>
+                <div class="value"><%= Number(counts.PAID || 0) %></div>
+            </div>
+        </div>
+        <div class="recent-kpi recent-kpi--pending">
+            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'hourglass', size: 18 }) %></div>
+            <div>
+                <div class="label">Pendientes</div>
+                <div class="value"><%= Number(counts.PENDING_PAYMENT || 0) %></div>
+            </div>
+        </div>
+        <div class="recent-kpi recent-kpi--board">
+            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 18 }) %></div>
+            <div>
+                <div class="label">Taquilla</div>
+                <div class="value"><%= Number(counts.PAY_AT_BOARDING || 0) %></div>
+            </div>
+        </div>
+        <div class="recent-kpi recent-kpi--cancel">
+            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ban', size: 18 }) %></div>
+            <div>
+                <div class="label">Cancelados</div>
+                <div class="value"><%= Number(counts.CANCELLED || 0) %></div>
+            </div>
+        </div>
+    </div>
+
+    <% if (!rows.length) { %>
+        <div class="recent-empty">
+            <div class="recent-empty-ico" aria-hidden="true"><%- include('partials/icon', { name: 'receipt', size: 22 }) %></div>
+            <div class="h6 mb-1">Sin registros</div>
+            <div class="subtle"><%= hasFilters ? 'Prueba otro folio, teléfono o método de pago.' : 'Cuando haya reservas aparecerán aquí.' %></div>
+            <% if (hasFilters) { %>
+                <a class="recent-chip" href="<%= clearHref %>">Quitar filtros</a>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="recent-table-card">
+            <div class="recent-table-scroll">
+                <table class="recent-table">
+                    <thead>
+                    <tr>
+                        <th class="col-reserva">Reserva</th>
+                        <th class="col-status">Estado</th>
+                        <th class="col-trip">Viaje</th>
+                        <th class="col-type">Tipo</th>
+                        <th class="col-pay">Pago</th>
+                        <th class="col-ticket">Ticket</th>
+                        <th class="col-actions">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% rows.forEach(r => {
+                        const qs = [];
+                        if (_q) qs.push('q=' + encodeURIComponent(_q));
+                        if (_pm) qs.push('pm=' + encodeURIComponent(_pm));
+                        if (_ps) qs.push('pageSize=' + encodeURIComponent(_ps));
+                        if (_page) qs.push('page=' + encodeURIComponent(_page));
+                        const returnBack = '/admin/recent' + (qs.length ? ('?' + qs.join('&')) : '');
+
+                        const pay = payChip(r.payment_method);
+                        const st = statusMeta(r.status);
+                        const paxShown = Number(r.passenger_count || 0) || Number(r.seats || 0) || 0;
+                        const isPassenger = r.type === 'PASSENGER';
+                        const hasNames = String(r.passenger_names || '').trim();
+                        const detailValue = isPassenger ? (hasNames ? r.passenger_names : (r.customer_name || '—')) : (r.package_details || '—');
+                        const created = r.created_at ? fmtMty(r.created_at) : '';
+                        const totalRow = (r.amount_total_mxn != null && r.amount_total_mxn !== '') ? Number(r.amount_total_mxn) : null;
+                        const phone = String(r.phone || '').trim();
+                        const phoneDigits = phone.replace(/\D/g, '');
+                        const transferRef = String(r.transfer_ref || '').trim();
+                        const ticketHref = r.ticket_code
+                            ? ('/ticket/' + encodeURIComponent(r.ticket_code) + '?return=' + encodeURIComponent(returnBack))
+                            : '';
+                    %>
+                    <tr class="<%= st.cls %>">
+                        <td class="col-reserva" data-label="Reserva">
+                            <div class="recent-folio mono" title="<%= created || r.folio %>"><%= r.folio %></div>
+                            <div class="recent-who">
+                                <span class="recent-name"><%= r.customer_name || '—' %></span>
+                                <% if (phoneDigits.length >= 8) { %>
+                                    <a class="recent-phone mono" href="tel:<%= phoneDigits %>"><%= phone || '—' %></a>
+                                <% } else { %>
+                                    <span class="recent-phone mono"><%= phone || '—' %></span>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td class="col-status" data-label="Estado">
+                            <span class="badge-soft <%= st.badge %> recent-status">
+                                <%- include('partials/icon', { name: st.icon, size: 14 }) %>
+                                <%= st.label %>
+                            </span>
+                        </td>
+                        <td class="col-trip" data-label="Viaje">
+                            <div class="recent-trip-line">
+                                <span class="recent-tag recent-tag--route"><%= directionLabel(r.direction) %></span>
+                                <span class="recent-when mono"><%= formatTripWhen(r.trip_date, r.depart_time) %></span>
+                            </div>
+                        </td>
+                        <td class="col-type" data-label="Tipo">
+                            <span class="recent-tag">
+                                <%- include('partials/icon', { name: isPassenger ? 'user' : 'package', size: 14 }) %>
+                                <%= isPassenger ? ('Pasajero' + (paxShown > 1 ? 's · ' + paxShown : '')) : 'Paquete' %>
+                            </span>
+                            <div class="recent-type-extra" title="<%= detailValue %>"><%= detailValue %></div>
+                        </td>
+                        <td class="col-pay" data-label="Pago">
+                            <div class="recent-pay-line">
+                                <span class="recent-amount mono"><%= totalRow != null ? money(totalRow) : '—' %></span>
+                                <span class="<%= pay.cls %>"><%- pay.html %></span>
+                            </div>
+                            <% if (transferRef) { %>
+                                <div class="recent-ref mono" title="<%= transferRef %>"><%= transferRef %></div>
+                            <% } %>
+                        </td>
+                        <td class="col-ticket" data-label="Ticket">
+                            <% if (ticketHref) { %>
+                                <a class="recent-ticket mono" href="<%= ticketHref %>"><%= r.ticket_code %></a>
+                            <% } else { %>
+                                <span class="subtle">—</span>
+                            <% } %>
+                        </td>
+                        <td class="col-actions" data-label="Acciones">
+                            <div class="recent-row-cta">
+                                <a class="btn btn-ghost recent-cta-btn" href="/admin/trip/<%= r.trip_id %>">Salida</a>
+                                <% if (ticketHref) { %>
+                                    <a class="btn btn-wine recent-cta-btn" href="<%= ticketHref %>">Ticket</a>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+        <nav class="recent-pager" aria-label="Paginación">
+            <div class="recent-pager-meta subtle">
+                <%= from || 0 %>–<%= to || 0 %> de <%= totalN %>
+            </div>
+            <div class="recent-pager-pages">
+                <a class="recent-page <%= _page <= 1 ? 'is-disabled' : '' %>"
+                   href="<%= buildUrl(Math.max(1, _page - 1)) %>"
+                   aria-label="Página anterior"
+                   <%= _page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' %>>
+                    <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %>
+                </a>
+                <% windowPages.forEach(p => { %>
+                    <% if (p === '...') { %>
+                        <span class="recent-page-dots">…</span>
+                    <% } else { %>
+                        <a class="recent-page <%= Number(p) === _page ? 'is-on' : '' %>"
+                           href="<%= buildUrl(p) %>"
+                           <%= Number(p) === _page ? 'aria-current="page"' : '' %>><%= p %></a>
+                    <% } %>
+                <% }) %>
+                <a class="recent-page <%= _page >= _pages ? 'is-disabled' : '' %>"
+                   href="<%= buildUrl(Math.min(_pages, _page + 1)) %>"
+                   aria-label="Página siguiente"
+                   <%= _page >= _pages ? 'aria-disabled="true" tabindex="-1"' : '' %>>
+                    <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                </a>
+            </div>
+        </nav>
+        </div>
+    <% } %>
+
+        </div>
+    </div>
+</section>
 </main>
 
+<%- include('partials/admin-footer') %>
 <script src="/js/theme.js"></script>
 <script>
-    // Auto-submit on pageSize change
     (function () {
         const ps = document.getElementById('pageSizeSelect');
         const form = document.getElementById('filterForm');
         if (ps && form) {
-            ps.addEventListener('change', () => form.submit());
+            ps.addEventListener('change', () => form.requestSubmit());
         }
     })();
 </script>

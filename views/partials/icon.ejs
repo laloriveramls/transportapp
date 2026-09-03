@@ -1,8 +1,8 @@
 <%
-const iconName = (typeof name !== 'undefined' && name) ? String(name) : 'clock';
-const iconSize = (typeof size !== 'undefined' && size) ? Number(size) : 20;
-const iconClass = (typeof icoClass !== 'undefined' && icoClass) ? String(icoClass) : '';
-const iconTitle = (typeof title !== 'undefined' && title) ? String(title) : '';
-const ariaHidden = iconTitle ? '' : ' aria-hidden="true"';
-%>
-<img src="/assets/icons/<%= iconName %>.svg" alt="<%= iconTitle %>" class="ico<%= iconClass ? ' ' + iconClass : '' %>" width="<%= iconSize %>" height="<%= iconSize %>" decoding="async"<%= ariaHidden %>>
+const iconName = (typeof name !== "undefined" && name) ? String(name) : "circle";
+const iconSize = (typeof size !== "undefined" && size) ? Number(size) : 20;
+const iconClass = (typeof icoClass !== "undefined" && icoClass) ? String(icoClass) : "";
+const iconTitle = (typeof title !== "undefined" && title) ? String(title) : "";
+const iconDomId = (typeof iconId !== "undefined" && iconId) ? String(iconId) : "";
+-%>
+<%- renderIcon(iconName, { size: iconSize, className: iconClass, title: iconTitle, id: iconDomId }) -%>

@@ -180,7 +180,7 @@
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
-<main class="container py-4">
+<main class="container py-3">
     <div class="ticket-shell">
         <div class="ticket-card">
             <div class="ticket-top">
@@ -201,20 +201,20 @@
                         <a class="btn btn-wine btn-xs"
                            href="/ticket/<%= row.code %>/pdf/view?return=<%= encodeURIComponent('/ticket/' + row.code + (returnUrl ? ('?return=' + encodeURIComponent(returnUrl)) : '')) %>"
                            aria-label="Abrir PDF">
-                            <%- include('partials/icon', { name: 'pdf', size: 16 }) %> PDF
+                            <%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF
                         </a>
 
                         <a class="btn btn-ghost btn-xs"
                            href="/ticket/<%= row.code %>/print"
                            target="_blank" rel="noopener"
                            aria-label="Imprimir ticket">
-                            <%- include('partials/icon', { name: 'print', size: 16 }) %> Imprimir
+                            <%- include('partials/icon', { name: 'printer', size: 16 }) %> Imprimir
                         </a>
 
                         <a class="btn btn-ghost btn-xs"
                            href="<%= returnUrl || '/' %>"
                            aria-label="Volver">
-                            <%- include('partials/icon', { name: 'arrow-back', size: 16 }) %> Volver
+                            <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Volver
                         </a>
                     </div>
                 </div>
@@ -285,7 +285,7 @@
                         <button type="button" class="btn btn-ghost btn-xs" id="copyBtn" aria-label="Copiar link">
                             <%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar
                         </button>
-                        <span class="copy-toast" id="copyToast"><img src="/assets/icons/check.svg" alt="" class="ico" width="14" height="14" aria-hidden="true"> Copiado</span>
+                        <span class="copy-toast" id="copyToast"><%- include('partials/icon', { name: 'check', size: 14 }) %> Copiado</span>
                     </div>
                 </div>
             </div>
@@ -303,7 +303,7 @@
         const txt = document.getElementById('ticketUrl')?.innerText || '';
         try {
             await navigator.clipboard.writeText(txt);
-            toast.style.display = 'inline';
+            toast.style.display = 'inline-flex';
             clearTimeout(window.__copyToastTimer);
             window.__copyToastTimer = setTimeout(() => toast.style.display = 'none', 1400);
         } catch {

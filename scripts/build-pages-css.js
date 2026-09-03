@@ -255,6 +255,19 @@ const SHARED = `/* public/css/pages.css — Flujos públicos compartidos */
 
 .page-wrap { max-width: 1120px; }
 
+.page-pay main.container,
+.page-checkout main.container,
+.page-ticket main.container {
+    padding-top: 0.85rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.page-pay .btn-group-top,
+.page-checkout .actions,
+.page-ticket .actions {
+    max-width: 100%;
+}
+
 .copy-toast {
     display: none;
     font-size: 0.9rem;
@@ -271,7 +284,6 @@ const sections = [
     { file: 'views/checkout.ejs', scope: '.page-checkout', label: 'Checkout' },
     { file: 'views/ticket.ejs', scope: '.page-ticket', label: 'Ticket (screen)', skipPrint: true },
     { file: 'views/maintenance.ejs', scope: '.page-maintenance', label: 'Maintenance' },
-    { file: 'views/reserve.ejs', scope: '.page-reserve', label: 'Reserve' },
 ];
 
 let out = SHARED;

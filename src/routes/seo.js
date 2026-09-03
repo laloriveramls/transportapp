@@ -3,6 +3,7 @@
 
 const express = require("express");
 const router = express.Router();
+const {FALLBACK_BASE_URL, absoluteUrl} = require("../seo");
 
 function readEnvClean(key) {
     // I normalize env values in case the host stores them with quotes.
@@ -19,7 +20,7 @@ function readEnvClean(key) {
 function baseUrl(req) {
     const env = readEnvClean("BASE_URL");
     if (env) return env.replace(/\/+$/, "");
-    return `${req.protocol}://${req.get("host")}`.replace(/\/+$/, "");
+    return `${req.protocol}://${req.get("host")}`.replace(/\/+$/, "") || FALLBACK_BASE_URL;
 }
 
 function xmlEscape(s) {
@@ -35,12 +36,11 @@ function xmlEscape(s) {
 router.get("/robots.txt", (req, res) => {
     const site = baseUrl(req);
 
-    // I keep bots away from private/admin/token pages and server endpoints.
     const robots = [
         "User-agent: *",
         "Allow: /",
+        "Allow: /reserve",
 
-        // Private/admin areas
         "Disallow: /admin",
         "Disallow: /admin/",
         "Disallow: /pay",
@@ -50,13 +50,16 @@ router.get("/robots.txt", (req, res) => {
         "Disallow: /ticket",
         "Disallow: /ticket/",
 
-        // Internal endpoints
         "Disallow: /health",
         "Disallow: /stripe",
         "Disallow: /stripe/",
+        "Disallow: /telegram",
+        "Disallow: /telegram/",
+        "Disallow: /availability",
+        "Disallow: /pricing",
 
-        // I avoid indexing sensitive query flows (Stripe return, etc.)
         "Disallow: /*?session_id=",
+        "Disallow: /*?utm_source=pwa",
 
         `Sitemap: ${site}/sitemap.xml`,
         "",
@@ -68,25 +71,50 @@ router.get("/robots.txt", (req, res) => {
 
 router.get("/sitemap.xml", (req, res) => {
     const site = baseUrl(req);
-    const lastmod = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const lastmod = new Date().toISOString().slice(0, 10);
 
-    // I only include indexable public pages here.
     const urls = [
-        {loc: `${site}/`, changefreq: "daily", priority: "1.0"},
-        {loc: `${site}/reserve`, changefreq: "daily", priority: "0.9"},
+        {
+            loc: absoluteUrl(site, "/"),
+            changefreq: "daily",
+            priority: "1.0",
+            images: [
+                {loc: absoluteUrl(site, "/assets/logo-hero.png"), title: "Servicio de Transporte Victoria Llera"},
+                {loc: absoluteUrl(site, "/assets/logo-wide.png"), title: "Servicio de Transporte"},
+            ],
+        },
+        {
+            loc: absoluteUrl(site, "/reserve"),
+            changefreq: "daily",
+            priority: "0.9",
+            images: [
+                {loc: absoluteUrl(site, "/assets/logo-wide.png"), title: "Reservar viaje Victoria Llera"},
+            ],
+        },
     ];
 
     const xml =
         `<?xml version="1.0" encoding="UTF-8"?>\n` +
-        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n` +
         urls
             .map((u) => {
+                const images = (u.images || [])
+                    .map((img) => {
+                        return (
+                            `    <image:image>\n` +
+                            `      <image:loc>${xmlEscape(img.loc)}</image:loc>\n` +
+                            `      <image:title>${xmlEscape(img.title)}</image:title>\n` +
+                            `    </image:image>`
+                        );
+                    })
+                    .join("\n");
                 return (
                     `  <url>\n` +
                     `    <loc>${xmlEscape(u.loc)}</loc>\n` +
                     `    <lastmod>${xmlEscape(lastmod)}</lastmod>\n` +
                     `    <changefreq>${xmlEscape(u.changefreq)}</changefreq>\n` +
                     `    <priority>${xmlEscape(u.priority)}</priority>\n` +
+                    (images ? `${images}\n` : "") +
                     `  </url>`
                 );
             })

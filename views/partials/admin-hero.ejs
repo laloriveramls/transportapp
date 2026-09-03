@@ -1,0 +1,36 @@
+<%
+const heroHeading = (typeof heading !== "undefined" && heading) ? String(heading) : "Admin";
+const heroTag = (typeof tag !== "undefined" && tag) ? String(tag) : "Agenda, pagos y tickets";
+%>
+<section class="home-hero" aria-label="<%= heroHeading %>">
+    <div class="home-hero-media" role="img" aria-label="Carretera hacia el destino"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
+
+    <div class="container home-hero-inner">
+        <div class="home-brand home-reveal">
+            <div class="logo-wrap">
+                <a href="/" aria-label="Ir al inicio">
+                    <img class="home-brand-logo home-brand-logo-wide" src="/assets/logo-wide.png" alt="Servicio de Transporte Victoria ↔ Llera" width="960" height="360" decoding="async">
+                </a>
+            </div>
+            <div class="home-brand-copy visually-hidden">
+                <p class="home-kicker">Victoria - Llera</p>
+                <h1 class="home-brand-name"><%= heroHeading %></h1>
+                <p class="home-brand-tag"><%= heroTag %></p>
+            </div>
+        </div>
+
+        <div class="hero-actions home-reveal home-reveal-delay">
+            <a class="btn home-cta-ghost" href="/">
+                <span class="btn-ico"><%- include('icon', { name: 'house', size: 18 }) %></span>
+                Inicio
+            </a>
+            <form method="POST" action="/admin/logout" class="admin-logout">
+                <button class="btn home-cta-ghost" type="submit">
+                    <span class="btn-ico"><%- include('icon', { name: 'log-out', size: 18 }) %></span>
+                    Salir
+                </button>
+            </form>
+        </div>
+    </div>
+</section>

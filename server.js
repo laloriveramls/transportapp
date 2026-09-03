@@ -31,6 +31,8 @@ const express = require("express");
 const session = require("express-session");
 
 const { pool, hasDb, skipDbRequire } = require("./src/db");
+const { renderIcon } = require("./src/icons");
+const seo = require("./src/seo");
 
 // Routers
 const telegramWebhookRouter = require("./src/routes/telegramWebhook");
@@ -51,6 +53,10 @@ app.set("trust proxy", 1);
 // Views
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+app.locals.renderIcon = renderIcon;
+app.locals.homeFaqs = seo.homeFaqs;
+app.locals.buildHomeJsonLd = seo.homeJsonLd;
+app.locals.buildReserveJsonLd = seo.reserveJsonLd;
 
 /* =========================
    Core middleware
@@ -99,6 +105,10 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
     res.locals.GTM_CONTAINER_ID = process.env.GTM_CONTAINER_ID || "";
+    res.locals.GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION || "";
+    if (seo.isNoindexPath(req.path)) {
+        res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    }
     next();
 });
 

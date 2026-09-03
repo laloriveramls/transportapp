@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="es" data-theme="light">
+<html lang="es-MX" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Reservar | Servicio de Transporte',
-    description: 'Reserva tu viaje Victoria ↔ Llera. Elige ruta, fecha y horarios con cupo.',
-    canonicalUrl: 'https://serviciodetransportevic.com/reserve'
+    title: 'Reservar viaje Victoria ↔ Llera | Servicio de Transporte',
+    description: 'Reserva pasaje o paquetería entre Ciudad Victoria y Llera. Elige ruta, fecha y horario con cupo. Paga en taquilla, transferencia o en línea.',
+    canonicalUrl: (typeof baseUrl !== 'undefined' ? String(baseUrl).replace(/\/+$/, '') : 'https://serviciodetransportevic.com') + '/reserve'
     }) %>
 
     <!-- ✅ Inyecto pricing sin romper el JS del editor -->
@@ -18,134 +18,155 @@
     <script id="vicLocationsJson" type="application/json"><%- JSON.stringify(
                 (typeof vicLocations !== "undefined" && vicLocations) ? vicLocations : []
         ) %></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/home.css" rel="stylesheet">
+    <link href="/css/reserve.css" rel="stylesheet">
 </head>
 
-<body class="page-reserve">
+<body class="page-reserve home-page">
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
-<main class="container py-4">
+<section class="home-hero" aria-label="Reservar">
+    <div class="home-hero-media" role="img" aria-label="Carretera hacia el destino"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
 
-    <div class="hero reserve-hero mb-3">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div>
-                <h1 class="h3 headline mb-2">Reservar</h1>
-                <p class="subtle mb-0 reserve-hero-lead">Elige ruta, fecha y horario. Solo verás salidas con cupo
-                    disponible.</p>
+    <div class="container home-hero-inner">
+        <div class="home-brand home-reveal">
+            <div class="logo-wrap">
+                <a href="/" aria-label="Ir al inicio">
+                    <img class="home-brand-logo home-brand-logo-wide" src="/assets/logo-wide.png" alt="Servicio de Transporte Victoria ↔ Llera" width="960" height="360" decoding="async">
+                </a>
             </div>
-            <a class="btn btn-wine" href="/">Volver</a>
+            <div class="home-brand-copy visually-hidden">
+                <p class="home-kicker">Victoria - Llera</p>
+                <h1 class="home-brand-name">Reservar viaje Victoria ↔ Llera</h1>
+                <p class="home-brand-tag">Pasaje y paquetería entre Ciudad Victoria y Llera de Canales. Ruta, fecha y horario con cupo.</p>
+            </div>
+        </div>
+
+        <div class="hero-actions home-reveal home-reveal-delay">
+            <a class="btn home-cta-ghost" href="/">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'house', size: 18 }) %></span>
+                Inicio
+            </a>
+            <a class="btn btn-wine home-cta-primary" target="_blank" rel="noopener noreferrer"
+               href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero reservar un viaje.') %>">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'message-circle', size: 18 }) %></span>
+                WhatsApp
+            </a>
         </div>
     </div>
+</section>
 
-    <div class="card-soft reserve-card p-4">
+<main class="home-main reserve-main">
+    <section class="container" aria-label="Formulario de reserva">
         <% if (error) { %>
-            <div class="alert alert-danger mb-3"><%= error %></div>
+            <div class="reserve-alert" role="alert"><%= error %></div>
         <% } %>
 
-            <form id="reserveForm" method="POST" action="/reserve" class="reserve-form row g-3" novalidate>
-                <div class="col-12">
-                    <div class="wizard-wrap">
-                        <div class="wizard-track" aria-hidden="true">
-                            <div id="wizardBar" class="wizard-bar"></div>
-                        </div>
-                        <div class="wizard-steps" role="tablist" aria-label="Progreso de la reserva">
-                            <button type="button" class="wizard-step is-active" data-step-target="1">1. Viaje</button>
-                            <button type="button" class="wizard-step" data-step-target="2">2. Contacto</button>
-                            <button type="button" class="wizard-step" data-step-target="3">3. Pago</button>
-                            <button type="button" class="wizard-step" data-step-target="4">4.
-                                Confirmar
+        <form id="reserveForm" method="POST" action="/reserve" class="reserve-form" novalidate>
+            <div class="tabs-card home-tabs reserve-shell">
+                <div class="home-tabs-head">
+                    <h2 class="home-section-title">Tu reserva</h2>
+                    <div class="home-tabs-tools">
+                        <div class="nav nav-tabs home-seg wizard-steps" role="tablist" aria-label="Progreso de la reserva">
+                            <button type="button" class="nav-link wizard-step is-active active" data-step-target="1">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'map', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Viaje</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="2">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'user', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Datos</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="3">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'credit-card', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Pago</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="4">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Listo</span>
                             </button>
                         </div>
+                        <a class="home-tabs-wa" href="tel:+528344756376" title="Llamar al 834 475 6376">
+                            <span class="home-tabs-wa-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 16 }) %></span>
+                            <span class="home-tabs-wa-phone">834 475 6376</span>
+                        </a>
                     </div>
                 </div>
 
-                <div class="col-12 form-step is-active" data-step="1">
+                <div class="home-tabs-body">
+                <div class="form-step is-active" data-step="1">
                     <div class="step-card trip-step">
-                        <div class="trip-step-head">
-                            <div>
-                                <h2 class="step-title mb-0">Viaje</h2>
-                            </div>
-                            <div class="trip-preview" aria-label="Resumen rápido del viaje">
-                                <span class="trip-preview-item" id="tripPreviewRoute">Victoria → Llera</span>
-                                <span class="trip-preview-item" id="tripPreviewDate">Hoy</span>
-                                <span class="trip-preview-item" id="tripPreviewPax">1 viajero</span>
-                            </div>
-                        </div>
+                        <div class="trip-layout">
+                            <section class="trip-section trip-section-route">
+                                <h3 class="trip-section-title">Ruta</h3>
+                                <div class="route-grid">
+                                    <div>
+                                        <label class="form-label" for="from_city">Origen</label>
+                                        <select id="from_city" name="from_stop" class="form-select" required>
+                                            <%- include('partials/stop-options', { selected: 'VIC' }) %>
+                                        </select>
+                                    </div>
 
-                        <div class="trip-step-body">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <div class="trip-group">
-                                        <div class="route-grid">
-                                            <div>
-                                                <label class="form-label">Origen</label>
-                                                <select id="from_city" name="from_stop" class="form-select" required>
-                                                    <option value="VIC" selected>Ciudad Victoria — $<%= Number((pricing && pricing.passenger_price_mxn) || 120) %></option>
-                                                    <optgroup label="Ejidos">
-                                                        <% (vicLocations || []).forEach(function(loc) { %>
-                                                            <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
-                                                        <% }) %>
-                                                    </optgroup>
-                                                    <option value="LLE">Llera</option>
-                                                </select>
-                                            </div>
+                                    <button type="button" class="route-swap" id="swapRouteBtn" aria-label="Intercambiar origen y destino">
+                                        <%- include('partials/icon', { name: 'arrow-left-right', size: 18 }) %>
+                                    </button>
 
-                                            <div class="route-arrow" aria-hidden="true">→</div>
-
-                                            <div>
-                                                <label class="form-label">Destino</label>
-                                                <select id="to_city" name="to_stop" class="form-select" required>
-                                                    <option value="LLE" selected>Llera</option>
-                                                    <option value="VIC">Ciudad Victoria — $<%= Number((pricing && pricing.passenger_price_mxn) || 120) %></option>
-                                                    <optgroup label="Ejidos">
-                                                        <% (vicLocations || []).forEach(function(loc) { %>
-                                                            <option value="<%= loc.code %>"><%= loc.label %> — $<%= loc.price_mxn %></option>
-                                                        <% }) %>
-                                                    </optgroup>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
-                                        <input type="hidden" id="vic_location" name="vic_location" value="">
+                                    <div>
+                                        <label class="form-label" for="to_city">Destino</label>
+                                        <select id="to_city" name="to_stop" class="form-select" required>
+                                            <%- include('partials/stop-options', { selected: 'LLE' }) %>
+                                        </select>
                                     </div>
                                 </div>
+                                <input type="hidden" id="direction" name="direction" value="VIC_TO_LLE">
+                                <input type="hidden" id="vic_location" name="vic_location" value="">
+                            </section>
 
-                                <div class="col-lg-6">
-                                    <div class="trip-group">
-                                        <div class="choice-grid">
-                                            <div>
-                                                <label class="form-label">¿Cuándo viajas?</label>
-                                                <input id="trip_date" name="trip_date" type="date" class="form-control"
-                                                       required/>
-                                            </div>
-
-                                            <div>
-                                                <label class="form-label">¿Qué servicio necesitas?</label>
-                                                <select id="type" name="type" class="form-select" required>
-                                                    <option value="PASSENGER" selected>Pasaje</option>
-                                                    <option value="PACKAGE">Paquetería</option>
-                                                </select>
-                                            </div>
+                            <section class="trip-section trip-section-details">
+                                <h3 class="trip-section-title">Fecha y viajeros</h3>
+                                <div class="trip-details-grid">
+                                    <div>
+                                        <label class="form-label" for="trip_date">Fecha</label>
+                                        <div class="field-ico-wrap">
+                                            <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'calendar', size: 16 }) %></span>
+                                            <input id="trip_date" name="trip_date" type="date" class="form-control" required>
                                         </div>
                                     </div>
-                                </div>
+                                    <div>
+                                        <span class="form-label">Servicio</span>
+                                        <select id="type" name="type" class="visually-hidden" required tabindex="-1">
+                                            <option value="PASSENGER" selected>Pasaje</option>
+                                            <option value="PACKAGE">Paquetería</option>
+                                        </select>
+                                        <div class="seg-pills" role="group" aria-label="Tipo de servicio">
+                                            <button type="button" class="seg-pill is-on" data-set-type="PASSENGER">
+                                                <%- include('partials/icon', { name: 'users', size: 14 }) %>
+                                                Pasaje
+                                            </button>
+                                            <button type="button" class="seg-pill" data-set-type="PACKAGE">
+                                                <%- include('partials/icon', { name: 'package', size: 14 }) %>
+                                                Paquetería
+                                            </button>
+                                        </div>
+                                    </div>
 
-                                <div class="col-12" id="passengerGroup">
-                                    <div class="trip-group">
+                                    <div class="trip-pax" id="passengerGroup">
                                         <div class="traveler-grid">
                                             <div class="stepper-field" id="seatsWrap">
                                                 <label class="form-label">Adultos</label>
-
                                                 <div class="stepper">
-                                                    <button id="minusBtn" type="button" class="btn-step"
-                                                            aria-label="Disminuir adultos">−
-                                                    </button>
+                                                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir adultos"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
                                                     <div class="count"><span id="seatsText">1</span></div>
-                                                    <button id="plusBtn" type="button" class="btn-step"
-                                                            aria-label="Aumentar adultos">+
-                                                    </button>
-
+                                                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar adultos"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
                                                     <select id="seats" name="seats" class="d-none">
                                                         <option value="0">0</option>
                                                         <option value="1" selected>1</option>
@@ -160,16 +181,10 @@
 
                                             <div class="stepper-field" id="childSeatsWrap">
                                                 <label class="form-label">Niños 6-10 años</label>
-
                                                 <div class="stepper">
-                                                    <button id="childMinusBtn" type="button" class="btn-step"
-                                                            aria-label="Disminuir niños">−
-                                                    </button>
+                                                    <button id="childMinusBtn" type="button" class="btn-step" aria-label="Disminuir niños"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
                                                     <div class="count"><span id="childSeatsText">0</span></div>
-                                                    <button id="childPlusBtn" type="button" class="btn-step"
-                                                            aria-label="Aumentar niños">+
-                                                    </button>
-
+                                                    <button id="childPlusBtn" type="button" class="btn-step" aria-label="Aumentar niños"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
                                                     <select id="child_seats" name="child_seats" class="d-none">
                                                         <option value="0" selected>0</option>
                                                         <option value="1">1</option>
@@ -182,286 +197,281 @@
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="trip-note" id="passengerCapHint">
-                                            <span aria-hidden="true">ℹ</span>
+                                            <span aria-hidden="true"><%- include('partials/icon', { name: 'info', size: 14 }) %></span>
                                             <span>La disponibilidad se calcula con adultos + niños.</span>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="col-12" id="packageWrap">
-                                    <div class="trip-group package-panel">
-                                        <label class="form-label">Detalle paquetería</label>
+                                    <div class="trip-pkg" id="packageWrap">
+                                        <label class="form-label" for="package_details">Detalle paquetería</label>
                                         <input id="package_details" name="package_details" class="form-control"
-                                               placeholder="Ej: sobre, refacciones, etc."/>
+                                               placeholder="Ej: sobre, refacciones, etc.">
                                     </div>
                                 </div>
+                            </section>
 
-                                <div class="col-12">
-                                    <label class="form-label">Hora (según cupo)</label>
-                                    <input type="hidden" id="depart_time" name="depart_time" value="">
+                            <aside class="trip-quote" aria-live="polite">
+                                <p class="trip-quote-k">Estimado</p>
+                                <p class="trip-quote-total" id="tripQuoteTotal">$0</p>
+                                <p class="trip-quote-route" id="tripQuoteRoute">Ciudad Victoria → Llera</p>
+                                <div class="trip-quote-breakdown" id="tripQuoteBreakdown"></div>
+                            </aside>
 
-                                    <div class="slots-wrap schedule-wrap is-featured">
-                                        <div class="slots-head">
-                                            <div>
-                                                <p class="slots-title mb-0">Horarios disponibles</p>
-                                            </div>
+                            <section class="trip-section trip-section-slots">
+                                <h3 class="trip-section-title">Horario</h3>
+                                <input type="hidden" id="depart_time" name="depart_time" value="">
+                                <div class="slots-wrap schedule-wrap is-featured">
+                                    <div id="slotsLoading" class="help slots-loading"></div>
+                                    <div id="sections" class="d-none">
+                                        <div class="slot-section" id="morningSection">
+                                            <div class="section-label"><%- include('partials/icon', { name: 'sunrise', size: 16 }) %> Mañana</div>
+                                            <div id="morningSlots" class="slots"></div>
                                         </div>
-
-                                        <div id="slotsLoading" class="help">—</div>
-
-                                        <div id="sections" class="d-none">
-                                            <div class="slot-section" id="morningSection">
-                                                <div class="section-label"><%- include('partials/icon', { name: 'sun-rise', size: 16 }) %> Mañana</div>
-                                                <div id="morningSlots" class="slots"></div>
-                                            </div>
-
-                                            <div class="slot-section" id="afternoonSection">
-                                                <div class="section-label"><%- include('partials/icon', { name: 'sun-set', size: 16 }) %> Tarde</div>
-                                                <div id="afternoonSlots" class="slots"></div>
-                                            </div>
+                                        <div class="slot-section" id="afternoonSection">
+                                            <div class="section-label"><%- include('partials/icon', { name: 'sunset', size: 16 }) %> Tarde</div>
+                                            <div id="afternoonSlots" class="slots"></div>
                                         </div>
                                     </div>
-
-                                    <div id="departTimeError" class="step-inline-error d-none"></div>
                                 </div>
-                            </div>
+                                <div id="departTimeError" class="step-inline-error d-none"></div>
+                            </section>
                         </div>
+
                         <div class="step-actions">
-                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                            <button type="button" class="btn btn-wine" data-next-step>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 form-step" data-step="2">
+                <div class="form-step" data-step="2">
                     <div class="step-card">
                         <h2 class="step-title">Datos de contacto</h2>
-                        <div class="row g-3">
-                            <!-- ✅ CONTACTO (SIEMPRE) -->
-                            <div class="col-md-6" id="contactNameWrap">
-                                <label class="form-label">Nombre de contacto</label>
-                                <input id="customer_name" name="customer_name" class="form-control" required
-                                       placeholder="Ej: Juan Martínez"/>
-                                <div class="form-text subtle">
-                                    Usaremos este nombre para tu reserva y para contactarte.
+                        <div class="reserve-panel">
+                            <div class="choice-grid">
+                                <div id="contactNameWrap">
+                                    <label class="form-label" for="customer_name">Nombre de contacto</label>
+                                    <input id="customer_name" name="customer_name" class="form-control" required
+                                           placeholder="Ej: Juan Martínez">
                                 </div>
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="col-md-6">
-                                <label class="form-label">Teléfono</label>
-                                <input id="phone" name="phone" class="form-control" required
-                                       inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376"/>
-                                <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
-                            </div>
-
-                            <!-- ✅ PASAJEROS (OPCIONAL) -->
-                            <div class="col-12" id="passengerNamesWrap">
-                                <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
-                                    <input class="form-check-input" type="checkbox" id="namesToggle">
-                                    <label class="form-check-label subtle" for="namesToggle">Capturar nombres</label>
-                                </div>
-
-                                <div class="form-text subtle mt-1">
-                                    Puedes omitir los nombres y solo usar el contacto.
-                                </div>
-
-                                <div id="passengerNamesBox" class="mt-2 d-none">
-                                    <div id="passengerNames" class="row g-2"></div>
-                                    <div class="form-text">
-                                        Si activas esta opción, capturamos un nombre por asiento.
-                                    </div>
+                                <div>
+                                    <label class="form-label" for="phone">Teléfono</label>
+                                    <input id="phone" name="phone" class="form-control" required
+                                           inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376">
+                                    <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="reserve-panel" id="passengerNamesWrap">
+                            <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
+                                <input class="form-check-input" type="checkbox" id="namesToggle">
+                                <label class="form-check-label" for="namesToggle">Capturar nombres de pasajeros</label>
+                            </div>
+                            <div class="form-text mt-1">Puedes omitir los nombres y solo usar el contacto.</div>
+                            <div id="passengerNamesBox" class="mt-2 d-none">
+                                <div id="passengerNames" class="row g-2"></div>
+                                <div class="form-text">Si activas esta opción, capturamos un nombre por asiento.</div>
+                            </div>
+                        </div>
+
                         <div class="step-actions">
-                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
                             </button>
-                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                            <button type="button" class="btn btn-wine" data-next-step>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-                <div class="col-12 form-step" data-step="3">
+                <div class="form-step" data-step="3">
                     <div class="step-card">
                         <h2 class="step-title">Pago</h2>
-                        <div class="row g-3">
-                            <!-- MÉTODO DE PAGO -->
-                            <div class="col-md-6">
-                                <label class="form-label">Método de pago</label>
-                                <select id="payment_method" name="payment_method" class="form-select" required>
-                                    <option value="TAQUILLA" selected>Taquilla</option>
-                                    <option value="TRANSFERENCIA">Transferencia</option>
-                                    <option value="ONLINE">Pago en línea</option>
-                                </select>
-                                <div class="form-text subtle">Elige cómo deseas pagar tu reserva.</div>
+                        <div class="reserve-panel">
+                            <span class="form-label">Método de pago</span>
+                            <select id="payment_method" name="payment_method" class="visually-hidden" required tabindex="-1">
+                                <option value="TAQUILLA" selected>Taquilla</option>
+                                <option value="TRANSFERENCIA">Transferencia</option>
+                                <option value="ONLINE">Pago en línea</option>
+                            </select>
+                            <div class="pay-pills" role="group" aria-label="Método de pago">
+                                <button type="button" class="pay-pill is-on" data-set-pay="TAQUILLA">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">Taquilla</span>
+                                        <span class="pay-pill-sub">Paga al abordar</span>
+                                    </span>
+                                </button>
+                                <button type="button" class="pay-pill" data-set-pay="TRANSFERENCIA">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'landmark', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">Transferencia</span>
+                                        <span class="pay-pill-sub">SPEI o depósito</span>
+                                    </span>
+                                </button>
+                                <button type="button" class="pay-pill" data-set-pay="ONLINE">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'credit-card', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">En línea</span>
+                                        <span class="pay-pill-sub">Pago con tarjeta</span>
+                                    </span>
+                                </button>
                             </div>
+                        </div>
 
-                            <!-- TOTAL A PAGAR -->
-                            <div class="col-12">
-                                <div class="slots-wrap price-wrap">
-                                    <div class="slots-head">
-                                        <p class="slots-title mb-0">Total a pagar</p>
-                                        <div class="slots-sub" id="priceHint">Cargando precio…</div>
-                                    </div>
-
-                                    <div class="price-summary">
-                                        <div class="price-total-row">
-                                            <span class="pill"><%- include('partials/icon', { name: 'money', size: 16 }) %> <span id="priceTotal">$0</span></span>
-                                        </div>
-                                        <div class="price-breakdown" id="priceBreakdown"></div>
-                                    </div>
+                        <div class="reserve-panel">
+                            <div class="slots-wrap price-wrap">
+                                <div class="slots-head">
+                                    <p class="slots-title mb-0">Total a pagar</p>
+                                    <div class="slots-sub" id="priceHint">Cargando precio…</div>
                                 </div>
-                            </div>
-
-                            <!-- TRANSFERENCIA -->
-                            <div class="col-12 d-none" id="transferWrap">
-                                <div class="slots-wrap transfer-wrap">
-                                    <div class="slots-head">
-                                        <p class="slots-title mb-0">Datos para transferencia</p>
-                                        <div class="slots-sub">Transfiere y comparte el comprobante por WhatsApp.</div>
+                                <div class="price-summary">
+                                    <div class="price-total-row">
+                                        <span class="pill"><%- include('partials/icon', { name: 'dollar-sign', size: 16 }) %> <span id="priceTotal">$0</span></span>
                                     </div>
-
-                                    <div class="transfer-grid" aria-label="Datos bancarios">
-                                        <div class="transfer-item">
-                                            <span class="transfer-key">Banco</span>
-                                            <span class="transfer-value" id="bankName">BBVA</span>
-                                        </div>
-                                        <div class="transfer-item">
-                                            <span class="transfer-key">Beneficiario</span>
-                                            <span class="transfer-value" id="bankOwner">Gary Treviño</span>
-                                        </div>
-                                        <div class="transfer-item">
-                                            <span class="transfer-key">Numero de tarjeta</span>
-                                            <span class="transfer-value mono" id="bankClabe">4152 3142 8477 3416</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="transfer-actions">
-                                        <button type="button" class="tbtn" id="copyClabeBtn"
-                                                aria-label="Copiar número de tarjeta">
-                                        <span class="tbtn-ic" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                 stroke-linecap="round" stroke-linejoin="round">
-                                                <rect x="9" y="9" width="13" height="13" rx="2"></rect>
-                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                            </svg>
-                                        </span>
-                                            <span class="tbtn-txt">Copiar tarjeta</span>
-                                        </button>
-
-                                        <button type="button" class="tbtn" id="copyTransferMsgBtn"
-                                                aria-label="Copiar mensaje de transferencia">
-                                        <span class="tbtn-ic" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                 stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                            </svg>
-                                        </span>
-                                            <span class="tbtn-txt">Copiar mensaje</span>
-                                        </button>
-                                    </div>
-
-                                    <div class="transfer-tip">
-                                        <strong>Concepto sugerido:</strong> “Servicio de transporte”
-                                        <span class="subtle">(tu folio se genera al finalizar)</span>.
-                                        <br>
-                                        Después, envíanos el comprobante por WhatsApp para confirmar.
-                                    </div>
-
-                                    <div class="transfer-ref d-none">
-                                        <label class="form-label">Referencia / folio de transferencia (opcional)</label>
-                                        <input id="transfer_ref" name="transfer_ref" class="form-control"
-                                               placeholder="Ej: 123456 / SPEI / concepto"/>
-                                        <div class="form-text subtle">
-                                            Si ya hiciste la transferencia, pega aquí la referencia. Si no, puedes
-                                            dejarlo vacío.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ONLINE: aviso -->
-                            <div class="col-12 d-none" id="onlineWrap">
-                                <div class="alert alert-info mb-0">
-                                    <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago del
-                                    pasaje.
+                                    <div class="price-breakdown" id="priceBreakdown"></div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="d-none" id="transferWrap">
+                            <div class="reserve-panel">
+                                <div class="slots-head">
+                                    <p class="slots-title mb-0">Datos para transferencia</p>
+                                    <div class="slots-sub">Transfiere y comparte el comprobante por WhatsApp.</div>
+                                </div>
+                                <div class="transfer-grid" aria-label="Datos bancarios">
+                                    <div class="transfer-item">
+                                        <span class="transfer-key">Banco</span>
+                                        <span class="transfer-value" id="bankName">BBVA</span>
+                                    </div>
+                                    <div class="transfer-item">
+                                        <span class="transfer-key">Beneficiario</span>
+                                        <span class="transfer-value" id="bankOwner">Gary Treviño</span>
+                                    </div>
+                                    <div class="transfer-item">
+                                        <span class="transfer-key">Numero de tarjeta</span>
+                                        <span class="transfer-value mono" id="bankClabe">4152 3142 8477 3416</span>
+                                    </div>
+                                </div>
+                                <div class="transfer-actions">
+                                    <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar número de tarjeta">
+                                        <span class="tbtn-ic" aria-hidden="true">
+                                            <%- include('partials/icon', { name: 'copy', size: 14 }) %>
+                                        </span>
+                                        <span class="tbtn-txt">Copiar tarjeta</span>
+                                    </button>
+                                    <button type="button" class="tbtn" id="copyTransferMsgBtn" aria-label="Copiar mensaje de transferencia">
+                                        <span class="tbtn-ic" aria-hidden="true">
+                                            <%- include('partials/icon', { name: 'receipt', size: 14 }) %>
+                                        </span>
+                                        <span class="tbtn-txt">Copiar mensaje</span>
+                                    </button>
+                                </div>
+                                <div class="transfer-tip">
+                                    <strong>Concepto sugerido:</strong> “Servicio de transporte”
+                                    <span class="subtle">(tu folio se genera al finalizar)</span>.
+                                    <br>
+                                    Después, envíanos el comprobante por WhatsApp para confirmar.
+                                </div>
+                                <div class="transfer-ref d-none">
+                                    <label class="form-label" for="transfer_ref">Referencia / folio de transferencia (opcional)</label>
+                                    <input id="transfer_ref" name="transfer_ref" class="form-control"
+                                           placeholder="Ej: 123456 / SPEI / concepto">
+                                    <div class="form-text">Si ya hiciste la transferencia, pega aquí la referencia.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-none" id="onlineWrap">
+                            <div class="alert alert-info mb-0">
+                                <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago del pasaje.
+                            </div>
+                        </div>
+
                         <div class="step-actions">
-                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
                             </button>
-                            <button type="button" class="btn btn-wine px-4" data-next-step>Siguiente</button>
+                            <button type="button" class="btn btn-wine" data-next-step>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
                         </div>
                     </div>
-            </div>
+                </div>
 
-                <div class="col-12 form-step" data-step="4">
+                <div class="form-step" data-step="4">
                     <div class="step-card">
                         <div class="confirm-head">
                             <h2 class="step-title mb-0">Confirmación</h2>
                             <span class="confirm-pill">Revisa antes de enviar</span>
                         </div>
-                        <div class="slots-wrap confirm-summary">
-                            <div class="slots-head">
-                                <p class="slots-title mb-0">Resumen de la reserva</p>
-                            </div>
+                        <div class="reserve-panel">
                             <div class="confirm-grid">
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Ruta</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'map', size: 14 }) %> Ruta</span>
                                     <span class="confirm-v" id="sumRoute">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Fecha</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'calendar', size: 14 }) %> Fecha</span>
                                     <span class="confirm-v" id="sumDate">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Hora</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'clock', size: 14 }) %> Hora</span>
                                     <span class="confirm-v" id="sumTime">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Tipo</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'ticket', size: 14 }) %> Tipo</span>
                                     <span class="confirm-v" id="sumType">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Pasajeros</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'users', size: 14 }) %> Pasajeros</span>
                                     <span class="confirm-v" id="sumSeats">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Pago</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'credit-card', size: 14 }) %> Pago</span>
                                     <span class="confirm-v" id="sumPayment">-</span>
                                 </div>
                                 <div class="confirm-item total-item">
-                                    <span class="confirm-k">Total</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'dollar-sign', size: 14 }) %> Total</span>
                                     <span class="confirm-v total-value" id="sumTotal">-</span>
                                 </div>
                                 <div class="confirm-item">
-                                    <span class="confirm-k">Contacto</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'user', size: 14 }) %> Contacto</span>
                                     <span class="confirm-v" id="sumContact">-</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="cancel-policy">
-                            <p class="cancel-title">Política de cancelación</p>
-                            <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar
-                                devolución.</p>
+                            <p class="cancel-title"><%- include('partials/icon', { name: 'info', size: 14 }) %> Política de cancelación</p>
+                            <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar devolución.</p>
                         </div>
 
                         <div class="step-actions reserve-actions">
-                            <button type="button" class="btn btn-outline-secondary px-4" data-prev-step>Anterior
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
                             </button>
-                            <button class="btn btn-wine px-4 reserve-submit">Confirmar reserva</button>
-                            <a class="btn btn-outline-secondary px-4 reserve-cancel" href="/">Cancelar</a>
+                            <button class="btn btn-wine reserve-submit">
+                                <%- include('partials/icon', { name: 'check', size: 16 }) %> Confirmar reserva
+                            </button>
+                            <a class="btn btn-ghost reserve-cancel" href="/">
+                                <%- include('partials/icon', { name: 'x', size: 16 }) %> Cancelar
+                            </a>
                         </div>
                     </div>
+                </div>
+                </div>
             </div>
         </form>
-    </div>
-
+    </section>
 </main>
+
+<%- include('partials/site-footer') %>
 
 <%- include('partials/toast') %>
 <%- include('partials/footer') %>
@@ -528,7 +538,6 @@
     const formEl = document.getElementById("reserveForm");
     const stepPanels = [...document.querySelectorAll(".form-step")];
     const stepDots = [...document.querySelectorAll(".wizard-step")];
-    const wizardBar = document.getElementById("wizardBar");
 
     const TOTAL_STEPS = 4;
     let currentStep = 1;
@@ -925,7 +934,7 @@
         namesToggleWrap.style.display = isPassenger ? "" : "none";
 
         // I show/hide package detail.
-        packageWrap.style.display = isPassenger ? "none" : "";
+        packageWrap.style.display = isPassenger ? "none" : "block";
 
         // I enforce package details only for packages.
         if (!isPassenger) {
@@ -940,10 +949,25 @@
             packageDetails.removeAttribute("required");
         }
 
+        if (passengerNamesWrap) passengerNamesWrap.style.display = isPassenger ? "" : "none";
+
+        syncTypePills();
         updatePriceUI();
         renderPassengerInputs();
         updateSummary();
         writeDraft();
+    }
+
+    function syncTypePills() {
+        document.querySelectorAll("[data-set-type]").forEach((btn) => {
+            btn.classList.toggle("is-on", btn.getAttribute("data-set-type") === typeSel.value);
+        });
+    }
+
+    function syncPaymentPills() {
+        document.querySelectorAll("[data-set-pay]").forEach((btn) => {
+            btn.classList.toggle("is-on", btn.getAttribute("data-set-pay") === paymentMethod.value);
+        });
     }
 
     function updateUIByPayment() {
@@ -953,6 +977,7 @@
 
         transferWrap.classList.toggle("d-none", !isTransfer);
         onlineWrap.classList.toggle("d-none", !isOnline);
+        syncPaymentPills();
         updateSummary();
         writeDraft();
     }
@@ -988,10 +1013,19 @@
         restoredPassengerNames = [];
     }
 
-    function clearSlotsUI(msg) {
+    function setSlotsStatus(msg, iconName) {
+        const icon = (window.Icons && typeof window.Icons.svg === "function")
+            ? window.Icons.svg(iconName || "clock", { size: 16 })
+            : "";
+        slotsLoading.classList.remove("d-none", "is-error");
+        if (iconName === "triangle-alert") slotsLoading.classList.add("is-error");
+        slotsLoading.innerHTML = `<span class="slots-status">${icon}<span>${msg}</span></span>`;
+    }
+
+    function clearSlotsUI(msg, iconName) {
         departTimeHidden.value = "";
         clearDepartTimeError();
-        slotsLoading.textContent = msg || "Selecciona fecha y ruta para ver horarios.";
+        setSlotsStatus(msg || "Selecciona fecha y ruta para ver horarios.", iconName || "clock");
         sections.classList.add("d-none");
         morningSlots.innerHTML = "";
         afternoonSlots.innerHTML = "";
@@ -1025,13 +1059,13 @@
         }
 
         const extra = (seatsNeeded > 0)
-            ? `${available} libres · ${seatsNeeded} lugar${seatsNeeded === 1 ? "" : "es"}`
-            : "Paquetería";
+            ? `${available} cupo`
+            : "Paquete";
 
         btn.innerHTML = `
             <span class="time">${hhmm}</span>
             <span class="mini">${extra}</span>
-            <span class="slot-check" aria-hidden="true"><img src="/assets/icons/check-light.svg" alt="" class="ico" width="12" height="12"></span>
+            <span class="slot-check" aria-hidden="true">${window.Icons ? window.Icons.svg('check', { size: 12 }) : ''}</span>
         `;
 
         btn.addEventListener("click", () => setSelectedTime(hhmm));
@@ -1059,7 +1093,7 @@
                     ? "No hay horarios con cupo suficiente para tu selección."
                     : "No hay horarios para esta fecha/ruta.");
 
-            clearSlotsUI(msg);
+            clearSlotsUI(msg, "calendar");
             return;
         }
 
@@ -1077,7 +1111,7 @@
         afternoon.forEach(x => afternoonSlots.appendChild(createPill({...x, seatsNeeded})));
 
         sections.classList.remove("d-none");
-        slotsLoading.textContent = "Selecciona un horario:";
+        slotsLoading.classList.add("d-none");
 
         // ✅ If I have a preferred time from the index, I try to select it.
         const preferred = PREFERRED_TIME ? toHHMM(PREFERRED_TIME) : null;
@@ -1103,7 +1137,7 @@
             ? getTotalPassengers()
             : 0;
 
-        slotsLoading.textContent = "Cargando horarios...";
+        setSlotsStatus("Cargando horarios…", "loader-circle");
         sections.classList.add("d-none");
         departTimeHidden.value = "";
 
@@ -1114,13 +1148,18 @@
 
             renderSlotsGrouped(data.results || [], seatsNeeded);
         } catch (e) {
-            clearSlotsUI("Error al cargar horarios. Intenta de nuevo.");
+            clearSlotsUI("Error al cargar horarios. Intenta de nuevo.", "triangle-alert");
         }
     }
 
     function formatMXN(n) {
         const v = Number(n || 0);
         return `$${v.toFixed(2)} MXN`;
+    }
+
+    function formatMXNShort(n) {
+        const v = Number(n || 0);
+        return Number.isInteger(v) ? `$${v}` : `$${v.toFixed(2)}`;
     }
 
     function buildTransferMessage() {
@@ -1200,6 +1239,13 @@
 
         priceTotal.textContent = formatMXN(total);
 
+        const quoteTotal = document.getElementById("tripQuoteTotal");
+        const quoteRoute = document.getElementById("tripQuoteRoute");
+        const quoteBreakdown = document.getElementById("tripQuoteBreakdown");
+        const totalShort = formatMXNShort(total);
+        if (quoteTotal) quoteTotal.textContent = totalShort;
+        if (quoteRoute) quoteRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
+
         if (isPassenger) {
             const parts = [];
             if (adults > 0) {
@@ -1208,10 +1254,14 @@
             if (children > 0) {
                 parts.push(`<span class="price-breakdown-item"><span class="mini-tag">${children} niño${children === 1 ? "" : "s"}</span><span>${formatMXN(childUnit)} c/u</span></span>`);
             }
-            priceBreakdown.innerHTML = parts.length ? parts.join("") : '<span class="help">Selecciona viajeros para ver el desglose.</span>';
+            const breakdownHtml = parts.length ? parts.join("") : '<span class="help">Selecciona viajeros para ver el desglose.</span>';
+            priceBreakdown.innerHTML = breakdownHtml;
+            if (quoteBreakdown) quoteBreakdown.innerHTML = breakdownHtml;
             priceHint.textContent = PRICING_OK ? "Pasaje (precio actual)" : "Pasaje (estimado)";
         } else {
-            priceBreakdown.innerHTML = `<span class="price-breakdown-item"><span class="mini-tag">Fijo</span><span>${formatMXN(packageUnit)}</span></span>`;
+            const pkgHtml = `<span class="price-breakdown-item"><span class="mini-tag">Fijo</span><span>${formatMXN(packageUnit)}</span></span>`;
+            priceBreakdown.innerHTML = pkgHtml;
+            if (quoteBreakdown) quoteBreakdown.innerHTML = pkgHtml;
             priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
         }
 
@@ -1276,10 +1326,6 @@
         departTimeError.classList.add("d-none");
     }
 
-    function routeLabel(dir) {
-        return routeLabelFromStops(fromCity.value, toCity.value);
-    }
-
     function paymentLabel(v) {
         if (v === "TAQUILLA") return "Taquilla";
         if (v === "TRANSFERENCIA") return "Transferencia";
@@ -1288,25 +1334,8 @@
     }
 
     function updateStepOnePreview() {
-        const routeEl = document.getElementById("tripPreviewRoute");
-        const dateEl = document.getElementById("tripPreviewDate");
-        const paxEl = document.getElementById("tripPreviewPax");
-        if (!routeEl || !dateEl || !paxEl) return;
-
-        routeEl.textContent = routeLabel(directionInput.value || "");
-
-        if (tripDate.value) {
-            dateEl.textContent = tripDate.value === todayISO() ? "Hoy" : tripDate.value;
-        } else {
-            dateEl.textContent = "Sin fecha";
-        }
-
-        if (typeSel.value === "PASSENGER") {
-            const total = getTotalPassengers();
-            paxEl.textContent = `${total} ${total === 1 ? "viajero" : "viajeros"}`;
-        } else {
-            paxEl.textContent = "Paquetería";
-        }
+        const quoteRoute = document.getElementById("tripQuoteRoute");
+        if (quoteRoute) quoteRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
     }
 
     function updateSummary() {
@@ -1346,16 +1375,12 @@
         for (const dot of stepDots) {
             const step = Number(dot.dataset.stepTarget || "1");
             dot.classList.toggle("is-active", step === currentStep);
+            dot.classList.toggle("active", step === currentStep);
             dot.classList.toggle("is-done", step < currentStep);
         }
 
         for (const panel of stepPanels) {
             panel.classList.toggle("is-active", Number(panel.dataset.step || "1") === currentStep);
-        }
-
-        if (wizardBar) {
-            const pct = (currentStep / TOTAL_STEPS) * 100;
-            wizardBar.style.width = `${pct}%`;
         }
 
         updateSummary();
@@ -1364,7 +1389,8 @@
     function focusFirstFieldInStep(step) {
         const panel = stepPanels.find((x) => Number(x.dataset.step || "1") === step);
         if (!panel) return;
-        const first = panel.querySelector("input:not([type=\"hidden\"]), select, textarea, button[data-next-step], button[data-prev-step]");
+        const first = [...panel.querySelectorAll("input:not([type=\"hidden\"]), select, textarea, button[data-next-step], button[data-prev-step]")]
+            .find((el) => !el.classList.contains("visually-hidden") && !el.classList.contains("d-none") && el.offsetParent !== null);
         if (first && typeof first.focus === "function") first.focus();
     }
 
@@ -1378,6 +1404,7 @@
             if (el.disabled) return false;
             if (el.type === "hidden") return false;
             if (el.closest(".d-none")) return false;
+            if (el.classList.contains("visually-hidden")) return false;
             if (el.offsetParent === null) return false;
             return true;
         });
@@ -1436,6 +1463,23 @@
     }, true);
 
     formEl.addEventListener("click", (e) => {
+        const typeBtn = e.target.closest("[data-set-type]");
+        if (typeBtn) {
+            e.preventDefault();
+            typeSel.value = typeBtn.getAttribute("data-set-type") || "PASSENGER";
+            updateUIByType();
+            loadAvailability();
+            return;
+        }
+
+        const payBtn = e.target.closest("[data-set-pay]");
+        if (payBtn) {
+            e.preventDefault();
+            paymentMethod.value = payBtn.getAttribute("data-set-pay") || "TAQUILLA";
+            updateUIByPayment();
+            return;
+        }
+
         const nextBtn = e.target.closest("[data-next-step]");
         if (nextBtn) {
             e.preventDefault();
@@ -1497,6 +1541,14 @@
         }
 
         clearDraft();
+    });
+
+    document.getElementById("swapRouteBtn")?.addEventListener("click", () => {
+        const from = fromCity.value;
+        fromCity.value = toCity.value;
+        toCity.value = from;
+        syncDirection("from");
+        loadAvailability();
     });
 
     fromCity.addEventListener("change", () => {

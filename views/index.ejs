@@ -1,12 +1,17 @@
 <!doctype html>
-<html lang="es" data-theme="light">
+<html lang="es-MX" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Servicio de Transporte | Victoria ↔ Llera',
-    description: 'Horarios, reservas y ubicación de salidas. 6 pasajeros · Servicios de paquetería',
-    canonicalUrl: 'https://serviciodetransportevic.com/'
+    title: 'Transporte Victoria ↔ Llera | Pasaje y paquetería',
+    description: 'Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios, 6 asientos y paradas en ejidos.',
+    canonicalUrl: (typeof baseUrl !== 'undefined' ? String(baseUrl).replace(/\/+$/, '') : 'https://serviciodetransportevic.com') + '/'
     }) %>
 
+    <link rel="preload" as="image" href="/assets/logo-hero.png">
+    <link rel="preload" as="image" href="/assets/hero-road.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="/css/home.css" rel="stylesheet">
 </head>
 
@@ -14,200 +19,274 @@
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
-<main class="container">
+<section class="home-hero" aria-label="Inicio">
+    <div class="home-hero-media" role="img" aria-label="Carretera hacia el destino"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
 
-    <header class="hero-min hero-split">
-        <div class="hero-left">
-            <span class="home-badge"><%- include('partials/icon', { name: 'shield', size: 18, icoClass: 'home-badge-ico' }) %> Viaja seguro, viaja cómodo</span>
-            <h1 class="h3 title">Servicio de Transporte</h1>
-            <div class="sub">Victoria ↔ Llera · Llera ↔ Victoria · 6 pasajeros · Servicios de paquetería</div>
-
-            <div class="hero-actions">
-                <a class="btn btn-wine" href="/reserve"><span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span> Reservar</a>
-                <a class="btn btn-wa" target="_blank" rel="noopener noreferrer"
-                   href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
-                    <span class="btn-ico"><%- include('partials/icon', { name: 'whatsapp-light', size: 20 }) %></span> WhatsApp
-                </a>
-            </div>
-        </div>
-
-        <div class="hero-right">
+    <div class="container home-hero-inner">
+        <div class="home-brand home-reveal">
             <div class="logo-wrap">
-                <img class="hero-logo-big" src="/assets/logo.png" alt="Servicio de transporte">
+                <img class="home-brand-logo" src="/assets/logo-hero.png" alt="Servicio de Transporte Victoria Llera" width="308" height="348" decoding="async" fetchpriority="high">
                 <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
             </div>
+            <div class="home-brand-copy">
+                <p class="home-kicker">Victoria - Llera</p>
+                <h1 class="home-brand-name">Servicio de Transporte</h1>
+                <p class="home-brand-tag">Seis asientos · Pasaje y paquetería · Reserva en minutos</p>
+            </div>
         </div>
-    </header>
 
-    <section class="tabs-card home-tabs" aria-label="Horarios y ubicación">
-        <div class="home-tabs-head">
-            <ul class="nav nav-tabs" id="homeTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="tab-horarios" data-bs-toggle="tab"
-                            data-bs-target="#pane-horarios"
-                            type="button" role="tab">
-                        <span class="tab-ico"><%- include('partials/icon', { name: 'schedule', size: 20 }) %></span> Horarios
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab-mapa" data-bs-toggle="tab" data-bs-target="#pane-mapa"
-                            type="button"
-                            role="tab">
-                        <span class="tab-ico"><%- include('partials/icon', { name: 'map', size: 20 }) %></span> Mapa
-                    </button>
-                </li>
-            </ul>
-            <a class="home-tabs-wa" href="tel:+528344756376" title="Llamar al 834 475 6376">
-                <code class="home-tabs-wa-phone">834 475 6376</code>
+        <div class="hero-actions home-reveal home-reveal-delay">
+            <a class="btn btn-wine home-cta-primary" href="/reserve">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span>
+                Reservar
+            </a>
+            <a class="btn home-cta-ghost" target="_blank" rel="noopener noreferrer"
+               href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'message-circle', size: 20 }) %></span>
+                WhatsApp
             </a>
         </div>
+    </div>
+</section>
 
-        <div class="tab-content" id="homeTabsContent">
-            <div class="tab-pane fade show active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
-
-                <!-- Próximas salidas -->
-                <div class="next-card is-loading" id="nextCard">
-                    <p class="next-title"><span class="next-title-ico"><%- include('partials/icon', { name: 'clock', size: 20 }) %></span> Próximas salidas</p>
-
-                    <div class="next-grid">
-                        <div class="next-item" id="nextV2L">
-                            <div class="next-meta">
-                                <p class="next-route">Victoria → Llera</p>
-                                <div class="next-when" id="nextV2LWhen">—</div>
-                            </div>
-
-                            <a class="next-pill" id="nextV2LPill" href="/reserve">--:--</a>
-                        </div>
-
-                        <div class="next-item" id="nextL2V">
-                            <div class="next-meta">
-                                <p class="next-route">Llera → Victoria</p>
-                                <div class="next-when" id="nextL2VWhen">—</div>
-                            </div>
-
-                            <a class="next-pill" id="nextL2VPill" href="/reserve">--:--</a>
-                        </div>
-                    </div>
+<main class="home-main">
+    <section class="home-section container" id="horarios" aria-label="Horarios y ubicación">
+        <div class="tabs-card home-tabs">
+            <div class="home-tabs-head">
+                <h2 id="horarios-heading" class="home-section-title">Horarios y ubicación</h2>
+                <div class="home-tabs-tools">
+                    <ul class="nav nav-tabs home-seg" id="homeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-horarios" type="button" role="tab"
+                                    data-home-tab="horarios" aria-controls="pane-horarios" aria-selected="true">Horarios</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-mapa" type="button" role="tab"
+                                    data-home-tab="mapa" aria-controls="pane-mapa" aria-selected="false">Mapa</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-info" type="button" role="tab"
+                                    data-home-tab="info" aria-controls="pane-info" aria-selected="false">Info</button>
+                        </li>
+                    </ul>
                 </div>
-
-                <div class="routes">
-
-                    <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
-                    <% const v2lFirst = v2l.length ? String(v2l[0].depart_time || '').slice(0, 5) : ''; %>
-                    <div class="route-card">
-                        <div class="route-card-strip">
-                            <div class="route-strip-main">
-                                <span class="route-car-badge" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
-                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                                    </svg>
-                                </span>
-                                <div>
-                                    <p class="route-strip-title">Victoria → Llera</p>
-                                    <% if (v2lFirst) { %>
-                                        <p class="route-strip-meta">Primera salida · <%= v2lFirst %></p>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="route-card-body">
-                            <div class="route-body-head">
-                                <p class="route-sub">Salida desde Ciudad Victoria</p>
-                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
-                            </div>
-                            <div class="chips">
-                            <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <a class="chip-time"
-                               data-dir="VIC_TO_LLE"
-                               data-time="<%= hhmm %>"
-                               href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%- include('partials/icon', { name: 'clock', size: 16 }) %> <%= hhmm %></a>
-                            <% }) %>
-
-                            <% if (v2l.length === 0) { %>
-                                <div class="subtle">Sin horarios.</div>
-                            <% } %>
-                            </div>
-                        </div>
-                    </div>
-
-                    <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
-                    <% const l2vFirst = l2v.length ? String(l2v[0].depart_time || '').slice(0, 5) : ''; %>
-                    <div class="route-card">
-                        <div class="route-card-strip">
-                            <div class="route-strip-main">
-                                <span class="route-car-badge" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#c62828" aria-hidden="true">
-                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                                    </svg>
-                                </span>
-                                <div>
-                                    <p class="route-strip-title">Llera → Victoria</p>
-                                    <% if (l2vFirst) { %>
-                                        <p class="route-strip-meta">Primera salida · <%= l2vFirst %></p>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="route-card-body">
-                            <div class="route-body-head">
-                                <p class="route-sub">Salida desde Llera</p>
-                                <a class="btn btn-ghost btn-sm rounded-4" href="/reserve">Ver cupo</a>
-                            </div>
-                            <div class="chips">
-                            <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                            <a class="chip-time"
-                               data-dir="LLE_TO_VIC"
-                               data-time="<%= hhmm %>"
-                               href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%- include('partials/icon', { name: 'clock', size: 16 }) %> <%= hhmm %></a>
-                            <% }) %>
-
-                            <% if (l2v.length === 0) { %>
-                                <div class="subtle">Sin horarios.</div>
-                            <% } %>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                <a class="home-tabs-wa" href="tel:+528344756376" title="Llamar al 834 475 6376">
+                    <span class="home-tabs-wa-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 16 }) %></span>
+                    <span class="home-tabs-wa-phone">834 475 6376</span>
+                </a>
             </div>
 
-            <div class="tab-pane fade" id="pane-mapa" role="tabpanel" aria-labelledby="tab-mapa">
-                <div class="map-grid">
-                    <div class="map-card">
-                        <p class="map-title">Salida Victoria</p>
-                        <iframe class="map-frame" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
-                                title="Mapa de salida en Ciudad Victoria"
-                                src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
+            <div class="home-tabs-body">
+                <div class="home-pane is-active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
+                    <div class="schedule-board" id="nextCard">
+                        <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
+                        <article class="schedule-row">
+                            <div class="schedule-row-main">
+                                <div class="schedule-route">
+                                    <span class="visually-hidden">De Ciudad Victoria hacia Llera</span>
+                                    <span class="schedule-route-from" aria-hidden="true">Ciudad Victoria</span>
+                                    <span class="schedule-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
+                                    <strong class="schedule-route-to" aria-hidden="true">Llera</strong>
+                                </div>
+                                <a class="schedule-next-cta is-pending" id="nextV2LPill" href="/reserve" title="Reservar próxima salida">
+                                    <span class="schedule-next-label">Próxima</span>
+                                    <span class="schedule-next-time">--:--</span>
+                                    <span class="schedule-next-when" id="nextV2LWhen"></span>
+                                </a>
+                            </div>
+                            <div class="schedule-times" aria-label="Horarios Victoria a Llera">
+                                <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
+                                <a class="chip-time"
+                                   data-dir="VIC_TO_LLE"
+                                   data-time="<%= hhmm %>"
+                                   href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                                <% }) %>
+                                <% if (v2l.length === 0) { %>
+                                    <div class="subtle">Sin horarios publicados.</div>
+                                <% } %>
+                            </div>
+                        </article>
 
-                        <div class="map-actions">
-                            <a class="btn btn-wine btn-sm rounded-4" target="_blank"
-                               href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir</a>
-                            <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
-                               href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo llegar</a>
-                        </div>
+                        <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
+                        <article class="schedule-row">
+                            <div class="schedule-row-main">
+                                <div class="schedule-route">
+                                    <span class="visually-hidden">De Llera hacia Ciudad Victoria</span>
+                                    <span class="schedule-route-from" aria-hidden="true">Llera</span>
+                                    <span class="schedule-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
+                                    <strong class="schedule-route-to" aria-hidden="true">Ciudad Victoria</strong>
+                                </div>
+                                <a class="schedule-next-cta is-pending" id="nextL2VPill" href="/reserve" title="Reservar próxima salida">
+                                    <span class="schedule-next-label">Próxima</span>
+                                    <span class="schedule-next-time">--:--</span>
+                                    <span class="schedule-next-when" id="nextL2VWhen"></span>
+                                </a>
+                            </div>
+                            <div class="schedule-times" aria-label="Horarios Llera a Victoria">
+                                <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
+                                <a class="chip-time"
+                                   data-dir="LLE_TO_VIC"
+                                   data-time="<%= hhmm %>"
+                                   href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                                <% }) %>
+                                <% if (l2v.length === 0) { %>
+                                    <div class="subtle">Sin horarios publicados.</div>
+                                <% } %>
+                            </div>
+                        </article>
                     </div>
+                </div>
 
-                    <div class="map-card">
-                        <p class="map-title">Salida Llera</p>
-                        <iframe class="map-frame" loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
-                                title="Mapa de salida en Llera"
-                                src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
+                <div class="home-pane" id="pane-mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden>
+                    <div class="map-grid">
+                        <article class="map-card">
+                            <header class="map-card-head">
+                                <div>
+                                    <h3 class="map-title">Ciudad Victoria</h3>
+                                    <p class="map-sub">Punto de salida</p>
+                                </div>
+                                <div class="map-actions">
+                                    <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
+                                       href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir</a>
+                                    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
+                                       href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo llegar</a>
+                                </div>
+                            </header>
+                            <iframe class="map-frame" loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    title="Mapa de salida en Ciudad Victoria"
+                                    src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
+                        </article>
 
-                        <div class="map-actions">
-                            <a class="btn btn-wine btn-sm rounded-4" target="_blank"
-                               href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir</a>
-                            <a class="btn btn-ghost btn-sm rounded-4" target="_blank"
-                               href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">Cómo llegar</a>
+                        <article class="map-card">
+                            <header class="map-card-head">
+                                <div>
+                                    <h3 class="map-title">Llera</h3>
+                                    <p class="map-sub">Punto de salida</p>
+                                </div>
+                                <div class="map-actions">
+                                    <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
+                                       href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir</a>
+                                    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
+                                       href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">Cómo llegar</a>
+                                </div>
+                            </header>
+                            <iframe class="map-frame" loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    title="Mapa de salida en Llera"
+                                    src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="home-pane" id="pane-info" role="tabpanel" aria-labelledby="tab-info" hidden>
+                    <%
+                    const adultPrice = Number((typeof pricing !== "undefined" && pricing && pricing.passenger_price_mxn) || 120);
+                    const childPrice = Number((typeof pricing !== "undefined" && pricing && pricing.child_price_mxn) || 60);
+                    const packPrice = Number((typeof pricing !== "undefined" && pricing && pricing.package_price_mxn) || 120);
+                    const mxn = (n) => `$${Number(n || 0).toFixed(0)}`;
+                    const stops = (typeof vicLocations !== "undefined" && vicLocations) ? vicLocations : [];
+                    const faqItems = (typeof faqs !== "undefined" && Array.isArray(faqs) && faqs.length)
+                            ? faqs
+                            : ((typeof homeFaqs === "function") ? homeFaqs(typeof pricing !== "undefined" ? pricing : null, stops) : []);
+                    const stopGroups = [];
+                    {
+                        const byPrice = new Map();
+                        stops.forEach((loc) => {
+                            const price = Number(loc.price_mxn);
+                            if (!byPrice.has(price)) byPrice.set(price, []);
+                            byPrice.get(price).push(loc);
+                        });
+                        Array.from(byPrice.keys()).sort((a, b) => a - b).forEach((price) => {
+                            stopGroups.push({price, items: byPrice.get(price)});
+                        });
+                    }
+                    const minStop = stopGroups.length ? stopGroups[0].price : 50;
+                    %>
+                    <div class="home-info" id="servicio">
+                        <h3 class="visually-hidden">Tarifas y paradas</h3>
+                        <div class="home-info-layout">
+                            <div class="home-info-main">
+                                <ul class="home-info-grid">
+                                    <li class="home-info-tile">
+                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></span>
+                                        <span class="home-info-tile-copy">
+                                            <strong>Pasaje</strong>
+                                            <span class="home-info-tile-hint">Adulto y niño</span>
+                                        </span>
+                                        <span class="home-info-tile-price">
+                                            <b><%= mxn(adultPrice) %></b>
+                                            <small><%= mxn(childPrice) %> niño</small>
+                                        </span>
+                                    </li>
+                                    <li class="home-info-tile">
+                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></span>
+                                        <span class="home-info-tile-copy">
+                                            <strong>Paquetería</strong>
+                                            <span class="home-info-tile-hint">Misma ruta</span>
+                                        </span>
+                                        <span class="home-info-tile-price">
+                                            <b><%= mxn(packPrice) %></b>
+                                            <small>por envío</small>
+                                        </span>
+                                    </li>
+                                    <li class="home-info-tile">
+                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
+                                        <span class="home-info-tile-copy">
+                                            <strong>Paradas</strong>
+                                            <span class="home-info-tile-hint">Según abordaje</span>
+                                        </span>
+                                        <span class="home-info-tile-price">
+                                            <b><%= mxn(minStop) %></b>
+                                            <small>desde</small>
+                                        </span>
+                                    </li>
+                                </ul>
+
+                                <% if (stopGroups.length) { %>
+                                    <div class="home-info-stops">
+                                        <p class="home-info-label">Paradas en el tramo Victoria</p>
+                                        <div class="home-stop-groups">
+                                            <% stopGroups.forEach((group) => { %>
+                                                <div class="home-stop-group">
+                                                    <span class="home-stop-group-price"><%= mxn(group.price) %></span>
+                                                    <ul class="home-stop-list">
+                                                        <% group.items.forEach((loc) => { %>
+                                                            <li>
+                                                                <a class="home-stop-chip"
+                                                                   href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=LLE"
+                                                                   title="Reservar desde <%= loc.label %>">
+                                                                    <%= loc.label %>
+                                                                </a>
+                                                            </li>
+                                                        <% }) %>
+                                                    </ul>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <aside class="home-faq" id="preguntas">
+                                <p class="home-info-label">Preguntas frecuentes</p>
+                                <% faqItems.forEach((item) => { %>
+                                    <details class="home-faq-item">
+                                        <summary><%= item.question %></summary>
+                                        <p><%= item.answer %></p>
+                                    </details>
+                                <% }) %>
+                            </aside>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
 </main>
+
+<%- include('partials/site-footer') %>
 
 <script src="/js/theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -276,27 +355,14 @@
         trigger.addEventListener("contextmenu", (e) => e.preventDefault());
     })();
 
-    /* ===== Próximas salidas (muestra la próxima REAL aunque esté llena + mensaje si está lleno) ===== */
+    /* ===== Próximas salidas ===== */
     (function () {
-        const card = document.getElementById("nextCard");
-
-        const elV2L = document.getElementById("nextV2L");
         const elV2LPill = document.getElementById("nextV2LPill");
         const elV2LWhen = document.getElementById("nextV2LWhen");
-
-        const elL2V = document.getElementById("nextL2V");
         const elL2VPill = document.getElementById("nextL2VPill");
         const elL2VWhen = document.getElementById("nextL2VWhen");
 
-        if (!card || !elV2L || !elL2V || !elV2LPill || !elL2VPill) return;
-
-        card.style.display = "";
-        elV2L.style.display = "none";
-        elL2V.style.display = "none";
-
-        function finishLoading() {
-            card.classList.remove("is-loading");
-        }
+        if (!elV2LPill || !elL2VPill) return;
 
         function todayISO_MTY() {
             return new Date().toLocaleDateString("en-CA", {timeZone: "America/Monterrey"});
@@ -306,7 +372,6 @@
             const [y, m, d] = String(baseISO).split("-").map(Number);
             const dt = new Date(Date.UTC(y, (m || 1) - 1, d || 1));
             dt.setUTCDate(dt.getUTCDate() + Number(days || 0));
-
             const yy = dt.getUTCFullYear();
             const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
             const dd = String(dt.getUTCDate()).padStart(2, "0");
@@ -325,12 +390,10 @@
         }
 
         async function fetchAvailability(dateISO, dir, seats) {
-            // seats=0 => informativo: incluye horarios aunque estén llenos
             const url =
                 `/availability?date=${encodeURIComponent(dateISO)}` +
                 `&direction=${encodeURIComponent(dir)}` +
                 `&seats=${encodeURIComponent(seats)}`;
-
             const res = await fetch(url, {headers: {Accept: "application/json"}});
             const data = await res.json();
             return Array.isArray(data?.results) ? data.results : [];
@@ -338,17 +401,14 @@
 
         async function findNext(dir, seats) {
             const base = todayISO_MTY();
-
             for (let offset = 0; offset <= 7; offset++) {
                 const dateISO = addDaysISO(base, offset);
-
                 let results = [];
                 try {
                     results = await fetchAvailability(dateISO, dir, seats);
                 } catch {
                     results = [];
                 }
-
                 const slots = results
                     .map(r => ({
                         hhmm: toHHMM(r.time ?? r.depart_time ?? ""),
@@ -356,98 +416,83 @@
                     }))
                     .filter(x => x.hhmm)
                     .sort((a, b) => a.hhmm.localeCompare(b.hhmm));
-
                 if (slots.length) {
                     const when = offset === 0 ? "hoy" : offset === 1 ? "mañana" : dateISO;
-                    const first = slots[0];
-                    return {dateISO, when, hhmm: first.hhmm, available: first.available};
+                    return {dateISO, when, hhmm: slots[0].hhmm, available: slots[0].available};
                 }
             }
-
             return null;
         }
 
+        function fillNext(pill, whenEl, real, ok, dir) {
+            if (!real || !pill) return;
+            const timeEl = pill.querySelector(".schedule-next-time");
+            const full = Number(real.available || 0) <= 0;
+            const target = full && ok ? ok : real;
+
+            if (timeEl) timeEl.textContent = target.hhmm;
+            pill.classList.remove("is-pending");
+            pill.href = `/reserve?dir=${dir}&time=${encodeURIComponent(target.hhmm)}&date=${encodeURIComponent(target.dateISO)}`;
+
+            if (whenEl) {
+                whenEl.textContent = full
+                    ? (ok ? `${real.when} · lleno` : `${real.when} · lleno`)
+                    : real.when;
+            }
+        }
+
         Promise.all([
-            // next REAL (even if full)
             findNext("VIC_TO_LLE", 0),
             findNext("LLE_TO_VIC", 0),
-            // next reservable (needs >=1 seat)
             findNext("VIC_TO_LLE", 1),
             findNext("LLE_TO_VIC", 1),
         ]).then(([nextV2LReal, nextL2VReal, nextV2LOk, nextL2VOk]) => {
-            let any = false;
-
-            if (nextV2LReal) {
-                any = true;
-                const full = Number(nextV2LReal.available || 0) <= 0;
-
-                elV2L.style.display = "";
-                elV2LPill.textContent = nextV2LReal.hhmm;
-
-                if (full) {
-                    elV2LWhen.textContent =
-                        `Salida ${nextV2LReal.when} · Lleno` +
-                        (nextV2LOk ? ` · Siguiente con cupo: ${nextV2LOk.hhmm} (${nextV2LOk.when})` : "");
-
-                    // la pastilla horario enlaza a reserva; si está lleno, al siguiente con cupo si existe
-                    elV2LPill.href = nextV2LOk
-                        ? `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LOk.hhmm)}&date=${encodeURIComponent(nextV2LOk.dateISO)}`
-                        : `/reserve?dir=VIC_TO_LLE&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
-                } else {
-                    elV2LWhen.textContent = `Salida ${nextV2LReal.when}`;
-                    elV2LPill.href = `/reserve?dir=VIC_TO_LLE&time=${encodeURIComponent(nextV2LReal.hhmm)}&date=${encodeURIComponent(nextV2LReal.dateISO)}`;
-                }
-            }
-
-            if (nextL2VReal) {
-                any = true;
-                const full = Number(nextL2VReal.available || 0) <= 0;
-
-                elL2V.style.display = "";
-                elL2VPill.textContent = nextL2VReal.hhmm;
-
-                if (full) {
-                    elL2VWhen.textContent =
-                        `Salida ${nextL2VReal.when} · Lleno` +
-                        (nextL2VOk ? ` · Siguiente con cupo: ${nextL2VOk.hhmm} (${nextL2VOk.when})` : "");
-
-                    elL2VPill.href = nextL2VOk
-                        ? `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VOk.hhmm)}&date=${encodeURIComponent(nextL2VOk.dateISO)}`
-                        : `/reserve?dir=LLE_TO_VIC&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
-                } else {
-                    elL2VWhen.textContent = `Salida ${nextL2VReal.when}`;
-                    elL2VPill.href = `/reserve?dir=LLE_TO_VIC&time=${encodeURIComponent(nextL2VReal.hhmm)}&date=${encodeURIComponent(nextL2VReal.dateISO)}`;
-                }
-            }
-
-            if (any) {
-                card.style.display = "";
-            } else {
-                card.style.display = "none";
-            }
-            finishLoading();
-        }).catch(() => {
-            card.style.display = "none";
-            finishLoading();
-        });
+            fillNext(elV2LPill, elV2LWhen, nextV2LReal, nextV2LOk, "VIC_TO_LLE");
+            fillNext(elL2VPill, elL2VWhen, nextL2VReal, nextL2VOk, "LLE_TO_VIC");
+        }).catch(() => {});
     })();
 
-    /* ===== Recordar pestaña activa (Horarios / Mapa) ===== */
+    /* ===== Tabs Horarios / Mapa / Info (sin Bootstrap, evita huecos) ===== */
     (function () {
         const storageKey = "homeTab";
-        const tabMap = document.getElementById("tab-mapa");
-        const tabHorarios = document.getElementById("tab-horarios");
-        if (!tabMap || !tabHorarios || !window.bootstrap) return;
+        const tabs = Array.from(document.querySelectorAll("[data-home-tab]"));
+        const panes = {
+            horarios: document.getElementById("pane-horarios"),
+            mapa: document.getElementById("pane-mapa"),
+            info: document.getElementById("pane-info"),
+        };
+        if (!tabs.length || !panes.horarios || !panes.mapa || !panes.info) return;
 
-        const saved = sessionStorage.getItem(storageKey);
-        if (saved === "mapa") {
-            bootstrap.Tab.getOrCreateInstance(tabMap).show();
+        function showTab(name) {
+            const key = panes[name] ? name : "horarios";
+            Object.entries(panes).forEach(([id, el]) => {
+                const on = id === key;
+                el.classList.toggle("is-active", on);
+                el.hidden = !on;
+            });
+
+            tabs.forEach((btn) => {
+                const on = btn.getAttribute("data-home-tab") === key;
+                btn.classList.toggle("active", on);
+                btn.setAttribute("aria-selected", on ? "true" : "false");
+            });
+
+            sessionStorage.setItem(storageKey, key);
         }
 
-        document.getElementById("homeTabs")?.addEventListener("shown.bs.tab", (ev) => {
-            const id = ev.target?.id || "";
-            sessionStorage.setItem(storageKey, id === "tab-mapa" ? "mapa" : "horarios");
+        function tabFromLocation() {
+            const hash = String(location.hash || "").replace("#", "");
+            if (hash === "mapa") return "mapa";
+            if (hash === "servicio" || hash === "preguntas") return "info";
+            const stored = sessionStorage.getItem(storageKey);
+            return panes[stored] ? stored : "horarios";
+        }
+
+        tabs.forEach((btn) => {
+            btn.addEventListener("click", () => showTab(btn.getAttribute("data-home-tab") || "horarios"));
         });
+
+        showTab(tabFromLocation());
     })();
 </script>
 

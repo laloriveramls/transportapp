@@ -14,6 +14,7 @@ Runtime temp files may appear in `tmp/`.
 - `npm install`: install dependencies.
 - `npm run dev`: start local development server with `nodemon` (auto-reload).
 - `npm start`: run production-like server with Node.
+- `npm run icons`: rebuild `public/js/icons.js` from Lucide for client-side rendering.
 
 Environment variables are loaded from `.env` (see `.env.example` for required keys like `DB_*`, `SESSION_SECRET`, and
 `BASE_URL`).
@@ -28,6 +29,18 @@ Naming conventions:
 - Use `camelCase` for variables/functions.
 - Use `UPPER_SNAKE_CASE` for constants (example: `MAX_CAP`).
 - Use descriptive EJS view names (`admin_agenda.ejs`, `admin_trip.ejs`).
+
+## Icons
+
+Lucide is the official icon library. Do not hand-draw SVG icons or use emojis in the UI.
+
+- In EJS, render with `<%- include('partials/icon', { name: 'calendar', size: 16 }) %>` using the official Lucide
+  kebab-case name (`house`, `message-circle`, `triangle-alert`, `refresh-cw`).
+- In client JavaScript, use `Icons.svg('calendar', { size: 16 })` from `/js/icons.js`.
+- Keep stroke, size, and weight consistent: Lucide defaults (`stroke-width: 2`, `stroke-linecap: round`,
+  `stroke-linejoin: round`, `currentColor`). Size is passed per use; color comes from CSS `color`.
+- If an exact Lucide glyph does not exist (for example a brand logo), pick the closest official Lucide equivalent.
+- Rebuild the client helper with `npm run icons` after changing the icon set in `src/icons.js`.
 
 ## Testing Guidelines
 

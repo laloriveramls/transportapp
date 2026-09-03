@@ -7,502 +7,243 @@
     noindex: true
     }) %>
 
-    <link href="/css/admin.css" rel="stylesheet">
-
-    <style>
-        .hero {
-            border: none;
-            background:
-                radial-gradient(720px 280px at 100% -20%, color-mix(in srgb, var(--wine) 12%, transparent), transparent 55%),
-                radial-gradient(860px 240px at -8% -40%, color-mix(in srgb, var(--wine) 18%, transparent), transparent 70%),
-                color-mix(in srgb, var(--card) 92%, transparent);
-            box-shadow: var(--shadow);
-            border-radius: 20px;
-            padding: 1.15rem 1.2rem 1.2rem;
-        }
-
-        .hero-intro {
-            min-width: min(100%, 280px);
-        }
-
-        .hero-intro .subtle {
-            max-width: 34rem;
-            line-height: 1.45;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .agenda-kpi:hover,
-            .trip-card:hover {
-                transform: none;
-            }
-        }
-
-        .hero-toolbar-wrap {
-            flex: 1 1 260px;
-            min-width: min(100%, 280px);
-            justify-content: flex-end;
-        }
-
-        .toolbar-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .55rem;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .agenda-day-nav {
-            display: inline-flex;
-            align-items: stretch;
-            gap: .35rem;
-        }
-
-        .agenda-day-nav .form-control[type="date"] {
-            min-width: 10.5rem;
-        }
-
-        .agenda-day-arrow {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.35rem;
-            padding-left: .5rem;
-            padding-right: .5rem;
-            font-size: 1.05rem;
-            font-weight: 700;
-            line-height: 1;
-            text-decoration: none;
-            border-radius: 12px;
-        }
-
-        .agenda-day-arrow:hover {
-            text-decoration: none;
-        }
-
-        /* KPIs del día (hero): siempre 4 columnas en una fila (min 0 evita minimo 158px que rompia el wrap) */
-        .agenda-kpis {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: .5rem;
-            margin-top: 1rem;
-            width: 100%;
-            max-width: 100%;
-        }
-
-        .agenda-kpi {
-            position: relative;
-            min-width: 0;
-            border-radius: 16px;
-            padding: .72rem .75rem .78rem .9rem;
-            border: none;
-            background: linear-gradient(
-                145deg,
-                color-mix(in srgb, var(--card) 94%, transparent),
-                color-mix(in srgb, var(--wine) 7%, var(--card))
-            );
-            box-shadow:
-                0 1px 0 rgba(255, 255, 255, .06) inset,
-                0 8px 22px rgba(0, 0, 0, .06);
-            overflow: hidden;
-            transition: box-shadow .2s ease, transform .18s ease;
-        }
-
-        .agenda-kpi:hover {
-            box-shadow:
-                0 1px 0 rgba(255, 255, 255, .06) inset,
-                0 10px 26px rgba(0, 0, 0, .09);
-            transform: translateY(-1px);
-        }
-
-        .agenda-kpi::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            border-radius: 16px 0 0 16px;
-            background: linear-gradient(180deg, var(--wine), var(--wine-2));
-        }
-
-        .agenda-kpi--packages::before {
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--wine-2) 90%, var(--muted)),
-                color-mix(in srgb, var(--wine) 55%, var(--muted))
-            );
-        }
-
-        .agenda-kpi--cancelled-passengers::before,
-        .agenda-kpi--cancelled-packages::before {
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, #b91c1c 85%, var(--muted)),
-                color-mix(in srgb, #7f1d1d 70%, var(--muted))
-            );
-        }
-
-        .agenda-kpi .label {
-            color: var(--muted);
-            font-size: .72rem;
-            font-weight: 600;
-            letter-spacing: .015em;
-            line-height: 1.2;
-            hyphens: auto;
-            overflow-wrap: anywhere;
-        }
-
-        .agenda-kpi .value {
-            font-size: clamp(1.2rem, 2.6vw + 0.6rem, 1.55rem);
-            font-weight: 750;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -.035em;
-            line-height: 1.1;
-            margin-top: .25rem;
-            color: var(--text);
-        }
-
-        .stat {
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-            border-radius: 14px;
-            padding: .55rem .75rem;
-            min-width: 148px;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset;
-        }
-
-        .stat .label {
-            color: var(--muted);
-            font-size: .78rem;
-            font-weight: 600;
-        }
-
-        .stat .value {
-            font-weight: 650;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .trip-card {
-            position: relative;
-            background: var(--card);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            border-radius: 18px;
-            overflow: hidden;
-            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-        }
-
-        .trip-card:hover {
-            transform: translateY(-2px);
-            border-color: color-mix(in srgb, var(--wine) 42%, var(--border));
-            box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
-        }
-
-        .trip-card .top {
-            padding: 16px 16px 12px 18px;
-        }
-
-        .trip-card .bottom {
-            padding: 12px 16px 14px 18px;
-            border-top: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 90%, transparent);
-        }
-
-        .route-title {
-            margin: 0 0 2px;
-            font-size: 1.05rem;
-            font-weight: 650;
-            letter-spacing: -.01em;
-        }
-
-        .route-time {
-            color: var(--wine);
-            font-weight: 700;
-        }
-
-        .chip-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .45rem;
-            margin-top: .7rem;
-        }
-
-        .chip-soft {
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            background: color-mix(in srgb, var(--card) 78%, transparent);
-            color: var(--text);
-            font-size: .83rem;
-            padding: .32rem .62rem;
-            font-weight: 550;
-            transition: border-color .15s ease, background .15s ease;
-        }
-
-        .trip-card:hover .chip-soft {
-            border-color: color-mix(in srgb, var(--wine) 22%, var(--border));
-            background: color-mix(in srgb, var(--wine) 6%, var(--card));
-        }
-
-        .progress-soft {
-            height: 10px;
-            border-radius: 999px;
-            background: color-mix(in srgb, var(--muted) 18%, transparent);
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .progress-soft > span {
-            display: block;
-            height: 100%;
-            width: var(--w, 0%);
-            background: linear-gradient(90deg, var(--wine), var(--wine-2));
-            border-radius: 999px;
-        }
-
-        .muted {
-            color: var(--muted);
-        }
-
-        .empty-state {
-            display: none;
-        }
-
-        .empty-state.show {
-            display: block;
-        }
-    </style>
+    <%- include('partials/admin-assets') %>
 </head>
 
+<body class="home-page admin-app page-agenda">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+<%- include('partials/admin-hero', { heading: 'Agenda', tag: 'Salidas, cupo y tickets' }) %>
 
-<body class="admin-app">
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
-            <span class="brand-dot"></span>
-            <span class="fw-semibold">Admin - Agenda</span>
-        </a>
+<main class="home-main admin-main">
+<section class="container">
+    <%
+    const owtQ = onlyWithTrip ? '&onlyWithTrip=1' : '';
+    const todayISO = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Monterrey' });
+    const isToday = String(date || '') === todayISO;
 
-        <div class="d-flex align-items-center gap-2">
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">&#x1F319;</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
+    function formatAgendaDate(iso) {
+        const s = String(iso || '').trim();
+        if (!s) return '';
+        try {
+            const d = new Date(s + 'T12:00:00');
+            if (isNaN(d.getTime())) return s;
+            const raw = new Intl.DateTimeFormat('es-MX', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+            }).format(d);
+            return raw.charAt(0).toUpperCase() + raw.slice(1);
+        } catch {
+            return s;
+        }
+    }
 
-            <form method="POST" action="/admin/logout" class="m-0">
-                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
-            </form>
-        </div>
-    </div>
-</nav>
+    const datePretty = formatAgendaDate(date);
+    const dateShort = (() => {
+        const parts = String(date || '').split('-');
+        if (parts.length !== 3) return String(date || '');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    })();
 
-<main class="container py-4">
+    function hasActivity(t) {
+        return Number(t.used_seats || 0) > 0 || Number(t.packages || 0) > 0;
+    }
 
-    <div class="hero mb-3">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div class="hero-intro flex-grow-1">
-                <div class="pill">Agenda</div>
-                <h1 class="h3 page-title mt-2 mb-1">Salidas del dia</h1>
-                <div class="subtle">Cupo, servicios de paqueteria y accesos por salida.</div>
-                <div class="agenda-kpis" role="group" aria-label="Resumen del dia">
-                    <div class="agenda-kpi agenda-kpi--passengers">
-                        <div class="label">Pasajeros totales</div>
-                        <div class="value"><%= Number(totalPassengers || 0) %></div>
-                    </div>
-                    <div class="agenda-kpi agenda-kpi--packages">
-                        <div class="label">Paquetes del dia</div>
-                        <div class="value"><%= Number(totalPackages || 0) %></div>
-                    </div>
-                    <div class="agenda-kpi agenda-kpi--cancelled-passengers">
-                        <div class="label">Pasajeros cancelados</div>
-                        <div class="value"><%= Number(cancelledPassengers || 0) %></div>
-                    </div>
-                    <div class="agenda-kpi agenda-kpi--cancelled-packages">
-                        <div class="label">Paquetes cancelados</div>
-                        <div class="value"><%= Number(cancelledPackages || 0) %></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2 align-items-center hero-toolbar-wrap">
-
-                <% const owtQ = onlyWithTrip ? '&onlyWithTrip=1' : ''; %>
-                <form id="agendaForm" class="toolbar-form" method="GET" action="/admin/agenda">
-                    <div class="agenda-day-nav">
-                        <a class="agenda-day-arrow btn btn-ghost btn-sm rounded-4"
-                           href="/admin/agenda?date=<%= encodeURIComponent(agendaPrevDate) %><%= owtQ %>"
-                           title="Dia anterior"
-                           aria-label="Ir al dia anterior">&lt;</a>
-                        <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>">
-                        <a class="agenda-day-arrow btn btn-ghost btn-sm rounded-4"
-                           href="/admin/agenda?date=<%= encodeURIComponent(agendaNextDate) %><%= owtQ %>"
-                           title="Dia siguiente"
-                           aria-label="Ir al dia siguiente">&gt;</a>
-                    </div>
-                    <input type="hidden" name="onlyWithTrip" id="onlyWithTripInput" value="0">
-                    <button class="btn btn-wine rounded-4 px-4 fw-semibold">Ver</button>
-
-                    <a id="onlyToggleBtn" class="btn btn-ghost px-3 fw-semibold"
-                       href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1">
-                        Solo con viaje
-                    </a>
-                    <!-- ✅ “Tab” a otra página -->
-                    <a class="btn btn-ghost px-3 fw-semibold"
-                       href="/admin/recent">
-                        Ultimos registros
-                    </a>
-
-                    <a class="btn btn-ghost px-3 fw-semibold"
-                       href="/admin/horarios">
-                        Horarios
-                    </a>
-                </form>
+    const allTrips = trips || [];
+    const shownTrips = onlyWithTrip ? allTrips.filter(hasActivity) : allTrips;
+    const groups = [
+        {
+            key: 'VIC_TO_LLE',
+            from: 'Victoria',
+            to: 'Llera',
+            items: shownTrips.filter((t) => t.direction === 'VIC_TO_LLE'),
+        },
+        {
+            key: 'LLE_TO_VIC',
+            from: 'Llera',
+            to: 'Victoria',
+            items: shownTrips.filter((t) => t.direction === 'LLE_TO_VIC'),
+        },
+    ];
+    %>
+    <div class="tabs-card home-tabs admin-shell">
+        <div class="home-tabs-head">
+            <h2 class="home-section-title">Salidas del día</h2>
+            <div class="home-tabs-tools">
+                <%- include('partials/admin-nav', { adminNav: 'agenda' }) %>
             </div>
         </div>
-    </div>
+        <div class="home-tabs-body">
 
-    <div id="emptyState" class="card-soft p-4 empty-state">
-        <div class="h6 mb-1">Sin salidas con viaje</div>
-        <div class="subtle">No hay pasajeros ni servicios de paqueteria en este dia con el filtro activo.</div>
-    </div>
-
-    <div class="row g-3" id="tripsGrid">
-        <% if (!trips || trips.length === 0) { %>
-            <div class="col-12">
-                <div class="card-soft p-4">
-                    <div class="h6 mb-1">Sin salidas</div>
-                    <div class="subtle">Cambia la fecha para ver otras salidas.</div>
-                </div>
+    <div class="agenda-toolbar">
+        <div class="agenda-date-block">
+            <div class="agenda-date-kicker">
+                <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
+                <%= isToday ? 'Hoy' : 'Agenda' %>
             </div>
-        <% } %>
+            <div class="agenda-date-label" id="agendaDateLabel"><%= datePretty %></div>
+            <div class="agenda-date-meta subtle">
+                <%= shownTrips.length %> salida<%= shownTrips.length === 1 ? '' : 's' %><% if (onlyWithTrip) { %> con viaje<% } %>
+            </div>
+        </div>
 
-        <% (trips || []).forEach(t => {
-            const used = Number(t.used_seats || 0);
+        <form id="agendaForm" class="agenda-toolbar-form" method="GET" action="/admin/agenda">
+            <div class="agenda-day-nav">
+                <a class="agenda-day-arrow"
+                   href="/admin/agenda?date=<%= encodeURIComponent(agendaPrevDate) %><%= owtQ %>"
+                   title="Día anterior"
+                   aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'arrow-left', size: 16 }) %></a>
+                <span class="agenda-date-input">
+                    <span class="agenda-date-fake" aria-hidden="true"><%= dateShort %></span>
+                    <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>" aria-labelledby="agendaDateLabel">
+                </span>
+                <a class="agenda-day-arrow"
+                   href="/admin/agenda?date=<%= encodeURIComponent(agendaNextDate) %><%= owtQ %>"
+                   title="Día siguiente"
+                   aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></a>
+            </div>
+            <input type="hidden" name="onlyWithTrip" value="<%= onlyWithTrip ? '1' : '0' %>">
+            <button class="visually-hidden" type="submit">Ver fecha</button>
 
-            // Cap maximo 6 en agenda (aunque DB traiga otro valor)
-            const capRaw = Number(t.capacity_passengers || 0);
-            const cap = Math.min(6, Math.max(0, capRaw));
+            <% if (isToday) { %>
+                <span class="agenda-chip is-on" aria-current="date">Hoy</span>
+            <% } else { %>
+                <a class="agenda-chip" href="/admin/agenda?date=<%= encodeURIComponent(todayISO) %><%= owtQ %>">Hoy</a>
+            <% } %>
 
-            const pct  = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
-            const remaining = Math.max(0, cap - used);
+            <% if (onlyWithTrip) { %>
+                <a class="agenda-chip is-on" href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=0">Ver todas</a>
+            <% } else { %>
+                <a class="agenda-chip" href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1">Solo con viaje</a>
+            <% } %>
+        </form>
+    </div>
 
-            const packs = Number(t.packages || 0);
-            const hhmm = String(t.depart_time || '').slice(0,5);
-        %>
+    <div class="agenda-kpis" role="group" aria-label="Resumen del día">
+        <div class="agenda-kpi agenda-kpi--passengers">
+            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></div>
+            <div>
+                <div class="label">Pasajeros</div>
+                <div class="value"><%= Number(totalPassengers || 0) %></div>
+            </div>
+        </div>
+        <div class="agenda-kpi agenda-kpi--packages">
+            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
+            <div>
+                <div class="label">Paquetería</div>
+                <div class="value"><%= Number(totalPackages || 0) %></div>
+            </div>
+        </div>
+        <div class="agenda-kpi agenda-kpi--cancelled-passengers">
+            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ban', size: 18 }) %></div>
+            <div>
+                <div class="label">Pasajeros cancelados</div>
+                <div class="value"><%= Number(cancelledPassengers || 0) %></div>
+            </div>
+        </div>
+        <div class="agenda-kpi agenda-kpi--cancelled-packages">
+            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
+            <div>
+                <div class="label">Paquetes cancelados</div>
+                <div class="value"><%= Number(cancelledPackages || 0) %></div>
+            </div>
+        </div>
+    </div>
 
-        <div class="col-lg-6 trip-item"
-             data-used="<%= used %>"
-             data-packages="<%= packs %>">
-            <div class="trip-card">
-                <div class="top">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="route-title">
-                                <%= directionLabel(t.direction) %> <span class="muted">→</span> <span
-                                        class="route-time"><%= hhmm %></span>
+    <% if (!shownTrips.length) { %>
+        <div class="agenda-empty">
+            <div class="agenda-empty-ico" aria-hidden="true"><%- include('partials/icon', { name: 'bus', size: 22 }) %></div>
+            <div class="h6 mb-1"><%= onlyWithTrip ? 'Sin salidas con viaje' : 'Sin salidas' %></div>
+            <div class="subtle"><%= onlyWithTrip
+                ? 'No hay pasajeros ni paquetería en este día. Quita el filtro para ver el tablero completo.'
+                : 'Cambia la fecha para ver otras salidas.' %></div>
+            <% if (onlyWithTrip) { %>
+                <a class="agenda-chip" href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=0">Ver todas</a>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="agenda-board">
+            <% groups.forEach((group) => { %>
+                <section class="agenda-col" aria-label="<%= group.from %> a <%= group.to %>">
+                    <div class="agenda-col-head">
+                        <div class="agenda-col-route">
+                            <span class="agenda-col-from"><%= group.from %></span>
+                            <span class="agenda-col-mid"><%- include('partials/icon', { name: 'arrow-left-right', size: 16 }) %></span>
+                            <span class="agenda-col-to"><%= group.to %></span>
+                        </div>
+                        <span class="agenda-col-count"><%= group.items.length %></span>
+                    </div>
+
+                    <% if (!group.items.length) { %>
+                        <div class="agenda-col-empty subtle">Sin salidas en este rumbo.</div>
+                    <% } %>
+
+                    <% group.items.forEach((t) => {
+                        const used = Number(t.used_seats || 0);
+                        const capRaw = Number(t.capacity_passengers || 0);
+                        const cap = Math.min(6, Math.max(0, capRaw));
+                        const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
+                        const remaining = Math.max(0, cap - used);
+                        const packs = Number(t.packages || 0);
+                        const hhmm = String(t.depart_time || '').slice(0, 5);
+                        let tone = 'empty';
+                        if (cap > 0 && used >= cap) tone = 'full';
+                        else if (used > 0 && remaining <= 2) tone = 'tight';
+                        else if (used > 0) tone = 'ok';
+                        let status = 'Vacía';
+                        if (tone === 'full') status = 'Llena';
+                        else if (tone === 'tight' || tone === 'ok') status = remaining + (remaining === 1 ? ' libre' : ' libres');
+                        if (packs > 0 && used === 0) status = 'Solo paquetería';
+                    %>
+                    <a class="agenda-trip is-<%= tone %>"
+                       href="/admin/trip/<%= t.trip_id %>"
+                       aria-label="<%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos">
+                        <div class="agenda-trip-time mono"><%= hhmm %></div>
+                        <div class="agenda-trip-body">
+                            <div class="agenda-trip-top">
+                                <span class="agenda-trip-status"><%= status %></span>
+                                <span class="agenda-trip-cap mono"><%= used %>/<%= cap %></span>
                             </div>
-                            <div class="subtle small">Fecha: <%= t.trip_date %></div>
-                        </div>
-
-                        <div class="text-end">
-                            <div class="stat">
-                                <div class="label">Cupo</div>
-                                <div class="value">
-                                    <%= used %>/<%= cap %>
-                                    <span class="muted">- <%= remaining %> libres</span>
-                                </div>
+                            <div class="agenda-meter" style="--w:<%= pct %>%" aria-hidden="true"><span></span></div>
+                            <div class="agenda-trip-meta">
+                                <span class="agenda-seats" aria-hidden="true">
+                                    <% for (let i = 0; i < cap; i++) { %>
+                                        <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
+                                    <% } %>
+                                </span>
+                                <span class="agenda-pack <%= packs ? 'has-pack' : '' %>">
+                                    <%- include('partials/icon', { name: 'package', size: 14 }) %>
+                                    <%= packs %>
+                                </span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <div class="d-flex justify-content-between small subtle mb-1">
-                            <span>Ocupacion</span>
-                            <span><%= pct %>%</span>
-                        </div>
-                        <div class="progress-soft" style="--w:<%= pct %>%">
-                            <span></span>
-                        </div>
-                    </div>
-
-                    <div class="chip-row">
-                        <span class="chip-soft">Pasajeros: <%= used %></span>
-                        <span class="chip-soft">Paqueteria: <%= packs %></span>
-                    </div>
-                </div>
-
-                <div class="bottom d-flex justify-content-between align-items-center">
-                    <div class="subtle small">Pagos, tickets y cancelaciones.</div>
-
-                    <a class="btn btn-wine btn-sm rounded-4 px-3 fw-semibold"
-                       href="/admin/trip/<%= t.trip_id %>">
-                        Ver detalle
+                        <span class="agenda-trip-cta">
+                            <span class="agenda-trip-cta-text">Detalle</span>
+                            <%- include('partials/icon', { name: 'arrow-right', size: 14 }) %>
+                        </span>
                     </a>
-                </div>
-            </div>
+                    <% }) %>
+                </section>
+            <% }) %>
         </div>
+    <% } %>
 
-        <% }) %>
+        </div>
     </div>
-
+</section>
 </main>
 
+<%- include('partials/admin-footer') %>
 <script src="/js/theme.js"></script>
 
 <script>
-    (function(){
-        const params = new URLSearchParams(window.location.search);
-        const only = params.get('onlyWithTrip') === '1';
-
-        const onlyInput = document.getElementById('onlyWithTripInput');
-        if (onlyInput) onlyInput.value = only ? '1' : '0';
-
+    (function () {
         const form = document.getElementById('agendaForm');
         const dateInput = document.getElementById('agendaDate');
         dateInput?.addEventListener('change', () => {
             form?.requestSubmit();
         });
-
-        const toggle = document.getElementById('onlyToggleBtn');
-        const dateVal = (params.get('date') || "<%= String(date || '') %>");
-        const dateEnc = encodeURIComponent(dateVal || '');
-
-        if (toggle){
-            if (only){
-                toggle.classList.remove('btn-ghost');
-                toggle.classList.add('btn-wine');
-                toggle.textContent = 'Ver todas';
-                toggle.href = `/admin/agenda?date=${dateEnc}&onlyWithTrip=0`;
-            } else {
-                toggle.classList.remove('btn-wine');
-                toggle.classList.add('btn-ghost');
-                toggle.textContent = 'Solo con viaje';
-                toggle.href = `/admin/agenda?date=${dateEnc}&onlyWithTrip=1`;
-            }
-        }
-
-        const items = Array.from(document.querySelectorAll('.trip-item'));
-        let visible = 0;
-
-        items.forEach(el => {
-            const used = Number(el.getAttribute('data-used') || 0);
-            const packs = Number(el.getAttribute('data-packages') || 0);
-
-            const hasTrip = (used > 0) || (packs > 0);
-            const show = only ? hasTrip : true;
-
-            el.style.display = show ? '' : 'none';
-            if (show) visible += 1;
-        });
-
-        const empty = document.getElementById('emptyState');
-        const hadTrips = items.length > 0;
-
-        if (empty && hadTrips && only && visible === 0){
-            empty.classList.add('show');
-        } else if (empty){
-            empty.classList.remove('show');
-        }
     })();
 </script>
 

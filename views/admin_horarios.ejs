@@ -7,649 +7,95 @@
     noindex: true
     }) %>
 
-    <link href="/css/admin.css" rel="stylesheet">
-
-    <style>
-        .horarios-hero {
-            border: none;
-            border-radius: 20px;
-            padding: 1.15rem 1.2rem 1.2rem;
-            margin-bottom: 1rem;
-            background:
-                radial-gradient(720px 260px at 100% -20%, color-mix(in srgb, var(--wine) 10%, transparent), transparent 55%),
-                radial-gradient(780px 240px at -12% -40%, color-mix(in srgb, var(--wine) 14%, transparent), transparent 72%),
-                color-mix(in srgb, var(--card) 94%, transparent);
-            box-shadow: var(--shadow);
-        }
-
-        .horarios-hero .subtle {
-            max-width: 36rem;
-            line-height: 1.45;
-        }
-
-        .horarios-hero-intro {
-            min-width: min(100%, 260px);
-        }
-
-        .horarios-nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0.25rem;
-            border-radius: 14px;
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-        }
-
-        /* Un solo marco exterior (sombra); sin borde duplicado respecto a admin.css .card-soft */
-        .horarios-card.card-soft {
-            border: none !important;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        .horarios-toolbar {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-
-        .controls > div {
-            min-width: 200px;
-        }
-
-        #loadBtn {
-            min-height: 42px;
-            border-radius: 12px;
-            font-weight: 650;
-            padding-inline: 1.15rem;
-            box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 22%, transparent);
-        }
-
-        .horarios-tabs-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .tabs-panel {
-            flex: 1 1 280px;
-            min-width: 0;
-            padding: 6px;
-            border-radius: 14px;
-            border: none;
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--wine) 4%, var(--card)),
-                color-mix(in srgb, var(--card) 96%, transparent)
-            );
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
-        }
-
-        .horarios-status {
-            flex: 0 0 auto;
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            max-width: min(320px, 92vw);
-            padding: 0.38rem 0.75rem;
-            border-radius: 999px;
-            border: none;
-            background: color-mix(in srgb, var(--muted) 10%, var(--card));
-            color: var(--muted);
-            font-size: 0.82rem;
-            font-weight: 600;
-            line-height: 1.25;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .slots-wrap {
-            border: none;
-            border-radius: 16px;
-            padding: 14px 16px 16px;
-            margin-top: 2px;
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--card) 98%, transparent),
-                color-mix(in srgb, var(--card) 92%, transparent)
-            );
-        }
-
-        .slots-kpi-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: none;
-        }
-
-        .slots-kpi-row .hint {
-            font-size: 0.84rem;
-            color: var(--muted);
-        }
-
-        .mini{
-            display:inline-flex; align-items:center; gap:.35rem;
-            padding:.18rem .5rem; border-radius:999px;
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 86%, transparent);
-            color: var(--muted);
-            font-size:.82rem;
-            white-space:nowrap;
-        }
-
-        .kpi{ display:flex; gap:8px; flex-wrap:wrap; }
-
-        .tag-ok{ background: rgba(25,135,84,.12); color: color-mix(in srgb, #198754 70%, var(--text)); }
-        .tag-warn{ background: rgba(241,220,33,.14); color: color-mix(in srgb, #f1dc21 60%, var(--text)); }
-        .tag-bad{ background: rgba(220,53,69,.12); color: color-mix(in srgb, #dc3545 70%, var(--text)); }
-
-        .switch{
-            display:inline-flex; align-items:center; gap:8px;
-            user-select:none;
-        }
-        .switch input{ width: 44px; height: 24px; }
-
-        .actions{
-            display:flex; gap:10px; flex-wrap:wrap;
-            align-items:center;
-            justify-content:flex-end;
-            min-width: 250px;
-        }
-
-        .btn-mini{
-            padding: .45rem .7rem;
-            border-radius: 999px;
-            border:1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 92%, transparent);
-            color: var(--text);
-            font-weight:650;
-            transition: border-color .16s ease, background .16s ease;
-        }
-        .btn-mini:hover{
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 78%, transparent);
-        }
-
-        .muted{ color: var(--muted); font-size:.92rem; }
-
-        /* Pestañas */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .tabbtn {
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-            color: var(--text);
-            border-radius: 999px;
-            padding: 0.4rem 0.75rem;
-            font-weight: 650;
-            font-size: 0.86rem;
-            line-height: 1.15;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            user-select: none;
-            transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
-        }
-        .tabbtn:hover {
-            border-color: color-mix(in srgb, var(--wine) 45%, var(--border));
-            background: color-mix(in srgb, var(--card) 82%, transparent);
-            transform: translateY(-1px);
-        }
-        .tabbtn:focus-visible {
-            outline: none;
-            box-shadow: 0 0 0 0.2rem var(--ring);
-        }
-        .tabbtn.is-active {
-            border-color: transparent;
-            background: linear-gradient(90deg, var(--wine), var(--wine-2));
-            color: #fff;
-            box-shadow: 0 4px 16px color-mix(in srgb, var(--wine) 30%, transparent);
-        }
-        .tabbtn.is-active:hover {
-            color: #fff;
-            transform: translateY(-1px);
-        }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 22px;
-            height: 19px;
-            padding: 0 0.4rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: color-mix(in srgb, var(--card) 88%, transparent);
-            font-size: 0.76rem;
-            font-weight: 700;
-            color: var(--muted);
-        }
-        .tabbtn.is-active .badge {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.28);
-            color: #fff;
-        }
-
-        /* Ops layout 2 columnas */
-        .ops-grid {
-            margin-top: 12px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            align-items: start;
-        }
-
-        .ops-col {
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(
-                180deg,
-                color-mix(in srgb, var(--card) 97%, transparent),
-                color-mix(in srgb, var(--card) 93%, transparent)
-            );
-            padding: 12px;
-        }
-
-        .ops-col-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 2px 4px 12px;
-            border-bottom: none;
-            margin-bottom: 4px;
-        }
-
-        .ops-col-title {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .ops-list {
-            margin-top: 2px;
-        }
-
-        .slot-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            border: none;
-            border-radius: 14px;
-            background: linear-gradient(
-                135deg,
-                color-mix(in srgb, var(--card) 97%, transparent),
-                color-mix(in srgb, var(--card) 92%, transparent)
-            );
-            margin-top: 8px;
-            box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
-            transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
-        }
-
-        .slot-row:hover {
-            background: color-mix(in srgb, var(--wine) 5%, var(--card));
-            transform: translateY(-1px);
-            box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 28%, var(--border)), 0 8px 22px rgba(2, 6, 23, 0.08);
-        }
-
-        .slot-left {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            min-width: 240px;
-        }
-
-        .disabled-row {
-            opacity: .62;
-        }
-
-        /* Estado CANCELLED por día (visual rápido) */
-        .day-cancelled {
-            opacity: .78;
-            background: color-mix(in srgb, var(--card) 90%, rgba(220, 53, 69, .06));
-            box-shadow: 0 0 0 1px color-mix(in srgb, #dc3545 32%, transparent);
-        }
-
-        .day-cancelled .pill.mono {
-            color: color-mix(in srgb, #dc3545 75%, var(--text));
-        }
-
-        .group-date{
-            margin-top: 14px;
-            padding-top: 8px;
-            border-top: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
-        }
-        .group-date:first-child{
-            margin-top: 6px;
-            padding-top: 0;
-            border-top: none;
-        }
-        .group-title{
-            display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-            margin: 6px 0 8px;
-        }
-
-        /* Small form row */
-        .row-form{
-            display:flex; gap:10px; flex-wrap:wrap; align-items:end;
-            margin-top: 10px;
-            padding: 10px;
-            border:1px dashed color-mix(in srgb, var(--border) 80%, transparent);
-            border-radius: 16px;
-            background: color-mix(in srgb, var(--card) 94%, transparent);
-        }
-        .row-form .field{ min-width: 160px; }
-        .row-form input, .row-form select{
-            border:1px solid var(--border);
-            border-radius: 12px;
-            padding: .55rem .7rem;
-            background: var(--card);
-            color: var(--text);
-        }
-        .row-form input:focus, .row-form select:focus{
-            outline:none;
-            border-color: color-mix(in srgb, var(--wine) 55%, var(--border));
-            box-shadow: 0 0 0 .25rem color-mix(in srgb, var(--wine) 18%, transparent);
-        }
-
-        /* =========================================================
-           ✅ MOBILE UPGRADE (Admin horarios)
-        ========================================================= */
-        @media (max-width: 576px){
-
-            main.container.py-4{ padding-top: 14px !important; padding-bottom: 16px !important; }
-            .card-soft.p-4{ padding: 14px !important; }
-
-            .horarios-toolbar {
-                gap: 12px;
-            }
-
-            .horarios-tabs-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .tabs-panel {
-                width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .horarios-status {
-                width: 100%;
-            }
-
-            .horarios-status .status-pill {
-                max-width: none;
-                white-space: normal;
-                justify-content: center;
-                text-align: center;
-            }
-
-            .controls{
-                width: 100%;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 10px;
-                align-items: stretch;
-            }
-
-            #dateWrap,
-            #directionWrap,
-            #dateWrap .form-control,
-            #direction,
-            .controls .form-select,
-            .controls .form-control{
-                width: 100%;
-            }
-
-            #loadBtn{
-                width: 100%;
-                border-radius: 14px;
-                padding: .6rem 1rem;
-                font-weight: 700;
-            }
-
-            .tabs{
-                width: 100%;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                gap: 8px;
-                padding-bottom: 6px;
-            }
-            .tabs::-webkit-scrollbar{ height: 6px; }
-            .tabs::-webkit-scrollbar-thumb{
-                background: color-mix(in srgb, var(--border) 70%, transparent);
-                border-radius: 999px;
-            }
-
-            .tabbtn{
-                flex: 0 0 auto;
-                white-space: nowrap;
-                padding: .5rem .85rem;
-                border-radius: 999px;
-            }
-
-            .slots-wrap{ padding: 12px; }
-
-            .kpi .pill {
-                font-size: .88rem;
-                padding: .38rem .62rem;
-            }
-
-            .ops-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .slot-row{
-                display: block;
-                padding: 12px;
-                border-radius: 16px;
-            }
-
-            .slot-left{
-                min-width: auto;
-                width: 100%;
-                gap: 8px;
-            }
-
-            .pill {
-                font-size: .88rem;
-                padding: .38rem .62rem;
-            }
-
-            .mini {
-                font-size: .82rem;
-                padding: .18rem .5rem;
-            }
-
-            .actions{
-                width: 100%;
-                min-width: 0;
-                margin-top: 10px;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                justify-content: initial;
-                align-items: center;
-            }
-
-            .actions .switch{
-                width: 100%;
-                justify-content: space-between;
-                padding: .45rem .6rem;
-                border: 1px dashed color-mix(in srgb, var(--border) 75%, transparent);
-                border-radius: 14px;
-                background: color-mix(in srgb, var(--card) 92%, transparent);
-            }
-
-            .actions .switch input{
-                width: 44px;
-                height: 24px;
-                margin: 0;
-            }
-
-            .btn-mini{
-                width: 100%;
-                justify-content: center;
-                padding: .55rem .85rem;
-            }
-
-            .row-form{
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            .row-form .field{ min-width: 0; }
-            .row-form button.btn.btn-wine{ width: 100%; border-radius: 14px; }
-
-            .group-title {
-                gap: 8px;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .tabbtn:hover,
-            .tabbtn.is-active:hover,
-            .slot-row:hover {
-                transform: none;
-            }
-        }
-    </style>
+    <%- include('partials/admin-assets') %>
 </head>
 
-<body class="admin-app">
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="/admin/agenda">
-            <span class="brand-dot"></span>
-            <span class="fw-semibold">Admin • Horarios</span>
-        </a>
+<body class="home-page admin-app page-horarios">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+<%- include('partials/admin-hero', { heading: 'Horarios', tag: 'Plantillas, cupos y precios' }) %>
 
-        <div class="d-flex align-items-center gap-2">
-            <a class="btn btn-outline-light btn-sm rounded-4" href="/admin/agenda">Volver</a>
-
-            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-                <span id="themeIcon">&#x1F319;</span> <span class="d-none d-sm-inline">Tema</span>
-            </button>
-
-            <form method="POST" action="/admin/logout" class="m-0">
-                <button class="btn btn-sm btn-outline-light rounded-4">Salir</button>
-            </form>
-        </div>
-    </div>
-</nav>
-
-<main class="container py-4">
-
-    <div class="horarios-hero mb-3">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-            <div class="flex-grow-1 horarios-hero-intro">
-                <div class="pill">Horarios</div>
-                <h1 class="h3 page-title mt-2 mb-1">Administración de horarios</h1>
-                <div class="subtle">Plantillas, cupos por salida, desactivar por día y precios.</div>
-            </div>
-            <div class="horarios-nav">
-                <a class="btn btn-ghost btn-sm px-3" href="/admin/agenda">Agenda</a>
-                <a class="btn btn-ghost btn-sm px-3" href="/admin/recent">Últimos registros</a>
+<main class="home-main admin-main">
+<section class="container">
+    <div class="tabs-card home-tabs admin-shell">
+        <div class="home-tabs-head">
+            <h2 class="home-section-title">Administración de horarios</h2>
+            <div class="home-tabs-tools">
+                <%- include('partials/admin-nav', { adminNav: 'horarios' }) %>
             </div>
         </div>
-    </div>
+        <div class="home-tabs-body">
 
-    <div class="card-soft horarios-card p-4">
-        <div class="horarios-toolbar">
-            <div class="controls">
-                <div id="dateWrap">
-                    <label class="form-label">Fecha</label>
-                    <input id="trip_date" type="date" class="form-control"/>
+    <div class="horarios-toolbar">
+        <div class="horarios-toolbar-top">
+            <div class="horarios-date-block">
+                <div class="horarios-kicker">
+                    <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
+                    <span id="kickerText">Horarios</span>
+                </div>
+                <div class="horarios-date-label" id="kDatePretty">—</div>
+                <div class="horarios-date-meta subtle" id="kDir">—</div>
+            </div>
+
+            <div class="horarios-toolbar-form">
+                <div id="dateWrap" class="horarios-day-nav">
+                    <button type="button" class="horarios-day-arrow" id="prevDay" title="Día anterior" aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'arrow-left', size: 16 }) %></button>
+                    <span class="horarios-date-input">
+                        <span class="horarios-date-fake" id="dateFake" aria-hidden="true">—</span>
+                        <input id="trip_date" type="date" class="form-control" aria-label="Fecha">
+                    </span>
+                    <button type="button" class="horarios-day-arrow" id="nextDay" title="Día siguiente" aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></button>
                 </div>
 
-                <div id="directionWrap">
-                    <label class="form-label">Dirección</label>
-                    <select id="direction" class="form-select">
+                <div id="directionWrap" class="horarios-dir" hidden>
+                    <select id="direction" class="visually-hidden" aria-label="Dirección">
                         <option value="VIC_TO_LLE">Victoria → Llera</option>
                         <option value="LLE_TO_VIC">Llera → Victoria</option>
                     </select>
+                    <button type="button" class="horarios-chip is-on" data-dir="VIC_TO_LLE">Victoria → Llera</button>
+                    <button type="button" class="horarios-chip" data-dir="LLE_TO_VIC">Llera → Victoria</button>
                 </div>
 
                 <button id="loadBtn" class="btn btn-wine" type="button">Cargar</button>
             </div>
-
-            <div class="horarios-tabs-bar">
-                <div class="tabs-panel">
-                    <div class="tabs" id="tabs">
-                        <button type="button" class="tabbtn is-active" data-tab="ops" title="Operación por fecha">
-                            Operación <span class="badge" id="bOps">—</span>
-                        </button>
-
-                        <button type="button" class="tabbtn" data-tab="disabled_day" title="Desactivar salidas por día">
-                            Por día <span class="badge" id="bDisabledDay">—</span>
-                        </button>
-
-                        <button type="button" class="tabbtn" data-tab="templates" title="Configuración de horarios base">
-                            Plantillas <span class="badge" id="bTemplates">—</span>
-                        </button>
-
-                        <button type="button" class="tabbtn" data-tab="pricing" title="Precios pasaje y paquetería">
-                            Precios <span class="badge" id="bPricing">—</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="horarios-status">
-                    <span class="status-pill mono" id="statusText">—</span>
-                </div>
-            </div>
         </div>
 
-        <div class="slots-wrap">
-            <div class="slots-kpi-row">
-                <div class="kpi">
-                    <span class="pill">📅 <span id="kDate">—</span></span>
-                    <span class="pill">🧭 <span id="kDir">—</span></span>
+        <div class="horarios-tabs-bar">
+            <div class="tabs-panel">
+                <div class="tabs" id="tabs">
+                    <button type="button" class="tabbtn is-active" data-tab="ops" title="Operación por fecha">
+                        Operación <span class="badge" id="bOps">—</span>
+                    </button>
+                    <button type="button" class="tabbtn" data-tab="disabled_day" title="Desactivar salidas por día">
+                        Por día <span class="badge" id="bDisabledDay">—</span>
+                    </button>
+                    <button type="button" class="tabbtn" data-tab="templates" title="Configuración de horarios base">
+                        Plantillas <span class="badge" id="bTemplates">—</span>
+                    </button>
+                    <button type="button" class="tabbtn" data-tab="pricing" title="Precios pasaje y paquetería">
+                        Precios <span class="badge" id="bPricing">—</span>
+                    </button>
                 </div>
-                <div class="hint" id="hint">Selecciona pestaña.</div>
             </div>
-
-            <div id="list"></div>
+            <div class="horarios-status">
+                <span class="status-pill" id="statusText">—</span>
+            </div>
         </div>
     </div>
 
+    <div class="slots-wrap">
+        <p class="hint" id="hint">Selecciona pestaña.</p>
+        <div id="list"></div>
+    </div>
+
+        </div>
+    </div>
+</section>
 </main>
 
 <%- include('partials/toast') %>
+<%- include('partials/admin-footer') %>
 <%- include('partials/footer') %>
-
-<script src="/js/theme.js"></script>
 
 <script>
     const tripDateEl = document.getElementById("trip_date");
@@ -657,7 +103,11 @@
     const loadBtn = document.getElementById("loadBtn");
     const listEl = document.getElementById("list");
 
-    const kDate = document.getElementById("kDate");
+    const kDatePretty = document.getElementById("kDatePretty");
+    const dateFake = document.getElementById("dateFake");
+    const kickerText = document.getElementById("kickerText");
+    const prevDay = document.getElementById("prevDay");
+    const nextDay = document.getElementById("nextDay");
     const kDir = document.getElementById("kDir");
     const hint = document.getElementById("hint");
     const statusText = document.getElementById("statusText");
@@ -672,6 +122,12 @@
 
     let currentTab = "ops";
 
+    function ico(name, size) {
+        return (window.Icons && typeof window.Icons.svg === "function")
+            ? window.Icons.svg(name, { size: size || 14 })
+            : "";
+    }
+
     function todayISO(){
         return new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" });
     }
@@ -684,6 +140,66 @@
 
     function dirLabel(d){
         return d === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
+    }
+
+    function formatPrettyDate(iso){
+        const s = String(iso || "").trim();
+        if (!s) return "";
+        try {
+            const d = new Date(`${s}T12:00:00`);
+            if (isNaN(d.getTime())) return s;
+            const raw = new Intl.DateTimeFormat("es-MX", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+            }).format(d);
+            return raw.charAt(0).toUpperCase() + raw.slice(1);
+        } catch {
+            return s;
+        }
+    }
+
+    function formatDateShort(iso){
+        const parts = String(iso || "").split("-");
+        if (parts.length !== 3) return String(iso || "");
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function setDateHeading(iso, kicker){
+        const pretty = formatPrettyDate(iso);
+        if (kDatePretty) kDatePretty.textContent = pretty || iso || "—";
+        if (dateFake) dateFake.textContent = formatDateShort(iso) || "—";
+        if (kickerText) kickerText.textContent = kicker || "Horarios";
+    }
+
+    function hhmm(t){
+        return String(t || "").slice(0, 5);
+    }
+
+    function occupancyMeta(used, cap){
+        const c = Math.min(6, Math.max(0, Number(cap) || 0));
+        const u = Math.min(c, Number(used) || 0);
+        const remaining = Math.max(0, c - u);
+        const pct = c > 0 ? Math.min(100, Math.round((u / c) * 100)) : 0;
+        let tone = "empty";
+        if (c > 0 && u >= c) tone = "full";
+        else if (u > 0 && remaining <= 2) tone = "tight";
+        else if (u > 0) tone = "ok";
+        let status = "Vacía";
+        if (tone === "full") status = "Llena";
+        else if (tone === "tight" || tone === "ok") status = remaining + (remaining === 1 ? " libre" : " libres");
+        let seats = "";
+        for (let i = 0; i < c; i++) {
+            seats += `<span class="slot-seat${i < u ? " is-on" : ""}"></span>`;
+        }
+        return { c, u, remaining, pct, tone, status, seats };
+    }
+
+    function syncDirectionChips(){
+        const current = directionEl?.value || "VIC_TO_LLE";
+        document.querySelectorAll(".horarios-chip[data-dir]").forEach((btn) => {
+            btn.classList.toggle("is-on", btn.dataset.dir === current);
+        });
     }
 
     function tagByAvailability(avail){
@@ -719,31 +235,33 @@
     function opsRowTemplate(r) {
         const disabledBecauseTemplate = !r.template_active;
         const tripEnabled = (String(r.trip_status || "OPEN").toUpperCase() === "OPEN");
-        const availTag = tagByAvailability(r.available);
         const dayCancelledClass = (!tripEnabled && !disabledBecauseTemplate) ? "day-cancelled" : "";
+        const occ = occupancyMeta(r.used, r.capacity);
+        const time = hhmm(r.depart_time);
 
         return `
-            <div class="slot-row ${disabledBecauseTemplate ? "disabled-row" : ""} ${dayCancelledClass}"
+            <div class="slot-row is-${occ.tone} ${disabledBecauseTemplate ? "disabled-row" : ""} ${dayCancelledClass}"
                  data-templateid="${r.template_id}"
                  data-direction="${escapeHtml(r.direction)}"
                  data-depart="${escapeHtml(r.depart_time)}"
                  data-capacity="${Number(r.capacity || 0)}"
                  data-used="${Number(r.used || 0)}">
-                <div class="slot-left">
-                    <span class="pill mono">🕒 ${escapeHtml(r.depart_time)}</span>
-                    <span class="mini">Cap: <strong>${r.capacity}</strong></span>
-                    <span class="mini">Usados: <strong class="js-used">${r.used}</strong></span>
-                    <span class="mini ${availTag}">Libres: <strong class="js-avail">${r.available}</strong></span>
+                <div class="slot-time mono">${escapeHtml(time)}</div>
+                <div class="slot-body">
+                    <div class="slot-top">
+                        <span class="slot-status">${occ.status}</span>
+                        <span class="slot-cap mono">${occ.u}/${occ.c}</span>
+                    </div>
+                    <div class="slot-meter" style="--w:${occ.pct}%"><span></span></div>
+                    <span class="slot-seats" aria-hidden="true">${occ.seats}</span>
                 </div>
-
-                <div class="actions">
+                <div class="slot-actions">
                     <label class="switch" title="Desactivar por completo (horario base)">
-                        <span class="muted">Completo</span>
+                        <span>Base</span>
                         <input class="template-toggle" type="checkbox" ${r.template_active ? "checked" : ""}>
                     </label>
-
                     <label class="switch" title="Desactivar por día (solo esta fecha)">
-                        <span class="muted">Día</span>
+                        <span>Día</span>
                         <input class="trip-toggle" type="checkbox"
                                ${tripEnabled ? "checked" : ""}
                                ${disabledBecauseTemplate ? "disabled" : ""}>
@@ -869,11 +387,11 @@
         const date = tripDateEl.value;
 
         // ops: uso ambas direcciones; oculto selector dirección
-        directionWrap.style.display = "none";
-        dateWrap.style.display = "";
+        directionWrap.hidden = true;
+        dateWrap.hidden = false;
 
-        kDate.textContent = date || "—";
         kDir.textContent = "Ambas direcciones";
+        setDateHeading(date, date === todayISO() ? "Hoy" : "Operación");
 
         if (!date) {
             hint.textContent = "Selecciona una fecha.";
@@ -903,31 +421,32 @@
 
         listEl.innerHTML = `
             <div class="ops-grid">
-                <div class="ops-col">
+                <section class="ops-col" aria-label="Victoria a Llera">
                     <div class="ops-col-head">
-                        <div class="ops-col-title">
-                            <span class="pill">🚌 Victoria → Llera</span>
-                            <span class="mini">Horarios: <strong>${left.length}</strong></span>
+                        <div class="ops-col-route">
+                            <span>Victoria</span>
+                            <span class="ops-col-mid">${ico("arrow-left-right", 16)}</span>
+                            <span>Llera</span>
                         </div>
-                        <span class="badge">${left.length}</span>
+                        <span class="ops-col-count">${left.length}</span>
                     </div>
                     <div class="ops-list" id="opsLeft">
-                        ${left.length ? left.map(opsRowTemplate).join("") : `<div class="muted mt-2">Sin horarios.</div>`}
+                        ${left.length ? left.map(opsRowTemplate).join("") : `<div class="horarios-empty-col">Sin horarios en este rumbo.</div>`}
                     </div>
-                </div>
-
-                <div class="ops-col">
+                </section>
+                <section class="ops-col" aria-label="Llera a Victoria">
                     <div class="ops-col-head">
-                        <div class="ops-col-title">
-                            <span class="pill">🚌 Llera → Victoria</span>
-                            <span class="mini">Horarios: <strong>${right.length}</strong></span>
+                        <div class="ops-col-route">
+                            <span>Llera</span>
+                            <span class="ops-col-mid">${ico("arrow-left-right", 16)}</span>
+                            <span>Victoria</span>
                         </div>
-                        <span class="badge">${right.length}</span>
+                        <span class="ops-col-count">${right.length}</span>
                     </div>
                     <div class="ops-list" id="opsRight">
-                        ${right.length ? right.map(opsRowTemplate).join("") : `<div class="muted mt-2">Sin horarios.</div>`}
+                        ${right.length ? right.map(opsRowTemplate).join("") : `<div class="horarios-empty-col">Sin horarios en este rumbo.</div>`}
                     </div>
-                </div>
+                </section>
             </div>
         `;
 
@@ -942,19 +461,20 @@
        TAB: Desactivar por día (lista global)
     ----------------------------- */
     function disabledDayRowTemplate(r){
-        const availTag = tagByAvailability(r.available);
+        const occ = occupancyMeta(r.used, r.capacity);
         return `
-            <div class="slot-row day-cancelled" data-templateid="${r.template_id}" data-tripdate="${escapeHtml(r.trip_date)}">
-                <div class="slot-left">
-                    <span class="pill">📅 <span class="mono">${escapeHtml(r.trip_date)}</span></span>
-                    <span class="pill mono">🕒 ${escapeHtml(r.depart_time)}</span>
-                    <span class="mini">Cap: <strong>${r.capacity}</strong></span>
-                    <span class="mini">Usados: <strong>${r.used}</strong></span>
-                    <span class="mini ${availTag}">Libres: <strong>${r.available}</strong></span>
+            <div class="slot-row day-cancelled is-${occ.tone}" data-templateid="${r.template_id}" data-tripdate="${escapeHtml(r.trip_date)}">
+                <div class="slot-time mono">${escapeHtml(hhmm(r.depart_time))}</div>
+                <div class="slot-body">
+                    <div class="slot-top">
+                        <span class="slot-status">${escapeHtml(dirLabel(r.direction))}</span>
+                        <span class="slot-cap mono">${occ.u}/${occ.c}</span>
+                    </div>
+                    <div class="slot-meter" style="--w:${occ.pct}%"><span></span></div>
+                    <span class="slot-seats" aria-hidden="true">${occ.seats}</span>
                 </div>
-
-                <div class="actions">
-                    <button class="btn-mini enableBtn">Habilitar</button>
+                <div class="slot-actions">
+                    <button class="btn-mini enableBtn" type="button">Habilitar</button>
                 </div>
             </div>
         `;
@@ -963,14 +483,15 @@
     async function loadDisabledDay(){
         const direction = directionEl.value;
 
-        directionWrap.style.display = "";
-        dateWrap.style.display = "none";
+        directionWrap.hidden = false;
+        dateWrap.hidden = true;
 
         const from = todayISO();
         const to = addDaysISO(from, 60);
 
-        kDate.textContent = `${from} → ${to}`;
         kDir.textContent = dirLabel(direction);
+        setDateHeading("", "Por día");
+        if (kDatePretty) kDatePretty.textContent = "Próximos 60 días";
 
         hint.textContent = "Cargando cancelados…";
         statusText.textContent = "";
@@ -1004,8 +525,8 @@
             blocks.push(`
                 <div class="group-date">
                     <div class="group-title">
-                        <span class="pill">📅 <span class="mono">${escapeHtml(d)}</span></span>
-                        <span class="mini">Cancelados: <strong>${items.length}</strong></span>
+                        <span class="group-date-label">${escapeHtml(formatPrettyDate(d) || d)}</span>
+                        <span class="ops-col-count">${items.length}</span>
                     </div>
                     ${items.map(disabledDayRowTemplate).join("")}
                 </div>
@@ -1053,25 +574,31 @@
         const active = Number(t.active) === 1;
 
         return `
-            <div class="slot-row ${active ? "" : "disabled-row"}" data-id="${t.id}">
-                <div class="slot-left">
-                    <span class="pill mono">#${t.id}</span>
-                    <span class="mini">Dirección: <strong>${escapeHtml(t.direction)}</strong></span>
+            <div class="slot-row tpl-row ${active ? "" : "disabled-row"}" data-id="${t.id}">
+                <div class="slot-time mono">${escapeHtml(hhmm(t.depart_time))}</div>
+                <div class="slot-body">
+                    <div class="slot-top">
+                        <span class="slot-status">Plantilla #${t.id}</span>
+                        <span class="slot-cap">${active ? "Activa" : "Inactiva"}</span>
+                    </div>
+                    <div class="tpl-fields">
+                        <label class="tpl-field">
+                            <span>Hora</span>
+                            <input class="t-time" type="time" value="${escapeHtml(t.depart_time)}">
+                        </label>
+                        <label class="tpl-field">
+                            <span>Capacidad</span>
+                            <input class="t-cap" type="number" min="0" max="6" value="${Number(t.capacity_passengers || 0)}">
+                        </label>
+                    </div>
                 </div>
-
-                <div class="actions" style="min-width: 420px;">
-                    <span class="mini">Hora</span>
-                    <input class="t-time" type="time" value="${escapeHtml(t.depart_time)}" style="min-width:140px;border:1px solid var(--border);border-radius:12px;padding:.55rem .7rem;background:var(--card);color:var(--text);">
-                    <span class="mini">Cap (0–6)</span>
-                    <input class="t-cap" type="number" min="0" max="6" value="${Number(t.capacity_passengers || 0)}" style="width:90px;border:1px solid var(--border);border-radius:12px;padding:.55rem .7rem;background:var(--card);color:var(--text);">
-
+                <div class="slot-actions">
                     <label class="switch" title="Desactivar por completo">
-                        <span class="muted">Activo</span>
+                        <span>Activo</span>
                         <input class="t-active" type="checkbox" ${active ? "checked" : ""}>
                     </label>
-
-                    <button class="btn-mini t-save">Guardar</button>
-                    <button class="btn-mini t-disable">Desactivar</button>
+                    <button class="btn-mini t-save" type="button">Guardar</button>
+                    <button class="btn-mini t-disable" type="button">Desactivar</button>
                 </div>
             </div>
         `;
@@ -1080,11 +607,12 @@
     async function loadTemplates(){
         const direction = directionEl.value;
 
-        directionWrap.style.display = "";
-        dateWrap.style.display = "none";
+        directionWrap.hidden = false;
+        dateWrap.hidden = true;
 
-        kDate.textContent = "—";
         kDir.textContent = dirLabel(direction);
+        setDateHeading("", "Plantillas");
+        if (kDatePretty) kDatePretty.textContent = "Horarios base";
 
         hint.textContent = "Cargando horarios base…";
         statusText.textContent = "";
@@ -1222,11 +750,12 @@
        TAB: Precios
     ----------------------------- */
     async function loadPricing(){
-        directionWrap.style.display = "";
-        dateWrap.style.display = "none";
+        directionWrap.hidden = false;
+        dateWrap.hidden = true;
 
-        kDate.textContent = "—";
-        kDir.textContent = "—";
+        kDir.textContent = "Tarifas";
+        setDateHeading("", "Precios");
+        if (kDatePretty) kDatePretty.textContent = "Pasaje y paquetería";
 
         hint.textContent = "Cargando precios…";
         statusText.textContent = "";
@@ -1239,7 +768,7 @@
             return;
         }
 
-        bPricing.textContent = "✓";
+        bPricing.innerHTML = ico("check", 12);
 
         const passenger = Number(data.passenger_price_mxn || 0).toFixed(2);
         const pkg = Number(data.package_price_mxn || 0).toFixed(2);
@@ -1326,6 +855,7 @@
 
     // cambio de fecha => refresca ops
     tripDateEl?.addEventListener("change", () => {
+        setDateHeading(tripDateEl.value, tripDateEl.value === todayISO() ? "Hoy" : "Operación");
         if (currentTab === "ops") load();
     });
 
@@ -1336,9 +866,33 @@
 
     loadBtn?.addEventListener("click", load);
 
+    prevDay?.addEventListener("click", () => {
+        const current = tripDateEl.value || todayISO();
+        tripDateEl.value = addDaysISO(current, -1);
+        setDateHeading(tripDateEl.value, tripDateEl.value === todayISO() ? "Hoy" : "Operación");
+        if (currentTab === "ops") load();
+    });
+
+    nextDay?.addEventListener("click", () => {
+        const current = tripDateEl.value || todayISO();
+        tripDateEl.value = addDaysISO(current, 1);
+        setDateHeading(tripDateEl.value, tripDateEl.value === todayISO() ? "Hoy" : "Operación");
+        if (currentTab === "ops") load();
+    });
+
+    document.querySelectorAll(".horarios-chip[data-dir]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (!directionEl) return;
+            directionEl.value = btn.dataset.dir;
+            syncDirectionChips();
+            if (currentTab !== "ops") load();
+        });
+    });
+
     if (!tripDateEl.value) tripDateEl.value = todayISO();
-    kDate.textContent = tripDateEl.value;
+    setDateHeading(tripDateEl.value, "Hoy");
     kDir.textContent = "Ambas direcciones";
+    syncDirectionChips();
 
     load();
 </script>
