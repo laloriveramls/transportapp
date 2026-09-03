@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
 const {resolveVicLocationLabel, stopLabel} = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
+const {isPreviewMode, previewAgenda} = require("../dev/previewData");
 const crypto = require("crypto");
 
 const router = express.Router();
@@ -18,6 +19,10 @@ const MAX_CAP = 6; // I keep system capacity clamped to 6.
 ----------------------------- */
 function requireAdmin(req, res, next) {
     if (req.session?.admin?.role === "ADMIN") return next();
+    if (isPreviewMode()) {
+        req.session.admin = {id: 0, username: "preview", role: "ADMIN"};
+        return next();
+    }
     return res.redirect("/admin/login");
 }
 
@@ -121,6 +126,16 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
     const onlyWithTrip = req.query.onlyWithTrip === "1";
     const agendaPrevDate = shiftISODate(date, -1);
     const agendaNextDate = shiftISODate(date, 1);
+
+    if (isPreviewMode()) {
+        return res.render("admin_agenda", {
+            ...previewAgenda(date),
+            directionLabel,
+            onlyWithTrip,
+            agendaPrevDate,
+            agendaNextDate,
+        });
+    }
 
     const [trips] = await pool.query(
         `

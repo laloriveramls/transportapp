@@ -43,7 +43,7 @@
     const dateShort = (() => {
         const parts = String(date || '').split('-');
         if (parts.length !== 3) return String(date || '');
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return `${parts[2]}/${parts[1]}`;
     })();
 
     function hasActivity(t) {
@@ -78,14 +78,11 @@
 
     <div class="agenda-toolbar">
         <div class="agenda-date-block">
-            <div class="agenda-date-kicker">
-                <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
-                <%= isToday ? 'Hoy' : 'Agenda' %>
-            </div>
-            <div class="agenda-date-label" id="agendaDateLabel"><%= datePretty %></div>
-            <div class="agenda-date-meta subtle">
+            <p class="agenda-date-label" id="agendaDateLabel"><%= datePretty %></p>
+            <p class="agenda-date-meta">
+                <% if (isToday) { %><span class="agenda-today-dot">Hoy</span><% } %>
                 <%= shownTrips.length %> salida<%= shownTrips.length === 1 ? '' : 's' %><% if (onlyWithTrip) { %> con viaje<% } %>
-            </div>
+            </p>
         </div>
 
         <form id="agendaForm" class="agenda-toolbar-form" method="GET" action="/admin/agenda">
@@ -93,7 +90,7 @@
                 <a class="agenda-day-arrow"
                    href="/admin/agenda?date=<%= encodeURIComponent(agendaPrevDate) %><%= owtQ %>"
                    title="Día anterior"
-                   aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'arrow-left', size: 16 }) %></a>
+                   aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'chevron-left', size: 18 }) %></a>
                 <span class="agenda-date-input">
                     <span class="agenda-date-fake" aria-hidden="true"><%= dateShort %></span>
                     <input id="agendaDate" type="date" name="date" class="form-control" value="<%= date %>" aria-labelledby="agendaDateLabel">
@@ -101,53 +98,42 @@
                 <a class="agenda-day-arrow"
                    href="/admin/agenda?date=<%= encodeURIComponent(agendaNextDate) %><%= owtQ %>"
                    title="Día siguiente"
-                   aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></a>
+                   aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'chevron-right', size: 18 }) %></a>
             </div>
             <input type="hidden" name="onlyWithTrip" value="<%= onlyWithTrip ? '1' : '0' %>">
             <button class="visually-hidden" type="submit">Ver fecha</button>
 
-            <% if (isToday) { %>
-                <span class="agenda-chip is-on" aria-current="date">Hoy</span>
-            <% } else { %>
+            <% if (!isToday) { %>
                 <a class="agenda-chip" href="/admin/agenda?date=<%= encodeURIComponent(todayISO) %><%= owtQ %>">Hoy</a>
             <% } %>
 
-            <% if (onlyWithTrip) { %>
-                <a class="agenda-chip is-on" href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=0">Ver todas</a>
-            <% } else { %>
-                <a class="agenda-chip" href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1">Solo con viaje</a>
-            <% } %>
+            <div class="agenda-seg" role="group" aria-label="Filtro de salidas">
+                <a class="agenda-seg-btn <%= onlyWithTrip ? '' : 'is-on' %>"
+                   href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=0"
+                   <%= onlyWithTrip ? '' : 'aria-current="true"' %>>Todas</a>
+                <a class="agenda-seg-btn <%= onlyWithTrip ? 'is-on' : '' %>"
+                   href="/admin/agenda?date=<%= encodeURIComponent(date || '') %>&onlyWithTrip=1"
+                   <%= onlyWithTrip ? 'aria-current="true"' : '' %>>Con viaje</a>
+            </div>
         </form>
     </div>
 
     <div class="agenda-kpis" role="group" aria-label="Resumen del día">
-        <div class="agenda-kpi agenda-kpi--passengers">
-            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></div>
-            <div>
-                <div class="label">Pasajeros</div>
-                <div class="value"><%= Number(totalPassengers || 0) %></div>
-            </div>
+        <div class="agenda-kpi">
+            <span class="agenda-kpi-value"><%= Number(totalPassengers || 0) %></span>
+            <span class="agenda-kpi-label">Pasajeros</span>
         </div>
-        <div class="agenda-kpi agenda-kpi--packages">
-            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
-            <div>
-                <div class="label">Paquetería</div>
-                <div class="value"><%= Number(totalPackages || 0) %></div>
-            </div>
+        <div class="agenda-kpi">
+            <span class="agenda-kpi-value"><%= Number(totalPackages || 0) %></span>
+            <span class="agenda-kpi-label">Paquetería</span>
         </div>
-        <div class="agenda-kpi agenda-kpi--cancelled-passengers">
-            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ban', size: 18 }) %></div>
-            <div>
-                <div class="label">Pasajeros cancelados</div>
-                <div class="value"><%= Number(cancelledPassengers || 0) %></div>
-            </div>
+        <div class="agenda-kpi is-quiet">
+            <span class="agenda-kpi-value"><%= Number(cancelledPassengers || 0) %></span>
+            <span class="agenda-kpi-label">Pax cancelados</span>
         </div>
-        <div class="agenda-kpi agenda-kpi--cancelled-packages">
-            <div class="agenda-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
-            <div>
-                <div class="label">Paquetes cancelados</div>
-                <div class="value"><%= Number(cancelledPackages || 0) %></div>
-            </div>
+        <div class="agenda-kpi is-quiet">
+            <span class="agenda-kpi-value"><%= Number(cancelledPackages || 0) %></span>
+            <span class="agenda-kpi-label">Paq. cancelados</span>
         </div>
     </div>
 
@@ -169,7 +155,7 @@
                     <div class="agenda-col-head">
                         <div class="agenda-col-route">
                             <span class="agenda-col-from"><%= group.from %></span>
-                            <span class="agenda-col-mid"><%- include('partials/icon', { name: 'arrow-left-right', size: 16 }) %></span>
+                            <span class="agenda-col-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
                             <span class="agenda-col-to"><%= group.to %></span>
                         </div>
                         <span class="agenda-col-count"><%= group.items.length %></span>
@@ -179,11 +165,11 @@
                         <div class="agenda-col-empty subtle">Sin salidas en este rumbo.</div>
                     <% } %>
 
+                    <div class="agenda-col-list">
                     <% group.items.forEach((t) => {
                         const used = Number(t.used_seats || 0);
                         const capRaw = Number(t.capacity_passengers || 0);
                         const cap = Math.min(6, Math.max(0, capRaw));
-                        const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
                         const remaining = Math.max(0, cap - used);
                         const packs = Number(t.packages || 0);
                         const hhmm = String(t.depart_time || '').slice(0, 5);
@@ -191,39 +177,36 @@
                         if (cap > 0 && used >= cap) tone = 'full';
                         else if (used > 0 && remaining <= 2) tone = 'tight';
                         else if (used > 0) tone = 'ok';
-                        let status = 'Vacía';
-                        if (tone === 'full') status = 'Llena';
-                        else if (tone === 'tight' || tone === 'ok') status = remaining + (remaining === 1 ? ' libre' : ' libres');
-                        if (packs > 0 && used === 0) status = 'Solo paquetería';
+                        if (packs > 0 && used === 0) tone = 'ok';
                     %>
                     <a class="agenda-trip is-<%= tone %>"
                        href="/admin/trip/<%= t.trip_id %>"
                        aria-label="<%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos">
                         <div class="agenda-trip-time mono"><%= hhmm %></div>
                         <div class="agenda-trip-body">
-                            <div class="agenda-trip-top">
-                                <span class="agenda-trip-status"><%= status %></span>
-                                <span class="agenda-trip-cap mono"><%= used %>/<%= cap %></span>
-                            </div>
-                            <div class="agenda-meter" style="--w:<%= pct %>%" aria-hidden="true"><span></span></div>
-                            <div class="agenda-trip-meta">
-                                <span class="agenda-seats" aria-hidden="true">
-                                    <% for (let i = 0; i < cap; i++) { %>
-                                        <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
-                                    <% } %>
-                                </span>
-                                <span class="agenda-pack <%= packs ? 'has-pack' : '' %>">
+                            <span class="agenda-seats" aria-hidden="true">
+                                <% for (let i = 0; i < cap; i++) { %>
+                                    <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
+                                <% } %>
+                            </span>
+                            <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
+                        </div>
+                        <div class="agenda-trip-aside">
+                            <% if (packs > 0) { %>
+                                <span class="agenda-pack has-pack">
                                     <%- include('partials/icon', { name: 'package', size: 14 }) %>
                                     <%= packs %>
                                 </span>
-                            </div>
+                            <% } else { %>
+                                <span class="agenda-pack" aria-hidden="true"></span>
+                            <% } %>
+                            <span class="agenda-trip-cta" aria-hidden="true">
+                                <%- include('partials/icon', { name: 'chevron-right', size: 16 }) %>
+                            </span>
                         </div>
-                        <span class="agenda-trip-cta">
-                            <span class="agenda-trip-cta-text">Detalle</span>
-                            <%- include('partials/icon', { name: 'arrow-right', size: 14 }) %>
-                        </span>
                     </a>
                     <% }) %>
+                    </div>
                 </section>
             <% }) %>
         </div>
