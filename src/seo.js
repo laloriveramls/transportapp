@@ -96,7 +96,7 @@ function homeFaqs(pricing, vicLocations) {
         },
         {
             question: "¿Cuánto cuesta el pasaje y la paquetería?",
-            answer: `El pasaje adulto entre Ciudad Victoria y Llera es de ${adult}, niños de ${child} y paquetería de ${pack}. Las paradas en ejidos tienen tarifa propia según el punto de abordaje.`,
+            answer: `El pasaje adulto entre Ciudad Victoria y Llera es de ${adult}, niños de ${child} y paquetería de ${pack}. Las paradas en ejidos tienen tarifa distinta según vayas a Victoria o a Llera.`,
         },
         {
             question: "¿Dónde salen las unidades?",
@@ -105,7 +105,7 @@ function homeFaqs(pricing, vicLocations) {
         },
         {
             question: "¿Hacen paradas en ejidos?",
-            answer: `Sí. En el tramo de Victoria hay paradas en ${stopList}. Al reservar elige el punto para ver el precio de ese tramo.`,
+            answer: `Sí. Hay paradas en ${stopList}. Al reservar elige origen y destino para ver el precio de ese tramo (a Victoria o a Llera).`,
         },
         {
             question: "¿Cuántos pasajeros caben y cómo se cobra el niño?",
