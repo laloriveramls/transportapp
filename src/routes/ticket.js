@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const { pool, hasDb } = require("../db");
 const { requireDb } = require("../middleware/requireDb");
+const { formatRouteLabel, formatRouteEndpoint } = require("../locations");
 
 const router = express.Router();
 
@@ -56,6 +57,85 @@ function pickHHMM(timeStr) {
     return String(timeStr || "").slice(0, 5);
 }
 
+function formatTripDate(iso) {
+    const s = String(iso || "").slice(0, 10);
+    const [y, m, d] = s.split("-").map(Number);
+    if (!y || !m || !d) return s || "-";
+    try {
+        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("es-MX", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "UTC",
+        });
+    } catch {
+        return s;
+    }
+}
+
+function statusMeta(status) {
+    const s = String(status || "").toUpperCase();
+    if (s === "PAID") return { label: "Pagado", cls: "pill--ok", icon: "check" };
+    if (s === "CANCELLED") return { label: "Cancelado", cls: "pill--bad", icon: "ban" };
+    if (s === "PENDING_PAYMENT") return { label: "Pendiente de pago", cls: "pill--warn", icon: "hourglass" };
+    if (s === "PAY_AT_BOARDING") return { label: "Pago en taquilla", cls: "pill--warn", icon: "ticket" };
+    return { label: "Ticket", cls: "", icon: "ticket" };
+}
+
+function paymentLabel(method) {
+    const pmMap = {
+        TAQUILLA: "Taquilla",
+        TRANSFERENCIA: "Transferencia",
+        ONLINE: "Pago en línea",
+        CASH: "Efectivo",
+        EFECTIVO: "Efectivo",
+    };
+    const raw = String(method || "").trim().toUpperCase();
+    return pmMap[raw] || raw || "-";
+}
+
+function phoneHref(phone) {
+    const digits = String(phone || "").replace(/\D/g, "");
+    if (digits.length === 10) return `tel:+52${digits}`;
+    if (digits.length > 10) return `tel:+${digits}`;
+    return digits ? `tel:${digits}` : "";
+}
+
+function buildTicketViewModel(row, extras) {
+    const isPassenger = String(row.type || "").toUpperCase() === "PASSENGER";
+    const passengers = String(row.passenger_names || "")
+        .split(",")
+        .map((name) => name.trim())
+        .filter(Boolean);
+
+    const totalNum =
+        row.amount_total_mxn != null && row.amount_total_mxn !== "" && !Number.isNaN(Number(row.amount_total_mxn))
+            ? Number(row.amount_total_mxn)
+            : null;
+
+    return {
+        row,
+        isPassenger,
+        isPackage: !isPassenger,
+        typeLabel: isPassenger ? "Pasaje" : "Paquetería",
+        status: statusMeta(row.status),
+        paymentLabel: paymentLabel(row.payment_method),
+        paymentRaw: String(row.payment_method || "").trim(),
+        transferRef: String(row.transfer_ref || "").trim(),
+        passengers,
+        totalLabel: totalNum != null ? money(totalNum) : null,
+        tripDateLabel: formatTripDate(row.trip_date),
+        tripDateRaw: String(row.trip_date || "").slice(0, 10),
+        departTime: pickHHMM(row.depart_time),
+        fromLabel: formatRouteEndpoint(row.direction, row.vic_location, "from"),
+        toLabel: formatRouteEndpoint(row.direction, row.vic_location, "to"),
+        routeLabel: formatRouteLabel(row.direction, row.vic_location),
+        phoneHref: phoneHref(row.phone),
+        ...extras,
+    };
+}
+
 /* -----------------------------
    GET /ticket/:code  (HTML)
 ----------------------------- */
@@ -73,6 +153,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
                 r.status,
                 r.seats,
                 r.package_details,
+                r.vic_location,
                 r.payment_method,
                 r.transfer_ref,
                 r.amount_total_mxn,
@@ -91,7 +172,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
             WHERE tk.code = ?
             GROUP BY
                 tk.code, r.id, r.customer_name, r.phone, r.type, r.status, r.seats, r.package_details,
-                r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
+                r.vic_location, r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
                 t.trip_date, dt.direction, dt.depart_time
             LIMIT 1
         `,
@@ -112,19 +193,21 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
     const baseUrl = buildBaseUrl(req);
     const url = `${baseUrl}/ticket/${row.code}`;
     const folio = folioFrom(row.trip_date, row.reservation_id);
-
-    const qrDataUrl = await QRCode.toDataURL(url, { margin: 1, width: 420 });
-
+    const qrDataUrl = await QRCode.toDataURL(url, { margin: 1, width: 420, color: { dark: "#111111", light: "#ffffff" } });
     const returnUrl = req.query.return ? String(req.query.return) : null;
+    const ticketPath = `/ticket/${row.code}`;
+    const returnQuery = returnUrl ? `?return=${encodeURIComponent(returnUrl)}` : "";
+    const pdfReturn = encodeURIComponent(ticketPath + returnQuery);
 
-    return res.render("ticket", {
-        row,
+    return res.render("ticket", buildTicketViewModel(row, {
         folio,
         url,
         qrDataUrl,
-        returnUrl,
+        returnUrl: returnUrl || "/",
+        pdfUrl: `${ticketPath}/pdf/view?return=${pdfReturn}`,
+        printUrl: `${ticketPath}/print`,
         directionLabel,
-    });
+    }));
 });
 
 /* -----------------------------

@@ -2,300 +2,429 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Ticket',
+    title: 'Ticket ' + folio + ' | Servicio de Transporte',
     description: 'Ticket de reserva y verificación.',
     noindex: true
     }) %>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/home.css" rel="stylesheet">
+    <link href="/css/ticket.css" rel="stylesheet">
+
     <style>
         @media print {
-                    @page {
-                        size: 58mm 210mm;
-                        margin: 0;
-                    }
-        
-                    * {
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                        box-shadow: none !important;
-                        text-shadow: none !important;
-                    }
-        
-                    html, body {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background: #fff !important;
-                        color: #000 !important;
-                        font-size: 20px !important;
-                        line-height: 1.12 !important;
-                    }
-        
-                    nav.navbar,
-                    #themeToggle,
-                    .btn,
-                    .theme-btn,
-                    #copyBtn {
-                        display: none !important;
-                    }
-        
-                    main.container {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        width: 58mm !important;
-                        max-width: 58mm !important;
-                    }
-        
-                    .ticket-card {
-                        width: 48mm !important;
-                        max-width: 48mm !important;
-                        margin: 0 !important;
-                        border: 0 !important;
-                        border-radius: 0 !important;
-                        background: #fff !important;
-                        overflow: hidden !important;
-                    }
-        
-                    .ticket-top,
-                    .ticket-body {
-                        padding: 2mm !important;
-                        border: 0 !important;
-                        background: transparent !important;
-                    }
-        
-                    .pill {
-                        display: inline-block !important;
-                        font-size: 15px !important;
-                        font-weight: 900 !important;
-                        color: #000 !important;
-                        background: transparent !important;
-                        border: 2px solid #000 !important;
-                        border-radius: 0 !important;
-                        padding: 1.8mm 2.2mm !important;
-                        margin: 0 0 1.6mm 0 !important;
-                    }
-        
-                    .title {
-                        font-size: 24px !important;
-                        font-weight: 950 !important;
-                        margin: 0 0 1mm 0 !important;
-                        color: #000 !important;
-                        letter-spacing: 0 !important;
-                    }
-        
-                    .meta {
-                        font-size: 14px !important;
-                        font-weight: 900 !important;
-                        color: #000 !important;
-                    }
-        
-                    .details {
-                        display: block !important;
-                    }
-        
-                    .kv {
-                        margin: 2mm 0 0 0 !important;
-                        gap: 0 !important;
-                    }
-        
-                    .kv li {
-                        border: 0 !important;
-                        border-radius: 0 !important;
-                        background: transparent !important;
-                        border-bottom: 2px dashed #000 !important;
-                        padding: 2mm 0 !important;
-                    }
-        
-                    .kv .k {
-                        color: #000 !important;
-                        font-weight: 900 !important;
-                        font-size: 14px !important;
-                    }
-        
-                    .kv .v {
-                        color: #000 !important;
-                        font-weight: 900 !important;
-                        font-size: 14px !important;
-                        text-align: right !important;
-                        max-width: 26mm !important;
-                        word-break: break-word !important;
-                    }
-        
-                    .qr-card {
-                        border: 0 !important;
-                        background: transparent !important;
-                        padding: 0 !important;
-                        margin-top: 3mm !important;
-                    }
-        
-                    .qr-wrap {
-                        margin-top: 0 !important;
-                        padding: 1.8mm !important;
-                        border: 2px solid #000 !important;
-                        border-radius: 0 !important;
-                        background: transparent !important;
-                    }
-        
-                    .qr-wrap img {
-                        width: 44mm !important;
-                        max-width: 44mm !important;
-                        height: auto !important;
-                        display: block !important;
-                        margin: 0 auto !important;
-                    }
-        
-                    .qr-badge {
-                        width: 9mm !important;
-                        height: 9mm !important;
-                        right: 1.6mm !important;
-                        bottom: 1.6mm !important;
-                        border-radius: 0 !important;
-                        font-size: 16px !important;
-                        background: #fff !important;
-                        border: 2px solid #000 !important;
-                        box-shadow: none !important;
-                    }
-        
-                    .url-box {
-                        margin-top: 3mm !important;
-                        padding: 0 !important;
-                        border: 0 !important;
-                        background: transparent !important;
-                        display: block !important;
-                    }
-        
-                    .mono {
-                        color: #000 !important;
-                        font-size: 12.5px !important;
-                        white-space: normal !important;
-                        overflow: visible !important;
-                        text-overflow: unset !important;
-                        word-break: break-word !important;
-                    }
-                }
+            @page {
+                size: 58mm 210mm;
+                margin: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                color: #000 !important;
+                font-size: 20px !important;
+                line-height: 1.12 !important;
+            }
+
+            nav.navbar,
+            #themeToggle,
+            .theme-btn,
+            .ticket-toolbar,
+            .pass-actions,
+            .pass-copy,
+            .copy-toast,
+            .home-footer {
+                display: none !important;
+            }
+
+            main.container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 58mm !important;
+                max-width: 58mm !important;
+            }
+
+            .ticket-stage,
+            .ticket-pass {
+                width: 48mm !important;
+                max-width: 48mm !important;
+                margin: 0 !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                background: #fff !important;
+                overflow: visible !important;
+            }
+
+            .pass-brand,
+            .pass-body,
+            .pass-qr,
+            .pass-url {
+                padding: 2mm !important;
+                border: 0 !important;
+                background: transparent !important;
+                color: #000 !important;
+            }
+
+            .pass-brand {
+                display: block !important;
+            }
+
+            .pass-brand-mark,
+            .pass-brand-copy small {
+                display: none !important;
+            }
+
+            .pass-pills .pill {
+                display: inline-block !important;
+                font-size: 15px !important;
+                font-weight: 900 !important;
+                color: #000 !important;
+                background: transparent !important;
+                border: 2px solid #000 !important;
+                border-radius: 0 !important;
+                padding: 1.8mm 2.2mm !important;
+                margin: 0 0 1.6mm 0 !important;
+            }
+
+            .pass-brand-copy strong,
+            .pass-time,
+            .pass-stop-name,
+            .pass-folio-value {
+                color: #000 !important;
+                font-weight: 950 !important;
+            }
+
+            .pass-time { font-size: 24px !important; }
+
+            .pass-journey-line,
+            .pass-perf {
+                border-color: #000 !important;
+                background: transparent !important;
+            }
+
+            .pass-grid {
+                display: block !important;
+            }
+
+            .pass-kv {
+                display: block !important;
+            }
+
+            .pass-kv li {
+                border: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                border-bottom: 2px dashed #000 !important;
+                padding: 2mm 0 !important;
+            }
+
+            .pass-kv .k,
+            .pass-kv .v,
+            .pass-chip {
+                color: #000 !important;
+                font-weight: 900 !important;
+                font-size: 14px !important;
+                background: transparent !important;
+                border: 0 !important;
+            }
+
+            .pass-qr-frame {
+                margin-top: 3mm !important;
+                padding: 1.8mm !important;
+                border: 2px solid #000 !important;
+                border-radius: 0 !important;
+                background: #fff !important;
+            }
+
+            .pass-qr-frame img {
+                width: 44mm !important;
+                max-width: 44mm !important;
+                height: auto !important;
+                display: block !important;
+                margin: 0 auto !important;
+            }
+
+            .pass-url .mono {
+                color: #000 !important;
+                font-size: 12.5px !important;
+                white-space: normal !important;
+                overflow: visible !important;
+                word-break: break-word !important;
+            }
+        }
     </style>
 </head>
 
-
-<body class="page-ticket">
+<body class="page-ticket home-page">
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
-<main class="container py-3">
-    <div class="ticket-shell">
-        <div class="ticket-card">
-            <div class="ticket-top">
-                <div class="ticket-head">
-                    <div class="head-left">
-                        <div class="pill">Ticket pagado</div>
+<%
+const loc = (typeof locals !== "undefined" && locals) ? locals : {};
+const val = (key, fallback) => (loc[key] != null && loc[key] !== "" ? loc[key] : fallback);
 
-                        <h1 class="h3 title">
-                            Folio: <span class="accent"><%= folio %></span>
-                        </h1>
+const ticketRow = row || {};
+const ticketCode = String(ticketRow.code || "");
+const ticketFolio = val("folio", ticketCode);
+const ticketUrl = val("url", "");
+const isPassengerView = val("isPassenger", String(ticketRow.type || "").toUpperCase() === "PASSENGER");
+const isPackageView = val("isPackage", !isPassengerView);
+const typeLabelView = val("typeLabel", isPassengerView ? "Pasaje" : "Paquetería");
 
-                        <div class="meta">
-                            Código: <span class="code"><%= row.code %></span>
-                        </div>
-                    </div>
+const statusView = val("status", (() => {
+    const s = String(ticketRow.status || "").toUpperCase();
+    if (s === "PAID") return { label: "Pagado", cls: "pill--ok", icon: "check" };
+    if (s === "CANCELLED") return { label: "Cancelado", cls: "pill--bad", icon: "ban" };
+    if (s === "PENDING_PAYMENT") return { label: "Pendiente de pago", cls: "pill--warn", icon: "hourglass" };
+    if (s === "PAY_AT_BOARDING") return { label: "Pago en taquilla", cls: "pill--warn", icon: "ticket" };
+    return { label: "Ticket", cls: "", icon: "ticket" };
+})());
 
-                    <div class="actions">
-                        <a class="btn btn-wine btn-xs"
-                           href="/ticket/<%= row.code %>/pdf/view?return=<%= encodeURIComponent('/ticket/' + row.code + (returnUrl ? ('?return=' + encodeURIComponent(returnUrl)) : '')) %>"
-                           aria-label="Abrir PDF">
-                            <%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF
-                        </a>
+const paymentMap = {
+    TAQUILLA: "Taquilla",
+    TRANSFERENCIA: "Transferencia",
+    ONLINE: "Pago en línea",
+    CASH: "Efectivo",
+    EFECTIVO: "Efectivo",
+};
+const paymentRawView = val("paymentRaw", String(ticketRow.payment_method || "").trim());
+const paymentLabelView = val("paymentLabel", paymentMap[paymentRawView.toUpperCase()] || paymentRawView || "-");
+const transferRefView = val("transferRef", String(ticketRow.transfer_ref || "").trim());
 
-                        <a class="btn btn-ghost btn-xs"
-                           href="/ticket/<%= row.code %>/print"
-                           target="_blank" rel="noopener"
-                           aria-label="Imprimir ticket">
-                            <%- include('partials/icon', { name: 'printer', size: 16 }) %> Imprimir
-                        </a>
+const passengersView = Array.isArray(loc.passengers)
+    ? loc.passengers
+    : String(ticketRow.passenger_names || "").split(",").map((n) => n.trim()).filter(Boolean);
 
-                        <a class="btn btn-ghost btn-xs"
-                           href="<%= returnUrl || '/' %>"
-                           aria-label="Volver">
-                            <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Volver
-                        </a>
-                    </div>
+const totalLabelView = val("totalLabel", (ticketRow.amount_total_mxn != null && ticketRow.amount_total_mxn !== "")
+    ? Number(ticketRow.amount_total_mxn).toLocaleString("es-MX", { style: "currency", currency: "MXN" })
+    : null);
+
+const departTimeView = val("departTime", String(ticketRow.depart_time || "").slice(0, 5));
+const tripDateRawView = val("tripDateRaw", String(ticketRow.trip_date || "").slice(0, 10));
+const tripDateLabelView = val("tripDateLabel", (() => {
+    const [y, m, d] = tripDateRawView.split("-").map(Number);
+    if (!y || !m || !d) return tripDateRawView || "-";
+    try {
+        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("es-MX", {
+            weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+        });
+    } catch {
+        return tripDateRawView;
+    }
+})());
+
+const isV2L = ticketRow.direction === "VIC_TO_LLE";
+const fallbackRoute = (typeof directionLabel === "function")
+    ? directionLabel(ticketRow.direction)
+    : (isV2L ? "Victoria → Llera" : "Llera → Victoria");
+const fromLabelView = val("fromLabel", isV2L ? "Ciudad Victoria" : "Llera");
+const toLabelView = val("toLabel", isV2L ? "Llera" : "Ciudad Victoria");
+const routeLabelView = val("routeLabel", fallbackRoute);
+
+const phoneDigits = String(ticketRow.phone || "").replace(/\D/g, "");
+const phoneHrefView = val("phoneHref", phoneDigits.length === 10
+    ? `tel:+52${phoneDigits}`
+    : (phoneDigits ? `tel:+${phoneDigits}` : ""));
+
+const backHref = val("returnUrl", "/");
+const pdfHref = val("pdfUrl", `/ticket/${encodeURIComponent(ticketCode)}/pdf/view?return=${encodeURIComponent("/ticket/" + ticketCode)}`);
+const printHref = val("printUrl", `/ticket/${encodeURIComponent(ticketCode)}/print`);
+
+const waLines = [
+    `Hola, te comparto mi ticket ${ticketFolio}.`,
+    `Ruta: ${routeLabelView}`,
+    `Fecha: ${tripDateLabelView} ${departTimeView}`,
+    `Folio: ${ticketFolio}`,
+    `Código: ${ticketCode}`,
+    ticketUrl,
+].filter(Boolean).join("\n");
+const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
+%>
+
+<main class="container ticket-stage">
+    <header class="ticket-toolbar">
+        <div class="ticket-toolbar-copy">
+            <p class="ticket-kicker">Validación</p>
+            <h1 class="ticket-page-title">Tu ticket</h1>
+        </div>
+
+        <div class="ticket-toolbar-actions">
+            <a class="btn btn-ghost btn-xs" href="<%= backHref %>" aria-label="Volver">
+                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Volver
+            </a>
+            <a class="btn btn-pdf btn-xs" href="<%= pdfHref %>" aria-label="Abrir PDF">
+                <%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF
+            </a>
+            <a class="btn btn-ghost btn-xs" href="<%= printHref %>" target="_blank" rel="noopener" aria-label="Imprimir ticket">
+                <%- include('partials/icon', { name: 'printer', size: 16 }) %> Imprimir
+            </a>
+            <a class="btn btn-wa btn-xs" href="<%= waHref %>" target="_blank" rel="noopener" aria-label="Compartir por WhatsApp">
+                <%- include('partials/icon', { name: 'message-circle', size: 16 }) %> WhatsApp
+            </a>
+        </div>
+    </header>
+
+    <article class="ticket-pass" aria-label="Ticket <%= ticketFolio %>">
+        <div class="pass-brand">
+            <div class="pass-brand-left">
+                <img class="pass-brand-mark" src="/assets/logo-hero.png" alt="" width="48" height="54" decoding="async">
+                <div class="pass-brand-copy">
+                    <strong>Servicio de Transporte</strong>
+                    <small>Victoria - Llera</small>
                 </div>
-
-                <div class="divider"></div>
             </div>
 
-            <div class="ticket-body">
-                <div class="details">
-                    <div>
-                        <ul class="kv">
-                            <li><span class="k">Ruta</span><span class="v"><%= typeof routeLabel !== "undefined" ? routeLabel : directionLabel(row.direction) %></span>
-                            </li>
-                            <li><span class="k">Fecha</span><span class="v"><%= row.trip_date %></span></li>
-                            <li><span class="k">Hora</span><span class="v"><%= row.depart_time %></span></li>
+            <div class="pass-pills">
+                <span class="pill <%= statusView.cls %>">
+                    <%- include('partials/icon', { name: statusView.icon, size: 15 }) %>
+                    <%= statusView.label %>
+                </span>
+                <span class="pill">
+                    <%- include('partials/icon', { name: isPassengerView ? 'users' : 'package', size: 15 }) %>
+                    <%= typeLabelView %>
+                </span>
+            </div>
+        </div>
 
-                            <li><span class="k">Contacto</span><span class="v"><%= row.customer_name %></span></li>
-                            <li><span class="k">Teléfono</span><span class="v"><%= row.phone %></span></li>
-
-                            <li>
-                                <span class="k">Servicio</span>
-                                <span class="v"><%= row.type === "PASSENGER" ? "Pasajeros" : "Paquetería" %></span>
-                            </li>
-
-                            <%
-                            const pmMap = {
-                                TAQUILLA: "Taquilla",
-                                TRANSFERENCIA: "Transferencia",
-                                ONLINE: "Pago en línea",
-                            };
-
-                            const pmRaw = (row?.payment_method || "").trim();
-                            const pmLabel = pmMap[pmRaw] || pmRaw || "-";
-                            %>
-
-                            <% if (pmRaw) { %>
-                                <li><span class="k">Método de pago</span><span class="v"><%= pmLabel %></span></li>
-                            <% } %>
-
-                            <% if (row.type === "PASSENGER") { %>
-                                <li><span class="k">Pasajeros</span><span
-                                            class="v"><%= row.passenger_names || "-" %></span></li>
-                            <% } %>
-
-                            <% if (row.type === "PACKAGE") { %>
-                                <li><span class="k">Detalle</span><span
-                                            class="v"><%= row.package_details || "-" %></span></li>
-                            <% } %>
-                        </ul>
-                    </div>
-
-                    <div class="qr-card">
-                        <div class="qr-wrap">
-                            <img src="<%= qrDataUrl %>" alt="QR"/>
-                            <div class="qr-badge" title="TransportApp"><%- include('partials/icon', { name: 'car', size: 22 }) %></div>
-                        </div>
-                        <div class="qr-hint">Escanea para validar</div>
-                    </div>
+        <div class="pass-body">
+            <section class="pass-journey" aria-label="Ruta <%= routeLabelView %>">
+                <div class="pass-stop">
+                    <span class="pass-stop-kicker">Origen</span>
+                    <span class="pass-stop-name"><%= fromLabelView %></span>
                 </div>
 
-                <div class="url-box">
-                    <div class="url-left">
-                        <div class="meta">Link de validación</div>
-                        <div class="mono" id="ticketUrl"><%= url %></div>
-                    </div>
+                <div class="pass-journey-line" aria-hidden="true">
+                    <span class="pass-journey-ico">
+                        <%- include('partials/icon', { name: 'bus', size: 18 }) %>
+                    </span>
+                </div>
 
-                    <div class="d-flex align-items-center justify-content-end gap-2">
-                        <button type="button" class="btn btn-ghost btn-xs" id="copyBtn" aria-label="Copiar link">
-                            <%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar
-                        </button>
-                        <span class="copy-toast" id="copyToast"><%- include('partials/icon', { name: 'check', size: 14 }) %> Copiado</span>
-                    </div>
+                <div class="pass-stop pass-stop--end">
+                    <span class="pass-stop-kicker">Destino</span>
+                    <span class="pass-stop-name"><%= toLabelView %></span>
+                </div>
+            </section>
+
+            <div class="pass-when">
+                <div class="pass-when-item">
+                    <span class="k">Salida</span>
+                    <span class="pass-time"><%= departTimeView %></span>
+                </div>
+                <div class="pass-when-item">
+                    <span class="k">Fecha</span>
+                    <span class="pass-date"><%= tripDateLabelView %></span>
+                </div>
+                <div class="pass-when-item pass-when-folio">
+                    <span class="k">Folio</span>
+                    <span class="pass-folio-value mono"><%= ticketFolio %></span>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="pass-perf" aria-hidden="true"></div>
+
+        <div class="pass-grid">
+            <ul class="pass-kv">
+                <li>
+                    <span class="k"><%- include('partials/icon', { name: 'ticket', size: 15 }) %> Código</span>
+                    <span class="v mono"><%= ticketCode %></span>
+                </li>
+                <li>
+                    <span class="k"><%- include('partials/icon', { name: 'user', size: 15 }) %> Contacto</span>
+                    <span class="v"><%= ticketRow.customer_name || "-" %></span>
+                </li>
+                <li>
+                    <span class="k"><%- include('partials/icon', { name: 'phone', size: 15 }) %> Teléfono</span>
+                    <span class="v">
+                        <% if (phoneHrefView) { %>
+                            <a href="<%= phoneHrefView %>"><%= ticketRow.phone %></a>
+                        <% } else { %>
+                            <%= ticketRow.phone || "-" %>
+                        <% } %>
+                    </span>
+                </li>
+
+                <% if (isPassengerView) { %>
+                    <li class="pass-kv--stack">
+                        <span class="k"><%- include('partials/icon', { name: 'users', size: 15 }) %> Pasajeros</span>
+                        <span class="v pass-chips">
+                            <% passengersView.forEach((name) => { %>
+                                <span class="pass-chip"><%= name %></span>
+                            <% }) %>
+                        </span>
+                    </li>
+                <% } %>
+
+                <% if (isPackageView) { %>
+                    <li class="pass-kv--stack">
+                        <span class="k"><%- include('partials/icon', { name: 'package', size: 15 }) %> Detalle</span>
+                        <span class="v"><%= ticketRow.package_details || "-" %></span>
+                    </li>
+                <% } %>
+
+                <% if (paymentRawView) { %>
+                    <li>
+                        <span class="k"><%- include('partials/icon', { name: 'credit-card', size: 15 }) %> Pago</span>
+                        <span class="v"><%= paymentLabelView %></span>
+                    </li>
+                <% } %>
+
+                <% if (transferRefView) { %>
+                    <li>
+                        <span class="k"><%- include('partials/icon', { name: 'receipt', size: 15 }) %> Referencia</span>
+                        <span class="v mono"><%= transferRefView %></span>
+                    </li>
+                <% } %>
+
+                <% if (totalLabelView) { %>
+                    <li class="pass-kv--total">
+                        <span class="k"><%- include('partials/icon', { name: 'banknote', size: 15 }) %> Total</span>
+                        <span class="v"><%= totalLabelView %></span>
+                    </li>
+                <% } %>
+            </ul>
+
+            <aside class="pass-qr">
+                <div class="pass-qr-frame">
+                    <img src="<%= qrDataUrl %>" width="220" height="220" alt="Código QR para validar el ticket <%= ticketFolio %>">
+                </div>
+                <p class="pass-qr-hint">
+                    <%- include('partials/icon', { name: 'scan-line', size: 16 }) %>
+                    Escanea para validar
+                </p>
+                <p class="pass-qr-code mono"><%= ticketCode %></p>
+            </aside>
+        </div>
+
+        <div class="pass-url">
+            <div class="url-left">
+                <div class="meta">Link de validación</div>
+                <div class="mono" id="ticketUrl"><%= ticketUrl %></div>
+            </div>
+            <div class="pass-copy">
+                <button type="button" class="btn btn-ghost btn-xs" id="copyBtn" aria-label="Copiar link">
+                    <%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar
+                </button>
+                <span class="copy-toast" id="copyToast"><%- include('partials/icon', { name: 'check', size: 14 }) %> Copiado</span>
+            </div>
+        </div>
+    </article>
 </main>
+
+<%- include('partials/site-footer') %>
 
 <script src="/js/theme.js"></script>
 <script>
-    // I show a small inline toast instead of changing button text (cleaner UI).
     const btn = document.getElementById('copyBtn');
     const toast = document.getElementById('copyToast');
 

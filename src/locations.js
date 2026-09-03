@@ -149,6 +149,7 @@ module.exports = {
     vicLocationFromStops,
     routeFromStops,
     formatRouteLabel,
+    formatRouteEndpoint,
     formatRouteLabelFromStops,
     pricingForVicLocation,
 };

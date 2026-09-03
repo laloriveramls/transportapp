@@ -1,0 +1,552 @@
+/* public/css/ticket.css — Pase de abordaje */
+
+body.page-ticket {
+    font-family: var(--home-font, "Outfit", system-ui, sans-serif);
+}
+
+.page-ticket .ticket-stage {
+    width: min(760px, 100%);
+    margin: 0 auto;
+    padding: 0.9rem 0 1.4rem;
+}
+
+.page-ticket .ticket-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.page-ticket .ticket-kicker {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.page-ticket .ticket-page-title {
+    margin: 0.1rem 0 0;
+    font-size: 1.55rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.page-ticket .ticket-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: flex-end;
+}
+
+.page-ticket .ticket-toolbar-actions .btn-xs {
+    min-height: 40px;
+    border-radius: 999px;
+}
+
+.page-ticket .pass-copy .btn-xs {
+    border-radius: 999px;
+}
+
+.page-ticket .ticket-pass {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.page-ticket .pass-brand {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem 1rem;
+    padding: 0.9rem 1.05rem;
+    color: #fff;
+    background:
+        radial-gradient(520px 180px at 8% 0%, rgba(255, 255, 255, 0.16), transparent 58%),
+        linear-gradient(135deg, var(--wine) 0%, var(--wine-2) 100%);
+}
+
+.page-ticket .pass-brand-left {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.page-ticket .pass-brand-mark {
+    width: 42px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
+}
+
+.page-ticket .pass-brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.page-ticket .pass-brand-copy strong {
+    font-size: 1rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.page-ticket .pass-brand-copy small {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.page-ticket .pass-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.page-ticket .pass-brand .pill {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+.page-ticket .pass-brand .pill--ok {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.page-ticket .pass-brand .pill--warn {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: rgba(253, 224, 171, 0.45);
+    color: #fff7ed;
+}
+
+.page-ticket .pass-brand .pill--bad {
+    background: rgba(239, 68, 68, 0.28);
+    border-color: rgba(254, 202, 202, 0.4);
+    color: #fff1f2;
+}
+
+.page-ticket .pass-body {
+    padding: 1.05rem 1.1rem 0.85rem;
+}
+
+.page-ticket .pass-journey {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.55rem 0.7rem;
+}
+
+.page-ticket .pass-stop-kicker {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+}
+
+.page-ticket .pass-stop-name {
+    display: block;
+    font-size: 1.18rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+
+.page-ticket .pass-stop--end {
+    text-align: right;
+}
+
+.page-ticket .pass-journey-line {
+    position: relative;
+    width: 88px;
+    height: 2px;
+    background: color-mix(in srgb, var(--wine) 35%, var(--border));
+    border-radius: 999px;
+}
+
+.page-ticket .pass-journey-line::before,
+.page-ticket .pass-journey-line::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--wine);
+    transform: translateY(-50%);
+}
+
+.page-ticket .pass-journey-line::before { left: -1px; }
+.page-ticket .pass-journey-line::after { right: -1px; }
+
+.page-ticket .pass-journey-ico {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: var(--card);
+    border: 1px solid color-mix(in srgb, var(--wine) 28%, var(--border));
+    color: var(--wine);
+}
+
+.page-ticket .pass-when {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.page-ticket .pass-when-item {
+    min-width: 0;
+    padding: 0.7rem 0.75rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--wine) 6%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--wine) 14%, var(--border));
+}
+
+.page-ticket .pass-when-item .k {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.12rem;
+}
+
+.page-ticket .pass-time,
+.page-ticket .pass-date,
+.page-ticket .pass-folio-value {
+    display: block;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text);
+}
+
+.page-ticket .pass-time {
+    font-size: 1.55rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.page-ticket .pass-date,
+.page-ticket .pass-folio-value {
+    font-size: 0.98rem;
+}
+
+.page-ticket .pass-perf {
+    position: relative;
+    height: 18px;
+    margin: 0.15rem 0 0;
+    background-image: repeating-linear-gradient(
+        90deg,
+        var(--border) 0 7px,
+        transparent 7px 14px
+    );
+    background-position: center;
+    background-repeat: repeat-x;
+    background-size: auto 2px;
+}
+
+.page-ticket .pass-perf::before,
+.page-ticket .pass-perf::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: inset 0 0 0 1px var(--border);
+    transform: translateY(-50%);
+}
+
+.page-ticket .pass-perf::before { left: -9px; }
+.page-ticket .pass-perf::after { right: -9px; }
+
+.page-ticket .pass-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.75fr);
+    gap: 1rem;
+    padding: 0.2rem 1.1rem 1rem;
+    align-items: start;
+}
+
+.page-ticket .pass-kv {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.page-ticket .pass-kv li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.62rem 0.72rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+}
+
+.page-ticket .pass-kv .k {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 0 1 auto;
+}
+
+.page-ticket .pass-kv .k .ico {
+    color: color-mix(in srgb, var(--wine) 70%, var(--muted));
+}
+
+.page-ticket .pass-kv .v {
+    font-weight: 600;
+    text-align: right;
+    max-width: 62%;
+    word-break: break-word;
+}
+
+.page-ticket .pass-kv .v a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--wine) 35%, transparent);
+}
+
+.page-ticket .pass-kv .v a:hover {
+    color: var(--wine);
+}
+
+.page-ticket .pass-kv--stack {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.page-ticket .pass-kv--stack .v {
+    max-width: none;
+    text-align: left;
+}
+
+.page-ticket .pass-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.page-ticket .pass-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--wine) 8%, var(--card));
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.page-ticket .pass-kv--total {
+    border-color: color-mix(in srgb, var(--wine) 28%, var(--border));
+    background: color-mix(in srgb, var(--wine) 8%, var(--card));
+}
+
+.page-ticket .pass-kv--total .v {
+    color: var(--wine);
+    font-weight: 750;
+    font-size: 1.02rem;
+}
+
+.page-ticket .pass-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.45rem;
+    padding: 0.85rem 0.75rem 0.9rem;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 86%, transparent);
+}
+
+.page-ticket .pass-qr-frame {
+    background: #fff;
+    border-radius: 16px;
+    padding: 0.7rem;
+    line-height: 0;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.page-ticket .pass-qr-frame img {
+    display: block;
+    width: min(220px, 58vw);
+    height: auto;
+}
+
+.page-ticket .pass-qr-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.15rem 0 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.page-ticket .pass-qr-code {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.82rem;
+}
+
+.page-ticket .pass-url {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0 1.1rem 1.05rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+}
+
+.page-ticket .url-left {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.page-ticket .url-left .meta {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.page-ticket .pass-url .mono {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.page-ticket .pass-copy {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.page-ticket .copy-toast {
+    display: none;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+@media (max-width: 720px) {
+    .page-ticket .pass-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-ticket .pass-qr {
+        order: -1;
+    }
+
+    .page-ticket .pass-when {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-ticket .pass-when-folio {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-ticket .ticket-stage {
+        padding-top: 0.7rem;
+    }
+
+    .page-ticket .ticket-toolbar-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-ticket .ticket-toolbar-actions .btn-xs {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .page-ticket .pass-journey {
+        grid-template-columns: 1fr;
+        justify-items: start;
+    }
+
+    .page-ticket .pass-stop--end {
+        text-align: left;
+    }
+
+    .page-ticket .pass-journey-line {
+        width: 2px;
+        height: 36px;
+        background-image: none;
+        margin-left: 0.55rem;
+    }
+
+    .page-ticket .pass-journey-line::before,
+    .page-ticket .pass-journey-line::after {
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+    }
+
+    .page-ticket .pass-journey-line::before { top: 0; }
+    .page-ticket .pass-journey-line::after { top: 100%; }
+
+    .page-ticket .pass-body,
+    .page-ticket .pass-grid {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+
+    .page-ticket .pass-url {
+        margin-left: 0.85rem;
+        margin-right: 0.85rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-ticket .pass-url .mono {
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    .page-ticket .pass-copy .btn-xs {
+        width: 100%;
+        justify-content: center;
+    }
+}
