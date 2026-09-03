@@ -322,8 +322,19 @@ body.admin-app .home-tabs-tools {
 
 
 /* ---- page-agenda ---- */
+body.page-agenda .app-navbar {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+}
+
 body.page-agenda .home-hero {
-    padding: 0.55rem 0 0.6rem;
+    padding: 0.45rem 0 0.5rem;
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+
+body.page-agenda .home-hero-media,
+body.page-agenda .home-hero-veil {
+    display: none;
 }
 
 body.page-agenda .home-brand-logo,
@@ -623,16 +634,16 @@ body.page-agenda .agenda-col-empty {
 
 body.page-agenda .agenda-col-list {
     display: grid;
-    gap: 0.45rem;
+    gap: 0.55rem;
 }
 
 body.page-agenda .agenda-trip {
     position: relative;
     display: grid;
     grid-template-columns: 4.2rem minmax(0, 1fr) auto;
-    gap: 0.75rem;
+    gap: 0.85rem;
     align-items: center;
-    padding: 0.72rem 0.7rem 0.72rem 0.95rem;
+    padding: 0.82rem 0.75rem 0.82rem 1rem;
     border-radius: 12px;
     overflow: hidden;
     text-decoration: none;
@@ -682,37 +693,17 @@ body.page-agenda .agenda-trip-time {
 
 body.page-agenda .agenda-trip-body {
     min-width: 0;
-    display: grid;
-    gap: 0.32rem;
-}
-
-body.page-agenda .agenda-trip-top {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.45rem;
-}
-
-body.page-agenda .agenda-trip-status {
-    font-size: 0.76rem;
-    font-weight: 600;
-    color: var(--muted);
-}
-
-body.page-agenda .agenda-trip.is-full .agenda-trip-status {
-    color: var(--wine);
-    font-weight: 700;
-}
-
-body.page-agenda .agenda-trip.is-tight .agenda-trip-status {
-    color: color-mix(in srgb, #b45309 75%, var(--text));
+    align-items: center;
+    gap: 0.65rem;
 }
 
 body.page-agenda .agenda-trip-cap {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    color: var(--text);
+    color: var(--muted);
+    margin-left: auto;
 }
 
 body.page-agenda .agenda-trip-cap-sep {

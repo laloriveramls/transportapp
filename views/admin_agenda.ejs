@@ -177,25 +177,19 @@
                         if (cap > 0 && used >= cap) tone = 'full';
                         else if (used > 0 && remaining <= 2) tone = 'tight';
                         else if (used > 0) tone = 'ok';
-                        let status = 'Vacía';
-                        if (tone === 'full') status = 'Llena';
-                        else if (tone === 'tight' || tone === 'ok') status = remaining + (remaining === 1 ? ' libre' : ' libres');
-                        if (packs > 0 && used === 0) status = 'Solo paq.';
+                        if (packs > 0 && used === 0) tone = 'ok';
                     %>
                     <a class="agenda-trip is-<%= tone %>"
                        href="/admin/trip/<%= t.trip_id %>"
                        aria-label="<%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos">
                         <div class="agenda-trip-time mono"><%= hhmm %></div>
                         <div class="agenda-trip-body">
-                            <div class="agenda-trip-top">
-                                <span class="agenda-trip-status"><%= status %></span>
-                                <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
-                            </div>
                             <span class="agenda-seats" aria-hidden="true">
                                 <% for (let i = 0; i < cap; i++) { %>
                                     <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
                                 <% } %>
                             </span>
+                            <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
                         </div>
                         <div class="agenda-trip-aside">
                             <% if (packs > 0) { %>
