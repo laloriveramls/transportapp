@@ -822,6 +822,10 @@ html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
     color: var(--muted);
 }
 
+.home-info-label-spaced {
+    margin-top: 1rem;
+}
+
 .home-stop-groups {
     display: grid;
     gap: 0.55rem;

@@ -190,19 +190,27 @@
                     const faqItems = (typeof faqs !== "undefined" && Array.isArray(faqs) && faqs.length)
                             ? faqs
                             : ((typeof homeFaqs === "function") ? homeFaqs(typeof pricing !== "undefined" ? pricing : null, stops) : []);
-                    const stopGroups = [];
-                    {
+
+                    function groupStopsByPrice(priceKey) {
                         const byPrice = new Map();
                         stops.forEach((loc) => {
-                            const price = Number(loc.price_mxn);
+                            const price = Number(loc[priceKey] ?? loc.price_mxn);
+                            if (!Number.isFinite(price)) return;
                             if (!byPrice.has(price)) byPrice.set(price, []);
                             byPrice.get(price).push(loc);
                         });
-                        Array.from(byPrice.keys()).sort((a, b) => a - b).forEach((price) => {
-                            stopGroups.push({price, items: byPrice.get(price)});
-                        });
+                        return Array.from(byPrice.keys())
+                            .sort((a, b) => a - b)
+                            .map((price) => ({price, items: byPrice.get(price)}));
                     }
-                    const minStop = stopGroups.length ? stopGroups[0].price : 50;
+
+                    const stopGroupsVictoria = groupStopsByPrice("price_to_victoria_mxn");
+                    const stopGroupsLlera = groupStopsByPrice("price_to_llera_mxn");
+                    const allStopPrices = [
+                        ...stopGroupsVictoria.map((g) => g.price),
+                        ...stopGroupsLlera.map((g) => g.price),
+                    ];
+                    const minStop = allStopPrices.length ? Math.min(...allStopPrices) : 30;
                     %>
                     <div class="home-info" id="servicio">
                         <h3 class="visually-hidden">Tarifas y paradas</h3>
@@ -244,27 +252,51 @@
                                     </li>
                                 </ul>
 
-                                <% if (stopGroups.length) { %>
+                                <% if (stopGroupsVictoria.length || stopGroupsLlera.length) { %>
                                     <div class="home-info-stops">
-                                        <p class="home-info-label">Paradas en el tramo Victoria</p>
-                                        <div class="home-stop-groups">
-                                            <% stopGroups.forEach((group) => { %>
-                                                <div class="home-stop-group">
-                                                    <span class="home-stop-group-price"><%= mxn(group.price) %></span>
-                                                    <ul class="home-stop-list">
-                                                        <% group.items.forEach((loc) => { %>
-                                                            <li>
-                                                                <a class="home-stop-chip"
-                                                                   href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=LLE"
-                                                                   title="Reservar desde <%= loc.label %>">
-                                                                    <%= loc.label %>
-                                                                </a>
-                                                            </li>
-                                                        <% }) %>
-                                                    </ul>
-                                                </div>
-                                            <% }) %>
-                                        </div>
+                                        <% if (stopGroupsVictoria.length) { %>
+                                            <p class="home-info-label">Ejidos a Ciudad Victoria</p>
+                                            <div class="home-stop-groups">
+                                                <% stopGroupsVictoria.forEach((group) => { %>
+                                                    <div class="home-stop-group">
+                                                        <span class="home-stop-group-price"><%= mxn(group.price) %></span>
+                                                        <ul class="home-stop-list">
+                                                            <% group.items.forEach((loc) => { %>
+                                                                <li>
+                                                                    <a class="home-stop-chip"
+                                                                       href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=VIC"
+                                                                       title="Reservar <%= loc.label %> ↔ Ciudad Victoria">
+                                                                        <%= loc.label %>
+                                                                    </a>
+                                                                </li>
+                                                            <% }) %>
+                                                        </ul>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                        <% } %>
+
+                                        <% if (stopGroupsLlera.length) { %>
+                                            <p class="home-info-label home-info-label-spaced">Ejidos a Llera</p>
+                                            <div class="home-stop-groups">
+                                                <% stopGroupsLlera.forEach((group) => { %>
+                                                    <div class="home-stop-group">
+                                                        <span class="home-stop-group-price"><%= mxn(group.price) %></span>
+                                                        <ul class="home-stop-list">
+                                                            <% group.items.forEach((loc) => { %>
+                                                                <li>
+                                                                    <a class="home-stop-chip"
+                                                                       href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=LLE"
+                                                                       title="Reservar <%= loc.label %> ↔ Llera">
+                                                                        <%= loc.label %>
+                                                                    </a>
+                                                                </li>
+                                                            <% }) %>
+                                                        </ul>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                        <% } %>
                                     </div>
                                 <% } %>
                             </div>

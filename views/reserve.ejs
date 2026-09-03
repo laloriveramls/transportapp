@@ -646,14 +646,24 @@
     }
 
     function getEffectivePricing() {
-        const route = deriveRoute(fromCity.value, toCity.value);
-        const locCode = route.vic_location || "";
+        const fromKey = String(fromCity.value || "").trim().toUpperCase();
+        const toKey = String(toCity.value || "").trim().toUpperCase();
+        const locCode = isStop(fromKey) ? fromKey : (isStop(toKey) ? toKey : "");
         if (!locCode) return PRICING;
 
         const loc = VIC_LOCATIONS.find((item) => item.code === locCode);
         if (!loc) return PRICING;
 
-        const adult = Number(loc.price_mxn || 0);
+        const counterpart = isStop(fromKey) ? toKey : fromKey;
+        let adult;
+        if (counterpart === "LLE") {
+            adult = Number(loc.price_to_llera_mxn ?? loc.price_mxn ?? 0);
+        } else if (counterpart === "VIC") {
+            adult = Number(loc.price_to_victoria_mxn ?? loc.price_mxn ?? 0);
+        } else {
+            adult = Number(loc.price_to_victoria_mxn ?? loc.price_mxn ?? 0);
+        }
+
         return {
             passenger_price_mxn: adult,
             package_price_mxn: adult,

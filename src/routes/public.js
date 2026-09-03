@@ -26,6 +26,7 @@ const {
     resolveVicLocation,
     resolveVicLocationLabel,
     pricingForVicLocation,
+    pricingForStops,
     directionFromStops,
     vicLocationFromStops,
     routeFromStops,
@@ -286,7 +287,9 @@ function computeTotalsFromReservation(r, pricing) {
     const totalSeats = Number(r?.seats || 1);
     const children = Number(r?.child_seats || 0);
     const adults = Math.max(0, totalSeats - children);
-    const effectivePricing = pricingForVicLocation(pricing, r?.vic_location);
+    const effectivePricing = r?.from_stop && r?.to_stop
+        ? pricingForStops(pricing, r.from_stop, r.to_stop)
+        : pricingForVicLocation(pricing, r?.vic_location);
     return computeTotalsWithPricing(r?.type, adults, effectivePricing, children);
 }
 
@@ -724,7 +727,7 @@ router.post(
 
             // ✅ pricing source of truth (inside TX)
             const pricing = await getPricing(conn);
-            const effectivePricing = pricingForVicLocation(pricing, vic_location);
+            const effectivePricing = pricingForStops(pricing, from_stop, to_stop);
             const adultSeats = type === "PASSENGER" ? Math.max(0, seats - childSeats) : 0;
             const {unit_price_mxn, amount_total_mxn, child_seats: childSeatsStored} =
                 computeTotalsWithPricing(type, adultSeats, effectivePricing, childSeats);
