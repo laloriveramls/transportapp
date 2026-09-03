@@ -661,12 +661,12 @@ router.post(
         const direction = directionFromStops(from_stop, to_stop);
         if (!direction) {
             return res.status(400).render("reserve", reserveViewData({
-                error: "El origen y destino deben ser distintos (Victoria/ejidos ↔ Llera).",
+                error: "Ruta no válida. El viaje debe conectar Ciudad Victoria o Llera con una parada o ciudad de destino.",
             }));
         }
 
         const vic_location = vicLocationFromStops(from_stop, to_stop);
-        const routeLabelText = formatRouteLabel(direction, vic_location, " - ");
+        const routeLabelText = formatRouteLabel(direction, vic_location, " - ", from_stop, to_stop);
 
         transfer_ref = String(transfer_ref || "").trim();
         if (!transfer_ref) transfer_ref = null;
@@ -818,11 +818,11 @@ router.post(
 
                     const [ins] = await conn.query(
                         `INSERT INTO transporte_reservations(trip_id, type, seats, child_seats, customer_name, phone,
-                                                             package_details, vic_location,
+                                                             package_details, vic_location, from_stop, to_stop,
                                                              payment_method, transfer_ref, status,
                                                              unit_price_mxn, amount_total_mxn,
                                                              public_token, folio_date, daily_seq)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         [
                             trip.id,
                             type,
@@ -832,6 +832,8 @@ router.post(
                             phone,
                             type === "PACKAGE" ? package_details : null,
                             vic_location,
+                            from_stop,
+                            to_stop,
                             payment_method,
                             transfer_ref,
                             status,
@@ -1021,7 +1023,7 @@ router.get(
             directionLabel,
             stripePublishableKey,
             publicToken: token,
-            routeLabel: formatRouteLabel(r.direction, r.vic_location),
+            routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
         });
     })
 );
@@ -1061,9 +1063,9 @@ router.get(
                              paid_at=NOW(),
                              stripe_session_id=COALESCE(stripe_session_id, ?),
                              stripe_payment_intent_id=?
-                         WHERE id = ?
-                           AND status <> 'PAID'
-                           AND UPPER(payment_method) = 'ONLINE'`,
+                          WHERE id = ?
+                            AND status <> 'PAID'
+                            AND UPPER(payment_method) = 'ONLINE'`,
                         [session.id, session.payment_intent || null, Number(r.id)]
                     );
                     st = "PAID";
@@ -1084,7 +1086,7 @@ router.get(
                     ticketCode,
                     publicToken: token,
                     expired: true,
-                    routeLabel: formatRouteLabel(r.direction, r.vic_location),
+                    routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
                 });
             }
             return res.redirect(`/checkout/t/${encodeURIComponent(token)}`);
@@ -1099,7 +1101,7 @@ router.get(
             directionLabel,
             ticketCode,
             publicToken: token,
-            routeLabel: formatRouteLabel(r.direction, r.vic_location),
+            routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
         });
     })
 );
@@ -1174,7 +1176,7 @@ router.get(
             directionLabel,
             url,
             returnUrl,
-            routeLabel: formatRouteLabel(row.direction, row.vic_location),
+            routeLabel: formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop),
         });
     })
 );
@@ -1196,6 +1198,8 @@ router.get(
                        r.seats,
                        r.package_details,
                        r.vic_location,
+                       r.from_stop,
+                       r.to_stop,
                        r.payment_method,
                        r.daily_seq,
                        r.unit_price_mxn,
@@ -1389,7 +1393,7 @@ router.get(
             hr(y + 6, pageW);
             y += 16;
 
-            y = kvRow("Ruta", dirLabelSafe(row.direction), y, pageW);
+            y = kvRow("Ruta", formatRouteLabel(row.direction, row.vic_location, " - ", row.from_stop, row.to_stop), y, pageW);
             y = kvRow("Fecha", String(row.trip_date), y, pageW);
             y = kvRow("Hora", String(row.depart_time), y, pageW);
             y = kvRow("Contacto", String(row.customer_name || "-"), y, pageW);

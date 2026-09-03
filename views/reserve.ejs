@@ -589,9 +589,23 @@
         return String(code || "").trim().toUpperCase() === "VIC";
     }
 
+    function isCity(code) {
+        return isLlera(code) || isVicCenter(code);
+    }
+
+    function isStop(code) {
+        const key = String(code || "").trim().toUpperCase();
+        return VIC_LOCATIONS.some((item) => item.code === key);
+    }
+
     function isVicSide(code) {
         const key = String(code || "").trim().toUpperCase();
-        return isVicCenter(key) || VIC_LOCATIONS.some((item) => item.code === key);
+        return isVicCenter(key) || isStop(key);
+    }
+
+    function isValidStop(code) {
+        const key = String(code || "").trim().toUpperCase();
+        return isCity(key) || isStop(key);
     }
 
     function stopLabel(code) {
@@ -605,23 +619,30 @@
     function deriveRoute(from, to) {
         const fromKey = String(from || "").trim().toUpperCase();
         const toKey = String(to || "").trim().toUpperCase();
-        let vicLocation = null;
 
-        if (isLlera(fromKey) && isVicSide(toKey)) {
-            vicLocation = isVicCenter(toKey) ? null : toKey;
-            return {direction: "LLE_TO_VIC", vic_location: vicLocation};
+        if (!fromKey || !toKey || fromKey === toKey) {
+            return {direction: "", vic_location: null};
         }
-        if (isVicSide(fromKey) && isLlera(toKey)) {
-            vicLocation = isVicCenter(fromKey) ? null : fromKey;
+        if (!isCity(fromKey) && !isCity(toKey)) {
+            return {direction: "", vic_location: null};
+        }
+
+        const vicLocation = isStop(fromKey) ? fromKey : (isStop(toKey) ? toKey : null);
+
+        if (isVicCenter(fromKey) || isLlera(toKey)) {
             return {direction: "VIC_TO_LLE", vic_location: vicLocation};
+        }
+        if (isLlera(fromKey) || isVicCenter(toKey)) {
+            return {direction: "LLE_TO_VIC", vic_location: vicLocation};
         }
         return {direction: "", vic_location: null};
     }
 
     function routeLabelFromStops(from, to) {
-        const route = deriveRoute(from, to);
-        if (!route.direction) return "-";
-        return `${stopLabel(from)} → ${stopLabel(to)}`;
+        const fromKey = String(from || "").trim().toUpperCase();
+        const toKey = String(to || "").trim().toUpperCase();
+        if (!fromKey || !toKey || fromKey === toKey) return "-";
+        return `${stopLabel(fromKey)} → ${stopLabel(toKey)}`;
     }
 
     function getEffectivePricing() {
@@ -840,9 +861,9 @@
             to = toCity.value;
         }
 
-        if (!isLlera(from) && !isLlera(to)) {
-            if (changedSide === "from") toCity.value = "LLE";
-            else fromCity.value = "LLE";
+        if (!isCity(from) && !isCity(to)) {
+            if (changedSide === "from") toCity.value = "VIC";
+            else fromCity.value = "VIC";
             from = fromCity.value;
             to = toCity.value;
         }
@@ -870,10 +891,10 @@
             const fromStop = (qs.get("from") || qs.get("from_stop") || "").trim().toUpperCase();
             const toStop = (qs.get("to") || qs.get("to_stop") || "").trim().toUpperCase();
 
-            if (fromStop && (isLlera(fromStop) || isVicSide(fromStop))) {
+            if (fromStop && isValidStop(fromStop)) {
                 fromCity.value = fromStop;
             }
-            if (toStop && (isLlera(toStop) || isVicSide(toStop))) {
+            if (toStop && isValidStop(toStop)) {
                 toCity.value = toStop;
             }
 

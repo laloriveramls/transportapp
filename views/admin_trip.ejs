@@ -214,7 +214,9 @@
                         <div class="trip-res-name"><%= r.customer_name %></div>
                         <div class="trip-res-meta">
                             <% if (r.phone) { %><span><%= r.phone %></span><% } %>
-                            <% if (r.vic_location) { %>
+                            <% if (r.from_stop && r.to_stop && typeof stopLabel === 'function') { %>
+                                <span><%- include('partials/icon', { name: 'map-pin', size: 12 }) %> <%= stopLabel(r.from_stop) %> → <%= stopLabel(r.to_stop) %></span>
+                            <% } else if (r.vic_location) { %>
                                 <span><%= resolveVicLocationLabel(r.vic_location) %></span>
                             <% } %>
                         </div>
