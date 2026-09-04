@@ -98,7 +98,14 @@ function routeFromStops(fromStop, toStop) {
     };
 }
 
-function formatRouteEndpoint(direction, vicLocation, side) {
+function formatRouteEndpoint(direction, vicLocation, side, fromStop, toStop) {
+    const from = String(fromStop || '').trim();
+    const to = String(toStop || '').trim();
+    if (from && to) {
+        return side === 'from' ? stopLabel(from) : stopLabel(to);
+    }
+
+    // Fallback histórico: el ejido reemplaza el lado Victoria y el otro extremo es Llera.
     const vicDefault = 'Ciudad Victoria';
     const vicLabel = resolveVicLocationLabel(vicLocation) || vicDefault;
     const isV2L = direction === 'VIC_TO_LLE';
@@ -107,14 +114,17 @@ function formatRouteEndpoint(direction, vicLocation, side) {
     return isV2L ? 'Llera' : vicLabel;
 }
 
+function routeEndpoints(direction, vicLocation, fromStop, toStop) {
+    return {
+        fromLabel: formatRouteEndpoint(direction, vicLocation, 'from', fromStop, toStop),
+        toLabel: formatRouteEndpoint(direction, vicLocation, 'to', fromStop, toStop),
+    };
+}
+
 function formatRouteLabel(direction, vicLocation, separator = ' → ', fromStop, toStop) {
-    const from = String(fromStop || '').trim();
-    const to = String(toStop || '').trim();
-    if (from && to) {
-        return `${stopLabel(from)}${separator}${stopLabel(to)}`;
-    }
-    if (!direction) return '-';
-    return `${formatRouteEndpoint(direction, vicLocation, 'from')}${separator}${formatRouteEndpoint(direction, vicLocation, 'to')}`;
+    const {fromLabel, toLabel} = routeEndpoints(direction, vicLocation, fromStop, toStop);
+    if (!direction && !(String(fromStop || '').trim() && String(toStop || '').trim())) return '-';
+    return `${fromLabel}${separator}${toLabel}`;
 }
 
 function formatRouteLabelFromStops(fromStop, toStop, separator = ' → ') {
@@ -190,6 +200,7 @@ module.exports = {
     formatRouteLabel,
     formatRouteEndpoint,
     formatRouteLabelFromStops,
+    routeEndpoints,
     priceForVicLocation,
     pricingForVicLocation,
     pricingForStops,
