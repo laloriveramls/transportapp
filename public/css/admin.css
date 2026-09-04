@@ -4,9 +4,20 @@ body.admin-app.home-page {
     font-family: var(--home-font, "Outfit", system-ui, sans-serif);
 }
 
+body.admin-app .app-navbar {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+}
+
 body.admin-app .home-hero {
     min-height: 0;
-    padding: 0.85rem 0 0.95rem;
+    padding: 0.45rem 0 0.5rem;
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+
+body.admin-app .home-hero-media,
+body.admin-app .home-hero-veil {
+    display: none;
 }
 
 body.admin-app .home-brand {
@@ -15,14 +26,14 @@ body.admin-app .home-brand {
 }
 
 body.admin-app .logo-wrap {
-    width: min(560px, 100%);
+    width: min(420px, 100%);
 }
 
 body.admin-app .home-brand-logo,
 body.admin-app .home-brand-logo-wide {
     width: 100%;
     max-width: 100%;
-    max-height: 128px;
+    max-height: 72px;
     height: auto;
     object-fit: contain;
     object-position: left center;
@@ -37,7 +48,7 @@ body.admin-app .admin-main {
     position: relative;
     z-index: 1;
     margin-top: 0;
-    padding: 0.65rem 0 1.1rem;
+    padding: 0.35rem 0 1.1rem;
 }
 
 body.admin-app .admin-main > .container {
@@ -49,12 +60,12 @@ body.admin-app .admin-shell.home-tabs.tabs-card {
 }
 
 body.admin-app .admin-shell > .home-tabs-head {
-    padding: 0.55rem 0.85rem;
+    padding: 0.55rem 1rem;
     gap: 0.5rem 0.85rem;
 }
 
 body.admin-app .admin-shell > .home-tabs-body {
-    padding: 0.75rem 0.9rem 1rem;
+    padding: 0.35rem 1.15rem 1.25rem;
 }
 
 body.admin-app .admin-seg {
@@ -63,6 +74,12 @@ body.admin-app .admin-seg {
 
 body.admin-app .admin-seg .nav-link {
     text-decoration: none;
+}
+
+body.admin-app .home-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 body.admin-app .page-title {
@@ -92,7 +109,7 @@ body.admin-app .pill {
 
 body.admin-app .btn-ghost {
     border: none;
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     color: var(--text);
     border-radius: 999px;
     font-weight: 650;
@@ -280,9 +297,54 @@ body.admin-app .home-tabs-tools {
     flex-wrap: wrap;
 }
 
+/* Shared compact filter control */
+body.admin-app .admin-filter-seg {
+    display: inline-flex;
+    align-items: stretch;
+    padding: 0.18rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+body.admin-app .admin-filter-seg a,
+body.admin-app .admin-filter-seg button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    min-height: 32px;
+    padding: 0.2rem 0.72rem;
+    border: 0;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: transparent;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.admin-app .admin-filter-seg a:hover,
+body.admin-app .admin-filter-seg button:hover {
+    color: var(--text);
+}
+
+body.admin-app .admin-filter-seg a.is-on,
+body.admin-app .admin-filter-seg button.is-on {
+    color: var(--text);
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.06), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+html[data-theme="dark"] body.admin-app .admin-filter-seg a.is-on,
+html[data-theme="dark"] body.admin-app .admin-filter-seg button.is-on {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
 @media (max-width: 768px) {
     body.admin-app .home-hero {
-        padding: 0.7rem 0 0.8rem;
+        padding: 0.4rem 0 0.45rem;
     }
 
     body.admin-app .logo-wrap {
@@ -291,19 +353,19 @@ body.admin-app .home-tabs-tools {
 
     body.admin-app .home-brand-logo,
     body.admin-app .home-brand-logo-wide {
-        max-height: 92px;
+        max-height: 64px;
     }
 
     body.admin-app .admin-main {
-        padding: 0.5rem 0 calc(0.85rem + env(safe-area-inset-bottom));
+        padding: 0.3rem 0 calc(0.85rem + env(safe-area-inset-bottom));
     }
 
     body.admin-app .admin-shell > .home-tabs-head {
-        padding: 0.5rem 0.7rem;
+        padding: 0.5rem 0.75rem;
     }
 
     body.admin-app .admin-shell > .home-tabs-body {
-        padding: 0.65rem 0.7rem 0.85rem;
+        padding: 0.25rem 0.75rem 1rem;
     }
 
     body.admin-app .admin-seg {
@@ -322,34 +384,6 @@ body.admin-app .home-tabs-tools {
 
 
 /* ---- page-agenda ---- */
-body.page-agenda .app-navbar {
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-}
-
-body.page-agenda .home-hero {
-    padding: 0.45rem 0 0.5rem;
-    background: color-mix(in srgb, var(--card) 70%, transparent);
-}
-
-body.page-agenda .home-hero-media,
-body.page-agenda .home-hero-veil {
-    display: none;
-}
-
-body.page-agenda .home-brand-logo,
-body.page-agenda .home-brand-logo-wide {
-    max-height: 72px;
-}
-
-body.page-agenda .admin-main {
-    padding-top: 0.35rem;
-}
-
-body.page-agenda .admin-shell > .home-tabs-body {
-    padding: 0.35rem 1.15rem 1.25rem;
-}
-
 body.page-agenda .agenda-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -877,79 +911,77 @@ body.page-agenda .agenda-empty .agenda-chip {
 body.page-trip .trip-head {
     position: relative;
     overflow: hidden;
-    padding: 0.9rem 1rem 1rem;
-    margin-bottom: 0.95rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-trip .trip-head::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 3px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 45%, transparent);
+    display: none;
 }
-
-body.page-trip .trip-head.is-ok::before { background: #10d88f; }
-body.page-trip .trip-head.is-tight::before { background: #e9c40e; }
-body.page-trip .trip-head.is-full::before { background: var(--wine); }
 
 body.page-trip .trip-head-top {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: space-between;
 }
 
-body.page-trip .trip-kicker {
+body.page-trip .trip-date-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.55rem;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+}
+
+body.page-trip .trip-today-dot {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
+    gap: 0.32rem;
+    font-size: 0.68rem;
     font-weight: 750;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--wine);
 }
 
-body.page-trip .trip-date-label {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+body.page-trip .trip-today-dot::before {
+    content: "";
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--wine);
 }
 
 body.page-trip .trip-route {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.28rem 0.4rem;
+    gap: 0.2rem 0.38rem;
     margin-top: 0.35rem;
-    font-weight: 750;
-    letter-spacing: -0.025em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 body.page-trip .trip-route-mid {
     display: inline-flex;
-    color: var(--wine);
+    color: var(--muted);
     line-height: 1;
 }
 
 body.page-trip .trip-head-time {
     margin-left: 0.15rem;
-    color: var(--wine);
-    font-size: 1.15rem;
+    color: var(--text);
+    font-size: 1.08rem;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;
@@ -959,14 +991,14 @@ body.page-trip .trip-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 40px;
-    padding: 0.38rem 0.85rem;
+    min-height: 38px;
+    padding: 0.32rem 0.8rem;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 650;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
 }
 
@@ -986,111 +1018,73 @@ body.page-trip .trip-chip.is-on:hover { color: #fff; }
 
 body.page-trip .trip-head-stats {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
-    gap: 0.55rem;
-    margin-top: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0.95rem;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 body.page-trip .trip-stat {
     display: flex;
-    align-items: center;
-    gap: 0.65rem;
+    flex-direction: column;
+    gap: 0.18rem;
     min-width: 0;
-    padding: 0.7rem 0.8rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--card) 92%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+    padding: 0.85rem 1rem 0.9rem;
 }
 
-body.page-trip .trip-stat-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    flex: 0 0 auto;
-    border-radius: 10px;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, var(--card));
+body.page-trip .trip-stat + .trip-stat {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-trip .trip-stat .label {
+body.page-trip .trip-stat-value {
+    font-size: 1.35rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    color: var(--text);
+}
+
+body.page-trip .trip-stat-sep {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+body.page-trip .trip-stat-label {
     color: var(--muted);
     font-size: 0.72rem;
     font-weight: 650;
+    letter-spacing: 0.02em;
 }
 
-body.page-trip .trip-stat .value {
-    font-size: 1.2rem;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-}
-
-body.page-trip .trip-stat-occ {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
-}
-
-body.page-trip .trip-occ-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.4rem;
-    font-size: 0.78rem;
-    font-weight: 650;
-    color: var(--muted);
-}
-
-body.page-trip .trip-head.is-full .trip-occ-top { color: var(--wine); }
-body.page-trip .trip-head.is-tight .trip-occ-top {
-    color: color-mix(in srgb, #b45309 70%, var(--text));
-}
-
-body.page-trip .trip-meter {
-    height: 6px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--muted) 16%, transparent);
-}
-
-body.page-trip .trip-meter > span {
-    display: block;
-    height: 100%;
-    width: var(--w, 0%);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 40%, transparent);
-}
-
-body.page-trip .trip-head.is-ok .trip-meter > span {
-    background: linear-gradient(90deg, #10d88f, color-mix(in srgb, #10d88f 70%, var(--wine)));
-}
-
-body.page-trip .trip-head.is-tight .trip-meter > span {
-    background: linear-gradient(90deg, #e9c40e, color-mix(in srgb, #e9c40e 55%, var(--wine)));
-}
-
-body.page-trip .trip-head.is-full .trip-meter > span {
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
+body.page-trip .trip-stat.is-quiet .trip-stat-value {
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--muted) 35%, var(--text));
 }
 
 body.page-trip .trip-seats {
     display: inline-flex;
-    gap: 4px;
+    gap: 5px;
+    margin-top: 0.35rem;
 }
 
 body.page-trip .trip-seat {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 22%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
 }
 
-body.page-trip .trip-seat.is-on { background: var(--wine); box-shadow: none; }
+body.page-trip .trip-seat.is-on {
+    background: var(--wine);
+}
+
 body.page-trip .trip-head.is-ok .trip-seat.is-on { background: #10d88f; }
-body.page-trip .trip-head.is-tight .trip-seat.is-on { background: #e9c40e; }
+body.page-trip .trip-head.is-tight .trip-seat.is-on { background: #d4a017; }
+body.page-trip .trip-head.is-full .trip-seat.is-on { background: var(--wine); }
 
 body.page-trip .trip-list-head {
     display: flex;
@@ -1261,13 +1255,25 @@ body.page-trip .btn-pdf:hover {
         grid-template-columns: 1fr 1fr;
     }
 
-    body.page-trip .trip-stat-occ {
+    body.page-trip .trip-stat:last-child {
         grid-column: 1 / -1;
     }
 }
 
 @media (max-width: 576px) {
     body.page-trip .trip-date-label { font-size: 1.08rem; }
+
+    body.page-trip .trip-head-tools {
+        width: 100%;
+    }
+
+    body.page-trip .trip-head-tools .admin-filter-seg {
+        width: 100%;
+    }
+
+    body.page-trip .trip-head-tools .admin-filter-seg a {
+        flex: 1 1 0;
+    }
 
     body.page-trip .trip-res-actions {
         display: grid;
@@ -1280,64 +1286,42 @@ body.page-trip .btn-pdf:hover {
 
 /* ---- page-recent ---- */
 body.page-recent .recent-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-    align-items: start;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.85rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-@media (min-width: 1100px) {
-    body.page-recent .recent-toolbar {
-        grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1.4fr);
-        align-items: center;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.85rem 1.25rem;
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-recent .recent-intro {
-    min-width: min(100%, 180px);
-}
-
-body.page-recent .recent-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-body.page-recent .recent-kicker .ico {
-    display: block;
+    min-width: min(100%, 160px);
 }
 
 body.page-recent .recent-title {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
     color: var(--text);
 }
 
 body.page-recent .recent-meta {
-    margin-top: 0.18rem;
+    margin: 0.28rem 0 0;
     font-size: 0.84rem;
+    color: var(--muted);
 }
 
 body.page-recent .recent-toolbar-form {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
     min-width: 0;
 }
@@ -1345,7 +1329,8 @@ body.page-recent .recent-toolbar-form {
 body.page-recent .recent-search {
     position: relative;
     display: block;
-    min-width: 0;
+    min-width: min(16rem, 100%);
+    flex: 1 1 14rem;
 }
 
 body.page-recent .recent-search-ico {
@@ -1363,11 +1348,23 @@ body.page-recent .recent-search .form-control {
     padding-left: 2.2rem;
 }
 
-body.page-recent .recent-filters {
+body.page-recent .recent-pay-seg {
+    flex: 0 1 auto;
+}
+
+body.page-recent .recent-form-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
     align-items: center;
+    gap: 0.45rem;
+}
+
+body.page-recent .recent-pagesize .form-select {
+    min-width: 6.5rem;
+}
+
+body.page-recent .recent-clear {
+    min-height: 40px;
 }
 
 body.page-recent .recent-chip {
@@ -1375,185 +1372,83 @@ body.page-recent .recent-chip {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    min-height: 40px;
-    padding: 0.38rem 0.8rem;
+    min-height: 38px;
+    padding: 0.32rem 0.8rem;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 650;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
-}
-
-body.page-recent .recent-chip .ico {
-    display: block;
 }
 
 body.page-recent .recent-chip:hover {
     color: var(--text);
     background: color-mix(in srgb, var(--wine) 8%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 30%, var(--border));
-    transform: translateY(-1px);
-}
-
-body.page-recent .recent-chip.is-on {
-    color: #fff;
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 32%, transparent);
-}
-
-body.page-recent .recent-chip.is-on:hover {
-    color: #fff;
-}
-
-body.page-recent .recent-form-actions {
-    display: flex;
-    gap: 0.45rem;
-    align-items: center;
-    min-width: 0;
-}
-
-body.page-recent .recent-pagesize {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-body.page-recent .recent-pagesize .form-select {
-    width: 100%;
-    min-width: 7.5rem;
-}
-
-body.page-recent .recent-apply {
-    flex: 0 0 auto;
-    min-height: 40px;
-    padding: 0.38rem 1rem;
-    border-radius: 999px;
-}
-
-@media (min-width: 720px) {
-    body.page-recent .recent-toolbar-form {
-        grid-template-columns: minmax(12rem, 1fr) auto;
-        align-items: center;
-    }
-
-    body.page-recent .recent-search {
-        grid-column: 1 / -1;
-    }
-
-    body.page-recent .recent-form-actions {
-        justify-content: flex-end;
-    }
-
-    body.page-recent .recent-pagesize {
-        flex: 0 0 auto;
-    }
 }
 
 body.page-recent .recent-kpis {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
-    margin-bottom: 0.9rem;
-}
-
-body.page-recent .recent-kpi {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    min-width: 0;
-    padding: 0.78rem 0.85rem 0.82rem 0.95rem;
+    margin: 0 0 1.15rem;
     border-radius: 14px;
     overflow: hidden;
-    background: linear-gradient(
-        145deg,
-        color-mix(in srgb, var(--card) 96%, transparent),
-        color-mix(in srgb, var(--wine) 6%, var(--card))
-    );
+    background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-body.page-recent .recent-kpi > div:last-child {
+body.page-recent .recent-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
     min-width: 0;
+    padding: 0.85rem 1rem 0.9rem;
 }
 
-body.page-recent .recent-kpi::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--wine), var(--wine-2));
+body.page-recent .recent-kpi + .recent-kpi {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-recent .recent-kpi--paid::before {
-    background: #10d88f;
+body.page-recent .recent-kpi-value {
+    font-size: 1.45rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    color: var(--text);
 }
 
-body.page-recent .recent-kpi--pending::before {
-    background: #e9c40e;
-}
-
-body.page-recent .recent-kpi--board::before {
-    background: #3b82f6;
-}
-
-body.page-recent .recent-kpi--cancel::before {
-    background: linear-gradient(180deg, #b91c1c, #7f1d1d);
-}
-
-body.page-recent .recent-kpi-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    flex: 0 0 auto;
-    border-radius: 10px;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, var(--card));
-}
-
-body.page-recent .recent-kpi--paid .recent-kpi-ico {
-    color: color-mix(in srgb, #059669 80%, var(--text));
-    background: color-mix(in srgb, #10d88f 14%, var(--card));
-}
-
-body.page-recent .recent-kpi--pending .recent-kpi-ico {
-    color: color-mix(in srgb, #b45309 80%, var(--text));
-    background: color-mix(in srgb, #e9c40e 16%, var(--card));
-}
-
-body.page-recent .recent-kpi--board .recent-kpi-ico {
-    color: color-mix(in srgb, #2563eb 80%, var(--text));
-    background: color-mix(in srgb, #3b82f6 12%, var(--card));
-}
-
-body.page-recent .recent-kpi--cancel .recent-kpi-ico {
-    color: color-mix(in srgb, #b91c1c 80%, var(--text));
-    background: color-mix(in srgb, #b91c1c 10%, var(--card));
-}
-
-body.page-recent .recent-kpi .label {
+body.page-recent .recent-kpi-label {
     color: var(--muted);
     font-size: 0.72rem;
     font-weight: 650;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    overflow-wrap: break-word;
+    letter-spacing: 0.02em;
 }
 
-body.page-recent .recent-kpi .value {
-    margin-top: 0.12rem;
-    font-size: 1.35rem;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    color: var(--text);
+body.page-recent .recent-kpi.is-quiet .recent-kpi-value {
+    color: color-mix(in srgb, var(--muted) 55%, var(--text));
+}
+
+@media (max-width: 900px) {
+    body.page-recent .recent-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-recent .recent-kpi:nth-child(3),
+    body.page-recent .recent-kpi:nth-child(4) {
+        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-recent .recent-kpi:nth-child(even) {
+        box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-recent .recent-kpi:nth-child(4) {
+        box-shadow:
+            inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent),
+            inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
 }
 
 body.page-recent .recent-table-card {
@@ -1923,55 +1818,46 @@ body.page-recent .recent-page-dots {
 }
 
 @media (max-width: 576px) {
-    body.page-recent .recent-toolbar {
-        padding: 0.75rem 0.8rem;
-    }
-
     body.page-recent .recent-title {
         font-size: 1.08rem;
     }
 
     body.page-recent .recent-kpis {
-        gap: 0.45rem;
         margin-bottom: 0.75rem;
     }
 
     body.page-recent .recent-kpi {
-        padding: 0.65rem 0.7rem 0.68rem 0.8rem;
-        gap: 0.5rem;
+        padding: 0.7rem 0.8rem 0.75rem;
     }
 
-    body.page-recent .recent-kpi-ico {
-        width: 1.7rem;
-        height: 1.7rem;
+    body.page-recent .recent-kpi-value {
+        font-size: 1.2rem;
     }
 
-    body.page-recent .recent-kpi .label {
-        font-size: 0.68rem;
+    body.page-recent .recent-toolbar-form {
+        width: 100%;
     }
 
-    body.page-recent .recent-kpi .value {
-        font-size: 1.15rem;
-    }
-
-    body.page-recent .recent-filters {
-        flex-wrap: nowrap;
+    body.page-recent .recent-pay-seg {
+        width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.15rem;
-        margin-inline: -0.15rem;
-        padding-inline: 0.15rem;
     }
 
-    body.page-recent .recent-chip {
-        flex: 0 0 auto;
-        padding: 0.38rem 0.72rem;
-        font-size: 0.8rem;
+    body.page-recent .recent-pay-seg a {
+        flex: 1 1 auto;
+        white-space: nowrap;
     }
 
     body.page-recent .recent-form-actions {
+        width: 100%;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    body.page-recent .recent-clear {
+        grid-column: 1 / -1;
+        justify-content: center;
     }
 
     body.page-recent .recent-pager {
@@ -1984,69 +1870,50 @@ body.page-recent .recent-page-dots {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    body.page-recent .recent-chip:hover {
-        transform: none;
-    }
-}
-
 /* ---- page-horarios ---- */
 body.page-horarios .horarios-toolbar {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.85rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+    gap: 0.85rem;
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-horarios .horarios-toolbar-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.85rem 1.25rem;
 }
 
-@media (min-width: 960px) {
-    body.page-horarios .horarios-toolbar-top {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-}
-
-body.page-horarios .horarios-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+body.page-horarios .horarios-date-block {
+    min-width: min(100%, 200px);
 }
 
 body.page-horarios .horarios-date-label {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+    color: var(--text);
 }
 
 body.page-horarios .horarios-date-meta {
-    margin-top: 0.18rem;
+    margin: 0.28rem 0 0;
     font-size: 0.84rem;
+    color: var(--muted);
 }
 
 body.page-horarios .horarios-toolbar-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.5rem;
     align-items: center;
     justify-content: flex-end;
     min-width: 0;
@@ -2113,9 +1980,7 @@ body.page-horarios .horarios-day-arrow:hover {
 }
 
 body.page-horarios .horarios-dir {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    flex: 0 1 auto;
 }
 
 body.page-horarios .horarios-dir[hidden],
@@ -2123,36 +1988,8 @@ body.page-horarios .horarios-day-nav[hidden] {
     display: none !important;
 }
 
-body.page-horarios .horarios-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    padding: 0.38rem 0.85rem;
-    border: 0;
-    border-radius: 999px;
-    font-weight: 650;
-    font-size: 0.86rem;
-    color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-}
-
-body.page-horarios .horarios-chip:hover {
-    background: color-mix(in srgb, var(--wine) 8%, var(--card));
-}
-
-body.page-horarios .horarios-chip.is-on {
-    color: #fff;
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 32%, transparent);
-}
-
 body.page-horarios #loadBtn {
-    min-height: 40px;
-    border-radius: 999px;
-    font-weight: 700;
-    padding-inline: 1.05rem;
+    min-height: 32px;
 }
 
 body.page-horarios .horarios-tabs-bar {
@@ -2557,7 +2394,10 @@ body.page-horarios .muted {
         width: 100%;
     }
 
-    body.page-horarios #loadBtn { width: 100%; }
+    body.page-horarios .horarios-dir.admin-filter-seg a,
+    body.page-horarios .horarios-dir.admin-filter-seg button {
+        flex: 1 1 0;
+    }
 
     body.page-horarios .tabs {
         flex-wrap: nowrap;

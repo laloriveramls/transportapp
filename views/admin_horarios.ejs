@@ -29,34 +29,30 @@
     <div class="horarios-toolbar">
         <div class="horarios-toolbar-top">
             <div class="horarios-date-block">
-                <div class="horarios-kicker">
-                    <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
-                    <span id="kickerText">Horarios</span>
-                </div>
-                <div class="horarios-date-label" id="kDatePretty">—</div>
-                <div class="horarios-date-meta subtle" id="kDir">—</div>
+                <p class="horarios-date-label" id="kDatePretty">—</p>
+                <p class="horarios-date-meta" id="kDir">—</p>
             </div>
 
             <div class="horarios-toolbar-form">
                 <div id="dateWrap" class="horarios-day-nav">
-                    <button type="button" class="horarios-day-arrow" id="prevDay" title="Día anterior" aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'arrow-left', size: 16 }) %></button>
+                    <button type="button" class="horarios-day-arrow" id="prevDay" title="Día anterior" aria-label="Ir al día anterior"><%- include('partials/icon', { name: 'chevron-left', size: 18 }) %></button>
                     <span class="horarios-date-input">
                         <span class="horarios-date-fake" id="dateFake" aria-hidden="true">—</span>
                         <input id="trip_date" type="date" class="form-control" aria-label="Fecha">
                     </span>
-                    <button type="button" class="horarios-day-arrow" id="nextDay" title="Día siguiente" aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></button>
+                    <button type="button" class="horarios-day-arrow" id="nextDay" title="Día siguiente" aria-label="Ir al día siguiente"><%- include('partials/icon', { name: 'chevron-right', size: 18 }) %></button>
                 </div>
 
-                <div id="directionWrap" class="horarios-dir" hidden>
+                <div id="directionWrap" class="admin-filter-seg horarios-dir" hidden>
                     <select id="direction" class="visually-hidden" aria-label="Dirección">
                         <option value="VIC_TO_LLE">Victoria → Llera</option>
                         <option value="LLE_TO_VIC">Llera → Victoria</option>
                     </select>
-                    <button type="button" class="horarios-chip is-on" data-dir="VIC_TO_LLE">Victoria → Llera</button>
-                    <button type="button" class="horarios-chip" data-dir="LLE_TO_VIC">Llera → Victoria</button>
+                    <button type="button" class="is-on" data-dir="VIC_TO_LLE">Victoria → Llera</button>
+                    <button type="button" data-dir="LLE_TO_VIC">Llera → Victoria</button>
                 </div>
 
-                <button id="loadBtn" class="btn btn-wine" type="button">Cargar</button>
+                <button id="loadBtn" class="btn btn-ghost horarios-load" type="button" hidden>Cargar</button>
             </div>
         </div>
 
@@ -84,7 +80,7 @@
     </div>
 
     <div class="slots-wrap">
-        <p class="hint" id="hint">Selecciona pestaña.</p>
+        <p class="hint visually-hidden" id="hint">Selecciona pestaña.</p>
         <div id="list"></div>
     </div>
 
@@ -95,7 +91,6 @@
 
 <%- include('partials/toast') %>
 <%- include('partials/admin-footer') %>
-<%- include('partials/footer') %>
 
 <script>
     const tripDateEl = document.getElementById("trip_date");
@@ -197,7 +192,7 @@
 
     function syncDirectionChips(){
         const current = directionEl?.value || "VIC_TO_LLE";
-        document.querySelectorAll(".horarios-chip[data-dir]").forEach((btn) => {
+        document.querySelectorAll("#directionWrap [data-dir]").forEach((btn) => {
             btn.classList.toggle("is-on", btn.dataset.dir === current);
         });
     }
@@ -880,7 +875,7 @@
         if (currentTab === "ops") load();
     });
 
-    document.querySelectorAll(".horarios-chip[data-dir]").forEach((btn) => {
+    document.querySelectorAll("#directionWrap [data-dir]").forEach((btn) => {
         btn.addEventListener("click", () => {
             if (!directionEl) return;
             directionEl.value = btn.dataset.dir;
