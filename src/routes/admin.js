@@ -7,7 +7,15 @@ const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
 const {resolveVicLocationLabel, stopLabel} = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
-const {isPreviewMode, previewAgenda} = require("../dev/previewData");
+const {
+    isPreviewMode,
+    previewAgenda,
+    previewTrip,
+    previewRecent,
+    previewHorariosRows,
+    previewTemplateRows,
+    previewPricing,
+} = require("../dev/previewData");
 const crypto = require("crypto");
 
 const router = express.Router();
@@ -235,6 +243,25 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
     const {tripId} = req.params;
     const onlyPending = req.query.onlyPending === "1";
 
+    if (isPreviewMode()) {
+        const preview = previewTrip(tripId);
+        let reservations = preview.reservations;
+        if (onlyPending) {
+            reservations = reservations.filter((x) =>
+                x.status === "PENDING_PAYMENT" || x.status === "PAY_AT_BOARDING"
+            );
+        }
+        return res.render("admin_trip", {
+            trip: preview.trip,
+            reservations,
+            directionLabel,
+            onlyPending,
+            baseUrl: process.env.BASE_URL,
+            resolveVicLocationLabel,
+            stopLabel,
+        });
+    }
+
     const [[trip]] = await pool.query(
         `
             SELECT t.id                                          AS trip_id,
@@ -289,6 +316,26 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
 
     const pageSize = Math.max(10, Math.min(200, Number(req.query.pageSize || 25)));
     const pageReq = Math.max(1, Number(req.query.page || 1));
+
+    if (isPreviewMode()) {
+        const pmRaw = String(req.query.pm || "").trim().toUpperCase();
+        const pm = (pmRaw === "TAQUILLA" || pmRaw === "TRANSFERENCIA" || pmRaw === "ONLINE") ? pmRaw : null;
+        const preview = previewRecent({q: qRaw, pm: pm || "", page: pageReq, pageSize});
+        return res.render("admin_recent", {
+            q: qRaw,
+            pm: pm || "",
+            recentRows: preview.recentRows,
+            directionLabel,
+            page: preview.page,
+            pageSize: preview.pageSize,
+            total: preview.total,
+            totalPages: preview.totalPages,
+            pages: preview.pages,
+            from: preview.from,
+            to: preview.to,
+            statusCounts: preview.statusCounts,
+        });
+    }
 
     const folioExpr = `CONCAT('RES-', DATE_FORMAT(t.trip_date,'%Y%m%d'), '-', LPAD(COALESCE(NULLIF(r.daily_seq,0), r.id),3,'0'))`;
     const phoneDigitsExpr =
@@ -463,6 +510,10 @@ router.get("/api/horarios", requireAdmin, requireDb, async (req, res) => {
         const direction = String(req.query.direction || "").trim();
 
         if (!date || !direction) return res.json({ok: true, rows: []});
+
+        if (isPreviewMode()) {
+            return res.json({ok: true, rows: previewHorariosRows(direction)});
+        }
 
         await ensureTripsForDate(date);
 
@@ -668,6 +719,10 @@ router.get("/api/horarios/disabled-days", requireAdmin, requireDb, async (req, r
 
         if (!direction || !from || !to) return res.json({ok: true, rows: []});
 
+        if (isPreviewMode()) {
+            return res.json({ok: true, rows: []});
+        }
+
         const [rows] = await pool.query(
             `
                 SELECT tr.trip_date,
@@ -739,6 +794,10 @@ router.get("/api/templates", requireAdmin, requireDb, async (req, res) => {
     try {
         const direction = String(req.query.direction || "").trim();
         const includeInactive = String(req.query.includeInactive || "1") === "1";
+
+        if (isPreviewMode()) {
+            return res.json({ok: true, rows: previewTemplateRows(direction)});
+        }
 
         const where = [];
         const params = [];
@@ -853,6 +912,17 @@ router.post("/api/templates/disable", requireAdmin, requireDb, async (req, res) 
 ----------------------------- */
 router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     try {
+        if (isPreviewMode()) {
+            const pricing = previewPricing();
+            return res.json({
+                ok: true,
+                passenger_price_mxn: pricing.passenger_price_mxn,
+                package_price_mxn: pricing.package_price_mxn,
+                child_price_mxn: pricing.child_price_mxn,
+                updated_at: null,
+            });
+        }
+
         const [[row]] = await pool.query(
             `SELECT passenger_price_mxn, package_price_mxn, child_price_mxn, updated_at
              FROM transporte_settings

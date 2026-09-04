@@ -126,53 +126,47 @@
     <div class="trip-head is-<%= tone %>">
         <div class="trip-head-top">
             <div class="trip-head-copy">
-                <div class="trip-kicker">
-                    <%- include('partials/icon', { name: 'calendar', size: 16 }) %>
-                    <%= isToday ? 'Hoy' : 'Salida' %>
-                </div>
-                <div class="trip-date-label"><%= datePretty %></div>
+                <p class="trip-date-label">
+                    <% if (isToday) { %><span class="trip-today-dot">Hoy</span><% } %>
+                    <%= datePretty %>
+                </p>
                 <div class="trip-route">
                     <span><%= fromLabel %></span>
-                    <span class="trip-route-mid"><%- include('partials/icon', { name: 'arrow-left-right', size: 16 }) %></span>
+                    <span class="trip-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
                     <span><%= toLabel %></span>
                     <span class="trip-head-time mono"><%= hhmm %></span>
                 </div>
             </div>
             <div class="trip-head-tools">
-                <% if (onlyPending) { %>
-                    <a class="trip-chip is-on" href="/admin/trip/<%= trip.trip_id %>">Ver todas</a>
-                <% } else { %>
-                    <a class="trip-chip" href="/admin/trip/<%= trip.trip_id %>?onlyPending=1">Solo pendientes</a>
-                <% } %>
+                <div class="admin-filter-seg" role="group" aria-label="Filtro de reservas">
+                    <% if (onlyPending) { %>
+                        <a href="/admin/trip/<%= trip.trip_id %>">Todas</a>
+                        <a class="is-on" href="/admin/trip/<%= trip.trip_id %>?onlyPending=1" aria-current="true">Pendientes</a>
+                    <% } else { %>
+                        <a class="is-on" href="/admin/trip/<%= trip.trip_id %>" aria-current="true">Todas</a>
+                        <a href="/admin/trip/<%= trip.trip_id %>?onlyPending=1">Pendientes</a>
+                    <% } %>
+                </div>
             </div>
         </div>
 
-        <div class="trip-head-stats">
+        <div class="trip-head-stats" role="group" aria-label="Resumen de la salida">
             <div class="trip-stat">
-                <div class="trip-stat-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></div>
-                <div>
-                    <div class="label">Cupo</div>
-                    <div class="value mono"><%= used %>/<%= cap %></div>
-                </div>
-            </div>
-            <div class="trip-stat">
-                <div class="trip-stat-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></div>
-                <div>
-                    <div class="label">Paquetería</div>
-                    <div class="value mono"><%= mandados %></div>
-                </div>
-            </div>
-            <div class="trip-stat trip-stat-occ">
-                <div class="trip-occ-top">
-                    <span><%= status %></span>
-                    <span class="mono"><%= pct %>%</span>
-                </div>
-                <div class="trip-meter" style="--w:<%= pct %>%" aria-hidden="true"><span></span></div>
+                <span class="trip-stat-value mono"><%= used %><span class="trip-stat-sep">/</span><%= cap %></span>
+                <span class="trip-stat-label">Cupo</span>
                 <span class="trip-seats" aria-hidden="true">
                     <% for (let i = 0; i < cap; i++) { %>
                         <span class="trip-seat <%= i < used ? 'is-on' : '' %>"></span>
                     <% } %>
                 </span>
+            </div>
+            <div class="trip-stat">
+                <span class="trip-stat-value mono"><%= mandados %></span>
+                <span class="trip-stat-label">Paquetería</span>
+            </div>
+            <div class="trip-stat is-quiet">
+                <span class="trip-stat-value"><%= status %></span>
+                <span class="trip-stat-label">Estado</span>
             </div>
         </div>
     </div>

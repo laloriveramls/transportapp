@@ -142,19 +142,14 @@
 
     <div class="recent-toolbar">
         <div class="recent-intro">
-            <div class="recent-kicker">
-                <%- include('partials/icon', { name: 'receipt', size: 16 }) %>
-                <%= hasFilters ? 'Filtrado' : 'Registros' %>
-            </div>
-            <div class="recent-title"><%= totalN %> resultado<%= totalN === 1 ? '' : 's' %></div>
-            <div class="recent-meta subtle">
+            <p class="recent-title"><%= totalN %> resultado<%= totalN === 1 ? '' : 's' %></p>
+            <p class="recent-meta">
                 <% if (totalN === 0) { %>
-                    Sin coincidencias en esta búsqueda
+                    Sin coincidencias
                 <% } else { %>
-                    Mostrando <%= from || 0 %>–<%= to || 0 %>
-                    · Página <%= _page %>/<%= _pages %>
+                    <%= from || 0 %>–<%= to || 0 %> · Pág. <%= _page %>/<%= _pages %>
                 <% } %>
-            </div>
+            </p>
         </div>
 
         <form class="recent-toolbar-form" method="GET" action="/admin/recent" id="filterForm">
@@ -169,22 +164,11 @@
                        autocomplete="off">
             </label>
 
-            <div class="recent-filters" role="group" aria-label="Método de pago">
-                <a class="recent-chip <%= !_pm ? 'is-on' : '' %>" href="<%= linkAll %>" <%= !_pm ? 'aria-current="true"' : '' %>>Todos</a>
-                <a class="recent-chip <%= _pm === 'TAQUILLA' ? 'is-on' : '' %>" href="<%= linkPm('TAQUILLA') %>" <%= _pm === 'TAQUILLA' ? 'aria-current="true"' : '' %>>
-                    <%- include('partials/icon', { name: 'banknote', size: 14 }) %> Taquilla
-                </a>
-                <a class="recent-chip <%= _pm === 'TRANSFERENCIA' ? 'is-on' : '' %>" href="<%= linkPm('TRANSFERENCIA') %>" <%= _pm === 'TRANSFERENCIA' ? 'aria-current="true"' : '' %>>
-                    <%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transfer
-                </a>
-                <a class="recent-chip <%= _pm === 'ONLINE' ? 'is-on' : '' %>" href="<%= linkPm('ONLINE') %>" <%= _pm === 'ONLINE' ? 'aria-current="true"' : '' %>>
-                    <%- include('partials/icon', { name: 'credit-card', size: 14 }) %> Online
-                </a>
-                <% if (hasFilters) { %>
-                    <a class="recent-chip" href="<%= clearHref %>">
-                        <%- include('partials/icon', { name: 'x', size: 14 }) %> Limpiar
-                    </a>
-                <% } %>
+            <div class="admin-filter-seg recent-pay-seg" role="group" aria-label="Método de pago">
+                <a class="<%= !_pm ? 'is-on' : '' %>" href="<%= linkAll %>" <%= !_pm ? 'aria-current="true"' : '' %>>Todos</a>
+                <a class="<%= _pm === 'TAQUILLA' ? 'is-on' : '' %>" href="<%= linkPm('TAQUILLA') %>" <%= _pm === 'TAQUILLA' ? 'aria-current="true"' : '' %>>Taquilla</a>
+                <a class="<%= _pm === 'TRANSFERENCIA' ? 'is-on' : '' %>" href="<%= linkPm('TRANSFERENCIA') %>" <%= _pm === 'TRANSFERENCIA' ? 'aria-current="true"' : '' %>>Transfer</a>
+                <a class="<%= _pm === 'ONLINE' ? 'is-on' : '' %>" href="<%= linkPm('ONLINE') %>" <%= _pm === 'ONLINE' ? 'aria-current="true"' : '' %>>Online</a>
             </div>
 
             <div class="recent-form-actions">
@@ -197,38 +181,29 @@
                     </select>
                 </label>
                 <button class="btn btn-wine recent-apply" type="submit">Buscar</button>
+                <% if (hasFilters) { %>
+                    <a class="btn btn-ghost recent-clear" href="<%= clearHref %>">Limpiar</a>
+                <% } %>
             </div>
         </form>
     </div>
 
     <div class="recent-kpis" role="group" aria-label="Resumen de estados">
-        <div class="recent-kpi recent-kpi--paid">
-            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 18 }) %></div>
-            <div>
-                <div class="label">Pagados</div>
-                <div class="value"><%= Number(counts.PAID || 0) %></div>
-            </div>
+        <div class="recent-kpi">
+            <span class="recent-kpi-value"><%= Number(counts.PAID || 0) %></span>
+            <span class="recent-kpi-label">Pagados</span>
         </div>
-        <div class="recent-kpi recent-kpi--pending">
-            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'hourglass', size: 18 }) %></div>
-            <div>
-                <div class="label">Pendientes</div>
-                <div class="value"><%= Number(counts.PENDING_PAYMENT || 0) %></div>
-            </div>
+        <div class="recent-kpi">
+            <span class="recent-kpi-value"><%= Number(counts.PENDING_PAYMENT || 0) %></span>
+            <span class="recent-kpi-label">Pendientes</span>
         </div>
-        <div class="recent-kpi recent-kpi--board">
-            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 18 }) %></div>
-            <div>
-                <div class="label">Taquilla</div>
-                <div class="value"><%= Number(counts.PAY_AT_BOARDING || 0) %></div>
-            </div>
+        <div class="recent-kpi">
+            <span class="recent-kpi-value"><%= Number(counts.PAY_AT_BOARDING || 0) %></span>
+            <span class="recent-kpi-label">Taquilla</span>
         </div>
-        <div class="recent-kpi recent-kpi--cancel">
-            <div class="recent-kpi-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ban', size: 18 }) %></div>
-            <div>
-                <div class="label">Cancelados</div>
-                <div class="value"><%= Number(counts.CANCELLED || 0) %></div>
-            </div>
+        <div class="recent-kpi is-quiet">
+            <span class="recent-kpi-value"><%= Number(counts.CANCELLED || 0) %></span>
+            <span class="recent-kpi-label">Cancelados</span>
         </div>
     </div>
 
