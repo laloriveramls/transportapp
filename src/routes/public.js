@@ -23,6 +23,7 @@ const {
 const {sendTelegram, escapeHtml} = require("../notifications/telegram");
 const {
     getVicLocations,
+    getCityLabels,
     resolveVicLocation,
     resolveVicLocationLabel,
     pricingForVicLocation,
@@ -298,6 +299,7 @@ function reserveViewData(extra = {}) {
     const baseUrl = extra.baseUrl || process.env.BASE_URL || "";
     return {
         vicLocations: getVicLocations(),
+        cityLabels: getCityLabels(),
         seoPage: "reserve",
         ...extra,
         jsonLd: extra.jsonLd || seo.reserveJsonLd({baseUrl, pricing}),
@@ -455,6 +457,7 @@ router.get(
             return res.render("index", {
                 templates,
                 vicLocations,
+                cityLabels,
                 pricing,
                 seoPage: "home",
                 faqs: seo.homeFaqs(pricing, vicLocations),
@@ -481,6 +484,7 @@ router.get(
             res.render("index", {
                 templates,
                 vicLocations,
+                cityLabels,
                 pricing,
                 seoPage: "home",
                 faqs: seo.homeFaqs(pricing, vicLocations),
