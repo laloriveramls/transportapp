@@ -454,6 +454,7 @@ router.get(
             const pricing = previewPricing();
             const templates = previewTemplates();
             const vicLocations = getVicLocations();
+            const cityLabels = getCityLabels();
             return res.render("index", {
                 templates,
                 vicLocations,
@@ -481,6 +482,7 @@ router.get(
         try {
             const pricing = await getPricing(conn);
             const vicLocations = getVicLocations();
+            const cityLabels = getCityLabels();
             res.render("index", {
                 templates,
                 vicLocations,
