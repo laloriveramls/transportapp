@@ -2450,3 +2450,145 @@ body.page-horarios .muted {
     body.page-horarios .row-form .btn-wine { width: 100%; border-radius: 14px; }
 }
 
+
+/* ---- horarios: precios y lugares ---- */
+body.page-horarios .pricing-desk,
+body.page-horarios .pricing-desk {
+    display: grid;
+    gap: 1rem;
+}
+
+body.page-horarios .pricing-panel,
+body.page-horarios .pricing-panel {
+    padding: 1rem 1.05rem 1.1rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--muted) 4%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-horarios .pricing-panel-head,
+body.page-horarios .pricing-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.55rem 1rem;
+    margin-bottom: 0.85rem;
+}
+
+body.page-horarios .pricing-panel-title,
+body.page-horarios .pricing-panel-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+body.page-horarios .pricing-panel-sub,
+body.page-horarios .pricing-panel-sub {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+body.page-horarios .pricing-updated {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+}
+
+body.page-horarios .loc-list {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.85rem;
+}
+
+body.page-horarios .loc-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem 1rem;
+    align-items: start;
+    padding: 0.85rem 0.9rem;
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-horarios .loc-row.is-disabled {
+    opacity: 0.72;
+}
+
+body.page-horarios .loc-code {
+    display: inline-flex;
+    margin-bottom: 0.45rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 10%, transparent);
+}
+
+body.page-horarios .loc-fields {
+    display: grid;
+    grid-template-columns: minmax(10rem, 1.4fr) repeat(2, minmax(7rem, 1fr)) minmax(4.5rem, 5.5rem);
+    gap: 0.55rem;
+}
+
+body.page-horarios .loc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    min-width: 0;
+    font-size: 0.72rem;
+    font-weight: 650;
+    color: var(--muted);
+}
+
+body.page-horarios .loc-field input {
+    min-height: 38px;
+    border: 0;
+    border-radius: 10px;
+    padding: 0.4rem 0.6rem;
+    background: color-mix(in srgb, var(--muted) 5%, var(--card));
+    color: var(--text);
+    font-weight: 650;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+body.page-horarios .loc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    body.page-horarios .loc-row {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-horarios .loc-fields {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    body.page-horarios .loc-actions {
+        justify-content: stretch;
+    }
+
+    body.page-horarios .loc-actions .btn-mini,
+    body.page-horarios .loc-actions .switch {
+        flex: 1 1 calc(50% - 0.4rem);
+    }
+}
+
+@media (max-width: 576px) {
+    body.page-horarios .loc-fields {
+        grid-template-columns: 1fr;
+    }
+}

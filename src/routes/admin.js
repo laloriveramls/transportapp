@@ -5,7 +5,17 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
-const {resolveVicLocationLabel, stopLabel} = require("../locations");
+const {
+    resolveVicLocationLabel,
+    stopLabel,
+    getVicLocations,
+    getCityLabels,
+    setCityLabels,
+    setVicLocationsCache,
+    hydrateLocationsFromDb,
+    normalizeLocationCode,
+    isReservedStopCode,
+} = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
 const {
     isPreviewMode,
@@ -15,6 +25,7 @@ const {
     previewHorariosRows,
     previewTemplateRows,
     previewPricing,
+    previewLocations,
 } = require("../dev/previewData");
 const crypto = require("crypto");
 
@@ -908,23 +919,45 @@ router.post("/api/templates/disable", requireAdmin, requireDb, async (req, res) 
 });
 
 /* -----------------------------
-   API: Precios
+   API: Precios + lugares
 ----------------------------- */
+function serializeLocationRow(loc) {
+    return {
+        code: loc.code,
+        label: loc.label,
+        price_to_victoria_mxn: Number(loc.price_to_victoria_mxn),
+        price_to_llera_mxn: Number(loc.price_to_llera_mxn),
+        sort_order: Number(loc.sort_order || 0),
+        active: Number(loc.active) === 0 ? 0 : 1,
+        price_mxn: Number(loc.price_to_victoria_mxn),
+    };
+}
+
 router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     try {
         if (isPreviewMode()) {
             const pricing = previewPricing();
+            const cities = getCityLabels();
             return res.json({
                 ok: true,
                 passenger_price_mxn: pricing.passenger_price_mxn,
                 package_price_mxn: pricing.package_price_mxn,
                 child_price_mxn: pricing.child_price_mxn,
                 updated_at: null,
+                city_labels: cities,
+                vic_label: cities.VIC,
+                lle_label: cities.LLE,
+                locations: getVicLocations({includeInactive: true}).map(serializeLocationRow),
             });
         }
 
         const [[row]] = await pool.query(
-            `SELECT passenger_price_mxn, package_price_mxn, child_price_mxn, updated_at
+            `SELECT passenger_price_mxn,
+                    package_price_mxn,
+                    child_price_mxn,
+                    vic_label,
+                    lle_label,
+                    updated_at
              FROM transporte_settings
              WHERE id = 1`
         );
@@ -935,12 +968,23 @@ router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
                 ? Number(row.child_price_mxn)
                 : passenger / 2;
 
+        if (row?.vic_label || row?.lle_label) {
+            setCityLabels({VIC: row.vic_label, LLE: row.lle_label});
+        }
+
+        const cities = getCityLabels();
+        const locations = getVicLocations({includeInactive: true}).map(serializeLocationRow);
+
         return res.json({
             ok: true,
             passenger_price_mxn: passenger,
             package_price_mxn: Number(row?.package_price_mxn ?? 120),
             child_price_mxn: child,
             updated_at: row?.updated_at || null,
+            city_labels: cities,
+            vic_label: cities.VIC,
+            lle_label: cities.LLE,
+            locations,
         });
     } catch (e) {
         console.error(e);
@@ -950,30 +994,133 @@ router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
 
 router.post("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     try {
+        if (isPreviewMode()) {
+            const cities = setCityLabels({
+                VIC: req.body.vic_label,
+                LLE: req.body.lle_label,
+            });
+            return res.json({ok: true, city_labels: cities});
+        }
+
         const passenger = Math.max(0, Number(req.body.passenger_price_mxn || 0));
         const pkg = Math.max(0, Number(req.body.package_price_mxn || 0));
         const child = Math.max(0, Number(req.body.child_price_mxn ?? passenger / 2));
+        const vicLabel = String(req.body.vic_label || "").trim() || "Ciudad Victoria";
+        const lleLabel = String(req.body.lle_label || "").trim() || "Llera";
 
         await pool.query(
             `
                 INSERT INTO transporte_settings (id, passenger_price_mxn, package_price_mxn, child_price_mxn,
-                                                 updated_at)
-                VALUES (1, ?, ?, ?, NOW()) ON DUPLICATE KEY
+                                                 vic_label, lle_label, updated_at)
+                VALUES (1, ?, ?, ?, ?, ?, NOW()) ON DUPLICATE KEY
                 UPDATE
                     passenger_price_mxn =
                 VALUES (passenger_price_mxn), package_price_mxn =
                 VALUES (package_price_mxn), child_price_mxn =
-                VALUES (child_price_mxn), updated_at = NOW()
+                VALUES (child_price_mxn), vic_label =
+                VALUES (vic_label), lle_label =
+                VALUES (lle_label), updated_at = NOW()
             `,
-            [passenger, pkg, child]
+            [passenger, pkg, child, vicLabel, lleLabel]
         );
 
+        setCityLabels({VIC: vicLabel, LLE: lleLabel});
+        return res.json({ok: true, city_labels: getCityLabels()});
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ok: false});
+    }
+});
+
+router.post("/api/locations/upsert", requireAdmin, requireDb, async (req, res) => {
+    try {
+        const code = normalizeLocationCode(req.body.code);
+        const label = String(req.body.label || "").trim();
+        const priceToVictoria = Math.max(0, Number(req.body.price_to_victoria_mxn || 0));
+        const priceToLlera = Math.max(0, Number(req.body.price_to_llera_mxn || 0));
+        const sortOrder = Math.max(0, Number(req.body.sort_order || 0));
+        const active = Number(req.body.active) === 0 ? 0 : 1;
+
+        if (!code || isReservedStopCode(code)) {
+            return res.status(400).json({ok: false, error: "Código inválido."});
+        }
+        if (!label) {
+            return res.status(400).json({ok: false, error: "El nombre es obligatorio."});
+        }
+
+        if (isPreviewMode()) {
+            const current = getVicLocations({includeInactive: true});
+            const next = current.filter((x) => x.code !== code);
+            next.push({
+                code,
+                label,
+                price_to_victoria_mxn: priceToVictoria,
+                price_to_llera_mxn: priceToLlera,
+                sort_order: sortOrder || (next.length + 1) * 10,
+                active,
+            });
+            setVicLocationsCache(next);
+            return res.json({ok: true, location: serializeLocationRow(resolveLocationOrNull(code))});
+        }
+
+        await pool.query(
+            `
+                INSERT INTO transporte_vic_locations
+                    (code, label, price_to_victoria_mxn, price_to_llera_mxn, sort_order, active)
+                VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY
+                UPDATE
+                    label =
+                VALUES (label), price_to_victoria_mxn =
+                VALUES (price_to_victoria_mxn), price_to_llera_mxn =
+                VALUES (price_to_llera_mxn), sort_order =
+                VALUES (sort_order), active =
+                VALUES (active)
+            `,
+            [code, label, priceToVictoria, priceToLlera, sortOrder, active]
+        );
+
+        await hydrateLocationsFromDb(pool);
+        const saved = getVicLocations({includeInactive: true}).find((x) => x.code === code);
+        return res.json({ok: true, location: saved ? serializeLocationRow(saved) : null});
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ok: false});
+    }
+});
+
+router.post("/api/locations/disable", requireAdmin, requireDb, async (req, res) => {
+    try {
+        const code = normalizeLocationCode(req.body.code);
+        if (!code || isReservedStopCode(code)) {
+            return res.status(400).json({ok: false, error: "Código inválido."});
+        }
+
+        if (isPreviewMode()) {
+            const next = getVicLocations({includeInactive: true}).map((loc) =>
+                loc.code === code ? {...loc, active: 0} : loc
+            );
+            setVicLocationsCache(next);
+            return res.json({ok: true});
+        }
+
+        await pool.query(
+            `UPDATE transporte_vic_locations
+             SET active = 0
+             WHERE code = ?
+             LIMIT 1`,
+            [code]
+        );
+        await hydrateLocationsFromDb(pool);
         return res.json({ok: true});
     } catch (e) {
         console.error(e);
         return res.status(500).json({ok: false});
     }
 });
+
+function resolveLocationOrNull(code) {
+    return getVicLocations({includeInactive: true}).find((x) => x.code === code) || null;
+}
 
 function genTicketCode() {
     // I generate a short, URL-safe-ish code for tickets (uppercase for readability).

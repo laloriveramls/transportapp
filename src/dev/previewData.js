@@ -1,6 +1,7 @@
 'use strict';
 
 const { hasDb, skipDbRequire } = require('../db');
+const { DEFAULT_VIC_LOCATIONS, getCityLabels } = require('../locations');
 
 const DEV_TEMPLATES = [
     { direction: 'VIC_TO_LLE', depart_time: '06:30:00' },
@@ -292,6 +293,15 @@ function previewTemplateRows(direction) {
         }));
 }
 
+
+function previewLocations() {
+    return DEFAULT_VIC_LOCATIONS.map((loc) => ({ ...loc }));
+}
+
+function previewCityLabels() {
+    return getCityLabels();
+}
+
 module.exports = {
     isPreviewMode,
     previewTemplates,
@@ -302,4 +312,6 @@ module.exports = {
     previewRecent,
     previewHorariosRows,
     previewTemplateRows,
+    previewLocations,
+    previewCityLabels,
 };

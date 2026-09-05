@@ -18,6 +18,9 @@
     <script id="vicLocationsJson" type="application/json"><%- JSON.stringify(
                 (typeof vicLocations !== "undefined" && vicLocations) ? vicLocations : []
         ) %></script>
+    <script id="cityLabelsJson" type="application/json"><%- JSON.stringify(
+                (typeof cityLabels !== "undefined" && cityLabels) ? cityLabels : { VIC: "Ciudad Victoria", LLE: "Llera" }
+        ) %></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -580,6 +583,16 @@
     }
 
     const VIC_LOCATIONS = parseVicLocationsFromServer();
+    const CITY_LABELS = (() => {
+        try {
+            const el = document.getElementById("cityLabelsJson");
+            const raw = el ? el.textContent : "{}";
+            const obj = JSON.parse(raw || "{}");
+            return obj && typeof obj === "object" ? obj : { VIC: "Ciudad Victoria", LLE: "Llera" };
+        } catch {
+            return { VIC: "Ciudad Victoria", LLE: "Llera" };
+        }
+    })();
 
     function isLlera(code) {
         return String(code || "").trim().toUpperCase() === "LLE";
@@ -610,8 +623,8 @@
 
     function stopLabel(code) {
         const key = String(code || "").trim().toUpperCase();
-        if (isLlera(key)) return "Llera";
-        if (isVicCenter(key)) return "Ciudad Victoria";
+        if (isLlera(key)) return CITY_LABELS.LLE || "Llera";
+        if (isVicCenter(key)) return CITY_LABELS.VIC || "Ciudad Victoria";
         const loc = VIC_LOCATIONS.find((item) => item.code === key);
         return loc ? loc.label : key;
     }
