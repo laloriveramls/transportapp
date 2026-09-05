@@ -2452,143 +2452,424 @@ body.page-horarios .muted {
 
 
 /* ---- horarios: precios y lugares ---- */
-body.page-horarios .pricing-desk,
 body.page-horarios .pricing-desk {
     display: grid;
     gap: 1rem;
 }
 
-body.page-horarios .pricing-panel,
 body.page-horarios .pricing-panel {
-    padding: 1rem 1.05rem 1.1rem;
+    padding: 1.05rem 1.1rem 1.2rem;
     border-radius: 16px;
-    background: color-mix(in srgb, var(--muted) 4%, var(--card));
+    background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-body.page-horarios .pricing-panel-head,
 body.page-horarios .pricing-panel-head {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.55rem 1rem;
-    margin-bottom: 0.85rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-horarios .pricing-panel-title,
 body.page-horarios .pricing-panel-title {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.42rem;
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 750;
     letter-spacing: -0.02em;
+    color: var(--text);
 }
 
-body.page-horarios .pricing-panel-sub,
+body.page-horarios .pricing-panel-title .ico {
+    color: var(--wine);
+}
+
 body.page-horarios .pricing-panel-sub {
-    margin: 0.25rem 0 0;
+    margin: 0.3rem 0 0;
     color: var(--muted);
     font-size: 0.84rem;
+    line-height: 1.4;
 }
 
 body.page-horarios .pricing-updated {
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-variant-numeric: tabular-nums;
 }
 
-body.page-horarios .loc-list {
+body.page-horarios .pricing-base-grid {
     display: grid;
-    gap: 0.65rem;
-    margin-top: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    align-items: end;
 }
 
-body.page-horarios .loc-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.75rem 1rem;
-    align-items: start;
-    padding: 0.85rem 0.9rem;
-    border-radius: 14px;
-    background: var(--card);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-body.page-horarios .loc-row.is-disabled {
-    opacity: 0.72;
-}
-
-body.page-horarios .loc-code {
-    display: inline-flex;
-    margin-bottom: 0.45rem;
-    padding: 0.15rem 0.45rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, transparent);
-}
-
-body.page-horarios .loc-fields {
-    display: grid;
-    grid-template-columns: minmax(10rem, 1.4fr) repeat(2, minmax(7rem, 1fr)) minmax(4.5rem, 5.5rem);
-    gap: 0.55rem;
-}
-
+body.page-horarios .pricing-field,
 body.page-horarios .loc-field {
     display: flex;
     flex-direction: column;
-    gap: 0.22rem;
+    gap: 0.34rem;
     min-width: 0;
-    font-size: 0.72rem;
+}
+
+body.page-horarios .pricing-field-label,
+body.page-horarios .loc-field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    font-size: 0.73rem;
     font-weight: 650;
     color: var(--muted);
 }
 
-body.page-horarios .loc-field input {
-    min-height: 38px;
+body.page-horarios .pricing-field-label .ico,
+body.page-horarios .loc-field-label .ico {
+    width: 14px;
+    height: 14px;
+    color: color-mix(in srgb, var(--wine) 80%, var(--muted));
+    flex: 0 0 auto;
+}
+
+body.page-horarios .pricing-field > input,
+body.page-horarios .loc-field > input {
+    min-height: 44px;
+    width: 100%;
     border: 0;
-    border-radius: 10px;
-    padding: 0.4rem 0.6rem;
+    border-radius: 12px;
+    padding: 0.55rem 0.75rem;
     background: color-mix(in srgb, var(--muted) 5%, var(--card));
     color: var(--text);
     font-weight: 650;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
 }
 
-body.page-horarios .loc-actions {
+body.page-horarios .price-input {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--muted) 5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+body.page-horarios .price-input-prefix {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.18rem;
+    min-width: 2.55rem;
+    padding: 0 0.15rem 0 0.5rem;
+    font-weight: 780;
+    font-size: 0.92rem;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 9%, transparent);
+}
+
+body.page-horarios .price-input-prefix .ico {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+}
+
+body.page-horarios .price-input input {
+    min-height: 44px;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    padding: 0.55rem 0.75rem 0.55rem 0.4rem;
+    background: transparent;
+    color: var(--text);
+    font-weight: 720;
+    font-variant-numeric: tabular-nums;
+    box-shadow: none;
+}
+
+body.page-horarios .price-input:focus-within,
+body.page-horarios .pricing-field > input:focus,
+body.page-horarios .loc-field > input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wine) 30%, transparent);
+}
+
+body.page-horarios .pricing-field-price .price-input,
+body.page-horarios .loc-field-price .price-input {
+    background: color-mix(in srgb, var(--wine) 3%, var(--card));
+}
+
+body.page-horarios .pricing-base-actions,
+body.page-horarios .loc-add-actions {
+    display: flex;
+    align-items: end;
+}
+
+body.page-horarios .pricing-base-actions .btn,
+body.page-horarios .loc-add-actions .btn {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+body.page-horarios .loc-add-card {
+    margin-bottom: 1rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--wine) 4.5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 16%, var(--border));
+}
+
+body.page-horarios .loc-add-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 720;
+    color: var(--text);
+}
+
+body.page-horarios .loc-add-grid {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.9fr) minmax(10rem, 1.4fr) repeat(2, minmax(7.5rem, 1fr)) minmax(4.5rem, 5.5rem) auto;
+    gap: 0.7rem;
+    align-items: end;
+}
+
+body.page-horarios .loc-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+body.page-horarios .pricing-empty {
+    padding: 1.1rem 0.35rem;
+    text-align: center;
+}
+
+body.page-horarios .loc-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.95rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--muted) 3.5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-horarios .loc-card.is-disabled {
+    opacity: 0.68;
+}
+
+body.page-horarios .loc-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem 0.8rem;
+}
+
+body.page-horarios .loc-card-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem 0.8rem;
+    min-width: 0;
+}
+
+body.page-horarios .loc-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.58rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.03em;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 10%, transparent);
+}
+
+body.page-horarios .loc-switch {
+    gap: 0.35rem;
+}
+
+body.page-horarios .loc-card-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
-    align-items: center;
-    justify-content: flex-end;
 }
 
-@media (max-width: 900px) {
-    body.page-horarios .loc-row {
-        grid-template-columns: 1fr;
+body.page-horarios .loc-card-actions .btn-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    min-height: 38px;
+    padding: 0.4rem 0.75rem;
+}
+
+body.page-horarios .loc-card-grid {
+    display: grid;
+    grid-template-columns: minmax(11rem, 1.45fr) repeat(2, minmax(8rem, 1fr)) minmax(5rem, 6rem);
+    gap: 0.7rem;
+}
+
+body.page-horarios .loc-field-order input {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Admin chrome: better mobile tabs/toolbar across /admin/* */
+body.admin-app .admin-shell > .home-tabs-head {
+    gap: 0.65rem;
+}
+
+body.admin-app .admin-seg {
+    flex-wrap: wrap;
+}
+
+body.page-horarios .price-input input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+body.page-horarios .price-input input[type="number"]::-webkit-outer-spin-button,
+body.page-horarios .price-input input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    body.page-horarios .pricing-base-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    body.page-horarios .loc-fields {
-        grid-template-columns: 1fr 1fr;
+    body.page-horarios .pricing-base-actions {
+        grid-column: 1 / -1;
     }
 
-    body.page-horarios .loc-actions {
+    body.page-horarios .loc-add-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-horarios .loc-add-actions {
+        grid-column: 1 / -1;
+    }
+
+    body.page-horarios .loc-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-horarios .loc-field-name {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    body.admin-app .admin-shell > .home-tabs-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.admin-app .home-tabs-tools {
+        width: 100%;
         justify-content: stretch;
     }
 
-    body.page-horarios .loc-actions .btn-mini,
-    body.page-horarios .loc-actions .switch {
+    body.admin-app .admin-seg {
+        width: 100%;
+    }
+
+    body.admin-app .admin-seg .nav-item {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    body.admin-app .admin-seg .nav-link {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.admin-app .admin-shell > .home-tabs-body {
+        padding: 0.7rem 0.75rem 0.95rem;
+    }
+
+    body.page-horarios .pricing-panel {
+        padding: 0.85rem 0.8rem 1rem;
+        border-radius: 14px;
+    }
+
+    body.page-horarios .pricing-panel-head {
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.7rem;
+    }
+
+    body.page-horarios .pricing-base-grid,
+    body.page-horarios .loc-add-grid,
+    body.page-horarios .loc-card-grid {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
+
+    body.page-horarios .pricing-base-actions,
+    body.page-horarios .loc-add-actions,
+    body.page-horarios .loc-field-name {
+        grid-column: auto;
+    }
+
+    body.page-horarios .loc-card {
+        padding: 0.8rem;
+    }
+
+    body.page-horarios .loc-card-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    body.page-horarios .loc-card-actions {
+        width: 100%;
+    }
+
+    body.page-horarios .loc-card-actions .btn-mini {
         flex: 1 1 calc(50% - 0.4rem);
     }
-}
 
-@media (max-width: 576px) {
-    body.page-horarios .loc-fields {
-        grid-template-columns: 1fr;
+    body.page-horarios .pricing-field > input,
+    body.page-horarios .loc-field > input,
+    body.page-horarios .price-input,
+    body.page-horarios .price-input input,
+    body.page-horarios .pricing-base-actions .btn,
+    body.page-horarios .loc-add-actions .btn {
+        min-height: 46px;
+        font-size: 1rem;
+    }
+
+    body.page-horarios .tabs {
+        gap: 0.35rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.15rem;
+    }
+
+    body.page-horarios .tabbtn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-size: 0.84rem;
+        padding: 0.55rem 0.8rem;
+    }
+
+    body.page-agenda .agenda-toolbar,
+    body.page-recent .recent-toolbar {
+        gap: 0.75rem;
+    }
+
+    body.page-trip .trip-head-top {
+        gap: 0.65rem;
     }
 }

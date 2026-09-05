@@ -773,39 +773,54 @@
         const vicLabel = escapeHtml(data.vic_label || data.city_labels?.VIC || "Ciudad Victoria");
         const lleLabel = escapeHtml(data.lle_label || data.city_labels?.LLE || "Llera");
 
+        const moneyIco = ico("dollar-sign", 14);
+        const mapIco = ico("map", 14);
+        const userIco = ico("user", 14);
+        const childIco = ico("users", 14);
+        const pkgIco = ico("package", 14);
+        const listIco = ico("list", 14);
+
         const locationRows = locations.map((loc) => {
             const active = Number(loc.active) !== 0;
             const code = escapeHtml(loc.code || "");
             return `
-            <article class="loc-row ${active ? "" : "is-disabled"}" data-code="${code}">
-                <div class="loc-main">
-                    <div class="loc-code mono">${code}</div>
-                    <div class="loc-fields">
-                        <label class="loc-field">
-                            <span>Nombre / parada</span>
-                            <input class="l-label" type="text" maxlength="120" value="${escapeHtml(loc.label || "")}">
-                        </label>
-                        <label class="loc-field">
-                            <span>Precio → Victoria</span>
-                            <input class="l-price-vic" type="number" min="0" step="0.01" value="${Number(loc.price_to_victoria_mxn || 0).toFixed(2)}">
-                        </label>
-                        <label class="loc-field">
-                            <span>Precio → Llera</span>
-                            <input class="l-price-lle" type="number" min="0" step="0.01" value="${Number(loc.price_to_llera_mxn || 0).toFixed(2)}">
-                        </label>
-                        <label class="loc-field loc-field-order">
-                            <span>Orden</span>
-                            <input class="l-order" type="number" min="0" step="1" value="${Number(loc.sort_order || 0)}">
+            <article class="loc-card ${active ? "" : "is-disabled"}" data-code="${code}">
+                <div class="loc-card-head">
+                    <div class="loc-card-id">
+                        <span class="loc-code mono">${code}</span>
+                        <label class="switch loc-switch" title="Visible en reserva">
+                            <input class="l-active" type="checkbox" ${active ? "checked" : ""}>
+                            <span>Activa</span>
                         </label>
                     </div>
+                    <div class="loc-card-actions">
+                        <button type="button" class="btn-mini l-save">${ico("check", 14)} Guardar</button>
+                        <button type="button" class="btn-mini l-disable" ${active ? "" : "disabled"}>${ico("ban", 14)} Desactivar</button>
+                    </div>
                 </div>
-                <div class="loc-actions">
-                    <label class="switch" title="Visible en reserva">
-                        <span>Activa</span>
-                        <input class="l-active" type="checkbox" ${active ? "checked" : ""}>
+                <div class="loc-card-grid">
+                    <label class="loc-field loc-field-name">
+                        <span class="loc-field-label">${mapIco} Nombre / parada</span>
+                        <input class="l-label" type="text" maxlength="120" value="${escapeHtml(loc.label || "")}">
                     </label>
-                    <button type="button" class="btn-mini l-save">Guardar</button>
-                    <button type="button" class="btn-mini l-disable" ${active ? "" : "disabled"}>Desactivar</button>
+                    <label class="loc-field loc-field-price">
+                        <span class="loc-field-label">${moneyIco} Precio → Victoria</span>
+                        <span class="price-input">
+                            <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                            <input class="l-price-vic" type="number" min="0" step="0.01" inputmode="decimal" value="${Number(loc.price_to_victoria_mxn || 0).toFixed(2)}">
+                        </span>
+                    </label>
+                    <label class="loc-field loc-field-price">
+                        <span class="loc-field-label">${moneyIco} Precio → Llera</span>
+                        <span class="price-input">
+                            <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                            <input class="l-price-lle" type="number" min="0" step="0.01" inputmode="decimal" value="${Number(loc.price_to_llera_mxn || 0).toFixed(2)}">
+                        </span>
+                    </label>
+                    <label class="loc-field loc-field-order">
+                        <span class="loc-field-label">${listIco} Orden</span>
+                        <input class="l-order" type="number" min="0" step="1" inputmode="numeric" value="${Number(loc.sort_order || 0)}">
+                    </label>
                 </div>
             </article>`;
         }).join("");
@@ -815,70 +830,93 @@
                 <section class="pricing-panel">
                     <div class="pricing-panel-head">
                         <div>
-                            <h3 class="pricing-panel-title">${ico("dollar-sign", 16)} Tarifas base</h3>
+                            <h3 class="pricing-panel-title">${moneyIco} Tarifas base</h3>
                             <p class="pricing-panel-sub">Ciudad ↔ ciudad (pasaje, niño y paquetería).</p>
                         </div>
                         <span class="pricing-updated">Actualizado: ${escapeHtml(updated)}</span>
                     </div>
-                    <div class="row-form pricing-base-form">
-                        <div class="field">
-                            <div class="mini">Pasajero adulto (MXN)</div>
-                            <input id="pPassenger" type="number" step="0.01" min="0" value="${passenger}">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Niño 6-10 (MXN)</div>
-                            <input id="pChild" type="number" step="0.01" min="0" value="${child}">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Paquetería (MXN)</div>
-                            <input id="pPackage" type="number" step="0.01" min="0" value="${pkg}">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Nombre origen Victoria</div>
+
+                    <div class="pricing-base-grid">
+                        <label class="pricing-field pricing-field-price">
+                            <span class="pricing-field-label">${userIco} Pasajero adulto</span>
+                            <span class="price-input">
+                                <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                                <input id="pPassenger" type="number" step="0.01" min="0" inputmode="decimal" value="${passenger}">
+                            </span>
+                        </label>
+                        <label class="pricing-field pricing-field-price">
+                            <span class="pricing-field-label">${childIco} Niño 6-10</span>
+                            <span class="price-input">
+                                <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                                <input id="pChild" type="number" step="0.01" min="0" inputmode="decimal" value="${child}">
+                            </span>
+                        </label>
+                        <label class="pricing-field pricing-field-price">
+                            <span class="pricing-field-label">${pkgIco} Paquetería</span>
+                            <span class="price-input">
+                                <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                                <input id="pPackage" type="number" step="0.01" min="0" inputmode="decimal" value="${pkg}">
+                            </span>
+                        </label>
+                        <label class="pricing-field">
+                            <span class="pricing-field-label">${mapIco} Nombre origen Victoria</span>
                             <input id="pVicLabel" type="text" maxlength="80" value="${vicLabel}">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Nombre destino Llera</div>
+                        </label>
+                        <label class="pricing-field">
+                            <span class="pricing-field-label">${mapIco} Nombre destino Llera</span>
                             <input id="pLleLabel" type="text" maxlength="80" value="${lleLabel}">
+                        </label>
+                        <div class="pricing-base-actions">
+                            <button class="btn btn-wine" type="button" id="savePricingBtn">${ico("check", 16)} Guardar tarifas</button>
                         </div>
-                        <button class="btn btn-wine" type="button" id="savePricingBtn">Guardar tarifas</button>
                     </div>
                 </section>
 
                 <section class="pricing-panel">
                     <div class="pricing-panel-head">
                         <div>
-                            <h3 class="pricing-panel-title">${ico("map", 16)} Paradas y ejidos</h3>
+                            <h3 class="pricing-panel-title">${mapIco} Paradas y ejidos</h3>
                             <p class="pricing-panel-sub">Origen/destino en reserva. Niño = mitad de la tarifa del ejido.</p>
                         </div>
                     </div>
 
-                    <div class="row-form loc-add-form" id="addLocationForm">
-                        <div class="field">
-                            <div class="mini">Código</div>
-                            <input id="addLocCode" type="text" maxlength="40" placeholder="EJ_NUEVO" autocomplete="off">
+                    <div class="loc-add-card" id="addLocationForm">
+                        <div class="loc-add-title">${ico("plus", 14)} Nueva parada</div>
+                        <div class="loc-add-grid">
+                            <label class="loc-field">
+                                <span class="loc-field-label">Código</span>
+                                <input id="addLocCode" type="text" maxlength="40" placeholder="EJ_NUEVO" autocomplete="off">
+                            </label>
+                            <label class="loc-field loc-field-name">
+                                <span class="loc-field-label">${mapIco} Nombre</span>
+                                <input id="addLocLabel" type="text" maxlength="120" placeholder="Ej. Nueva parada">
+                            </label>
+                            <label class="loc-field loc-field-price">
+                                <span class="loc-field-label">${moneyIco} Precio → Victoria</span>
+                                <span class="price-input">
+                                    <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                                    <input id="addLocVic" type="number" min="0" step="0.01" inputmode="decimal" value="60">
+                                </span>
+                            </label>
+                            <label class="loc-field loc-field-price">
+                                <span class="loc-field-label">${moneyIco} Precio → Llera</span>
+                                <span class="price-input">
+                                    <span class="price-input-prefix" aria-hidden="true">${moneyIco}<span>$</span></span>
+                                    <input id="addLocLle" type="number" min="0" step="0.01" inputmode="decimal" value="60">
+                                </span>
+                            </label>
+                            <label class="loc-field loc-field-order">
+                                <span class="loc-field-label">${listIco} Orden</span>
+                                <input id="addLocOrder" type="number" min="0" step="1" inputmode="numeric" value="${(locations.length + 1) * 10}">
+                            </label>
+                            <div class="loc-add-actions">
+                                <button class="btn btn-wine" type="button" id="addLocBtn">${ico("plus", 14)} Agregar parada</button>
+                            </div>
                         </div>
-                        <div class="field">
-                            <div class="mini">Nombre</div>
-                            <input id="addLocLabel" type="text" maxlength="120" placeholder="Ej. Nueva parada">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Precio → Victoria</div>
-                            <input id="addLocVic" type="number" min="0" step="0.01" value="60">
-                        </div>
-                        <div class="field">
-                            <div class="mini">Precio → Llera</div>
-                            <input id="addLocLle" type="number" min="0" step="0.01" value="60">
-                        </div>
-                        <div class="field loc-field-order">
-                            <div class="mini">Orden</div>
-                            <input id="addLocOrder" type="number" min="0" step="1" value="${(locations.length + 1) * 10}">
-                        </div>
-                        <button class="btn btn-wine" type="button" id="addLocBtn">${ico("plus", 14)} Agregar parada</button>
                     </div>
 
                     <div class="loc-list">
-                        ${locationRows || `<div class="muted">Aún no hay paradas configuradas.</div>`}
+                        ${locationRows || `<div class="pricing-empty muted">Aún no hay paradas configuradas.</div>`}
                     </div>
                 </section>
             </div>
@@ -937,7 +975,7 @@
             load();
         });
 
-        listEl.querySelectorAll(".loc-row[data-code]").forEach((row) => {
+        listEl.querySelectorAll(".loc-card[data-code]").forEach((row) => {
             const code = row.dataset.code;
             const saveBtn = row.querySelector(".l-save");
             const disableBtn = row.querySelector(".l-disable");
