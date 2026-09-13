@@ -58,7 +58,8 @@ const siteVerification = (typeof GOOGLE_SITE_VERIFICATION !== "undefined" && GOO
 <meta name="robots" content="<%= robots %>"/>
 <meta name="googlebot" content="<%= robots %>"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
-<meta name="format-detection" content="telephone=yes"/>
+<!-- telephone=no: evita que iOS convierta la CLABE (u otros dígitos) en enlace tel: parcial -->
+<meta name="format-detection" content="telephone=no, email=no, address=no"/>
 <meta name="color-scheme" content="light dark"/>
 <meta name="theme-color" content="#6a0f1f"/>
 <meta name="author" content="<%= seo.siteName %>"/>
