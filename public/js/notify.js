@@ -6,10 +6,17 @@
         return window.bootstrap && typeof window.bootstrap.Toast === "function";
     }
 
+    function restartProgress(toastEl) {
+        // Re-trigger CSS progress animation when the same toast is shown again.
+        toastEl.classList.remove("show");
+        // Force reflow so removing + re-adding .show restarts toastIn / progress.
+        void toastEl.offsetWidth;
+    }
+
     window.notify = function notify(message, opts = {}) {
         const msg = String(message || "").trim() || "Listo";
         const variant = (opts.variant || "dark"); // dark | success | danger | warning | info
-        const delay = Number.isFinite(opts.delay) ? opts.delay : 1800;
+        const delay = Number.isFinite(opts.delay) ? opts.delay : 2200;
 
         const toastEl = document.getElementById("appToast");
         const msgEl = document.getElementById("appToastMsg");
@@ -21,11 +28,9 @@
             return;
         }
 
-        // variante + duración para la progress bar
         toastEl.setAttribute("data-variant", variant);
         toastEl.style.setProperty("--toast-duration", `${delay}ms`);
 
-        // título + icono por variante (puedes cambiarlos)
         const titles = {
             dark: "Listo",
             success: "Listo",
@@ -45,21 +50,24 @@
         if (iconEl) {
             const iconName = icons[variant] || "info";
             iconEl.innerHTML = (window.Icons && typeof window.Icons.svg === "function")
-                ? window.Icons.svg(iconName, { size: 18, className: "ico-toast" })
+                ? window.Icons.svg(iconName, { size: 18, className: "ico ico-toast" })
                 : "";
         }
         msgEl.textContent = msg;
 
+        restartProgress(toastEl);
+
         if (!hasBootstrapToast()) {
-            // fallback sin bootstrap.js
             toastEl.classList.add("show");
-            setTimeout(() => toastEl.classList.remove("show"), delay);
+            window.clearTimeout(toastEl._hideTimer);
+            toastEl._hideTimer = window.setTimeout(() => toastEl.classList.remove("show"), delay);
             return;
         }
 
         const t = window.bootstrap.Toast.getOrCreateInstance(toastEl, {
             delay,
-            autohide: true
+            autohide: true,
+            animation: false // CSS owns enter animation
         });
         t.show();
     };

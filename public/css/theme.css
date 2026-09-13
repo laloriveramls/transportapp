@@ -221,28 +221,53 @@ a:active {
 .toast-stack,
 #toastHost,
 .toast-host,
-.toast-container,
+.app-toast-host,
+.toast-container.app-toast-host,
 .toast-container.position-fixed,
 .toast-container.p-3{
     position: fixed;
     top: 16px;
     right: 16px;
+    left: auto;
+    bottom: auto;
+    width: max-content;
+    max-width: min(420px, calc(100vw - 32px));
+    height: auto;
+    max-height: none;
+    padding: 0;
+    margin: 0;
     display: grid;
     gap: 10px;
+    align-content: start;
+    justify-items: stretch;
     z-index: 9999;
+    pointer-events: none;
+}
+
+.app-toast-host > .toast,
+.toast-stack > .toast,
+#toastHost > .toast,
+.toast-host > .toast{
+    pointer-events: auto;
 }
 
 @media (max-width:576px){
     .toast-stack,
     #toastHost,
     .toast-host,
-    .toast-container,
+    .app-toast-host,
+    .toast-container.app-toast-host,
     .toast-container.position-fixed,
-    .toast-container.p-3{
-        left: 12px;
-        right: 12px;
-        top: auto;
-        bottom: calc(12px + env(safe-area-inset-bottom));
+    .toast-container.p-3,
+    .toast-container.top-0,
+    .toast-container.end-0{
+        left: 12px !important;
+        right: 12px !important;
+        top: auto !important;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        width: auto;
+        max-width: none;
+        align-content: end;
     }
 }
 
@@ -250,18 +275,49 @@ a:active {
    Toast
    ========================= */
 .toast.app-toast{
-    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--card) 82%, transparent);
-    color: var(--text);
-    box-shadow: 0 14px 40px rgba(2,6,23,.22);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    overflow: hidden;
+    --toast-accent: var(--wine);
+    --toast-accent-soft: color-mix(in srgb, var(--wine) 14%, transparent);
+    --toast-accent-ink: var(--wine);
 
-    /* ✅ FIX: no min-width en móvil */
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    color: var(--text);
+    box-shadow:
+        0 1px 0 color-mix(in srgb, #fff 60%, transparent) inset,
+        0 14px 34px rgba(2, 6, 23, .16),
+        0 4px 12px rgba(2, 6, 23, .08);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    overflow: hidden;
+    isolation: isolate;
+
     min-width: 0;
+    width: min(360px, 100%);
     max-width: 420px;
+    height: auto !important;
+    align-self: start;
+}
+
+.toast.app-toast::before{
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 999px;
+    background: var(--toast-accent);
+    z-index: 1;
+}
+
+html[data-theme="dark"] .toast.app-toast{
+    background: color-mix(in srgb, var(--card) 88%, #000 12%);
+    box-shadow:
+        0 1px 0 color-mix(in srgb, #fff 6%, transparent) inset,
+        0 18px 40px rgba(0, 0, 0, .48),
+        0 4px 14px rgba(0, 0, 0, .3);
 }
 
 @media (max-width:576px){
@@ -269,87 +325,192 @@ a:active {
         width: 100%;
         max-width: none;
         border-radius: 18px;
+        align-self: end;
     }
 }
 
+.toast.app-toast.show{
+    animation: toastIn .34s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes toastIn{
+    from{ opacity: 0; transform: translateY(-10px) scale(.98); }
+    to{ opacity: 1; transform: none; }
+}
+
+@media (max-width:576px){
+    @keyframes toastIn{
+        from{ opacity: 0; transform: translateY(16px) scale(.98); }
+        to{ opacity: 1; transform: none; }
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .toast.app-toast.show{ animation: none; }
+}
+
 .app-toast-inner{
-    display:flex;
-    align-items:flex-start;
+    display: flex;
+    align-items: center;
     gap: 12px;
-    padding: 12px 12px 10px 12px;
+    padding: 14px 14px 14px 18px;
 }
 
 .app-toast-icon{
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size: 18px;
-    background: color-mix(in srgb, var(--chip-bg) 70%, transparent);
-    border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--toast-accent-soft);
+    color: var(--toast-accent-ink);
+    border: 1px solid color-mix(in srgb, var(--toast-accent) 24%, transparent);
     flex: 0 0 auto;
+    box-shadow: 0 1px 0 color-mix(in srgb, #fff 45%, transparent) inset;
 }
 
 .app-toast-icon .ico-toast {
     display: block;
     color: inherit;
+    stroke-width: 2.35;
 }
 
 .app-toast-content{ flex: 1 1 auto; min-width: 0; }
-.app-toast-title{ font-weight: 750; letter-spacing: -.01em; line-height: 1.1; margin-top: 2px; }
+.app-toast-title{
+    font-weight: 780;
+    font-size: .94rem;
+    letter-spacing: -.02em;
+    line-height: 1.2;
+    color: var(--text);
+}
 .app-toast-body{
-    margin-top: 4px;
-    color: var(--muted);
-    font-size: .93rem;
-    line-height: 1.25;
+    margin-top: 2px;
+    color: color-mix(in srgb, var(--text) 62%, var(--muted));
+    font-size: .875rem;
+    font-weight: 500;
+    line-height: 1.35;
     word-break: break-word;
 }
 
 @media (max-width:576px){
-    .app-toast-body{ font-size: .95rem; }
+    .app-toast-inner{ padding: 14px 14px 14px 18px; gap: 12px; }
+    .app-toast-title{ font-size: .97rem; }
+    .app-toast-body{ font-size: .9rem; }
 }
 
-.app-toast-close{ opacity: .75; margin-top: 2px; }
-.app-toast-close:hover{ opacity: 1; }
+.app-toast-close{
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    opacity: .7;
+    transition: background .15s ease, color .15s ease, opacity .15s ease;
+}
+.app-toast-close:hover{
+    opacity: 1;
+    color: var(--text);
+    background: color-mix(in srgb, var(--muted) 14%, transparent);
+}
+.app-toast-close:focus-visible{
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
+}
+.app-toast-close .ico-toast-close{
+    display: block;
+}
 
 /* Progress bar */
 .app-toast-progress{
     height: 3px;
-    width: 100%;
+    margin: 0 12px 10px;
+    width: auto;
+    border-radius: 999px;
     background: color-mix(in srgb, var(--border) 70%, transparent);
     position: relative;
+    overflow: hidden;
 }
 .app-toast-progress::before{
     content:"";
     position:absolute;
-    inset:0;
+    inset: 0;
     width: 100%;
     transform-origin: left;
     transform: scaleX(0);
-    background: color-mix(in srgb, var(--wine) 80%, white);
+    background: linear-gradient(90deg, var(--toast-accent), color-mix(in srgb, var(--toast-accent) 70%, #fff));
+    border-radius: inherit;
+}
+
+.toast.app-toast.show .app-toast-progress::before{
     animation: toastProgress var(--toast-duration, 1800ms) linear forwards;
-    border-radius: 999px;
 }
 
 @keyframes toastProgress{ to { transform: scaleX(1); } }
 
+@media (prefers-reduced-motion: reduce){
+    .toast.app-toast.show .app-toast-progress::before{ animation: none; transform: scaleX(1); }
+}
+
 /* Variants via data-variant */
-.toast.app-toast[data-variant="dark"] .app-toast-icon{ background: color-mix(in srgb, var(--chip-bg) 70%, transparent); color: var(--wine); }
-.toast.app-toast[data-variant="dark"] .app-toast-progress::before{ background: color-mix(in srgb, var(--wine) 80%, white); }
+.toast.app-toast[data-variant="dark"]{
+    --toast-accent: var(--wine);
+    --toast-accent-soft: color-mix(in srgb, var(--wine) 12%, transparent);
+    --toast-accent-ink: var(--wine);
+    background: color-mix(in srgb, var(--card) 94%, var(--wine) 4%);
+}
 
-.toast.app-toast[data-variant="success"] .app-toast-icon{ background: rgba(16,216,143,.14); color: rgb(16, 160, 110); }
-.toast.app-toast[data-variant="success"] .app-toast-progress::before{ background: rgba(16,216,143,.95); }
+.toast.app-toast[data-variant="success"]{
+    --toast-accent: #12a974;
+    --toast-accent-soft: rgba(18, 169, 116, .12);
+    --toast-accent-ink: #0f8f63;
+    background: color-mix(in srgb, var(--card) 94%, #12a974 5%);
+}
 
-.toast.app-toast[data-variant="warning"] .app-toast-icon{ background: rgba(241,220,33,.16); color: #c9a100; }
-.toast.app-toast[data-variant="warning"] .app-toast-progress::before{ background: rgba(241,220,33,.95); }
+.toast.app-toast[data-variant="warning"]{
+    --toast-accent: #d4a017;
+    --toast-accent-soft: rgba(212, 160, 23, .14);
+    --toast-accent-ink: #a67c00;
+    background: color-mix(in srgb, var(--card) 94%, #d4a017 5%);
+}
 
-.toast.app-toast[data-variant="danger"] .app-toast-icon{ background: rgba(252,127,139,.16); color: #e04555; }
-.toast.app-toast[data-variant="danger"] .app-toast-progress::before{ background: rgba(252,127,139,.95); }
+.toast.app-toast[data-variant="danger"]{
+    --toast-accent: #e04555;
+    --toast-accent-soft: rgba(224, 69, 85, .12);
+    --toast-accent-ink: #c93746;
+    background: color-mix(in srgb, var(--card) 94%, #e04555 5%);
+}
 
-.toast.app-toast[data-variant="info"] .app-toast-icon{ background: rgba(84,156,255,.14); color: #549cff; }
-.toast.app-toast[data-variant="info"] .app-toast-progress::before{ background: rgba(84,156,255,.95); }
+.toast.app-toast[data-variant="info"]{
+    --toast-accent: #3b82f6;
+    --toast-accent-soft: rgba(59, 130, 246, .12);
+    --toast-accent-ink: #2563eb;
+    background: color-mix(in srgb, var(--card) 94%, #3b82f6 5%);
+}
+
+html[data-theme="dark"] .toast.app-toast[data-variant="dark"]{
+    background: color-mix(in srgb, var(--card) 86%, var(--wine) 8%);
+}
+html[data-theme="dark"] .toast.app-toast[data-variant="success"]{
+    background: color-mix(in srgb, var(--card) 86%, #12a974 8%);
+}
+html[data-theme="dark"] .toast.app-toast[data-variant="warning"]{
+    background: color-mix(in srgb, var(--card) 86%, #d4a017 8%);
+}
+html[data-theme="dark"] .toast.app-toast[data-variant="danger"]{
+    background: color-mix(in srgb, var(--card) 86%, #e04555 8%);
+}
+html[data-theme="dark"] .toast.app-toast[data-variant="info"]{
+    background: color-mix(in srgb, var(--card) 86%, #3b82f6 8%);
+}
 
 /* ===== Bootstrap toast compatibility (si usas .toast-body y .btn-close) ===== */
 .toast .toast-body{
