@@ -2564,19 +2564,13 @@ body.page-horarios .price-input-prefix {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.18rem;
-    min-width: 2.55rem;
-    padding: 0 0.15rem 0 0.5rem;
+    min-width: 2.35rem;
+    padding: 0 0.15rem 0 0.55rem;
     font-weight: 780;
-    font-size: 0.92rem;
+    font-size: 0.95rem;
+    line-height: 1;
     color: var(--wine);
     background: color-mix(in srgb, var(--wine) 9%, transparent);
-}
-
-body.page-horarios .price-input-prefix .ico {
-    width: 14px;
-    height: 14px;
-    flex: 0 0 auto;
 }
 
 body.page-horarios .price-input input {
