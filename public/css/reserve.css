@@ -941,8 +941,8 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
     white-space: nowrap;
     display: inline-block;
     max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    /* overflow-x:auto breaks long-press text selection on iOS (stops before last digits). */
+    overflow: visible;
     color: var(--text);
     text-decoration: none !important;
     border-bottom: 0 !important;
@@ -955,6 +955,45 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
     background-repeat: no-repeat;
     background-size: 100% 2px;
     padding-bottom: 2px;
+    /* One tap / long-press selects the whole CLABE (not just up to "6032"). */
+    -webkit-user-select: all;
+    user-select: all;
+    cursor: text;
+    -webkit-touch-callout: default;
+}
+
+/*
+ * iOS Safari may wrap part of the CLABE in a tel: <a> (data detectors).
+ * That creates a second underline that stops before the last digits.
+ */
+#bankClabe a,
+#bankClabe a[href^="tel"],
+.page-reserve .transfer-grid a[x-apple-data-detectors],
+.page-reserve .transfer-value a {
+    color: inherit !important;
+    text-decoration: none !important;
+    border-bottom: none !important;
+    background: none !important;
+    pointer-events: none;
+    -webkit-text-fill-color: currentColor;
+}
+
+/* Give the CLABE row full width so the number fits without clipping. */
+.page-reserve .transfer-item:has(#bankClabe) {
+    min-width: 0;
+}
+
+@media (max-width: 768px) {
+    .page-reserve .transfer-item:has(#bankClabe) {
+        grid-column: 1 / -1;
+    }
+
+    .page-reserve .transfer-value.mono,
+    #bankClabe {
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        max-width: none;
+    }
 }
 
 .page-reserve .transfer-actions {
