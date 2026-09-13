@@ -221,28 +221,53 @@ a:active {
 .toast-stack,
 #toastHost,
 .toast-host,
-.toast-container,
+.app-toast-host,
+.toast-container.app-toast-host,
 .toast-container.position-fixed,
 .toast-container.p-3{
     position: fixed;
     top: 16px;
     right: 16px;
+    left: auto;
+    bottom: auto;
+    width: max-content;
+    max-width: min(420px, calc(100vw - 32px));
+    height: auto;
+    max-height: none;
+    padding: 0;
+    margin: 0;
     display: grid;
     gap: 10px;
+    align-content: start;
+    justify-items: stretch;
     z-index: 9999;
+    pointer-events: none;
+}
+
+.app-toast-host > .toast,
+.toast-stack > .toast,
+#toastHost > .toast,
+.toast-host > .toast{
+    pointer-events: auto;
 }
 
 @media (max-width:576px){
     .toast-stack,
     #toastHost,
     .toast-host,
-    .toast-container,
+    .app-toast-host,
+    .toast-container.app-toast-host,
     .toast-container.position-fixed,
-    .toast-container.p-3{
-        left: 12px;
-        right: 12px;
-        top: auto;
-        bottom: calc(12px + env(safe-area-inset-bottom));
+    .toast-container.p-3,
+    .toast-container.top-0,
+    .toast-container.end-0{
+        left: 12px !important;
+        right: 12px !important;
+        top: auto !important;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        width: auto;
+        max-width: none;
+        align-content: end;
     }
 }
 
@@ -261,7 +286,10 @@ a:active {
 
     /* ✅ FIX: no min-width en móvil */
     min-width: 0;
+    width: min(350px, 100%);
     max-width: 420px;
+    height: auto !important;
+    align-self: start;
 }
 
 @media (max-width:576px){
@@ -269,6 +297,7 @@ a:active {
         width: 100%;
         max-width: none;
         border-radius: 18px;
+        align-self: end;
     }
 }
 

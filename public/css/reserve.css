@@ -4,8 +4,15 @@ body.page-reserve {
     font-family: var(--home-font, "Outfit", system-ui, sans-serif);
 }
 
+/* Empuja un poco bajo el navbar en desktop; en móvil el host va abajo. */
 body.page-reserve .app-toast-host {
-    margin-top: 8px;
+    top: 24px;
+}
+
+@media (max-width: 576px) {
+    body.page-reserve .app-toast-host {
+        top: auto !important;
+    }
 }
 
 .page-reserve .reserve-main {

@@ -1,5 +1,6 @@
 <!-- partials/toast.ejs -->
-<div class="toast-container position-fixed top-0 end-0 p-3 app-toast-host" style="z-index:1080;">
+<!-- Position owned by theme.css (.app-toast-host) — avoid Bootstrap top-0/end-0 (they use !important and break mobile). -->
+<div class="toast-container app-toast-host" aria-live="polite" aria-relevant="additions text">
     <div id="appToast"
          class="toast app-toast"
          role="alert"
