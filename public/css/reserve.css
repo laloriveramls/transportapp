@@ -934,25 +934,27 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
     word-break: break-word;
 }
 
-.page-reserve .transfer-value.mono {
+.page-reserve .transfer-value.mono,
+#bankClabe {
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
-    /* One line + border-bottom so the underline covers the full CLABE (incl. last 2 digits). */
     white-space: nowrap;
     display: inline-block;
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     color: var(--text);
-    text-decoration: none;
-    border-bottom: 2px solid color-mix(in srgb, var(--wine) 78%, transparent);
-    padding-bottom: 1px;
-    -webkit-text-decoration-skip-ink: none;
-    text-decoration-skip-ink: none;
-}
-
-#bankClabe.transfer-value.mono {
-    border-bottom-color: color-mix(in srgb, var(--wine) 85%, transparent);
+    text-decoration: none !important;
+    border-bottom: 0 !important;
+    /* Full-width underline (covers every digit, including the final "16"). */
+    background-image: linear-gradient(
+        color-mix(in srgb, var(--wine) 90%, transparent),
+        color-mix(in srgb, var(--wine) 90%, transparent)
+    );
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 2px;
+    padding-bottom: 2px;
 }
 
 .page-reserve .transfer-actions {
