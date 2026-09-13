@@ -19,9 +19,11 @@
             </div>
 
             <button type="button"
-                    class="btn-close app-toast-close"
+                    class="app-toast-close"
                     data-bs-dismiss="toast"
-                    aria-label="Cerrar"></button>
+                    aria-label="Cerrar">
+                <%- include('icon', { name: 'x', size: 16, icoClass: 'ico-toast-close' }) %>
+            </button>
         </div>
 
         <div class="app-toast-progress" aria-hidden="true"></div>
