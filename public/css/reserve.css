@@ -935,31 +935,110 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
 }
 
 .page-reserve .transfer-value.mono,
-#bankClabe {
+#bankClabe,
+.page-reserve .transfer-clabe {
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
     white-space: nowrap;
     display: inline-block;
     max-width: 100%;
-    /* overflow-x:auto breaks long-press text selection on iOS (stops before last digits). */
     overflow: visible;
     color: var(--text);
     text-decoration: none !important;
+    border: 0;
     border-bottom: 0 !important;
-    /* Full-width underline (covers every digit, including the final "16"). */
-    background-image: linear-gradient(
-        color-mix(in srgb, var(--wine) 90%, transparent),
-        color-mix(in srgb, var(--wine) 90%, transparent)
-    );
-    background-position: 0 100%;
-    background-repeat: no-repeat;
-    background-size: 100% 2px;
-    padding-bottom: 2px;
-    /* One tap / long-press selects the whole CLABE (not just up to "6032"). */
-    -webkit-user-select: all;
-    user-select: all;
-    cursor: text;
-    -webkit-touch-callout: default;
+    background-color: transparent;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    padding: 0 0 3px;
+    margin: 0;
+    position: relative;
+    isolation: isolate;
+    -webkit-user-select: text;
+    user-select: text;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+/* Single full-width underline — always covers through the final "16". */
+#bankClabe::after,
+.page-reserve .transfer-clabe::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--wine) 90%, transparent);
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+/* Long-press highlight over the whole CLABE (incl. 16). */
+#bankClabe::before,
+.page-reserve .transfer-clabe::before {
+    content: "";
+    position: absolute;
+    inset: -6px -8px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--wine) 0%, transparent);
+    z-index: -1;
+    pointer-events: none;
+    transition: background 0.15s ease;
+}
+
+#bankClabe.is-pressing,
+.page-reserve .transfer-clabe.is-pressing {
+    transform: scale(1.03);
+}
+
+#bankClabe.is-pressing::before,
+.page-reserve .transfer-clabe.is-pressing::before {
+    background: color-mix(in srgb, var(--wine) 14%, transparent);
+    animation: clabeLongPress 0.5s linear forwards;
+}
+
+#bankClabe.is-pressing::after,
+.page-reserve .transfer-clabe.is-pressing::after {
+    height: 3px;
+    animation: clabeUnderlineFill 0.5s linear forwards;
+}
+
+#bankClabe.is-copied::before,
+.page-reserve .transfer-clabe.is-copied::before {
+    background: color-mix(in srgb, #12a974 16%, transparent);
+}
+
+#bankClabe.is-copied::after,
+.page-reserve .transfer-clabe.is-copied::after {
+    background: #12a974;
+}
+
+@keyframes clabeUnderlineFill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+@keyframes clabeLongPress {
+    from { background: color-mix(in srgb, var(--wine) 6%, transparent); }
+    to { background: color-mix(in srgb, var(--wine) 18%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #bankClabe.is-pressing,
+    .page-reserve .transfer-clabe.is-pressing {
+        transform: none;
+    }
+    #bankClabe.is-pressing::after,
+    .page-reserve .transfer-clabe.is-pressing::after,
+    #bankClabe.is-pressing::before,
+    .page-reserve .transfer-clabe.is-pressing::before {
+        animation: none;
+    }
 }
 
 /*
@@ -989,7 +1068,8 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
     }
 
     .page-reserve .transfer-value.mono,
-    #bankClabe {
+    #bankClabe,
+    .page-reserve .transfer-clabe {
         font-size: 0.9rem;
         letter-spacing: 0.01em;
         max-width: none;

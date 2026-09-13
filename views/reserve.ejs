@@ -358,7 +358,14 @@
                                     </div>
                                     <div class="transfer-item">
                                         <span class="transfer-key">CLABE</span>
-                                        <span class="transfer-value mono" id="bankClabe" spellcheck="false" translate="no" x-apple-data-detectors="false">0128 1000 4925 6032 16</span>
+                                        <button type="button"
+                                                class="transfer-value mono transfer-clabe"
+                                                id="bankClabe"
+                                                spellcheck="false"
+                                                translate="no"
+                                                x-apple-data-detectors="false"
+                                                aria-label="CLABE 0128 1000 4925 6032 16. Mantén pulsado para copiar completa."
+                                                title="Mantén pulsado para copiar">0128 1000 4925 6032 16</button>
                                     </div>
                                 </div>
                                 <div class="transfer-actions">
@@ -1242,29 +1249,115 @@
         ].join("\n");
     }
 
-    function selectWholeClabe() {
-        if (!bankClabeEl) return;
-        // Unwrap iOS data-detector tel: links so selection covers the full number.
-        bankClabeEl.querySelectorAll("a").forEach((a) => {
-            a.replaceWith(document.createTextNode(a.textContent || ""));
-        });
-        bankClabeEl.normalize();
-        const range = document.createRange();
-        range.selectNodeContents(bankClabeEl);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
+    function getClabeDigits() {
+        return String(bankClabeEl?.textContent || "").replace(/\s+/g, "").replace(/-/g, "");
     }
 
-    bankClabeEl?.addEventListener("click", selectWholeClabe);
-    bankClabeEl?.addEventListener("focus", selectWholeClabe);
+    async function copyClabeFull(opts = {}) {
+        const digits = getClabeDigits();
+        if (!digits) throw new Error("empty");
+        await navigator.clipboard.writeText(digits);
+        if (bankClabeEl) {
+            bankClabeEl.classList.remove("is-pressing");
+            bankClabeEl.classList.add("is-copied");
+            window.setTimeout(() => bankClabeEl.classList.remove("is-copied"), 900);
+        }
+        if (opts.notify !== false) {
+            notify(opts.message || "CLABE copiada completa", { variant: "success" });
+        }
+        try {
+            if (navigator.vibrate) navigator.vibrate(12);
+        } catch (_) { /* ignore */ }
+        return digits;
+    }
+
+    function bindClabeLongPress() {
+        if (!bankClabeEl) return;
+
+        const HOLD_MS = 480;
+        let pressTimer = null;
+        let pressStartX = 0;
+        let pressStartY = 0;
+        let didLongPress = false;
+
+        const clearPress = () => {
+            if (pressTimer) {
+                window.clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+            bankClabeEl.classList.remove("is-pressing");
+        };
+
+        const startPress = (clientX, clientY) => {
+            didLongPress = false;
+            pressStartX = clientX;
+            pressStartY = clientY;
+            bankClabeEl.classList.add("is-pressing");
+            pressTimer = window.setTimeout(async () => {
+                pressTimer = null;
+                didLongPress = true;
+                try {
+                    await copyClabeFull({ message: "CLABE copiada (0128…16)" });
+                } catch {
+                    // Fallback: select full text so the user can copy manually.
+                    const range = document.createRange();
+                    range.selectNodeContents(bankClabeEl);
+                    const sel = window.getSelection();
+                    sel?.removeAllRanges();
+                    sel?.addRange(range);
+                    notify("Selecciona y copia la CLABE completa", { variant: "info", delay: 2500 });
+                }
+            }, HOLD_MS);
+        };
+
+        bankClabeEl.addEventListener("pointerdown", (e) => {
+            if (e.pointerType === "mouse" && e.button !== 0) return;
+            startPress(e.clientX, e.clientY);
+        });
+
+        bankClabeEl.addEventListener("pointermove", (e) => {
+            if (!pressTimer) return;
+            const dx = Math.abs(e.clientX - pressStartX);
+            const dy = Math.abs(e.clientY - pressStartY);
+            if (dx > 12 || dy > 12) clearPress();
+        });
+
+        const endPress = (e) => {
+            const wasHolding = Boolean(pressTimer);
+            clearPress();
+            if (didLongPress) {
+                e.preventDefault();
+                return;
+            }
+            // Short tap: still copy the full CLABE (incl. 16), not a partial selection.
+            if (wasHolding || e.type === "click") {
+                // handled by click listener below when it was a short tap
+            }
+        };
+
+        bankClabeEl.addEventListener("pointerup", endPress);
+        bankClabeEl.addEventListener("pointercancel", clearPress);
+        bankClabeEl.addEventListener("pointerleave", clearPress);
+
+        bankClabeEl.addEventListener("click", async (e) => {
+            if (didLongPress) {
+                e.preventDefault();
+                didLongPress = false;
+                return;
+            }
+            try {
+                await copyClabeFull();
+            } catch {
+                notify("No pude copiar la CLABE. Usa el botón Copiar CLABE.", { variant: "danger", delay: 2500 });
+            }
+        });
+    }
+
+    bindClabeLongPress();
 
     copyClabeBtn?.addEventListener("click", async () => {
         try {
-            const rawCard = bankClabeEl?.textContent?.trim() || "";
-            const cardNoSpaces = rawCard.replace(/\s+/g, "").replace(/-/g, "");
-            await navigator.clipboard.writeText(cardNoSpaces);
-            notify("CLABE copiada", {variant: "success"});
+            await copyClabeFull();
         } catch {
             notify("No pude copiar la CLABE. Selecciónala manualmente.", {variant: "danger", delay: 2500});
         }
