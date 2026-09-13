@@ -1242,6 +1242,23 @@
         ].join("\n");
     }
 
+    function selectWholeClabe() {
+        if (!bankClabeEl) return;
+        // Unwrap iOS data-detector tel: links so selection covers the full number.
+        bankClabeEl.querySelectorAll("a").forEach((a) => {
+            a.replaceWith(document.createTextNode(a.textContent || ""));
+        });
+        bankClabeEl.normalize();
+        const range = document.createRange();
+        range.selectNodeContents(bankClabeEl);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+    }
+
+    bankClabeEl?.addEventListener("click", selectWholeClabe);
+    bankClabeEl?.addEventListener("focus", selectWholeClabe);
+
     copyClabeBtn?.addEventListener("click", async () => {
         try {
             const rawCard = bankClabeEl?.textContent?.trim() || "";
