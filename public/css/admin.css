@@ -736,7 +736,9 @@ body.page-agenda .agenda-trip-cap-sep {
 
 body.page-agenda .agenda-seats {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 5px;
+    max-width: 11rem;
 }
 
 body.page-agenda .agenda-seat {
@@ -1078,8 +1080,10 @@ body.page-trip .trip-stat.is-quiet .trip-stat-value {
 
 body.page-trip .trip-seats {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 5px;
     margin-top: 0.35rem;
+    max-width: 11rem;
 }
 
 body.page-trip .trip-seat {
@@ -2244,8 +2248,10 @@ body.page-horarios .slot-row.is-full .slot-meter > span {
 
 body.page-horarios .slot-seats {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 4px;
     margin-top: 0.38rem;
+    max-width: 10rem;
 }
 
 body.page-horarios .slot-seat {

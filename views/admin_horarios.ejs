@@ -172,7 +172,7 @@
     }
 
     function occupancyMeta(used, cap){
-        const c = Math.min(6, Math.max(0, Number(cap) || 0));
+        const c = Math.min(14, Math.max(0, Number(cap) || 0));
         const u = Math.min(c, Number(used) || 0);
         const remaining = Math.max(0, c - u);
         const pct = c > 0 ? Math.min(100, Math.round((u / c) * 100)) : 0;
@@ -285,7 +285,7 @@
                 id: templateId,
                 direction: rowDir,
                 depart_time: depart,
-                capacity_passengers: capacity || 6,
+                capacity_passengers: capacity || 14,
                 active: active ? 1 : 0
             });
 
@@ -583,7 +583,7 @@
                         </label>
                         <label class="tpl-field">
                             <span>Capacidad</span>
-                            <input class="t-cap" type="number" min="0" max="6" value="${Number(t.capacity_passengers || 0)}">
+                            <input class="t-cap" type="number" min="0" max="14" value="${Number(t.capacity_passengers || 0)}">
                         </label>
                     </div>
                 </div>
@@ -637,8 +637,8 @@
                     <input id="addTime" type="time" value="06:30">
                 </div>
                 <div class="field">
-                    <div class="mini">Cap (0–6)</div>
-                    <input id="addCap" type="number" min="0" max="6" value="6">
+                    <div class="mini">Cap (0–14)</div>
+                    <input id="addCap" type="number" min="0" max="14" value="14">
                 </div>
                 <div class="field">
                     <div class="mini">Activo</div>

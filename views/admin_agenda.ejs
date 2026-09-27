@@ -169,7 +169,7 @@
                     <% group.items.forEach((t) => {
                         const used = Number(t.used_seats || 0);
                         const capRaw = Number(t.capacity_passengers || 0);
-                        const cap = Math.min(6, Math.max(0, capRaw));
+                        const cap = Math.min(14, Math.max(0, capRaw));
                         const remaining = Math.max(0, cap - used);
                         const packs = Number(t.packages || 0);
                         const hhmm = String(t.depart_time || '').slice(0, 5);

@@ -165,6 +165,41 @@ async function ensureVicLocationColumn(pool) {
     return {applied: true, column: 'vic_location'};
 }
 
+async function ensureCapacity14(pool) {
+    if (!(await tableExists(pool, 'transporte_departure_templates'))) {
+        return {applied: false, column: 'capacity_passengers'};
+    }
+
+    const [cols] = await pool.query(
+        "SHOW COLUMNS FROM transporte_departure_templates LIKE 'capacity_passengers'"
+    );
+    const currentDefault = cols[0] ? String(cols[0].Default) : '';
+
+    // One-shot: once the column default is 14, do not rewrite admin-chosen capacities again.
+    if (currentDefault === '14') {
+        return {applied: false, column: 'capacity_passengers'};
+    }
+
+    await pool.query(`
+        ALTER TABLE transporte_departure_templates
+            MODIFY COLUMN capacity_passengers INT(11) NOT NULL DEFAULT 14
+    `);
+
+    const [result] = await pool.query(`
+        UPDATE transporte_departure_templates
+        SET capacity_passengers = 14
+        WHERE capacity_passengers IN (6, 7)
+    `);
+
+    const changed = Number(result?.affectedRows || 0);
+    return {
+        applied: true,
+        column: changed > 0
+            ? `capacity_passengers(${changed})`
+            : 'capacity_passengers',
+    };
+}
+
 async function ensureSchema(pool) {
     const results = [];
     results.push(await ensureVicLocationColumn(pool));
@@ -172,6 +207,7 @@ async function ensureSchema(pool) {
     results.push(await ensureChildPriceColumn(pool));
     results.push(await ensureCityLabelColumns(pool));
     results.push(await ensureVicLocationsTable(pool));
+    results.push(await ensureCapacity14(pool));
 
     try {
         await hydrateLocationsFromDb(pool);
@@ -189,5 +225,6 @@ module.exports = {
     ensureChildPriceColumn,
     ensureCityLabelColumns,
     ensureVicLocationsTable,
+    ensureCapacity14,
     DEFAULT_CITY_LABELS,
 };

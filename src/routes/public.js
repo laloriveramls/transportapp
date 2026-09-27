@@ -47,7 +47,7 @@ const stripe = process.env.STRIPE_SECRET_KEY
    ========================= */
 
 // I keep a strict cap (also clamped by template capacity in DB).
-const MAX_CAP = 6;
+const MAX_CAP = 14;
 
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
