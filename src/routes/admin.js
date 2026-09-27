@@ -31,7 +31,7 @@ const crypto = require("crypto");
 
 const router = express.Router();
 
-const MAX_CAP = 6; // I keep system capacity clamped to 6.
+const MAX_CAP = 14; // System capacity ceiling (per-template capacity is configurable in admin).
 
 /* -----------------------------
    Middleware

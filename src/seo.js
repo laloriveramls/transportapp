@@ -12,7 +12,7 @@ const WHATSAPP_URL = "https://wa.me/528344756376";
 
 const DEFAULT_TITLE = "Transporte Victoria ↔ Llera | Pasaje y paquetería";
 const DEFAULT_DESCRIPTION =
-    "Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios, 6 asientos y paradas en ejidos.";
+    "Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios, hasta 14 asientos y paradas en ejidos.";
 
 const OG_IMAGE_PATH = "/assets/logo-wide.png";
 const OG_IMAGE_WIDTH = 960;
@@ -110,7 +110,7 @@ function homeFaqs(pricing, vicLocations) {
         {
             question: "¿Cuántos pasajeros caben y cómo se cobra el niño?",
             answer:
-                "Máximo 6 personas por salida. El adulto paga tarifa completa y el niño de 6 a 10 años paga la tarifa infantil. Al reservar elige cuántos asientos de cada tipo.",
+                "Máximo 14 personas por salida. El adulto paga tarifa completa y el niño de 6 a 10 años paga la tarifa infantil. Al reservar elige cuántos asientos de cada tipo.",
         },
     ];
 }
