@@ -1031,6 +1031,9 @@ router.post(
             phone: String(req.body.phone || "").trim(),
             payment_method: String(req.body.payment_method || "TAQUILLA").trim().toUpperCase(),
             transfer_ref: String(req.body.transfer_ref || "").trim(),
+            passenger_names: [].concat(req.body.passenger_names || [])
+                .map((s) => String(s).trim().slice(0, 120))
+                .filter(Boolean),
         };
 
         const conn = await pool.getConnection();
@@ -1045,7 +1048,7 @@ router.post(
                 return res.status(status).render("special", specialViewData(req, ev, days, {error, values}));
             };
 
-            const {trip_date, seats, customer_name, phone, payment_method} = values;
+            const {trip_date, seats, customer_name, phone, payment_method, passenger_names: passengerNames} = values;
             const transfer_ref = values.transfer_ref || null;
 
             if (!specialEvents.isValidISODate(trip_date) || trip_date < ev.start_date || trip_date > ev.end_date) {
@@ -1060,6 +1063,9 @@ router.post(
             }
             if (!customer_name) return fail(400, "Completa el nombre de contacto.");
             if (phone.replace(/\D/g, "").length < 10) return fail(400, "Ingresa un teléfono válido (10 dígitos).");
+            if (passengerNames.length > 0 && passengerNames.length !== seats) {
+                return fail(400, `Si capturas nombres, deben ser ${seats} (uno por pasajero).`);
+            }
             if (!ALLOWED_PAYMENT_METHODS.has(payment_method)) return fail(400, "Método de pago no válido.");
 
             const unitPrice = moneyMXN(ev.price_mxn);
@@ -1106,6 +1112,14 @@ router.post(
                     amount_total_mxn: total,
                     trip_date,
                 });
+
+                if (passengerNames.length) {
+                    await conn.query(
+                        `INSERT INTO transporte_reservation_passengers(reservation_id, passenger_name)
+                         VALUES ${passengerNames.map(() => "(?, ?)").join(",")}`,
+                        passengerNames.flatMap((n) => [created.reservationId, n])
+                    );
+                }
 
                 await conn.commit();
             } catch (e) {

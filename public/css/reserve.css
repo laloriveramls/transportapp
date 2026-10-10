@@ -823,6 +823,7 @@ html[data-theme="dark"] .page-reserve .wizard-step.is-done:not(.is-active) {
     display: flex;
     align-items: center;
     gap: 0.55rem;
+    padding-left: 0;
 }
 
 .page-reserve .names-toggle .form-check-input {
