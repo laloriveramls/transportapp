@@ -204,8 +204,12 @@
         const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
         document.querySelectorAll("[data-icon-picker]").forEach((picker) => {
+            const value = picker.querySelector("[data-icon-value]");
+            const trigger = picker.querySelector("[data-icon-trigger]");
+            const pop = picker.querySelector("[data-icon-pop]");
             const input = picker.querySelector("[data-icon-input]");
             const preview = picker.querySelector("[data-icon-preview]");
+            const nameEl = picker.querySelector("[data-icon-name]");
             const help = picker.querySelector("[data-icon-help]");
             const opts = Array.from(picker.querySelectorAll("[data-icon]"));
             const helpHtml = help.innerHTML;
@@ -213,14 +217,18 @@
             let seq = 0;
 
             function markChoice(name) {
-                let matched = false;
                 opts.forEach((b) => {
                     const on = b.dataset.icon === name;
-                    matched = matched || on;
                     b.classList.toggle("is-on", on);
                     b.setAttribute("aria-checked", String(on));
                 });
-                preview.classList.toggle("is-on", !matched);
+            }
+
+            function apply(name, svg, label) {
+                value.value = name;
+                preview.innerHTML = svg;
+                nameEl.textContent = label || name;
+                markChoice(name);
             }
 
             function setValidity(ok) {
@@ -230,32 +238,69 @@
                 else help.textContent = "Ese icono no existe.";
             }
 
+            function open() {
+                pop.hidden = false;
+                trigger.setAttribute("aria-expanded", "true");
+                (pop.querySelector(".esp-icon-opt.is-on") || opts[0] || input).focus();
+            }
+
+            function close(refocus) {
+                if (pop.hidden) return;
+                pop.hidden = true;
+                trigger.setAttribute("aria-expanded", "false");
+                if (refocus) trigger.focus();
+            }
+
             async function lookup(name) {
                 const mine = ++seq;
+                if (!name) return setValidity(true);
                 if (!NAME_RE.test(name)) return setValidity(false);
                 try {
                     const res = await fetch(`/admin/api/icon?name=${encodeURIComponent(name)}`, {headers: {Accept: "application/json"}});
                     const data = await res.json();
                     if (mine !== seq) return;
-                    if (data.ok) preview.innerHTML = data.svg;
+                    if (data.ok) apply(data.name, data.svg);
                     setValidity(!!data.ok);
                 } catch {
                     if (mine === seq) setValidity(true);
                 }
             }
 
+            trigger.addEventListener("click", () => (pop.hidden ? open() : close(false)));
+
             opts.forEach((b) => b.addEventListener("click", () => {
-                input.value = b.dataset.icon;
-                preview.innerHTML = b.querySelector("svg").outerHTML;
-                markChoice(b.dataset.icon);
+                apply(b.dataset.icon, b.querySelector("svg").outerHTML, b.dataset.label);
+                input.value = "";
                 setValidity(true);
+                close(true);
             }));
 
             input.addEventListener("input", () => {
-                const name = input.value.trim().toLowerCase();
-                markChoice(name);
                 clearTimeout(timer);
-                timer = setTimeout(() => lookup(name), 250);
+                timer = setTimeout(() => lookup(input.value.trim().toLowerCase()), 250);
+            });
+
+            input.addEventListener("keydown", (e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                if (input.validity.valid) close(true);
+            });
+
+            input.addEventListener("invalid", (e) => {
+                e.preventDefault();
+                open();
+                input.focus();
+            });
+
+            pop.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    e.preventDefault();
+                    close(true);
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!picker.contains(e.target)) close(false);
             });
         });
     })();

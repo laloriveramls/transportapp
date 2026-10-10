@@ -31,26 +31,33 @@ const isCustomIcon = !choices.some((c) => c.name === currentIcon);
             </div>
             <div class="field esp-span-all esp-icon-field" data-icon-picker>
                 <span class="mini" id="<%= uid %>-icon-lbl">Icono <span class="esp-hint">(pestaña del inicio, agenda y ticket)</span></span>
-                <div class="esp-icon-grid" role="radiogroup" aria-labelledby="<%= uid %>-icon-lbl">
-                    <% choices.forEach((c) => { const on = c.name === currentIcon; %>
-                    <button type="button" class="esp-icon-opt <%= on ? 'is-on' : '' %>" role="radio" aria-checked="<%= on %>"
-                            data-icon="<%= c.name %>" title="<%= c.label %> (<%= c.name %>)" aria-label="<%= c.label %>">
-                        <%- include('icon', { name: c.name, size: 20 }) %>
-                        <span class="esp-icon-opt-lbl"><%= c.label %></span>
-                    </button>
-                    <% }) %>
-                </div>
-                <div class="esp-icon-custom">
-                    <span class="esp-icon-preview <%= isCustomIcon ? 'is-on' : '' %>" data-icon-preview aria-hidden="true">
-                        <%- include('icon', { name: currentIcon, size: 20 }) %>
+                <input type="hidden" name="icon" value="<%= currentIcon %>" data-icon-value>
+                <button type="button" class="esp-icon-trigger" data-icon-trigger aria-haspopup="dialog" aria-expanded="false"
+                        aria-controls="<%= uid %>-icon-pop" aria-labelledby="<%= uid %>-icon-lbl <%= uid %>-icon-name">
+                    <span class="esp-icon-trigger-ico" data-icon-preview aria-hidden="true">
+                        <%- include('icon', { name: currentIcon, size: 18 }) %>
                     </span>
+                    <span class="esp-icon-trigger-name" id="<%= uid %>-icon-name" data-icon-name>
+                        <%= (choices.find((c) => c.name === currentIcon) || {}).label || currentIcon %>
+                    </span>
+                    <%- include('icon', { name: 'chevron-down', size: 14, icoClass: 'esp-icon-trigger-chev' }) %>
+                </button>
+                <div class="esp-icon-pop" id="<%= uid %>-icon-pop" role="dialog" aria-label="Elegir icono" data-icon-pop hidden>
+                    <div class="esp-icon-grid" role="radiogroup" aria-label="Iconos sugeridos">
+                        <% choices.forEach((c) => { const on = c.name === currentIcon; %>
+                        <button type="button" class="esp-icon-opt <%= on ? 'is-on' : '' %>" role="radio" aria-checked="<%= on %>"
+                                data-icon="<%= c.name %>" data-label="<%= c.label %>" title="<%= c.label %>" aria-label="<%= c.label %>">
+                            <%- include('icon', { name: c.name, size: 18 }) %>
+                        </button>
+                        <% }) %>
+                    </div>
                     <div class="esp-icon-input">
                         <label class="mini" for="<%= uid %>-icon">Otro icono (nombre)</label>
-                        <input id="<%= uid %>-icon" name="icon" maxlength="40" required value="<%= currentIcon %>"
+                        <input id="<%= uid %>-icon" maxlength="40" value="<%= isCustomIcon ? currentIcon : '' %>"
                                pattern="[a-z0-9]+(-[a-z0-9]+)*" autocapitalize="off" spellcheck="false"
                                placeholder="ej. music, trophy, tent" data-icon-input aria-describedby="<%= uid %>-icon-help">
                         <small class="esp-hint" id="<%= uid %>-icon-help" data-icon-help>
-                            Elige uno de la lista o escribe su nombre en minúsculas con guiones.
+                            Escribe su nombre en minúsculas con guiones.
                         </small>
                     </div>
                 </div>

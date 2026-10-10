@@ -1246,7 +1246,7 @@ router.get("/especiales", requireAdmin, requireDb, async (req, res) => {
 router.get("/api/icon", requireAdmin, (req, res) => {
     const name = specialEvents.normalizeIconName(req.query.name);
     if (!name) return res.json({ok: false});
-    return res.json({ok: true, name, svg: renderIcon(name, {size: 20})});
+    return res.json({ok: true, name, svg: renderIcon(name, {size: 18})});
 });
 
 router.post("/especiales", requireAdmin, requireDb, async (req, res) => {
