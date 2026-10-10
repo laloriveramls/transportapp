@@ -111,9 +111,11 @@ async function tgCall(token, method, payload, timeoutMs = 7000) {
 let warnedMissingConfig = false;
 
 function warnMissingConfig(key) {
-    if (warnedMissingConfig) return;
-    warnedMissingConfig = true;
-    console.warn(`Telegram notifications disabled: ${key} is not set in this environment.`);
+    if (!warnedMissingConfig) {
+        warnedMissingConfig = true;
+        console.warn(`Telegram notifications disabled: ${key} is not set in this environment.`);
+    }
+    return {ok: false, status: 0, description: `${key} is not set`};
 }
 
 async function sendTelegram(textOrOptions) {
@@ -127,7 +129,7 @@ async function sendTelegram(textOrOptions) {
     if (!chatId) return warnMissingConfig("TG_CHAT_ID");
 
     const text = String(opts.text || "").trim();
-    if (!text) return;
+    if (!text) return {ok: false, status: 0, description: "empty text"};
 
     // I default to HTML so I can format nicely.
     const parseMode = opts.parse_mode || "HTML";
@@ -177,7 +179,7 @@ async function sendTelegram(textOrOptions) {
                     raw: rMig.raw,
                     migrated_to_chat_id: chatId,
                 });
-                return;
+                return {ok: false, status: rMig.status, description: rMig.data?.description || null};
             }
 
             // If rate-limited, I wait and retry once.
@@ -202,7 +204,7 @@ async function sendTelegram(textOrOptions) {
                         raw: r3.raw,
                         migrated_to_chat_id: chatId,
                     });
-                    return;
+                    return {ok: false, status: r3.status, description: r3.data?.description || null};
                 }
 
                 console.error("Telegram sendMessage failed (after retry):", {
@@ -210,7 +212,21 @@ async function sendTelegram(textOrOptions) {
                     description: r2.data?.description,
                     raw: r2.raw,
                 });
-                return;
+                return {ok: false, status: r2.status, description: r2.data?.description || null};
+            }
+
+            // Bad HTML or a rejected button URL fails the whole message, so I resend it as plain text.
+            if (r1.status === 400 && (payload.reply_markup || payload.parse_mode)) {
+                const plain = {...payload, text: stripHtml(payload.text)};
+                delete plain.reply_markup;
+                delete plain.parse_mode;
+                const rPlain = await tgCall(token, "sendMessage", plain);
+                console.error("Telegram sendMessage rejected, resent as plain text:", {
+                    description: r1.data?.description,
+                    plain_ok: rPlain.ok,
+                    plain_description: rPlain.data?.description,
+                });
+                if (rPlain.ok) continue;
             }
 
             console.error("Telegram sendMessage failed:", {
@@ -218,12 +234,24 @@ async function sendTelegram(textOrOptions) {
                 description: r1.data?.description,
                 raw: r1.raw,
             });
-            return;
+            return {ok: false, status: r1.status, description: r1.data?.description || null};
         } catch (e) {
-            console.error("Telegram notify failed:", e?.name === "AbortError" ? "timeout" : (e?.message || e));
-            return;
+            const reason = e?.name === "AbortError" ? "timeout" : (e?.message || String(e));
+            console.error("Telegram notify failed:", reason);
+            return {ok: false, status: 0, description: reason};
         }
     }
+    return {ok: true};
+}
+
+function stripHtml(s) {
+    return String(s ?? "")
+        .replace(/<[^>]+>/g, "")
+        .replaceAll("&lt;", "<")
+        .replaceAll("&gt;", ">")
+        .replaceAll("&quot;", '"')
+        .replaceAll("&#39;", "'")
+        .replaceAll("&amp;", "&");
 }
 
 module.exports = {sendTelegram, escapeHtml, buildInlineKeyboard};

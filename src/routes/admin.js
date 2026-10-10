@@ -19,6 +19,8 @@ const {
 const {requireDb} = require("../middleware/requireDb");
 const specialEvents = require("../specialEvents");
 const {renderIcon} = require("../icons");
+const {sendTelegram} = require("../notifications/telegram");
+const {loadReservationSnapshot, newReservationMessage} = require("../notifications/reservationMessages");
 const {
     isPreviewMode,
     previewAgenda,
@@ -1613,8 +1615,7 @@ router.post("/reservation/:id/refund-done", requireAdmin, requireDb, async (req,
     }
 });
 
-router.get("/tg-webhook", async (req, res) => {
-    // I protect this route with my own admin auth (session / basic / whatever you use).
+router.get("/tg-webhook", requireAdmin, async (req, res) => {
     const token = (process.env.TG_BOT_TOKEN || "").trim();
     const baseUrl = (process.env.BASE_URL || "").replace(/\/+$/, "");
     const secret = (process.env.TG_WEBHOOK_SECRET || "").trim();
@@ -1634,7 +1635,34 @@ router.get("/tg-webhook", async (req, res) => {
     });
 
     const data = await r.json().catch(() => ({}));
-    res.json({ok: r.ok, data, payload});
+    res.json({ok: r.ok, data, url: payload.url, secret: !!secret});
+});
+
+router.get("/tg-test", requireAdmin, requireDb, async (req, res) => {
+    const report = {
+        config: {
+            TG_BOT_TOKEN: !!String(process.env.TG_BOT_TOKEN || "").trim(),
+            TG_CHAT_ID: !!String(process.env.TG_CHAT_ID || "").trim(),
+            BASE_URL: String(process.env.BASE_URL || "").trim() || null,
+        },
+    };
+    try {
+        const [[last]] = await pool.query("SELECT id FROM transporte_reservations ORDER BY id DESC LIMIT 1");
+        report.reservationId = last?.id || null;
+        let text = "🧪 <b>Prueba de notificación</b>\n<i>Sin reservas para mostrar.</i>";
+        let buttons = [];
+        if (last) {
+            const snapshot = await loadReservationSnapshot(pool, last.id);
+            const msg = newReservationMessage(snapshot);
+            text = `🧪 <b>Prueba de notificación (ignorar)</b>\n\n${msg.text}`;
+            buttons = msg.buttons;
+        }
+        report.snapshot = "ok";
+        report.send = await sendTelegram({text, buttons});
+    } catch (e) {
+        report.error = e?.message || String(e);
+    }
+    res.json(report);
 });
 
 
