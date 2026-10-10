@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "npm run dev (nodemon)",
+            "name": "npm run dev (watch)",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],
             "cwd": "${workspaceFolder}",
@@ -26,7 +26,7 @@
     "compounds": [
         {
             "name": "Dev + Chrome",
-            "configurations": ["npm run dev (nodemon)", "Launch Chrome against localhost"],
+            "configurations": ["npm run dev (watch)", "Launch Chrome against localhost"],
             "stopAll": true
         }
     ]

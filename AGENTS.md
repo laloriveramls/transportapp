@@ -12,7 +12,7 @@ Runtime temp files may appear in `tmp/`.
 ## Build, Test, and Development Commands
 
 - `npm install`: install dependencies.
-- `npm run dev`: start local development server with `nodemon` (auto-reload).
+- `npm run dev`: start local development server with `node --watch` (auto-reload).
 - `npm start`: run production-like server with Node.
 - `npm run icons`: rebuild `public/js/icons.js` from Lucide for client-side rendering.
 
