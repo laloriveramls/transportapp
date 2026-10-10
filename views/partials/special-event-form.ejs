@@ -1,0 +1,82 @@
+<%
+const f = ev || {
+    title: '', tab_label: '', slug: '', description: '', direction: 'LLE_TO_VIC',
+    depart_time: '17:00', return_time: '', start_date: '', end_date: '',
+    capacity_passengers: 14, price_mxn: 0, active: true,
+};
+const uid = ev ? `ev${ev.id}` : 'evNew';
+%>
+<form method="POST" action="<%= action %>" class="esp-form">
+    <fieldset class="esp-fieldset">
+        <legend class="esp-legend-title">Publicación</legend>
+        <div class="esp-grid">
+            <div class="field esp-span-2">
+                <label class="mini" for="<%= uid %>-title">Nombre</label>
+                <input id="<%= uid %>-title" name="title" maxlength="120" required value="<%= f.title %>" placeholder="Feria Tamaulipas 2026">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-tab">Pestaña en inicio</label>
+                <input id="<%= uid %>-tab" name="tab_label" maxlength="40" value="<%= f.tab_label %>" placeholder="Feria 2026">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-slug">URL (/especial/…)</label>
+                <input id="<%= uid %>-slug" name="slug" maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" value="<%= f.slug %>" placeholder="feria-tamaulipas-2026" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="field esp-span-all">
+                <label class="mini" for="<%= uid %>-desc">Descripción</label>
+                <textarea id="<%= uid %>-desc" name="description" maxlength="255" rows="2"><%= f.description %></textarea>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="esp-fieldset">
+        <legend class="esp-legend-title">Viaje</legend>
+        <div class="esp-grid">
+            <div class="field">
+                <label class="mini" for="<%= uid %>-dir">Dirección</label>
+                <select id="<%= uid %>-dir" name="direction">
+                    <option value="LLE_TO_VIC" <%= f.direction === 'LLE_TO_VIC' ? 'selected' : '' %>>Llera → Victoria</option>
+                    <option value="VIC_TO_LLE" <%= f.direction === 'VIC_TO_LLE' ? 'selected' : '' %>>Victoria → Llera</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-dep">Salida</label>
+                <input id="<%= uid %>-dep" name="depart_time" type="time" required value="<%= f.depart_time %>">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-ret">Regreso <span class="esp-hint">(vacío = sencillo)</span></label>
+                <input id="<%= uid %>-ret" name="return_time" type="time" value="<%= f.return_time %>">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-from">Desde</label>
+                <input id="<%= uid %>-from" name="start_date" type="date" required value="<%= f.start_date %>">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-to">Hasta</label>
+                <input id="<%= uid %>-to" name="end_date" type="date" required value="<%= f.end_date %>">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-cap">Lugares por fecha <span class="esp-hint">(1–<%= maxCap %>)</span></label>
+                <input id="<%= uid %>-cap" name="capacity_passengers" type="number" inputmode="numeric" min="1" max="<%= maxCap %>" required value="<%= f.capacity_passengers %>">
+            </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-price">Precio por persona (MXN)</label>
+                <input id="<%= uid %>-price" name="price_mxn" type="number" inputmode="decimal" min="0" step="0.01" required value="<%= Number(f.price_mxn || 0).toFixed(2) %>">
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="esp-form-foot">
+        <label class="esp-toggle" for="<%= uid %>-active">
+            <input id="<%= uid %>-active" name="active" type="checkbox" role="switch" value="1" <%= f.active ? 'checked' : '' %>>
+            <span class="esp-toggle-track" aria-hidden="true"><span></span></span>
+            <span class="esp-toggle-copy">
+                <strong>Activo</strong>
+                <small>Visible y reservable en el sitio</small>
+            </span>
+        </label>
+        <button class="btn btn-wine esp-submit" type="submit">
+            <%- include('icon', { name: 'save', size: 16 }) %> <%= submitLabel %>
+        </button>
+    </div>
+</form>

@@ -329,6 +329,12 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
                     <span class="pass-folio-value mono"><%= ticketFolio %></span>
                 </div>
             </div>
+            <% if (typeof specialNote !== "undefined" && specialNote) { %>
+                <p class="pass-special-note">
+                    <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                    <%= specialNote %>
+                </p>
+            <% } %>
         </div>
 
         <div class="pass-perf" aria-hidden="true"></div>

@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const {pool, hasDb} = require("../db");
 const {resolveVicLocationLabel, stopLabel} = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
+const specialEvents = require("../specialEvents");
 const crypto = require("crypto");
 
 const router = express.Router();
@@ -50,7 +51,7 @@ function regenSession(req) {
 }
 
 async function ensureTripsForDate(tripDate) {
-    // I create missing trips for all ACTIVE templates.
+    // I create missing trips for all ACTIVE regular templates.
     await pool.query(
         `
             INSERT
@@ -58,9 +59,104 @@ async function ensureTripsForDate(tripDate) {
             SELECT id, ?, 'OPEN'
             FROM transporte_departure_templates
             WHERE active = 1
+              AND special_event_id = 0
         `,
         [tripDate]
     );
+}
+
+async function ensureSpecialTripsForDate(tripDate) {
+    // I create trips for active special events whose range covers this date (so they show in the agenda).
+    await pool.query(
+        `
+            INSERT
+            IGNORE INTO transporte_trips (template_id, trip_date, status)
+            SELECT se.template_id, ?, 'OPEN'
+            FROM transporte_special_events se
+                     JOIN transporte_departure_templates dt ON dt.id = se.template_id
+            WHERE se.active = 1
+              AND dt.active = 1
+              AND ? BETWEEN se.start_date AND se.end_date
+        `,
+        [tripDate, tripDate]
+    );
+}
+
+// Upsert trip status for a template/day. Disabling cancels unpaid reservations and rejects pending payments.
+async function setTripEnabled(templateId, tripDate, enabled, notes) {
+    const status = enabled ? "OPEN" : "CANCELLED";
+    let cancelledReservations = 0;
+    let rejectedPayments = 0;
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        // 1) Upsert del trip (requiere UNIQUE(template_id, trip_date))
+        await conn.query(
+            `
+                INSERT INTO transporte_trips (template_id, trip_date, status, notes)
+                VALUES (?, ?, ?, ?) ON DUPLICATE KEY
+                UPDATE
+                    status =
+                VALUES (status), notes =
+                VALUES (notes)
+            `,
+            [templateId, tripDate, status, notes]
+        );
+
+        // 2) Obtener trip_id real para este día + template
+        const [[tr]] = await conn.query(
+            `
+                SELECT id
+                FROM transporte_trips
+                WHERE template_id = ?
+                  AND trip_date = ? LIMIT 1
+            `,
+            [templateId, tripDate]
+        );
+
+        const tripId = tr?.id;
+        if (!tripId) {
+            throw new Error("No pude obtener trip_id tras guardar el viaje.");
+        }
+
+        // 3) Si lo deshabilito, cancelo reservas NO pagadas y rechazo pagos pendientes
+        if (status === "CANCELLED") {
+            const [u1] = await conn.query(
+                `
+                    UPDATE transporte_reservations
+                    SET status = 'CANCELLED'
+                    WHERE trip_id = ?
+                      AND status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING')
+                `,
+                [tripId]
+            );
+
+            const [u2] = await conn.query(
+                `
+                    UPDATE transporte_payments p
+                        JOIN transporte_reservations r
+                    ON r.id = p.reservation_id
+                        SET p.status = 'REJECTED'
+                    WHERE r.trip_id = ?
+                      AND p.status = 'PENDING'
+                `,
+                [tripId]
+            );
+
+            cancelledReservations = Number(u1.affectedRows || 0);
+            rejectedPayments = Number(u2.affectedRows || 0);
+        }
+
+        await conn.commit();
+        return {tripId, cancelledReservations, rejectedPayments};
+    } catch (e) {
+        await conn.rollback();
+        throw e;
+    } finally {
+        conn.release();
+    }
 }
 
 /* =========================================================
@@ -122,19 +218,31 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
     const agendaPrevDate = shiftISODate(date, -1);
     const agendaNextDate = shiftISODate(date, 1);
 
+    try {
+        await ensureSpecialTripsForDate(date);
+    } catch (e) {
+        console.error(e);
+    }
+
     const [trips] = await pool.query(
         `
             SELECT t.id                                          AS trip_id,
                    t.trip_date,
+                   t.status                                      AS trip_status,
                    dt.direction,
                    dt.depart_time,
+                   se.title                                      AS special_title,
+                   se.return_time                                AS special_return_time,
 
-                   LEAST(COALESCE(dt.capacity_passengers, 0), ?) AS capacity_passengers,
-                   LEAST(COALESCE(agg.used_seats, 0), ?)         AS used_seats,
+                   IF(dt.special_event_id > 0, COALESCE(dt.capacity_passengers, 0),
+                      LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers,
+                   IF(dt.special_event_id > 0, COALESCE(agg.used_seats, 0),
+                      LEAST(COALESCE(agg.used_seats, 0), ?))         AS used_seats,
                    COALESCE(agg.packages, 0)                     AS packages
 
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                     LEFT JOIN transporte_special_events se ON se.id = dt.special_event_id
                      LEFT JOIN (SELECT r.trip_id,
 
                                        SUM(
@@ -226,9 +334,13 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
                    t.trip_date,
                    dt.direction,
                    dt.depart_time,
-                   LEAST(COALESCE(dt.capacity_passengers, 0), ?) AS capacity_passengers
+                   se.title                                      AS special_title,
+                   se.return_time                                AS special_return_time,
+                   IF(dt.special_event_id > 0, COALESCE(dt.capacity_passengers, 0),
+                      LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
+                     LEFT JOIN transporte_special_events se ON se.id = dt.special_event_id
             WHERE t.id = ?
         `,
         [MAX_CAP, tripId]
@@ -483,6 +595,7 @@ router.get("/api/horarios", requireAdmin, requireDb, async (req, res) => {
                                     GROUP BY reservation_id) rp ON rp.reservation_id = r.id
 
                 WHERE dt.direction = ?
+                  AND dt.special_event_id = 0
                 GROUP BY dt.id, dt.direction, dt.depart_time, dt.capacity_passengers, dt.active,
                          tr.id, tr.status, tr.notes
                 ORDER BY dt.depart_time
@@ -537,80 +650,9 @@ router.post("/api/horarios/trip", requireAdmin, requireDb, async (req, res) => {
             return res.status(400).json({ok: false, message: "Faltan datos."});
         }
 
-        const status = enabledBool ? "OPEN" : "CANCELLED";
-
-        let cancelledReservations = 0;
-        let rejectedPayments = 0;
-
-        const conn = await pool.getConnection();
-        try {
-            await conn.beginTransaction();
-
-            // 1) Upsert del trip (requiere UNIQUE(template_id, trip_date))
-            await conn.query(
-                `
-                    INSERT INTO transporte_trips (template_id, trip_date, status, notes)
-                    VALUES (?, ?, ?, ?) ON DUPLICATE KEY
-                    UPDATE
-                        status =
-                    VALUES (status), notes =
-                    VALUES (notes)
-                `,
-                [template_id, trip_date, status, notes]
-            );
-
-            // 2) Obtener trip_id real para este día + template
-            const [[tr]] = await conn.query(
-                `
-                    SELECT id
-                    FROM transporte_trips
-                    WHERE template_id = ?
-                      AND trip_date = ? LIMIT 1
-                `,
-                [template_id, trip_date]
-            );
-
-            const tripId = tr?.id;
-            if (!tripId) {
-                throw new Error("No pude obtener trip_id tras guardar el viaje.");
-            }
-
-            // 3) Si lo deshabilito, cancelo reservas NO pagadas y rechazo pagos pendientes
-            if (status === "CANCELLED") {
-                const [u1] = await conn.query(
-                    `
-                        UPDATE transporte_reservations
-                        SET status = 'CANCELLED'
-                        WHERE trip_id = ?
-                          AND status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING')
-                    `,
-                    [tripId]
-                );
-
-                const [u2] = await conn.query(
-                    `
-                        UPDATE transporte_payments p
-                            JOIN transporte_reservations r
-                        ON r.id = p.reservation_id
-                            SET p.status = 'REJECTED'
-                        WHERE r.trip_id = ?
-                          AND p.status = 'PENDING'
-                    `,
-                    [tripId]
-                );
-
-                cancelledReservations = Number(u1.affectedRows || 0);
-                rejectedPayments = Number(u2.affectedRows || 0);
-            }
-
-            await conn.commit();
-            return res.json({ ok: true, cancelledReservations, rejectedPayments });
-        } catch (e) {
-            await conn.rollback();
-            throw e;
-        } finally {
-            conn.release();
-        }
+        const {cancelledReservations, rejectedPayments} =
+            await setTripEnabled(template_id, trip_date, enabledBool, notes);
+        return res.json({ok: true, cancelledReservations, rejectedPayments});
     } catch (e) {
         console.error(e);
         return res.status(500).json({ok: false, message: e.message || "Error"});
@@ -681,6 +723,7 @@ router.get("/api/horarios/disabled-days", requireAdmin, requireDb, async (req, r
                                     GROUP BY reservation_id) rp ON rp.reservation_id = r.id
 
                 WHERE t.direction = ?
+                  AND t.special_event_id = 0
                   AND tr.trip_date BETWEEN ? AND ?
                   AND tr.status = 'CANCELLED'
 
@@ -725,7 +768,7 @@ router.get("/api/templates", requireAdmin, requireDb, async (req, res) => {
         const direction = String(req.query.direction || "").trim();
         const includeInactive = String(req.query.includeInactive || "1") === "1";
 
-        const where = [];
+        const where = ["special_event_id = 0"];
         const params = [];
 
         if (direction) {
@@ -803,7 +846,8 @@ router.post("/api/templates/update", requireAdmin, requireDb, async (req, res) =
                     depart_time=?,
                     capacity_passengers=?,
                     active=?
-                WHERE id = ? LIMIT 1
+                WHERE id = ?
+                  AND special_event_id = 0 LIMIT 1
             `,
             [direction, depart_time, capacity, active, id]
         );
@@ -825,7 +869,8 @@ router.post("/api/templates/disable", requireAdmin, requireDb, async (req, res) 
 
         await pool.query(`UPDATE transporte_departure_templates
                           SET active=0
-                          WHERE id = ? LIMIT 1`, [id]);
+                          WHERE id = ?
+                            AND special_event_id = 0 LIMIT 1`, [id]);
         return res.json({ok: true});
     } catch (e) {
         console.error(e);
@@ -887,6 +932,195 @@ router.post("/api/pricing", requireAdmin, requireDb, async (req, res) => {
     } catch (e) {
         console.error(e);
         return res.status(500).json({ok: false});
+    }
+});
+
+/* =========================================================
+   VIAJES ESPECIALES (ej. Feria)
+========================================================= */
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function slugify(s) {
+    return String(s || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
+}
+
+function parseSpecialEventForm(body) {
+    const title = String(body.title || "").trim().slice(0, 120);
+    const values = {
+        title,
+        tab_label: (String(body.tab_label || "").trim() || title).slice(0, 40),
+        slug: slugify(body.slug || title),
+        description: String(body.description || "").trim().slice(0, 255) || null,
+        direction: String(body.direction || "").trim(),
+        depart_time: String(body.depart_time || "").trim().slice(0, 5),
+        return_time: String(body.return_time || "").trim().slice(0, 5) || null,
+        start_date: String(body.start_date || "").trim(),
+        end_date: String(body.end_date || "").trim(),
+        capacity_passengers: Number.parseInt(body.capacity_passengers, 10),
+        price_mxn: Math.round(Number(body.price_mxn) * 100) / 100,
+        active: body.active === "1" || body.active === "on" ? 1 : 0,
+    };
+
+    let error = null;
+    if (!values.title) error = "Captura el nombre del viaje.";
+    else if (!SLUG_RE.test(values.slug)) error = "La URL (slug) solo admite letras, números y guiones.";
+    else if (values.direction !== "VIC_TO_LLE" && values.direction !== "LLE_TO_VIC") error = "Dirección no válida.";
+    else if (!specialEvents.isValidHHMM(values.depart_time)) error = "Hora de salida no válida.";
+    else if (values.return_time && !specialEvents.isValidHHMM(values.return_time)) error = "Hora de regreso no válida.";
+    else if (!specialEvents.isValidISODate(values.start_date) || !specialEvents.isValidISODate(values.end_date)) error = "Fechas no válidas.";
+    else if (values.end_date < values.start_date) error = "La fecha final debe ser igual o posterior a la inicial.";
+    else if (!Number.isFinite(values.capacity_passengers) || values.capacity_passengers < 1 || values.capacity_passengers > specialEvents.SPECIAL_MAX_CAP) {
+        error = `La capacidad debe estar entre 1 y ${specialEvents.SPECIAL_MAX_CAP}.`;
+    } else if (!Number.isFinite(values.price_mxn) || values.price_mxn < 0) error = "Precio no válido.";
+
+    return {values, error};
+}
+
+function especialesRedirect(res, {msg, err, id} = {}) {
+    const qs = new URLSearchParams();
+    if (msg) qs.set("msg", msg);
+    if (err) qs.set("err", err);
+    const q = qs.toString();
+    return res.redirect(`/admin/especiales${q ? `?${q}` : ""}${id ? `#ev-${id}` : ""}`);
+}
+
+router.get("/especiales", requireAdmin, requireDb, async (req, res) => {
+    try {
+        const events = await specialEvents.listEvents(pool);
+        for (const ev of events) {
+            ev.days = await specialEvents.eventDays(pool, ev, {includePast: true});
+        }
+
+        return res.render("admin_especiales", {
+            events,
+            msg: String(req.query.msg || ""),
+            err: String(req.query.err || ""),
+            maxCap: specialEvents.SPECIAL_MAX_CAP,
+        });
+    } catch (e) {
+        console.error(e);
+        return res.status(500).send("No pude cargar los viajes especiales. ¿Se aplicó la migración?");
+    }
+});
+
+router.post("/especiales", requireAdmin, requireDb, async (req, res) => {
+    const {values, error} = parseSpecialEventForm(req.body);
+    if (error) return especialesRedirect(res, {err: error});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [ins] = await conn.query(
+            `INSERT INTO transporte_special_events(slug, title, tab_label, description, direction, depart_time,
+                                                   return_time, start_date, end_date, capacity_passengers,
+                                                   price_mxn, active)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [values.slug, values.title, values.tab_label, values.description, values.direction, values.depart_time,
+                values.return_time, values.start_date, values.end_date, values.capacity_passengers,
+                values.price_mxn, values.active]
+        );
+        await specialEvents.syncEventTemplate(conn, ins.insertId);
+        await conn.commit();
+        return especialesRedirect(res, {msg: "Viaje especial creado.", id: ins.insertId});
+    } catch (e) {
+        await conn.rollback();
+        console.error(e);
+        const dup = String(e?.code) === "ER_DUP_ENTRY";
+        return especialesRedirect(res, {err: dup ? "Ya existe un viaje con esa URL (slug)." : "No pude crear el viaje especial."});
+    } finally {
+        conn.release();
+    }
+});
+
+router.post("/especiales/:id", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    if (!id) return especialesRedirect(res, {err: "ID inválido."});
+
+    const {values, error} = parseSpecialEventForm(req.body);
+    if (error) return especialesRedirect(res, {err: error, id});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [upd] = await conn.query(
+            `UPDATE transporte_special_events
+             SET slug=?, title=?, tab_label=?, description=?, direction=?, depart_time=?, return_time=?,
+                 start_date=?, end_date=?, capacity_passengers=?, price_mxn=?, active=?
+             WHERE id = ? LIMIT 1`,
+            [values.slug, values.title, values.tab_label, values.description, values.direction, values.depart_time,
+                values.return_time, values.start_date, values.end_date, values.capacity_passengers,
+                values.price_mxn, values.active, id]
+        );
+        if (!upd.affectedRows) {
+            await conn.rollback();
+            return especialesRedirect(res, {err: "Viaje especial no encontrado."});
+        }
+        await specialEvents.syncEventTemplate(conn, id);
+        await conn.commit();
+        return especialesRedirect(res, {
+            msg: values.active ? "Viaje especial guardado." : "Viaje especial guardado y desactivado.",
+            id,
+        });
+    } catch (e) {
+        await conn.rollback();
+        console.error(e);
+        const dup = String(e?.code) === "ER_DUP_ENTRY";
+        return especialesRedirect(res, {err: dup ? "Ya existe un viaje con esa URL (slug)." : "No pude guardar el viaje especial.", id});
+    } finally {
+        conn.release();
+    }
+});
+
+router.post("/especiales/:id/active", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    const active = req.body.active === "1" ? 1 : 0;
+    if (!id) return especialesRedirect(res, {err: "ID inválido."});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        await conn.query(`UPDATE transporte_special_events SET active=? WHERE id = ? LIMIT 1`, [active, id]);
+        await specialEvents.syncEventTemplate(conn, id);
+        await conn.commit();
+        return especialesRedirect(res, {msg: active ? "Viaje especial activado." : "Viaje especial desactivado.", id});
+    } catch (e) {
+        await conn.rollback();
+        console.error(e);
+        return especialesRedirect(res, {err: "No pude cambiar el estado.", id});
+    } finally {
+        conn.release();
+    }
+});
+
+router.post("/especiales/:id/day", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    const date = String(req.body.date || "").trim();
+    const enabled = req.body.enabled === "1";
+
+    try {
+        const ev = await specialEvents.getEventById(pool, id);
+        if (!ev || !ev.template_id) return especialesRedirect(res, {err: "Viaje especial no encontrado."});
+        if (!specialEvents.isValidISODate(date) || date < ev.start_date || date > ev.end_date) {
+            return especialesRedirect(res, {err: "Fecha fuera del rango del viaje.", id});
+        }
+
+        const {cancelledReservations} = await setTripEnabled(ev.template_id, date, enabled, null);
+        const extra = cancelledReservations
+            ? ` Se cancelaron ${cancelledReservations} reserva${cancelledReservations === 1 ? "" : "s"} sin pagar.`
+            : "";
+        return especialesRedirect(res, {
+            msg: `${enabled ? "Salida habilitada" : "Salida deshabilitada"} para ${date}.${extra}`,
+            id,
+        });
+    } catch (e) {
+        console.error(e);
+        return especialesRedirect(res, {err: "No pude actualizar la fecha.", id});
     }
 });
 

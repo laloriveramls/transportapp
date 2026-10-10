@@ -41,9 +41,38 @@ function previewAvailability(direction) {
     }));
 }
 
+function previewSpecialEvents() {
+    const {DEFAULT_EVENT, normalizeEvent, formatDateParts, todayISO_MTY} = require('../specialEvents');
+    const ev = normalizeEvent({id: 1, template_id: 0, ...DEFAULT_EVENT});
+    const today = todayISO_MTY();
+    if (ev.end_date < today) return [];
+
+    ev.days = [];
+    const start = ev.start_date > today ? ev.start_date : today;
+    for (let d = new Date(`${start}T00:00:00Z`); d.toISOString().slice(0, 10) <= ev.end_date; d.setUTCDate(d.getUTCDate() + 1)) {
+        const iso = d.toISOString().slice(0, 10);
+        const used = (d.getUTCDate() * 3) % (ev.capacity_passengers + 1);
+        const available = ev.capacity_passengers - used;
+        ev.days.push({
+            date: iso,
+            ...formatDateParts(iso),
+            trip_id: null,
+            trip_status: 'OPEN',
+            trip_notes: '',
+            used,
+            capacity: ev.capacity_passengers,
+            available,
+            past: false,
+            bookable: available > 0,
+        });
+    }
+    return [ev];
+}
+
 module.exports = {
     isPreviewMode,
     previewTemplates,
     previewPricing,
     previewAvailability,
+    previewSpecialEvents,
 };

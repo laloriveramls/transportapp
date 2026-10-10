@@ -1,0 +1,38 @@
+<div class="slots-head">
+    <p class="slots-title mb-0">Datos para transferencia</p>
+    <div class="slots-sub">Transfiere y comparte el comprobante por WhatsApp.</div>
+</div>
+<div class="transfer-grid" aria-label="Datos bancarios">
+    <div class="transfer-item">
+        <span class="transfer-key">Banco</span>
+        <span class="transfer-value" id="bankName">BBVA</span>
+    </div>
+    <div class="transfer-item">
+        <span class="transfer-key">Beneficiario</span>
+        <span class="transfer-value" id="bankOwner">Gary Treviño</span>
+    </div>
+    <div class="transfer-item">
+        <span class="transfer-key">Numero de tarjeta</span>
+        <span class="transfer-value mono" id="bankClabe">4152 3142 8477 3416</span>
+    </div>
+</div>
+<div class="transfer-actions">
+    <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar número de tarjeta">
+        <span class="tbtn-ic" aria-hidden="true">
+            <%- include('icon', { name: 'copy', size: 14 }) %>
+        </span>
+        <span class="tbtn-txt">Copiar tarjeta</span>
+    </button>
+    <button type="button" class="tbtn" id="copyTransferMsgBtn" aria-label="Copiar mensaje de transferencia">
+        <span class="tbtn-ic" aria-hidden="true">
+            <%- include('icon', { name: 'receipt', size: 14 }) %>
+        </span>
+        <span class="tbtn-txt">Copiar mensaje</span>
+    </button>
+</div>
+<div class="transfer-tip">
+    <strong>Concepto sugerido:</strong> “Servicio de transporte”
+    <span class="subtle">(tu folio se genera al finalizar)</span>.
+    <br>
+    Después, envíanos el comprobante por WhatsApp para confirmar.
+</div>

@@ -32,7 +32,7 @@
             .reduce((acc, x) => acc + countPassengers(x), 0);
 
     const capRaw = Number(trip.capacity_passengers || 0);
-    const cap = Math.min(6, Math.max(0, capRaw));
+    const cap = Math.max(0, capRaw);
     const used = Math.min(usedRaw, cap);
     const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
     const libres = Math.max(0, cap - used);
@@ -137,6 +137,12 @@
                     <span><%= toLabel %></span>
                     <span class="trip-head-time mono"><%= hhmm %></span>
                 </div>
+                <% if (trip.special_title) { %>
+                    <div class="trip-special-note">
+                        <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                        <%= trip.special_title %><% if (trip.special_return_time) { %> · viaje redondo, regreso <%= String(trip.special_return_time).slice(0, 5) %><% } %>
+                    </div>
+                <% } %>
             </div>
             <div class="trip-head-tools">
                 <% if (onlyPending) { %>

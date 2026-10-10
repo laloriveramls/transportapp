@@ -213,6 +213,16 @@ body.page-ticket {
     margin-top: 1rem;
 }
 
+.page-ticket .pass-special-note {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.65rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--wine);
+}
+
 .page-ticket .pass-when-item {
     min-width: 0;
     padding: 0.7rem 0.75rem;

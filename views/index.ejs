@@ -61,6 +61,16 @@
                             <button class="nav-link active" id="tab-horarios" type="button" role="tab"
                                     data-home-tab="horarios" aria-controls="pane-horarios" aria-selected="true">Horarios</button>
                         </li>
+                        <% const homeSpecials = (typeof specialEvents !== "undefined" && Array.isArray(specialEvents)) ? specialEvents : []; %>
+                        <% homeSpecials.forEach((ev) => { %>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link home-tab-special" id="tab-esp-<%= ev.slug %>" type="button" role="tab"
+                                    data-home-tab="<%= ev.slug %>" aria-controls="pane-esp-<%= ev.slug %>" aria-selected="false">
+                                <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                                <%= ev.tab_label %>
+                            </button>
+                        </li>
+                        <% }) %>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="tab-mapa" type="button" role="tab"
                                     data-home-tab="mapa" aria-controls="pane-mapa" aria-selected="false">Mapa</button>
@@ -137,6 +147,94 @@
                         </article>
                     </div>
                 </div>
+
+                <% homeSpecials.forEach((ev) => {
+                    const evUrl = `/especial/${encodeURIComponent(ev.slug)}`;
+                    const evPrice = `$${Number(ev.price_mxn || 0).toFixed(0)}`;
+                %>
+                <div class="home-pane" id="pane-esp-<%= ev.slug %>" role="tabpanel" aria-labelledby="tab-esp-<%= ev.slug %>" hidden>
+                    <div class="special-board">
+                        <header class="special-head">
+                            <div class="special-head-copy">
+                                <p class="special-kicker">
+                                    <%- include('partials/icon', { name: 'calendar-range', size: 14 }) %>
+                                    Viaje especial · <%= ev.range_label %>
+                                </p>
+                                <h3 class="special-title"><%= ev.title %></h3>
+                                <% if (ev.description) { %>
+                                    <p class="special-desc"><%= ev.description %></p>
+                                <% } %>
+                            </div>
+                            <a class="btn btn-wine special-cta" href="<%= evUrl %>">
+                                <%- include('partials/icon', { name: 'ticket', size: 16 }) %>
+                                Reservar
+                            </a>
+                        </header>
+
+                        <ul class="special-facts">
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'clock', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.depart_label %></strong>
+                                    <small>Salida de <%= ev.from_label %></small>
+                                </span>
+                            </li>
+                            <% if (ev.is_round_trip) { %>
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'repeat', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.return_label %></strong>
+                                    <small>Regreso de <%= ev.to_label %></small>
+                                </span>
+                            </li>
+                            <% } %>
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.capacity_passengers %> lugares</strong>
+                                    <small>Por fecha</small>
+                                </span>
+                            </li>
+                            <li class="special-fact special-fact-price">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= evPrice %></strong>
+                                    <small><%= ev.is_round_trip ? 'Por persona, viaje redondo' : 'Por persona' %></small>
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="special-days-wrap">
+                            <p class="home-info-label">Elige tu fecha</p>
+                            <div class="special-days">
+                                <% ev.days.forEach((day) => {
+                                    let tone = 'ok';
+                                    let note = `${day.available} lugar${day.available === 1 ? '' : 'es'}`;
+                                    if (day.trip_status !== 'OPEN') { tone = 'off'; note = 'Sin salida'; }
+                                    else if (day.available <= 0) { tone = 'full'; note = 'Lleno'; }
+                                    else if (day.available <= 3) { tone = 'tight'; }
+                                %>
+                                <% if (day.bookable) { %>
+                                    <a class="special-day is-<%= tone %>" href="<%= evUrl %>?date=<%= day.date %>"
+                                       aria-label="Reservar <%= day.long %>, <%= note %>">
+                                <% } else { %>
+                                    <span class="special-day is-<%= tone %>" aria-label="<%= day.long %>, <%= note %>">
+                                <% } %>
+                                        <span class="special-day-wd"><%= day.weekday %></span>
+                                        <span class="special-day-num"><%= day.day %></span>
+                                        <span class="special-day-mo"><%= day.month %></span>
+                                        <span class="special-day-seats"><%= note %></span>
+                                <% if (day.bookable) { %>
+                                    </a>
+                                <% } else { %>
+                                    </span>
+                                <% } %>
+                                <% }) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
 
                 <div class="home-pane" id="pane-mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden>
                     <div class="map-grid">
@@ -452,16 +550,16 @@
         }).catch(() => {});
     })();
 
-    /* ===== Tabs Horarios / Mapa / Info (sin Bootstrap, evita huecos) ===== */
+    /* ===== Tabs Horarios / Especiales / Mapa / Info (sin Bootstrap, evita huecos) ===== */
     (function () {
         const storageKey = "homeTab";
         const tabs = Array.from(document.querySelectorAll("[data-home-tab]"));
-        const panes = {
-            horarios: document.getElementById("pane-horarios"),
-            mapa: document.getElementById("pane-mapa"),
-            info: document.getElementById("pane-info"),
-        };
-        if (!tabs.length || !panes.horarios || !panes.mapa || !panes.info) return;
+        const panes = {};
+        tabs.forEach((btn) => {
+            const el = document.getElementById(btn.getAttribute("aria-controls") || "");
+            if (el) panes[btn.getAttribute("data-home-tab")] = el;
+        });
+        if (!tabs.length || !panes.horarios) return;
 
         function showTab(name) {
             const key = panes[name] ? name : "horarios";
@@ -482,7 +580,11 @@
 
         function tabFromLocation() {
             const hash = String(location.hash || "").replace("#", "");
-            if (hash === "mapa") return "mapa";
+            if (panes[hash]) return hash;
+            if (hash === "especial") {
+                const special = tabs.find((btn) => btn.classList.contains("home-tab-special"));
+                if (special) return special.getAttribute("data-home-tab");
+            }
             if (hash === "servicio" || hash === "preguntas") return "info";
             const stored = sessionStorage.getItem(storageKey);
             return panes[stored] ? stored : "horarios";

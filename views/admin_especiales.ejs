@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+    <%- include('partials/head', {
+    title: 'Viajes especiales',
+    description: 'Administración de viajes especiales (fechas, cupo y precio).',
+    noindex: true
+    }) %>
+
+    <%- include('partials/admin-assets') %>
+</head>
+
+<body class="home-page admin-app page-horarios page-especiales">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+<%- include('partials/admin-hero', { heading: 'Viajes especiales', tag: 'Fechas, cupo y precio' }) %>
+
+<main class="home-main admin-main">
+<section class="container">
+    <%
+    const mxn = (n) => `$${Number(n || 0).toLocaleString('es-MX', { maximumFractionDigits: 2 })}`;
+    const dirLabel = (d) => d === 'VIC_TO_LLE' ? 'Victoria → Llera' : 'Llera → Victoria';
+
+    function occupancy(used, cap) {
+        const c = Math.max(0, Number(cap) || 0);
+        const u = Math.min(c, Number(used) || 0);
+        const remaining = Math.max(0, c - u);
+        const pct = c > 0 ? Math.min(100, Math.round((u / c) * 100)) : 0;
+        let tone = 'empty';
+        if (c > 0 && u >= c) tone = 'full';
+        else if (u > 0 && remaining <= 3) tone = 'tight';
+        else if (u > 0) tone = 'ok';
+        let status = 'Vacía';
+        if (tone === 'full') status = 'Llena';
+        else if (tone === 'tight' || tone === 'ok') status = remaining + (remaining === 1 ? ' libre' : ' libres');
+        return { c, u, pct, tone, status };
+    }
+    %>
+    <div class="tabs-card home-tabs admin-shell">
+        <div class="home-tabs-head">
+            <h2 class="home-section-title">Viajes especiales</h2>
+            <div class="home-tabs-tools">
+                <%- include('partials/admin-nav', { adminNav: 'especiales' }) %>
+            </div>
+        </div>
+        <div class="home-tabs-body">
+
+            <% if (msg) { %>
+                <div class="esp-alert is-ok" role="status"><%- include('partials/icon', { name: 'check', size: 16 }) %> <%= msg %></div>
+            <% } %>
+            <% if (err) { %>
+                <div class="esp-alert is-bad" role="alert"><%- include('partials/icon', { name: 'triangle-alert', size: 16 }) %> <%= err %></div>
+            <% } %>
+
+            <% if (!events.length) { %>
+                <p class="muted">Aún no hay viajes especiales. Crea uno abajo.</p>
+            <% } %>
+
+            <% events.forEach((ev) => {
+                const upcoming = ev.days.filter((d) => !d.past);
+                const openDays = upcoming.filter((d) => d.trip_status === 'OPEN');
+                const seatsSold = ev.days.reduce((s, d) => s + (Number(d.used) || 0), 0);
+                const seatsLeft = openDays.reduce((s, d) => s + (Number(d.available) || 0), 0);
+            %>
+            <article class="esp-card <%= ev.active ? '' : 'is-inactive' %>" id="ev-<%= ev.id %>">
+                <header class="esp-head">
+                    <div class="esp-head-copy">
+                        <div class="esp-kicker">
+                            <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                            <%= ev.range_label %> · <%= dirLabel(ev.direction) %>
+                        </div>
+                        <h3 class="esp-title"><%= ev.title %></h3>
+                        <div class="esp-meta subtle">
+                            <span class="mono">/especial/<%= ev.slug %></span>
+                        </div>
+                    </div>
+                    <div class="esp-head-actions">
+                        <span class="esp-pill <%= ev.active ? 'is-on' : '' %>"><%= ev.active ? 'Activo' : 'Inactivo' %></span>
+                        <a class="btn-mini" href="/especial/<%= encodeURIComponent(ev.slug) %>" target="_blank" rel="noopener">
+                            <%- include('partials/icon', { name: 'eye', size: 14 }) %> Ver en sitio
+                        </a>
+                        <form method="POST" action="/admin/especiales/<%= ev.id %>/active">
+                            <input type="hidden" name="active" value="<%= ev.active ? '0' : '1' %>">
+                            <button class="btn-mini <%= ev.active ? 'esp-danger' : '' %>" type="submit">
+                                <%- include('partials/icon', { name: 'power', size: 14 }) %>
+                                <%= ev.active ? 'Desactivar' : 'Activar' %>
+                            </button>
+                        </form>
+                    </div>
+                </header>
+
+                <ul class="esp-stats">
+                    <li>
+                        <span class="esp-stat-ico"><%- include('partials/icon', { name: 'clock', size: 16 }) %></span>
+                        <span class="esp-stat-copy">
+                            <strong><%= ev.depart_label %></strong>
+                            <small><%= ev.is_round_trip ? 'Regreso ' + ev.return_label : 'Viaje sencillo' %></small>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="esp-stat-ico"><%- include('partials/icon', { name: 'banknote', size: 16 }) %></span>
+                        <span class="esp-stat-copy">
+                            <strong><%= mxn(ev.price_mxn) %></strong>
+                            <small>Por persona</small>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="esp-stat-ico"><%- include('partials/icon', { name: 'users', size: 16 }) %></span>
+                        <span class="esp-stat-copy">
+                            <strong><%= seatsSold %> <span class="esp-stat-of">reservados</span></strong>
+                            <small><%= seatsLeft %> lugares libres</small>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="esp-stat-ico"><%- include('partials/icon', { name: 'calendar-check', size: 16 }) %></span>
+                        <span class="esp-stat-copy">
+                            <strong><%= openDays.length %>/<%= upcoming.length %> <span class="esp-stat-of">fechas</span></strong>
+                            <small><%= ev.capacity_passengers %> lugares por fecha</small>
+                        </span>
+                    </li>
+                </ul>
+
+                <details class="esp-edit">
+                    <summary>
+                        <%- include('partials/icon', { name: 'pencil', size: 14 }) %> Editar datos del viaje
+                        <%- include('partials/icon', { name: 'chevron-down', size: 14, icoClass: 'esp-chevron' }) %>
+                    </summary>
+                    <%- include('partials/special-event-form', { ev, action: `/admin/especiales/${ev.id}`, submitLabel: 'Guardar cambios', maxCap }) %>
+                </details>
+
+                <div class="esp-days-head">
+                    <h4 class="esp-days-title">Fechas</h4>
+                    <span class="esp-legend subtle" aria-hidden="true">
+                        <span class="esp-dot is-ok"></span> Con reservas
+                        <span class="esp-dot is-tight"></span> Casi lleno
+                        <span class="esp-dot is-full"></span> Lleno
+                    </span>
+                </div>
+
+                <% if (!ev.days.length) { %>
+                    <p class="muted">Sin fechas en el rango.</p>
+                <% } %>
+                <div class="esp-days">
+                    <% ev.days.forEach((day) => {
+                        const occ = occupancy(day.used, day.capacity);
+                        const enabled = day.trip_status === 'OPEN';
+                    %>
+                    <div class="esp-day is-<%= occ.tone %> <%= enabled ? '' : 'is-off' %> <%= day.past ? 'is-past' : '' %>">
+                        <div class="esp-day-top">
+                            <div class="esp-day-date">
+                                <span class="esp-day-wd"><%= day.weekday %></span>
+                                <strong><%= day.day %> <%= day.month %></strong>
+                            </div>
+                            <span class="esp-day-status">
+                                <% if (day.past) { %>Pasada<% } else if (!enabled) { %>Deshabilitada<% } else { %><%= occ.status %><% } %>
+                            </span>
+                        </div>
+                        <div class="esp-day-meter">
+                            <span class="esp-day-bar" style="--w:<%= occ.pct %>%"><span></span></span>
+                            <span class="esp-day-cap mono"><%= occ.u %>/<%= occ.c %></span>
+                        </div>
+                        <div class="esp-day-actions">
+                            <% if (day.trip_id && occ.u > 0) { %>
+                                <a class="btn-mini" href="/admin/trip/<%= day.trip_id %>">
+                                    <%- include('partials/icon', { name: 'users', size: 13 }) %> Pasajeros
+                                </a>
+                            <% } %>
+                            <% if (!day.past) { %>
+                                <form method="POST" action="/admin/especiales/<%= ev.id %>/day"
+                                      <% if (enabled && occ.u > 0) { %>onsubmit="return confirm('Se cancelarán las reservas sin pagar de esta fecha. ¿Continuar?');"<% } %>>
+                                    <input type="hidden" name="date" value="<%= day.date %>">
+                                    <input type="hidden" name="enabled" value="<%= enabled ? '0' : '1' %>">
+                                    <button class="btn-mini <%= enabled ? 'esp-danger' : 'esp-enable' %>" type="submit"
+                                            aria-label="<%= enabled ? 'Deshabilitar' : 'Habilitar' %> <%= day.long %>">
+                                        <%- include('partials/icon', { name: enabled ? 'ban' : 'circle-check', size: 13 }) %>
+                                        <%= enabled ? 'Deshabilitar' : 'Habilitar' %>
+                                    </button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </article>
+            <% }) %>
+
+            <details class="esp-card esp-new" <%= events.length ? '' : 'open' %>>
+                <summary>
+                    <%- include('partials/icon', { name: 'plus', size: 16 }) %> Nuevo viaje especial
+                    <%- include('partials/icon', { name: 'chevron-down', size: 14, icoClass: 'esp-chevron' }) %>
+                </summary>
+                <%- include('partials/special-event-form', { ev: null, action: '/admin/especiales', submitLabel: 'Crear viaje', maxCap }) %>
+            </details>
+
+        </div>
+    </div>
+</section>
+</main>
+
+<%- include('partials/admin-footer') %>
+<script src="/js/theme.js"></script>
+</body>
+</html>

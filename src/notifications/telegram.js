@@ -45,6 +45,24 @@ function chunkText(text, maxLen = 3500) {
     return chunks.filter(Boolean);
 }
 
+/**
+ * buttons can be a flat list (one button per row) or a list of rows:
+ * [{text, url}] or [[{text, url}, {text, url}], [{text, url}]]
+ */
+function buildInlineKeyboard(buttons) {
+    const toButton = (b) => (b && b.text && (b.url || b.callback_data)
+        ? {
+            text: String(b.text),
+            ...(b.url ? {url: String(b.url)} : {}),
+            ...(b.callback_data ? {callback_data: String(b.callback_data)} : {}),
+        }
+        : null);
+
+    return buttons
+        .map((row) => (Array.isArray(row) ? row : [row]).map(toButton).filter(Boolean))
+        .filter((row) => row.length);
+}
+
 async function tgCall(token, method, payload, timeoutMs = 7000) {
     const url = `https://api.telegram.org/bot${token}/${method}`;
 
@@ -126,16 +144,8 @@ async function sendTelegram(textOrOptions) {
 
         // Optional: inline buttons (only on last chunk so they show at the end)
         if (idx === chunks.length - 1 && Array.isArray(opts.buttons) && opts.buttons.length) {
-            payload.reply_markup = {
-                // I place one button per row for cleaner UI.
-                inline_keyboard: opts.buttons
-                    .filter((b) => b && b.text && (b.url || b.callback_data))
-                    .map((b) => ([{
-                        text: String(b.text),
-                        ...(b.url ? {url: String(b.url)} : {}),
-                        ...(b.callback_data ? {callback_data: String(b.callback_data)} : {}),
-                    }])),
-            };
+            const inlineKeyboard = buildInlineKeyboard(opts.buttons);
+            if (inlineKeyboard.length) payload.reply_markup = {inline_keyboard: inlineKeyboard};
         }
 
         try {
@@ -208,4 +218,4 @@ async function sendTelegram(textOrOptions) {
     }
 }
 
-module.exports = {sendTelegram, escapeHtml};
+module.exports = {sendTelegram, escapeHtml, buildInlineKeyboard};

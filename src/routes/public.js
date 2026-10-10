@@ -19,8 +19,15 @@ const {
     previewTemplates,
     previewPricing,
     previewAvailability,
+    previewSpecialEvents,
 } = require("../dev/previewData");
-const {sendTelegram, escapeHtml} = require("../notifications/telegram");
+const specialEvents = require("../specialEvents");
+const {sendTelegram} = require("../notifications/telegram");
+const {
+    loadReservationSnapshot,
+    newReservationMessage,
+    paymentConfirmedMessage,
+} = require("../notifications/reservationMessages");
 const {
     getVicLocations,
     resolveVicLocation,
@@ -196,35 +203,6 @@ async function ensureTicketForReservation(reservationId) {
 }
 
 /* =========================
-   WhatsApp helpers
-   ========================= */
-
-function normalizePhoneMX(raw) {
-    // I keep only digits.
-    const digits = String(raw || "").replace(/\D+/g, "");
-
-    // If it already includes country code (52) and looks like 12+ digits, keep it.
-    if (digits.startsWith("52") && digits.length >= 12) return digits;
-
-    // If it's a 10-digit MX number, prepend 52.
-    if (digits.length === 10) return "52" + digits;
-
-    // Otherwise, return whatever digits exist (best effort).
-    return digits;
-}
-
-function waLinkFromPhone(
-    rawPhone,
-    defaultText = "Hola, te contacto por tu reserva en TransportApp"
-) {
-    const wa = normalizePhoneMX(rawPhone);
-    if (!wa) return null;
-
-    const text = encodeURIComponent(String(defaultText || ""));
-    return `https://wa.me/${wa}?text=${text}`;
-}
-
-/* =========================
    Pricing (DB source of truth)
    ========================= */
 
@@ -328,6 +306,62 @@ async function getOrCreateTrip(conn, templateId, tripDate) {
     }
 }
 
+// I insert with a daily folio sequence + public token, retrying on unique collisions.
+async function insertReservationWithFolio(conn, v) {
+    for (let i = 0; i < 5; i++) {
+        const publicToken = makePublicToken();
+        try {
+            const [[seqRow]] = await conn.query(
+                `SELECT COALESCE(MAX(daily_seq), 0) + 1 AS next_seq
+                 FROM transporte_reservations
+                 WHERE folio_date = ?`,
+                [v.trip_date]
+            );
+            const dailySeq = Number(seqRow?.next_seq || 1);
+
+            const [ins] = await conn.query(
+                `INSERT INTO transporte_reservations(trip_id, type, seats, child_seats, customer_name, phone,
+                                                     package_details, vic_location, from_stop, to_stop,
+                                                     payment_method, transfer_ref, status,
+                                                     unit_price_mxn, amount_total_mxn,
+                                                     public_token, folio_date, daily_seq)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    v.trip_id,
+                    v.type,
+                    v.seats,
+                    v.child_seats,
+                    v.customer_name,
+                    v.phone,
+                    v.package_details,
+                    v.vic_location,
+                    v.from_stop,
+                    v.to_stop,
+                    v.payment_method,
+                    v.transfer_ref,
+                    v.status,
+                    v.unit_price_mxn,
+                    v.amount_total_mxn,
+                    publicToken,
+                    v.trip_date,
+                    dailySeq,
+                ]
+            );
+
+            return {
+                reservationId: ins.insertId,
+                publicToken,
+                folio: folioFromReservation(ins.insertId, v.trip_date, dailySeq),
+            };
+        } catch (e) {
+            if (String(e?.code) === "ER_DUP_ENTRY") continue;
+            throw e;
+        }
+    }
+
+    throw new Error("No pude generar token público. Intenta de nuevo.");
+}
+
 async function computeAvailable(conn, tripId) {
     // I compute remaining seats for a trip (only PASSENGER seats count) and clamp capacity to MAX_CAP.
     const [[row]] = await conn.query(
@@ -408,33 +442,57 @@ function toHHMM_24(t) {
 }
 
 /* =========================
-   Telegram helpers (inline button safety)
+   URL / Telegram helpers
    ========================= */
-
-function isPublicHttpsUrl(u) {
-    try {
-        const url = new URL(u);
-
-        // Telegram inline buttons: I only allow public https URLs.
-        if (url.protocol !== "https:") return false;
-
-        const host = (url.hostname || "").toLowerCase();
-
-        // I block localhost and private networks.
-        if (host === "localhost") return false;
-        if (/^127\./.test(host)) return false;
-        if (/^10\./.test(host)) return false;
-        if (/^192\.168\./.test(host)) return false;
-        if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return false;
-
-        return true;
-    } catch {
-        return false;
-    }
-}
 
 function buildBaseUrl(req) {
     return (process.env.BASE_URL || "").trim() || `${req.protocol}://${req.get("host")}`;
+}
+
+/* =========================
+   Special events helpers
+   ========================= */
+
+async function loadPublicSpecialEvents(conn) {
+    const events = await specialEvents.listPublicEvents(conn);
+    for (const ev of events) {
+        ev.days = await specialEvents.eventDays(conn, ev);
+    }
+    return events.filter((ev) => ev.days.length > 0);
+}
+
+// Reservation rows carry dt.special_event_id; I append the event note to the route label.
+async function routeLabelForReservation(r, separator = " → ") {
+    const base = formatRouteLabel(r.direction, r.vic_location, separator, r.from_stop, r.to_stop);
+    if (!Number(r.special_event_id || 0)) return base;
+    try {
+        const ev = await specialEvents.getEventById(pool, r.special_event_id);
+        return ev ? `${base} · ${specialEvents.routeNote(ev)}` : base;
+    } catch {
+        return base;
+    }
+}
+
+// Fire-and-forget: notifications must never break the reservation/payment flow.
+function notifyReservation(reservationId, buildMessage) {
+    void (async () => {
+        try {
+            const snapshot = await loadReservationSnapshot(pool, reservationId);
+            if (!snapshot) return;
+            const {text, buttons} = buildMessage(snapshot);
+            await sendTelegram({text, parse_mode: "HTML", disable_web_page_preview: true, buttons});
+        } catch (e) {
+            console.error("Telegram reservation notify failed:", e?.message || e);
+        }
+    })();
+}
+
+function notifyNewReservation(reservationId) {
+    notifyReservation(reservationId, newReservationMessage);
+}
+
+function notifyPaymentConfirmed(reservationId) {
+    notifyReservation(reservationId, paymentConfirmedMessage);
 }
 
 /* =========================
@@ -453,6 +511,7 @@ router.get(
                 templates,
                 vicLocations,
                 pricing,
+                specialEvents: previewSpecialEvents(),
                 seoPage: "home",
                 faqs: seo.homeFaqs(pricing, vicLocations),
                 jsonLd: seo.homeJsonLd({
@@ -468,6 +527,7 @@ router.get(
             SELECT direction, depart_time
             FROM transporte_departure_templates
             WHERE active = 1
+              AND special_event_id = 0
             ORDER BY depart_time
         `);
 
@@ -475,10 +535,17 @@ router.get(
         try {
             const pricing = await getPricing(conn);
             const vicLocations = getVicLocations();
+            let homeSpecialEvents = [];
+            try {
+                homeSpecialEvents = await loadPublicSpecialEvents(conn);
+            } catch (e) {
+                console.error("No pude cargar viajes especiales:", e.message || e);
+            }
             res.render("index", {
                 templates,
                 vicLocations,
                 pricing,
+                specialEvents: homeSpecialEvents,
                 seoPage: "home",
                 faqs: seo.homeFaqs(pricing, vicLocations),
                 jsonLd: seo.homeJsonLd({
@@ -582,6 +649,7 @@ router.get(
                                         FROM transporte_reservation_passengers
                                         GROUP BY reservation_id) rp ON rp.reservation_id = r.id
                     WHERE dt.active = 1
+                      AND dt.special_event_id = 0
                       AND dt.direction = ?
                     GROUP BY dt.id, dt.depart_time, dt.capacity_passengers, t.id, t.status
                     ORDER BY dt.depart_time
@@ -666,7 +734,6 @@ router.post(
         }
 
         const vic_location = vicLocationFromStops(from_stop, to_stop);
-        const routeLabelText = formatRouteLabel(direction, vic_location, " - ", from_stop, to_stop);
 
         transfer_ref = String(transfer_ref || "").trim();
         if (!transfer_ref) transfer_ref = null;
@@ -735,6 +802,7 @@ router.post(
                     SELECT id
                     FROM transporte_departure_templates
                     WHERE active = 1
+                      AND special_event_id = 0
                       AND direction = ?
                       AND depart_time = ?
                 `,
@@ -800,61 +868,24 @@ router.post(
                 }
             }
 
-            let reservationId = null;
-            let dailySeq = null;
-            let publicToken = null;
-            let folio = null;
-
-            for (let i = 0; i < 5; i++) {
-                publicToken = makePublicToken();
-                try {
-                    const [[seqRow]] = await conn.query(
-                        `SELECT COALESCE(MAX(daily_seq), 0) + 1 AS next_seq
-                         FROM transporte_reservations
-                         WHERE folio_date = ?`,
-                        [trip_date]
-                    );
-                    dailySeq = Number(seqRow?.next_seq || 1);
-
-                    const [ins] = await conn.query(
-                        `INSERT INTO transporte_reservations(trip_id, type, seats, child_seats, customer_name, phone,
-                                                             package_details, vic_location, from_stop, to_stop,
-                                                             payment_method, transfer_ref, status,
-                                                             unit_price_mxn, amount_total_mxn,
-                                                             public_token, folio_date, daily_seq)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [
-                            trip.id,
-                            type,
-                            seats,
-                            type === "PASSENGER" ? childSeats : 0,
-                            customer_name,
-                            phone,
-                            type === "PACKAGE" ? package_details : null,
-                            vic_location,
-                            from_stop,
-                            to_stop,
-                            payment_method,
-                            transfer_ref,
-                            status,
-                            unit_price_mxn,
-                            amount_total_mxn,
-                            publicToken,
-                            trip_date,
-                            dailySeq,
-                        ]
-                    );
-
-                    reservationId = ins.insertId;
-                    folio = folioFromReservation(reservationId, trip_date, dailySeq);
-                    break;
-                } catch (e) {
-                    if (String(e?.code) === "ER_DUP_ENTRY") continue;
-                    throw e;
-                }
-            }
-
-            if (!reservationId) throw new Error("No pude generar token público. Intenta de nuevo.");
+            const {reservationId, publicToken, folio} = await insertReservationWithFolio(conn, {
+                trip_id: trip.id,
+                type,
+                seats,
+                child_seats: type === "PASSENGER" ? childSeats : 0,
+                customer_name,
+                phone,
+                package_details: type === "PACKAGE" ? package_details : null,
+                vic_location,
+                from_stop,
+                to_stop,
+                payment_method,
+                transfer_ref,
+                status,
+                unit_price_mxn,
+                amount_total_mxn,
+                trip_date,
+            });
 
             if (type === "PASSENGER" && passengerNames.length) {
                 const placeholders = passengerNames.map(() => "(?, ?)").join(",");
@@ -870,74 +901,7 @@ router.post(
             await conn.commit();
 
             // ✅ I notify the admin after commit (so I never notify on failed TX).
-            try {
-                const routeText = routeLabelText;
-                const typeText = type === "PACKAGE" ? "Paquetería" : "Pasaje";
-
-                const payText =
-                    payment_method === "TAQUILLA"
-                        ? "Taquilla"
-                        : payment_method === "TRANSFERENCIA"
-                            ? "Transferencia"
-                            : payment_method === "ONLINE"
-                                ? "Pago en línea"
-                                : payment_method;
-
-                const totalText = Number(amount_total_mxn || 0).toLocaleString("es-MX", {
-                    style: "currency",
-                    currency: "MXN",
-                });
-
-                const baseUrl = buildBaseUrl(req);
-                const viewUrl = `${baseUrl}/pay/t/${encodeURIComponent(publicToken)}`;
-                const canUseButton = isPublicHttpsUrl(viewUrl);
-
-                const waUrl = waLinkFromPhone(
-                    phone,
-                    `Hola ${customer_name || ""}. Te contacto por tu reserva (${folio}).`
-                );
-
-                const telText = waUrl
-                    ? `<a href="${escapeHtml(waUrl)}">${escapeHtml(phone || "-")}</a>`
-                    : `<code>${escapeHtml(phone || "-")}</code>`;
-
-                const text = [
-                    "🆕 <b>Nueva reserva</b>",
-                    `Folio: <code>${escapeHtml(folio)}</code>`,
-                    `Tipo: ${escapeHtml(typeText)}${
-                        type === "PASSENGER"
-                            ? ` (${seats} viajero${seats === 1 ? "" : "s"}${
-                                childSeats > 0
-                                    ? `, ${childSeats} niño${childSeats === 1 ? "" : "s"} 6-10`
-                                    : ""
-                            })`
-                            : ""
-                    }`,
-                    `Ruta: ${escapeHtml(routeText)}`,
-                    `Fecha: ${escapeHtml(trip_date)}`,
-                    `Hora: ${escapeHtml(depart_time)}`,
-                    `Contacto: ${escapeHtml(customer_name || "-")}`,
-                    `Tel: ${telText}`, // ✅ WhatsApp link
-                    `Pago: ${escapeHtml(payText)}`,
-                    payment_method === "TRANSFERENCIA" && transfer_ref
-                        ? `Referencia: <code>${escapeHtml(transfer_ref)}</code>`
-                        : null,
-                    `Total: <b>${escapeHtml(totalText)}</b>`,
-                    type === "PACKAGE" ? `Detalles: ${escapeHtml(package_details || "-")}` : null,
-                    !canUseButton ? `Ver: ${escapeHtml(viewUrl)}` : null,
-                ]
-                    .filter(Boolean)
-                    .join("\n");
-
-                void sendTelegram({
-                    text,
-                    parse_mode: "HTML",
-                    disable_web_page_preview: true,
-                    ...(canUseButton ? {buttons: [{text: "🔎 Abrir reserva", url: viewUrl}]} : {}),
-                });
-
-            } catch {
-            }
+            notifyNewReservation(reservationId);
 
             // Continue normal flow
             if (payment_method === "ONLINE") {
@@ -966,6 +930,192 @@ router.post(
 );
 
 /* =========================
+   Routes: Special events (ej. Feria)
+   ========================= */
+
+async function computeUsedSeats(conn, tripId) {
+    const [[row]] = await conn.query(
+        `
+            SELECT COALESCE(SUM(
+                                    CASE
+                                        WHEN r.type = 'PASSENGER'
+                                            AND r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')
+                                            THEN COALESCE(rp.passenger_count, NULLIF(r.seats, 0), 1)
+                                        ELSE 0
+                                        END
+                            ), 0) AS used
+            FROM transporte_reservations r
+                     LEFT JOIN (SELECT reservation_id, COUNT(*) AS passenger_count
+                                FROM transporte_reservation_passengers
+                                GROUP BY reservation_id) rp ON rp.reservation_id = r.id
+            WHERE r.trip_id = ?
+        `,
+        [tripId]
+    );
+    return Number(row?.used ?? 0);
+}
+
+function specialViewData(req, ev, days, extra = {}) {
+    const baseUrl = buildBaseUrl(req).replace(/\/+$/, "");
+    return {
+        ev,
+        days,
+        error: null,
+        values: {},
+        canonicalUrl: `${baseUrl}/especial/${encodeURIComponent(ev.slug)}`,
+        ...extra,
+    };
+}
+
+function renderSpecialNotFound(res) {
+    return res.status(404).render("maintenance", {
+        title: "Viaje especial no disponible",
+        message: "Este viaje especial ya no está disponible. Revisa los horarios regulares en el inicio.",
+    });
+}
+
+router.get(
+    "/especial/:slug",
+    requireDb,
+    safe(async (req, res) => {
+        const slug = String(req.params.slug || "").trim().toLowerCase();
+
+        if (isPreviewMode()) {
+            const ev = previewSpecialEvents().find((x) => x.slug === slug);
+            if (!ev) return renderSpecialNotFound(res);
+            return res.render("special", specialViewData(req, ev, ev.days, {
+                values: {trip_date: String(req.query.date || "")},
+            }));
+        }
+
+        const conn = await pool.getConnection();
+        try {
+            const ev = await specialEvents.getEventBySlug(conn, slug);
+            if (!ev || !ev.active || ev.end_date < specialEvents.todayISO_MTY()) return renderSpecialNotFound(res);
+
+            const days = await specialEvents.eventDays(conn, ev);
+            return res.render("special", specialViewData(req, ev, days, {
+                values: {trip_date: String(req.query.date || "")},
+            }));
+        } finally {
+            conn.release();
+        }
+    })
+);
+
+router.post(
+    "/especial/:slug/reserve",
+    requireDb,
+    safe(async (req, res) => {
+        if (isPreviewMode()) {
+            return res.status(503).render("maintenance", {
+                title: "Vista previa",
+                message: "Las reservas no están disponibles en modo vista previa.",
+            });
+        }
+
+        const slug = String(req.params.slug || "").trim().toLowerCase();
+        const values = {
+            trip_date: String(req.body.trip_date || "").trim(),
+            seats: Number.parseInt(req.body.seats, 10) || 1,
+            customer_name: String(req.body.customer_name || "").trim(),
+            phone: String(req.body.phone || "").trim(),
+            payment_method: String(req.body.payment_method || "TAQUILLA").trim().toUpperCase(),
+            transfer_ref: String(req.body.transfer_ref || "").trim(),
+        };
+
+        const conn = await pool.getConnection();
+        try {
+            const ev = await specialEvents.getEventBySlug(conn, slug);
+            if (!ev || !ev.active || !ev.template_id || ev.end_date < specialEvents.todayISO_MTY()) {
+                return renderSpecialNotFound(res);
+            }
+
+            const fail = async (status, error) => {
+                const days = await specialEvents.eventDays(conn, ev);
+                return res.status(status).render("special", specialViewData(req, ev, days, {error, values}));
+            };
+
+            const {trip_date, seats, customer_name, phone, payment_method} = values;
+            const transfer_ref = values.transfer_ref || null;
+
+            if (!specialEvents.isValidISODate(trip_date) || trip_date < ev.start_date || trip_date > ev.end_date) {
+                return fail(400, "Selecciona una fecha válida del viaje especial.");
+            }
+            const today = specialEvents.todayISO_MTY();
+            if (trip_date < today || (trip_date === today && ev.depart_time <= specialEvents.nowHHMM_MTY())) {
+                return fail(400, "Esa salida ya pasó. Elige otra fecha.");
+            }
+            if (seats < 1 || seats > ev.capacity_passengers) {
+                return fail(400, `Puedes reservar de 1 a ${ev.capacity_passengers} lugares.`);
+            }
+            if (!customer_name) return fail(400, "Completa el nombre de contacto.");
+            if (phone.replace(/\D/g, "").length < 10) return fail(400, "Ingresa un teléfono válido (10 dígitos).");
+            if (!ALLOWED_PAYMENT_METHODS.has(payment_method)) return fail(400, "Método de pago no válido.");
+
+            const unitPrice = moneyMXN(ev.price_mxn);
+            const total = moneyMXN(unitPrice * seats);
+            const status = payment_method === "TAQUILLA" ? "PAY_AT_BOARDING" : "PENDING_PAYMENT";
+
+            let created;
+            await conn.beginTransaction();
+            try {
+                const trip = await getOrCreateTrip(conn, ev.template_id, trip_date);
+                const [[tr]] = await conn.query(
+                    "SELECT id, status FROM transporte_trips WHERE id=? FOR UPDATE",
+                    [trip.id]
+                );
+
+                if (String(tr?.status || "OPEN").toUpperCase() !== "OPEN") {
+                    await conn.rollback();
+                    return fail(400, "Esa fecha está deshabilitada. Elige otra.");
+                }
+
+                const available = Math.max(0, ev.capacity_passengers - await computeUsedSeats(conn, trip.id));
+                if (available < seats) {
+                    await conn.rollback();
+                    return fail(409, available > 0
+                        ? `Solo quedan ${available} lugar${available === 1 ? "" : "es"} para esa fecha.`
+                        : "Ya no hay lugares para esa fecha. Elige otra.");
+                }
+
+                created = await insertReservationWithFolio(conn, {
+                    trip_id: trip.id,
+                    type: "PASSENGER",
+                    seats,
+                    child_seats: 0,
+                    customer_name,
+                    phone,
+                    package_details: null,
+                    vic_location: null,
+                    from_stop: ev.from_stop,
+                    to_stop: ev.to_stop,
+                    payment_method,
+                    transfer_ref,
+                    status,
+                    unit_price_mxn: unitPrice,
+                    amount_total_mxn: total,
+                    trip_date,
+                });
+
+                await conn.commit();
+            } catch (e) {
+                await conn.rollback();
+                throw e;
+            }
+
+            notifyNewReservation(created.reservationId);
+
+            const tokenPath = encodeURIComponent(created.publicToken);
+            if (payment_method === "ONLINE") return res.redirect(`/checkout/t/${tokenPath}`);
+            return res.redirect(`/pay/t/${tokenPath}`);
+        } finally {
+            conn.release();
+        }
+    })
+);
+
+/* =========================
    Routes: Checkout + Pay
    ========================= */
 
@@ -977,7 +1127,7 @@ router.get(
 
         const [[r]] = await pool.query(
             `
-                SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+                SELECT r.*, t.trip_date, dt.direction, dt.depart_time, dt.special_event_id
                 FROM transporte_reservations r
                          JOIN transporte_trips t ON t.id = r.trip_id
                          JOIN transporte_departure_templates dt ON dt.id = t.template_id
@@ -1023,7 +1173,7 @@ router.get(
             directionLabel,
             stripePublishableKey,
             publicToken: token,
-            routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
+            routeLabel: await routeLabelForReservation(r),
         });
     })
 );
@@ -1036,7 +1186,7 @@ router.get(
 
         const [[r]] = await pool.query(
             `
-                SELECT r.*, t.trip_date, dt.direction, dt.depart_time
+                SELECT r.*, t.trip_date, dt.direction, dt.depart_time, dt.special_event_id
                 FROM transporte_reservations r
                          JOIN transporte_trips t ON t.id = r.trip_id
                          JOIN transporte_departure_templates dt ON dt.id = t.template_id
@@ -1048,6 +1198,7 @@ router.get(
         if (!r) return res.status(404).send("Reserva no encontrada.");
 
         let ticketCode = await getTicketCodeByReservationId(r.id);
+        const routeLabel = await routeLabelForReservation(r);
 
         const pm = String(r.payment_method || "").toUpperCase();
         let st = String(r.status || "").toUpperCase();
@@ -1057,7 +1208,7 @@ router.get(
             try {
                 const session = await stripe.checkout.sessions.retrieve(sid);
                 if (session?.payment_status === "paid") {
-                    await pool.query(
+                    const [upd] = await pool.query(
                         `UPDATE transporte_reservations
                          SET status='PAID',
                              paid_at=NOW(),
@@ -1070,6 +1221,7 @@ router.get(
                     );
                     st = "PAID";
                     r.status = "PAID";
+                    if (upd?.affectedRows === 1) notifyPaymentConfirmed(r.id);
                 }
             } catch {
             }
@@ -1086,7 +1238,7 @@ router.get(
                     ticketCode,
                     publicToken: token,
                     expired: true,
-                    routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
+                    routeLabel,
                 });
             }
             return res.redirect(`/checkout/t/${encodeURIComponent(token)}`);
@@ -1101,7 +1253,7 @@ router.get(
             directionLabel,
             ticketCode,
             publicToken: token,
-            routeLabel: formatRouteLabel(r.direction, r.vic_location, " → ", r.from_stop, r.to_stop),
+            routeLabel,
         });
     })
 );
@@ -1609,7 +1761,7 @@ router.post("/stripe/webhook", async (req, res) => {
 
         if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
             if (isPaid) {
-                await pool.query(
+                const [upd] = await pool.query(
                     `UPDATE transporte_reservations
                      SET status='PAID',
                          paid_at=NOW(),
@@ -1623,6 +1775,7 @@ router.post("/stripe/webhook", async (req, res) => {
 
                 // ✅ issue ticket immediately
                 await ensureTicketForReservation(reservationId);
+                if (upd?.affectedRows === 1) notifyPaymentConfirmed(Number(reservationId));
             }
 
             return res.json({received: true});

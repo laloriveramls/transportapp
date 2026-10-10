@@ -1281,6 +1281,91 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
     }
 }
 
+/* --- Special event reservation (/especial/:slug) --- */
+.page-special .special-form {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.page-special .special-note {
+    margin: 0.15rem 0 0;
+}
+
+.page-special .special-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.8fr);
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.page-special .special-grid .trip-quote {
+    grid-area: auto;
+    margin: 0;
+}
+
+.page-special .special-seats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.page-special .special-seats .stepper {
+    flex: 0 1 15rem;
+}
+
+.page-special .special-seats .trip-note {
+    margin: 0;
+}
+
+@media (min-width: 769px) {
+    .page-special .special-days {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+.page-special .special-day {
+    cursor: pointer;
+}
+
+.page-special .special-day:has(input:disabled) {
+    cursor: not-allowed;
+}
+
+.page-special .special-day:not(.is-full):not(.is-off):hover {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 45%, var(--border));
+}
+
+.page-special .special-day.is-picked,
+.page-special .special-day:has(input:checked) {
+    background: var(--wine);
+    color: #fff;
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--wine) 30%, transparent);
+}
+
+.page-special .special-day.is-picked .special-day-seats,
+.page-special .special-day:has(input:checked) .special-day-seats {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.page-special .special-day:has(input:focus-visible) {
+    outline: none;
+    box-shadow: 0 0 0 0.22rem var(--ring);
+}
+
+@media (max-width: 768px) {
+    .page-special .special-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-special .pay-pills {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .page-reserve .form-step.is-active,
     .page-reserve .route-swap:hover,

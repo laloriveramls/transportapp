@@ -5,6 +5,8 @@ const express = require("express");
 const router = express.Router();
 
 const {pool, hasDb} = require("../db");
+const {buildInlineKeyboard} = require("../notifications/telegram");
+const {loadReservationSnapshot, lastReservationMessage} = require("../notifications/reservationMessages");
 
 /* =========================
    Helpers: env + auth
@@ -82,16 +84,6 @@ function nowIsoMty() {
     return `${date} ${time} (America/Monterrey)`;
 }
 
-function baseUrlFromEnv() {
-    const b = readEnvClean("BASE_URL");
-    return b ? b.replace(/\/+$/, "") : "";
-}
-
-function folioFromReservationId(id, tripDate) {
-    const ymd = String(tripDate || "").replaceAll("-", "");
-    return `RES-${ymd}-${String(id ?? "")}`;
-}
-
 /* =========================
    Telegram call
    ========================= */
@@ -152,50 +144,10 @@ router.use(express.json({limit: "1mb"}));
    DB helpers
    ========================= */
 
-async function getLastReservationById() {
+async function getLastReservationId() {
     if (!hasDb) return null;
-
-    const [rows] = await pool.query(
-        `
-            SELECT r.id,
-                   r.public_token,
-                   r.type,
-                   r.seats,
-                   r.customer_name,
-                   r.phone,
-                   r.payment_method,
-                   r.transfer_ref,
-                   r.status,
-                   r.amount_total_mxn,
-                   r.created_at,
-                   t.trip_date,
-                   dt.direction,
-                   dt.depart_time
-            FROM transporte_reservations r
-                     JOIN transporte_trips t ON t.id = r.trip_id
-                     JOIN transporte_departure_templates dt ON dt.id = t.template_id
-            ORDER BY r.id DESC
-            LIMIT 1
-        `
-    );
-
-    return rows?.[0] || null;
-}
-
-function directionText(direction) {
-    return direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
-}
-
-function typeText(type) {
-    return String(type || "").toUpperCase() === "PACKAGE" ? "Paquetería" : "Pasaje";
-}
-
-function paymentText(pm) {
-    const x = String(pm || "").toUpperCase();
-    if (x === "TAQUILLA") return "Taquilla";
-    if (x === "TRANSFERENCIA") return "Transferencia";
-    if (x === "ONLINE") return "Pago en línea";
-    return pm || "-";
+    const [[row]] = await pool.query("SELECT MAX(id) AS id FROM transporte_reservations");
+    return row?.id || null;
 }
 
 function moneyMXN(n) {
@@ -475,47 +427,19 @@ router.post("/telegram/webhook", async (req, res) => {
         }
 
         try {
-            const r = await getLastReservationById();
-            if (!r) {
+            const lastId = await getLastReservationId();
+            const snapshot = lastId ? await loadReservationSnapshot(pool, lastId) : null;
+            if (!snapshot) {
                 await tgReply(chatId, "🟡 No hay reservas aún.", replyOpts);
                 return;
             }
 
-            const folio = folioFromReservationId(r.id, r.trip_date);
-            const route = directionText(r.direction);
-            const type = typeText(r.type);
-
-            const seats =
-                String(r.type || "").toUpperCase() === "PASSENGER"
-                    ? ` (${Number(r.seats || 1)} asiento${Number(r.seats || 1) === 1 ? "" : "s"})`
-                    : "";
-
-            const total = moneyMXN(r.amount_total_mxn || 0);
-            const pay = paymentText(r.payment_method);
-
-            const baseUrl = baseUrlFromEnv();
-            const viewUrl =
-                baseUrl && r.public_token
-                    ? `${baseUrl}/pay/t/${encodeURIComponent(String(r.public_token))}`
-                    : null;
-
-            const lines = [
-                "🧾 <b>Última reserva (por ID)</b>",
-                `ID: <code>${escapeHtml(r.id)}</code>`,
-                `Folio: <code>${escapeHtml(folio)}</code>`,
-                `Tipo: ${escapeHtml(type)}${escapeHtml(seats)}`,
-                `Ruta: ${escapeHtml(route)}`,
-                `Fecha: <code>${escapeHtml(r.trip_date)}</code>`,
-                `Hora: <code>${escapeHtml(r.depart_time)}</code>`,
-                `Contacto: ${escapeHtml(r.customer_name || "-")}`,
-                `Tel: <code>${escapeHtml(r.phone || "-")}</code>`,
-                `Pago: ${escapeHtml(pay)}`,
-                `Status: <code>${escapeHtml(r.status || "-")}</code>`,
-                `Total: <b>${escapeHtml(total)}</b>`,
-                viewUrl ? `Ver: ${escapeHtml(viewUrl)}` : null,
-            ].filter(Boolean);
-
-            await tgReply(chatId, lines.join("\n"), replyOpts);
+            const {text, buttons} = lastReservationMessage(snapshot);
+            const keyboard = buildInlineKeyboard(buttons);
+            await tgReply(chatId, text, {
+                ...replyOpts,
+                ...(keyboard.length ? {reply_markup: {inline_keyboard: keyboard}} : {}),
+            });
             return;
         } catch (e) {
             await tgReply(chatId, `❌ Error leyendo DB: <code>${escapeHtml(e?.code || e?.message || String(e))}</code>`, replyOpts);

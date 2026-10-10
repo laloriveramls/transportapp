@@ -648,6 +648,304 @@ html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
     padding: 0.28rem 0.6rem;
 }
 
+/* --- Special event pane (ej. Feria) --- */
+.home-tabs .nav-tabs .nav-link.home-tab-special:not(.active) {
+    color: var(--wine);
+}
+
+.special-board {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.special-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.8rem 0.9rem 0.8rem 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+    background:
+        radial-gradient(420px 160px at 100% 0%, color-mix(in srgb, var(--wine) 16%, transparent), transparent 70%),
+        color-mix(in srgb, var(--wine) 6%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 22%, var(--border));
+}
+
+.special-head::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--wine);
+}
+
+.special-head-copy {
+    min-width: 0;
+    flex: 1 1 18rem;
+}
+
+.special-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--wine);
+}
+
+.special-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text);
+}
+
+.special-desc {
+    margin: 0.3rem 0 0;
+    max-width: 44rem;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.special-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    font-weight: 700;
+    padding: 0.5rem 1.1rem;
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--wine) 30%, transparent);
+}
+
+.special-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.special-fact {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+    padding: 0.6rem 0.7rem;
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.special-fact-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 11%, transparent);
+}
+
+.special-fact-copy {
+    display: grid;
+    gap: 0.05rem;
+    min-width: 0;
+}
+
+.special-fact-copy strong {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--text);
+}
+
+.special-fact-copy small {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.special-fact-price {
+    background: color-mix(in srgb, var(--wine) 7%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 24%, var(--border));
+}
+
+.special-days-wrap {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.special-days {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr));
+    gap: 0.45rem;
+}
+
+.special-day {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.02rem;
+    padding: 0.45rem 0.35rem 0.5rem;
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease, color 0.15s ease;
+}
+
+a.special-day:hover {
+    background: var(--wine);
+    color: #fff;
+    box-shadow: none;
+    transform: translateY(-1px);
+}
+
+a.special-day:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.22rem var(--ring);
+}
+
+.special-day-wd,
+.special-day-mo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.75;
+}
+
+.special-day-num {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+}
+
+.special-day-seats {
+    margin-top: 0.2rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 750;
+    white-space: nowrap;
+    color: #047857;
+    background: color-mix(in srgb, #10b981 14%, transparent);
+}
+
+.special-day.is-tight .special-day-seats {
+    color: #b45309;
+    background: color-mix(in srgb, #f59e0b 16%, transparent);
+}
+
+.special-day.is-full,
+.special-day.is-off {
+    opacity: 0.55;
+    background: color-mix(in srgb, var(--muted) 6%, var(--card));
+}
+
+.special-day.is-full .special-day-seats,
+.special-day.is-off .special-day-seats {
+    color: var(--muted);
+    background: color-mix(in srgb, var(--muted) 12%, transparent);
+}
+
+a.special-day:hover .special-day-seats {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+html[data-theme="dark"] .special-day-seats {
+    color: #6ee7b7;
+}
+
+html[data-theme="dark"] .special-kicker,
+html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.home-tab-special:not(.active) {
+    color: #ffb3c1;
+}
+
+html[data-theme="dark"] .special-fact-ico {
+    color: #ffb3c1;
+    background: color-mix(in srgb, var(--wine) 30%, transparent);
+}
+
+html[data-theme="dark"] .special-day.is-tight .special-day-seats {
+    color: #fcd34d;
+}
+
+@media (min-width: 769px) {
+    .special-days {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .special-facts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .home-tabs .nav-tabs .nav-link.home-tab-special {
+        white-space: nowrap;
+    }
+
+    .home-tabs .nav-tabs .nav-link.home-tab-special svg {
+        display: none;
+    }
+
+    body.home-page:not(.page-reserve) .home-tabs .nav-tabs .nav-item:has(.home-tab-special) {
+        flex-grow: 1.35;
+    }
+
+    .special-head {
+        padding: 0.7rem 0.75rem 0.75rem 0.9rem;
+    }
+
+    .special-cta {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    .special-fact {
+        padding: 0.5rem 0.55rem;
+        gap: 0.45rem;
+    }
+
+    .special-days {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.35rem;
+    }
+
+    .special-day-seats {
+        font-size: 0.62rem;
+        padding: 0.08rem 0.3rem;
+    }
+}
+
 .logo-wrap .admin-hotspot {
     position: absolute;
     inset: 0;

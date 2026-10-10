@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="es-MX" data-theme="light">
+<head>
+    <%
+    const evPrice = Number(ev.price_mxn || 0);
+    const mxn = (n) => `$${Number(n || 0).toLocaleString('es-MX', { maximumFractionDigits: 2 })}`;
+    const tripKind = ev.is_round_trip ? 'Viaje redondo' : 'Viaje sencillo';
+    %>
+    <%- include('partials/head', {
+    title: `${ev.title} | ${tripKind} ${ev.from_label} - ${ev.to_label}`,
+    description: `${tripKind} ${ev.from_label} - ${ev.to_label} del ${ev.range_label}. Salida ${ev.depart_label}${ev.is_round_trip ? `, regreso ${ev.return_label}` : ''}. ${mxn(evPrice)} por persona.`,
+    canonicalUrl
+    }) %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/home.css" rel="stylesheet">
+    <link href="/css/reserve.css" rel="stylesheet">
+</head>
+
+<body class="page-reserve page-special home-page">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar') %>
+
+<section class="home-hero" aria-label="<%= ev.title %>">
+    <div class="home-hero-media" role="img" aria-label="Carretera hacia el destino"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
+
+    <div class="container home-hero-inner">
+        <div class="home-brand home-reveal">
+            <div class="home-brand-copy">
+                <p class="home-kicker">Viaje especial · <%= ev.range_label %></p>
+                <h1 class="home-brand-name"><%= ev.title %></h1>
+                <p class="home-brand-tag"><%= tripKind %> <%= ev.from_label %> - <%= ev.to_label %> · <%= mxn(evPrice) %> por persona</p>
+            </div>
+        </div>
+
+        <div class="hero-actions home-reveal home-reveal-delay">
+            <a class="btn home-cta-ghost" href="/#<%= encodeURIComponent(ev.slug) %>">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'house', size: 18 }) %></span>
+                Inicio
+            </a>
+            <a class="btn btn-wine home-cta-primary" target="_blank" rel="noopener noreferrer"
+               href="https://wa.me/528344756376?text=<%= encodeURIComponent(`Hola, quiero información del viaje especial ${ev.title}.`) %>">
+                <span class="btn-ico"><%- include('partials/icon', { name: 'message-circle', size: 18 }) %></span>
+                WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="home-main reserve-main">
+    <section class="container" aria-label="Reservar <%= ev.title %>">
+        <% if (error) { %>
+            <div class="reserve-alert" role="alert"><%= error %></div>
+        <% } %>
+
+        <%
+        const bookableDays = (days || []).filter((d) => d.bookable);
+        const wantedDate = String(values.trip_date || '');
+        const pickedDay = bookableDays.find((d) => d.date === wantedDate) || bookableDays[0] || null;
+        const seatsValue = Math.max(1, Math.min(Number(values.seats || 1), pickedDay ? pickedDay.available : 1));
+        const payValue = ['TAQUILLA', 'TRANSFERENCIA', 'ONLINE'].includes(values.payment_method) ? values.payment_method : 'TAQUILLA';
+
+        // After a server-side error I reopen the step that holds the offending field.
+        let startStep = 1;
+        if (error) {
+            const e = String(error).toLowerCase();
+            if (/nombre|tel[eé]fono/.test(e)) startStep = 2;
+            else if (/pago/.test(e)) startStep = 3;
+        }
+        %>
+
+        <form id="specialForm" method="POST" action="/especial/<%= encodeURIComponent(ev.slug) %>/reserve"
+              class="reserve-form" data-start-step="<%= startStep %>" novalidate>
+            <div class="tabs-card home-tabs reserve-shell">
+                <div class="home-tabs-head">
+                    <h2 class="home-section-title">Tu reserva</h2>
+                    <div class="home-tabs-tools">
+                        <div class="nav nav-tabs home-seg wizard-steps" role="tablist" aria-label="Progreso de la reserva">
+                            <button type="button" class="nav-link wizard-step is-active active" data-step-target="1">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Viaje</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="2">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'user', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Datos</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="3">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'credit-card', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Pago</span>
+                            </button>
+                            <button type="button" class="nav-link wizard-step" data-step-target="4">
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
+                                <span class="wizard-lbl">Listo</span>
+                            </button>
+                        </div>
+                        <a class="home-tabs-wa" href="tel:+528344756376" title="Llamar al 834 475 6376">
+                            <span class="home-tabs-wa-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 16 }) %></span>
+                            <span class="home-tabs-wa-phone">834 475 6376</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="home-tabs-body">
+
+                <%# Paso 1: fecha y lugares %>
+                <div class="form-step is-active" data-step="1">
+                    <div class="step-card special-form">
+                        <ul class="special-facts">
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'clock', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.depart_label %></strong>
+                                    <small>Salida de <%= ev.from_label %></small>
+                                </span>
+                            </li>
+                            <% if (ev.is_round_trip) { %>
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'repeat', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.return_label %></strong>
+                                    <small>Regreso de <%= ev.to_label %></small>
+                                </span>
+                            </li>
+                            <% } %>
+                            <li class="special-fact">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= ev.capacity_passengers %> lugares</strong>
+                                    <small>Por fecha</small>
+                                </span>
+                            </li>
+                            <li class="special-fact special-fact-price">
+                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 16 }) %></span>
+                                <span class="special-fact-copy">
+                                    <strong><%= mxn(evPrice) %></strong>
+                                    <small><%= ev.is_round_trip ? 'Por persona, ida y vuelta' : 'Por persona' %></small>
+                                </span>
+                            </li>
+                        </ul>
+
+                        <% if (ev.is_round_trip) { %>
+                            <p class="trip-note special-note">
+                                <span aria-hidden="true"><%- include('partials/icon', { name: 'info', size: 14 }) %></span>
+                                <span>Reservas una sola vez a las <%= ev.depart_label %>: tu lugar incluye la ida y el regreso de las <%= ev.return_label %>.</span>
+                            </p>
+                        <% } %>
+
+                        <section class="trip-section">
+                            <h3 class="trip-section-title">Fecha</h3>
+                            <% if (!bookableDays.length) { %>
+                                <div class="reserve-alert">No hay fechas con lugares disponibles por ahora.</div>
+                            <% } %>
+                            <div class="special-days" role="radiogroup" aria-label="Fecha del viaje">
+                                <% (days || []).forEach((day) => {
+                                    let tone = 'ok';
+                                    let note = `${day.available} lugar${day.available === 1 ? '' : 'es'}`;
+                                    if (day.trip_status !== 'OPEN') { tone = 'off'; note = 'Sin salida'; }
+                                    else if (day.available <= 0) { tone = 'full'; note = 'Lleno'; }
+                                    else if (day.available <= 3) { tone = 'tight'; }
+                                    const picked = pickedDay && pickedDay.date === day.date;
+                                %>
+                                <label class="special-day is-<%= tone %> <%= picked ? 'is-picked' : '' %>">
+                                    <input class="visually-hidden" type="radio" name="trip_date" value="<%= day.date %>"
+                                           data-available="<%= day.available %>"
+                                           data-long="<%= day.long %>"
+                                           aria-label="<%= day.long %>, <%= note %>"
+                                           <%= picked ? 'checked' : '' %> <%= day.bookable ? '' : 'disabled' %> required>
+                                    <span class="special-day-wd"><%= day.weekday %></span>
+                                    <span class="special-day-num"><%= day.day %></span>
+                                    <span class="special-day-mo"><%= day.month %></span>
+                                    <span class="special-day-seats"><%= note %></span>
+                                </label>
+                                <% }) %>
+                            </div>
+                        </section>
+
+                        <section class="trip-section special-grid">
+                            <div>
+                                <h3 class="trip-section-title">Lugares</h3>
+                                <div class="special-seats">
+                                    <div class="stepper">
+                                        <button id="seatsMinus" type="button" class="btn-step" aria-label="Quitar un lugar"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
+                                        <div class="count"><span id="seatsText"><%= seatsValue %></span></div>
+                                        <button id="seatsPlus" type="button" class="btn-step" aria-label="Agregar un lugar"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
+                                    </div>
+                                    <p class="trip-note" id="seatsHint">
+                                        <span aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 14 }) %></span>
+                                        <span id="seatsHintText"><%= pickedDay ? `Quedan ${pickedDay.available} lugares para esta fecha.` : '' %></span>
+                                    </p>
+                                </div>
+                                <input type="hidden" id="seats" name="seats" value="<%= seatsValue %>">
+                            </div>
+
+                            <aside class="trip-quote" aria-live="polite">
+                                <p class="trip-quote-k">Total</p>
+                                <p class="trip-quote-total" data-total><%= mxn(evPrice * seatsValue) %></p>
+                                <p class="trip-quote-route"><%= ev.from_label %> - <%= ev.to_label %><%= ev.is_round_trip ? ' (ida y vuelta)' : '' %></p>
+                                <p class="help mb-0"><span data-seats-label><%= seatsValue %></span> × <%= mxn(evPrice) %></p>
+                            </aside>
+                        </section>
+
+                        <div class="step-actions">
+                            <a class="btn btn-ghost" href="/#<%= encodeURIComponent(ev.slug) %>">
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Volver
+                            </a>
+                            <button type="button" class="btn btn-wine" data-next-step <%= bookableDays.length ? '' : 'disabled' %>>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <%# Paso 2: contacto %>
+                <div class="form-step" data-step="2">
+                    <div class="step-card">
+                        <h2 class="step-title">Datos de contacto</h2>
+                        <div class="reserve-panel">
+                            <div class="choice-grid">
+                                <div>
+                                    <label class="form-label" for="customer_name">Nombre de contacto</label>
+                                    <input id="customer_name" name="customer_name" class="form-control" required
+                                           value="<%= values.customer_name || '' %>" placeholder="Ej: Juan Martínez" autocomplete="name">
+                                    <div class="invalid-feedback">Escribe el nombre de contacto.</div>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="phone">Teléfono</label>
+                                    <input id="phone" name="phone" class="form-control" required
+                                           value="<%= values.phone || '' %>" inputmode="numeric" pattern="[0-9]{10}"
+                                           maxlength="10" placeholder="Ej: 8344756376" autocomplete="tel">
+                                    <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
+                                </div>
+                            </div>
+                            <p class="form-text mb-0 mt-2">Te contactamos a este número si hay algún cambio en tu viaje.</p>
+                        </div>
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
+                            </button>
+                            <button type="button" class="btn btn-wine" data-next-step>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <%# Paso 3: pago %>
+                <div class="form-step" data-step="3">
+                    <div class="step-card">
+                        <h2 class="step-title">Pago</h2>
+                        <div class="reserve-panel">
+                            <span class="form-label">Método de pago</span>
+                            <input type="hidden" id="payment_method" name="payment_method" value="<%= payValue %>">
+                            <div class="pay-pills" role="group" aria-label="Método de pago">
+                                <button type="button" class="pay-pill <%= payValue === 'TAQUILLA' ? 'is-on' : '' %>" data-set-pay="TAQUILLA" aria-pressed="<%= payValue === 'TAQUILLA' %>">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">Taquilla</span>
+                                        <span class="pay-pill-sub">Paga al abordar</span>
+                                    </span>
+                                </button>
+                                <button type="button" class="pay-pill <%= payValue === 'TRANSFERENCIA' ? 'is-on' : '' %>" data-set-pay="TRANSFERENCIA" aria-pressed="<%= payValue === 'TRANSFERENCIA' %>">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'landmark', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">Transferencia</span>
+                                        <span class="pay-pill-sub">SPEI o depósito</span>
+                                    </span>
+                                </button>
+                                <button type="button" class="pay-pill <%= payValue === 'ONLINE' ? 'is-on' : '' %>" data-set-pay="ONLINE" aria-pressed="<%= payValue === 'ONLINE' %>">
+                                    <span class="pay-pill-ico" aria-hidden="true"><%- include('partials/icon', { name: 'credit-card', size: 18 }) %></span>
+                                    <span class="pay-pill-copy">
+                                        <span class="pay-pill-title">En línea</span>
+                                        <span class="pay-pill-sub">Pago con tarjeta</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="reserve-panel">
+                            <div class="slots-wrap price-wrap">
+                                <div class="slots-head">
+                                    <p class="slots-title mb-0">Total a pagar</p>
+                                    <div class="slots-sub"><span data-seats-label><%= seatsValue %></span> × <%= mxn(evPrice) %><%= ev.is_round_trip ? ' · ida y vuelta' : '' %></div>
+                                </div>
+                                <div class="price-summary">
+                                    <div class="price-total-row">
+                                        <span class="pill"><%- include('partials/icon', { name: 'dollar-sign', size: 16 }) %> <span data-total><%= mxn(evPrice * seatsValue) %></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="transferWrap" <%= payValue === 'TRANSFERENCIA' ? '' : 'hidden' %>>
+                            <div class="reserve-panel">
+                                <%- include('partials/transfer-details') %>
+                                <div class="mt-2">
+                                    <label class="form-label" for="transfer_ref">Referencia / folio de transferencia (opcional)</label>
+                                    <input id="transfer_ref" name="transfer_ref" class="form-control"
+                                           value="<%= values.transfer_ref || '' %>" placeholder="Ej: 123456 / SPEI / concepto">
+                                    <div class="form-text">Si ya hiciste la transferencia, pega aquí la referencia.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="onlineWrap" <%= payValue === 'ONLINE' ? '' : 'hidden' %>>
+                            <div class="alert alert-info mb-0">
+                                <strong>Pago en línea:</strong> al confirmar la reserva te llevaremos al pago con tarjeta.
+                            </div>
+                        </div>
+
+                        <div class="step-actions">
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
+                            </button>
+                            <button type="button" class="btn btn-wine" data-next-step>
+                                Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <%# Paso 4: confirmación %>
+                <div class="form-step" data-step="4">
+                    <div class="step-card">
+                        <div class="confirm-head">
+                            <h2 class="step-title mb-0">Confirmación</h2>
+                            <span class="confirm-pill">Revisa antes de enviar</span>
+                        </div>
+                        <div class="reserve-panel">
+                            <div class="confirm-grid">
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %> Viaje</span>
+                                    <span class="confirm-v"><%= ev.title %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'map', size: 14 }) %> Ruta</span>
+                                    <span class="confirm-v"><%= ev.from_label %> → <%= ev.to_label %><%= ev.is_round_trip ? ' (ida y vuelta)' : '' %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'calendar', size: 14 }) %> Fecha</span>
+                                    <span class="confirm-v" id="sumDate"><%= pickedDay ? pickedDay.long : '-' %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'clock', size: 14 }) %> Horario</span>
+                                    <span class="confirm-v">Salida <%= ev.depart_label %><%= ev.is_round_trip ? ` · regreso ${ev.return_label}` : '' %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'users', size: 14 }) %> Lugares</span>
+                                    <span class="confirm-v" data-seats-label><%= seatsValue %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'credit-card', size: 14 }) %> Pago</span>
+                                    <span class="confirm-v" id="sumPayment">-</span>
+                                </div>
+                                <div class="confirm-item total-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'dollar-sign', size: 14 }) %> Total</span>
+                                    <span class="confirm-v total-value" data-total><%= mxn(evPrice * seatsValue) %></span>
+                                </div>
+                                <div class="confirm-item">
+                                    <span class="confirm-k"><%- include('partials/icon', { name: 'user', size: 14 }) %> Contacto</span>
+                                    <span class="confirm-v" id="sumContact">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cancel-policy">
+                            <p class="cancel-title"><%- include('partials/icon', { name: 'info', size: 14 }) %> Política de cancelación</p>
+                            <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar devolución.</p>
+                        </div>
+
+                        <div class="step-actions reserve-actions">
+                            <button type="button" class="btn btn-ghost" data-prev-step>
+                                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
+                            </button>
+                            <button type="submit" class="btn btn-wine reserve-submit" id="specialSubmit">
+                                <%- include('partials/icon', { name: 'check', size: 16 }) %> Confirmar reserva
+                            </button>
+                            <a class="btn btn-ghost reserve-cancel" href="/#<%= encodeURIComponent(ev.slug) %>">
+                                <%- include('partials/icon', { name: 'x', size: 16 }) %> Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+            </div>
+        </form>
+    </section>
+</main>
+
+<%- include('partials/site-footer') %>
+
+<%- include('partials/toast') %>
+<%- include('partials/footer') %>
+
+<script>
+    (function () {
+        const form = document.getElementById("specialForm");
+        if (!form) return;
+
+        const PRICE = <%- JSON.stringify(evPrice) %>;
+        const EVENT_TITLE = <%- JSON.stringify(ev.title) %>;
+        const TOTAL_STEPS = 4;
+        const PAY_LABELS = {TAQUILLA: "Taquilla (paga al abordar)", TRANSFERENCIA: "Transferencia", ONLINE: "Pago en línea"};
+
+        const stepPanels = Array.from(form.querySelectorAll(".form-step"));
+        const stepDots = Array.from(form.querySelectorAll(".wizard-step"));
+        const dateInputs = Array.from(form.querySelectorAll("input[name='trip_date']"));
+        const seatsInput = document.getElementById("seats");
+        const seatsText = document.getElementById("seatsText");
+        const seatsHintText = document.getElementById("seatsHintText");
+        const minusBtn = document.getElementById("seatsMinus");
+        const plusBtn = document.getElementById("seatsPlus");
+        const nameInput = document.getElementById("customer_name");
+        const phoneInput = document.getElementById("phone");
+        const payInput = document.getElementById("payment_method");
+        const transferWrap = document.getElementById("transferWrap");
+        const onlineWrap = document.getElementById("onlineWrap");
+
+        let currentStep = 1;
+        let maxReachedStep = 1;
+
+        const toast = (msg, variant = "danger") => {
+            if (typeof window.notify === "function") window.notify(msg, {variant, delay: 2400});
+            else alert(msg);
+        };
+
+        const money = (n) => "$" + Number(n || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});
+        const pickedInput = () => dateInputs.find((x) => x.checked) || null;
+        const maxSeats = () => {
+            const el = pickedInput();
+            return el ? Math.max(0, Number(el.dataset.available || 0)) : 0;
+        };
+
+        /* ----- Paso 1: fecha y lugares ----- */
+        function renderSeats() {
+            const max = maxSeats();
+            let seats = Number(seatsInput.value || 1);
+            seats = max > 0 ? Math.min(Math.max(1, seats), max) : 1;
+            seatsInput.value = String(seats);
+            seatsText.textContent = String(seats);
+            form.querySelectorAll("[data-seats-label]").forEach((el) => { el.textContent = String(seats); });
+            form.querySelectorAll("[data-total]").forEach((el) => { el.textContent = money(seats * PRICE); });
+            minusBtn.disabled = seats <= 1;
+            plusBtn.disabled = max <= 0 || seats >= max;
+            seatsHintText.textContent = max > 0
+                ? `Quedan ${max} lugar${max === 1 ? "" : "es"} para esta fecha.`
+                : "Elige una fecha con lugares.";
+            dateInputs.forEach((x) => x.closest(".special-day")?.classList.toggle("is-picked", x.checked));
+            updateSummary();
+        }
+
+        /* ----- Paso 3: pago ----- */
+        function setPayment(value) {
+            payInput.value = value;
+            form.querySelectorAll("[data-set-pay]").forEach((b) => {
+                const on = b.getAttribute("data-set-pay") === value;
+                b.classList.toggle("is-on", on);
+                b.setAttribute("aria-pressed", String(on));
+            });
+            transferWrap.hidden = value !== "TRANSFERENCIA";
+            onlineWrap.hidden = value !== "ONLINE";
+            updateSummary();
+        }
+
+        /* ----- Paso 4: resumen ----- */
+        function updateSummary() {
+            const picked = pickedInput();
+            document.getElementById("sumDate").textContent = picked ? picked.dataset.long : "-";
+            document.getElementById("sumPayment").textContent = PAY_LABELS[payInput.value] || "-";
+            const name = String(nameInput.value || "").trim();
+            const phone = String(phoneInput.value || "").trim();
+            document.getElementById("sumContact").textContent = name ? `${name}${phone ? " · " + phone : ""}` : "-";
+        }
+
+        /* ----- Validación por paso ----- */
+        function setInvalid(el, invalid) {
+            el.classList.toggle("is-invalid", invalid);
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                if (!pickedInput()) { toast("Selecciona una fecha."); return false; }
+                if (maxSeats() < Number(seatsInput.value || 1)) { toast("No hay lugares suficientes en esa fecha."); return false; }
+                return true;
+            }
+            if (step === 2) {
+                const nameOk = String(nameInput.value || "").trim().length > 0;
+                const phoneOk = String(phoneInput.value || "").replace(/\D/g, "").length === 10;
+                setInvalid(nameInput, !nameOk);
+                setInvalid(phoneInput, !phoneOk);
+                const first = !nameOk ? nameInput : (!phoneOk ? phoneInput : null);
+                if (first) {
+                    first.focus({preventScroll: true});
+                    first.scrollIntoView({behavior: "smooth", block: "center"});
+                    return false;
+                }
+                return true;
+            }
+            if (step === 3) {
+                if (!PAY_LABELS[payInput.value]) { toast("Elige un método de pago."); return false; }
+                return true;
+            }
+            return true;
+        }
+
+        /* ----- Navegación ----- */
+        function goToStep(step) {
+            currentStep = Math.max(1, Math.min(TOTAL_STEPS, step));
+            maxReachedStep = Math.max(maxReachedStep, currentStep);
+            stepDots.forEach((dot) => {
+                const n = Number(dot.dataset.stepTarget || 1);
+                dot.classList.toggle("is-active", n === currentStep);
+                dot.classList.toggle("active", n === currentStep);
+                dot.classList.toggle("is-done", n < currentStep);
+            });
+            stepPanels.forEach((panel) => panel.classList.toggle("is-active", Number(panel.dataset.step) === currentStep));
+            updateSummary();
+            form.closest(".reserve-shell")?.scrollIntoView({behavior: "smooth", block: "start"});
+        }
+
+        function goNext() {
+            if (validateStep(currentStep)) goToStep(currentStep + 1);
+        }
+
+        form.addEventListener("click", (e) => {
+            const payBtn = e.target.closest("[data-set-pay]");
+            if (payBtn) { e.preventDefault(); setPayment(payBtn.getAttribute("data-set-pay")); return; }
+            if (e.target.closest("[data-next-step]")) { e.preventDefault(); goNext(); return; }
+            if (e.target.closest("[data-prev-step]")) { e.preventDefault(); goToStep(currentStep - 1); }
+        });
+
+        stepDots.forEach((dot) => {
+            dot.addEventListener("click", () => {
+                const target = Number(dot.dataset.stepTarget || 1);
+                if (target <= currentStep) return goToStep(target);
+                for (let s = currentStep; s < target; s++) {
+                    if (!validateStep(s)) return goToStep(s);
+                }
+                goToStep(target);
+            });
+        });
+
+        dateInputs.forEach((x) => x.addEventListener("change", renderSeats));
+        minusBtn.addEventListener("click", () => { seatsInput.value = String(Number(seatsInput.value || 1) - 1); renderSeats(); });
+        plusBtn.addEventListener("click", () => { seatsInput.value = String(Number(seatsInput.value || 1) + 1); renderSeats(); });
+
+        phoneInput.addEventListener("input", () => {
+            const digits = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+            if (digits !== phoneInput.value) phoneInput.value = digits;
+        });
+        [nameInput, phoneInput].forEach((el) => el.addEventListener("input", () => { setInvalid(el, false); updateSummary(); }));
+
+        /* ----- Copiar datos de transferencia ----- */
+        document.getElementById("copyClabeBtn")?.addEventListener("click", async () => {
+            try {
+                const card = (document.getElementById("bankClabe")?.textContent || "").replace(/[\s-]/g, "");
+                await navigator.clipboard.writeText(card);
+                toast("Número de tarjeta copiado", "success");
+            } catch {
+                toast("No pude copiar el número. Selecciónalo manualmente.");
+            }
+        });
+
+        document.getElementById("copyTransferMsgBtn")?.addEventListener("click", async () => {
+            const picked = pickedInput();
+            const seats = Number(seatsInput.value || 1);
+            const msg = [
+                `Hola, hice una transferencia para ${EVENT_TITLE}.`,
+                picked ? `Fecha: ${picked.dataset.long}` : null,
+                `Lugares: ${seats}`,
+                `Total: ${money(seats * PRICE)}`,
+                nameInput.value.trim() ? `Nombre: ${nameInput.value.trim()}` : null,
+            ].filter(Boolean).join("\n");
+            try {
+                await navigator.clipboard.writeText(msg);
+                toast("Mensaje copiado", "success");
+            } catch {
+                toast("No pude copiar el mensaje. Intenta de nuevo.");
+            }
+        });
+
+        /* ----- Envío ----- */
+        form.addEventListener("submit", (e) => {
+            if (currentStep < TOTAL_STEPS) {
+                e.preventDefault();
+                goNext();
+                return;
+            }
+            for (let s = 1; s < TOTAL_STEPS; s++) {
+                if (!validateStep(s)) {
+                    e.preventDefault();
+                    goToStep(s);
+                    return;
+                }
+            }
+            document.getElementById("specialSubmit").disabled = true;
+        });
+
+        setPayment(payInput.value || "TAQUILLA");
+        renderSeats();
+        const startStep = Number(form.dataset.startStep || 1);
+        if (startStep > 1) {
+            maxReachedStep = startStep;
+            goToStep(startStep);
+            if (startStep === 2) validateStep(2);
+        }
+    })();
+</script>
+</body>
+</html>

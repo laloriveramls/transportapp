@@ -8,6 +8,7 @@ const fs = require("fs");
 const { pool, hasDb } = require("../db");
 const { requireDb } = require("../middleware/requireDb");
 const { formatRouteLabel, formatRouteEndpoint } = require("../locations");
+const specialEvents = require("../specialEvents");
 
 const router = express.Router();
 
@@ -162,6 +163,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
                 t.trip_date,
                 dt.direction,
                 dt.depart_time,
+                dt.special_event_id,
 
                 GROUP_CONCAT(p.passenger_name ORDER BY p.id SEPARATOR ', ') AS passenger_names
             FROM transporte_tickets tk
@@ -173,13 +175,21 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
             GROUP BY
                 tk.code, r.id, r.customer_name, r.phone, r.type, r.status, r.seats, r.package_details,
                 r.vic_location, r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
-                t.trip_date, dt.direction, dt.depart_time
+                t.trip_date, dt.direction, dt.depart_time, dt.special_event_id
             LIMIT 1
         `,
         [code]
     );
 
     if (!row) return res.status(404).send("Ticket no encontrado.");
+
+    let specialEvent = null;
+    if (Number(row.special_event_id || 0)) {
+        try {
+            specialEvent = await specialEvents.getEventById(pool, row.special_event_id);
+        } catch {
+        }
+    }
 
     // ✅ If passengers were not captured, I show placeholders: Pasajero 1..N
     if (String(row.type || "").toUpperCase() === "PASSENGER") {
@@ -207,6 +217,10 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
         pdfUrl: `${ticketPath}/pdf/view?return=${pdfReturn}`,
         printUrl: `${ticketPath}/print`,
         directionLabel,
+        ...(specialEvent ? {
+            routeLabel: `${formatRouteLabel(row.direction, row.vic_location)} · ${specialEvents.routeNote(specialEvent)}`,
+            specialNote: specialEvents.routeNote(specialEvent),
+        } : {}),
     }));
 });
 
