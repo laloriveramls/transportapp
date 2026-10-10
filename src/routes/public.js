@@ -482,7 +482,7 @@ async function routeLabelForReservation(r, separator = " → ") {
 function notifyReservation(reservationId, buildMessage) {
     void (async () => {
         const kind = buildMessage === paymentConfirmedMessage ? "Pago confirmado" : "Nueva reserva";
-        const fallback = {text: `🔔 <b>${kind}</b> · ID ${escapeHtml(reservationId)}\n<i>Revisa el panel admin para ver los detalles.</i>`};
+        const fallback = {text: `🆕 <b>${kind}</b>: ID ${escapeHtml(reservationId)}\n<i>Revisa el panel admin para ver los detalles.</i>`};
         let message = null;
         try {
             const snapshot = await loadReservationSnapshot(pool, reservationId);

@@ -16,14 +16,6 @@ const STATUS_LABELS = {
     CANCELLED: "Cancelada",
     EXPIRED: "Expirada",
 };
-const STATUS_ICONS = {
-    PAY_AT_BOARDING: "🟡",
-    PENDING_PAYMENT: "⏳",
-    PAID: "✅",
-    CANCELLED: "⛔",
-    EXPIRED: "⌛",
-};
-
 /* =========================
    Formatters
    ========================= */
@@ -167,44 +159,47 @@ async function loadReservationSnapshot(db, reservationId) {
    Message pieces
    ========================= */
 
+function line(label, value) {
+    return `${label}: ${value}`;
+}
+
 function tripLines(s) {
-    const lines = [];
     const route = s.event
         ? `${s.event.from_label} → ${s.event.to_label}`
         : formatRouteLabel(s.direction, s.vic_location, " → ");
+    const time = specialEvents.formatTime12(s.depart_hhmm);
+    const roundTrip = s.event?.is_round_trip ? `, regreso ${s.event.return_label}` : "";
 
-    lines.push(`🗓 <b>${escapeHtml(prettyDate(s.trip_date))}</b> · ${escapeHtml(specialEvents.formatTime12(s.depart_hhmm))}`);
-    lines.push(`🛣 ${escapeHtml(route)}`);
-    if (s.event?.is_round_trip) {
-        lines.push(`↩️ Regreso ${escapeHtml(s.event.return_label)} · viaje redondo`);
-    }
-    return lines;
+    return [
+        line("Fecha", `<b>${escapeHtml(prettyDate(s.trip_date))}</b>, ${escapeHtml(time)}`),
+        line("Ruta", `${escapeHtml(route)}${escapeHtml(roundTrip)}`),
+    ];
 }
 
 function cargoLines(s) {
     if (String(s.type).toUpperCase() === "PACKAGE") {
-        return [`📦 ${s.package_details ? escapeHtml(s.package_details) : "<i>Sin descripción</i>"}`];
+        return [line("Paquete", s.package_details ? escapeHtml(s.package_details) : "<i>sin descripción</i>")];
     }
     const seats = Number(s.seats || 1);
     const kids = Number(s.child_seats || 0);
-    const kidsText = kids > 0 ? ` (${plural(kids, "niño", "niños")} 6-10)` : "";
-    return [`👥 <b>${plural(seats, "pasajero", "pasajeros")}</b>${kidsText}`];
+    const kidsText = kids > 0 ? ` (${plural(kids, "niño", "niños")} de 6 a 10)` : "";
+    return [line("Pasajeros", `<b>${seats}</b>${kidsText}`)];
 }
 
 function occupancyLine(s) {
     if (String(s.type).toUpperCase() !== "PASSENGER" || !s.capacity) return null;
     const left = Math.max(0, s.capacity - s.used);
-    if (left === 0) return `🚫 Salida llena (${s.used}/${s.capacity})`;
-    const warn = left <= 2 ? "⚠️" : "🪑";
-    return `${warn} Ocupación ${s.used}/${s.capacity} · ${plural(left, "lugar libre", "lugares libres")}`;
+    if (left === 0) return line("Cupo", `<b>salida llena</b> (${s.used} de ${s.capacity})`);
+    const text = `${s.used} de ${s.capacity}, ${left === 1 ? "queda 1 lugar" : `quedan ${left} lugares`}`;
+    return line("Cupo", left <= 2 ? `<b>${text}</b>` : text);
 }
 
 function contactLines(s) {
     const wa = waUrl(s.phone, `Hola ${s.customer_name || ""}, te contacto por tu reserva ${s.folio}.`);
     const phone = escapeHtml(prettyPhone(s.phone));
     return [
-        `👤 ${escapeHtml(s.customer_name || "-")}`,
-        `📞 ${wa ? `<a href="${escapeHtml(wa)}">${phone}</a>` : `<code>${phone}</code>`}`,
+        line("Contacto", escapeHtml(s.customer_name || "-")),
+        line("Teléfono", wa ? `<a href="${escapeHtml(wa)}">${phone}</a>` : phone),
     ];
 }
 
@@ -214,13 +209,14 @@ function paymentLines(s) {
     const unit = Number(s.unit_price_mxn || 0);
     const seats = Number(s.seats || 1);
     const breakdown = String(s.type).toUpperCase() === "PASSENGER" && unit > 0 && !Number(s.child_seats || 0) && seats > 1
-        ? ` <i>(${seats} × ${escapeHtml(money(unit))})</i>`
+        ? ` (${seats} × ${escapeHtml(money(unit))})`
         : "";
+    const status = STATUS_LABELS[st] ? STATUS_LABELS[st].toLowerCase() : st.toLowerCase();
 
     return [
-        `💳 ${escapeHtml(PAY_LABELS[pm] || pm || "-")} · ${STATUS_ICONS[st] || "•"} ${escapeHtml(STATUS_LABELS[st] || st || "-")}`,
-        pm === "TRANSFERENCIA" && s.transfer_ref ? `🔖 Ref. <code>${escapeHtml(s.transfer_ref)}</code>` : null,
-        `💰 <b>${escapeHtml(money(s.amount_total_mxn))}</b>${breakdown}`,
+        line("Pago", `${escapeHtml(PAY_LABELS[pm] || pm || "-")}${status ? `, ${escapeHtml(status)}` : ""}`),
+        pm === "TRANSFERENCIA" && s.transfer_ref ? line("Referencia", `<code>${escapeHtml(s.transfer_ref)}</code>`) : null,
+        line("Total", `<b>${escapeHtml(money(s.amount_total_mxn))}</b>${breakdown}`),
     ];
 }
 
@@ -230,13 +226,13 @@ function buttonsFor(s) {
     const row2 = [];
 
     const viewUrl = base && s.public_token ? `${base}/pay/t/${encodeURIComponent(s.public_token)}` : "";
-    if (isPublicHttpsUrl(viewUrl)) row1.push({text: "🔎 Ver reserva", url: viewUrl});
+    if (isPublicHttpsUrl(viewUrl)) row1.push({text: "Ver reserva", url: viewUrl});
 
     const tripUrl = base ? `${base}/admin/trip/${s.trip_id}` : "";
-    if (isPublicHttpsUrl(tripUrl)) row1.push({text: "🧭 Ver salida", url: tripUrl});
+    if (isPublicHttpsUrl(tripUrl)) row1.push({text: "Ver salida", url: tripUrl});
 
     const wa = waUrl(s.phone, `Hola ${s.customer_name || ""}, te contacto por tu reserva ${s.folio}.`);
-    if (wa) row2.push({text: "💬 WhatsApp al cliente", url: wa});
+    if (wa) row2.push({text: "WhatsApp al cliente", url: wa});
 
     return [row1, row2].filter((row) => row.length);
 }
@@ -246,7 +242,7 @@ function viewLinkLines(s) {
     const base = baseUrl();
     const viewUrl = base && s.public_token ? `${base}/pay/t/${encodeURIComponent(s.public_token)}` : "";
     if (!viewUrl || isPublicHttpsUrl(viewUrl)) return [];
-    return [`🔗 ${escapeHtml(viewUrl)}`];
+    return [line("Reserva", escapeHtml(viewUrl))];
 }
 
 function compose(sections) {
@@ -260,18 +256,15 @@ function compose(sections) {
    Messages
    ========================= */
 
-function header(s, verb) {
-    const kind = TYPE_LABELS[String(s.type).toUpperCase()] || "Reserva";
-    const title = s.event
-        ? `🎡 <b>${verb} · ${escapeHtml(s.event.title)}</b>`
-        : `${verb === "Nueva reserva" ? "🆕" : "💵"} <b>${verb}</b> · ${escapeHtml(kind)}`;
-    return [title, `<code>${escapeHtml(s.folio)}</code>`];
+function header(s, emoji, verb) {
+    const kind = s.event ? s.event.title : (TYPE_LABELS[String(s.type).toUpperCase()] || "Reserva");
+    return [`${emoji} <b>${verb}</b>: ${escapeHtml(kind)}`, `Folio <code>${escapeHtml(s.folio)}</code>`];
 }
 
 function newReservationMessage(s) {
     return {
         text: compose([
-            header(s, "Nueva reserva"),
+            header(s, "🆕", "Nueva reserva"),
             [...tripLines(s), ...cargoLines(s), occupancyLine(s)],
             contactLines(s),
             paymentLines(s),
@@ -284,10 +277,10 @@ function newReservationMessage(s) {
 function paymentConfirmedMessage(s) {
     return {
         text: compose([
-            header(s, "Pago confirmado"),
+            header(s, "✅", "Pago confirmado"),
             [...tripLines(s), ...cargoLines(s)],
             contactLines(s),
-            [`✅ Pagado en línea · <b>${escapeHtml(money(s.amount_total_mxn))}</b>`, "🎫 Boleto emitido"],
+            [line("Pago", "en línea, boleto emitido"), line("Total", `<b>${escapeHtml(money(s.amount_total_mxn))}</b>`)],
             viewLinkLines(s),
         ]),
         buttons: buttonsFor(s),
@@ -304,7 +297,7 @@ function lastReservationMessage(s) {
         : "";
     return {
         text: compose([
-            [`🧾 <b>Última reserva</b>`, `<code>${escapeHtml(s.folio)}</code> · ID ${escapeHtml(s.id)}`],
+            [`🧾 <b>Última reserva</b>`, `Folio <code>${escapeHtml(s.folio)}</code>, ID ${escapeHtml(s.id)}`],
             [...tripLines(s), ...cargoLines(s), occupancyLine(s)],
             contactLines(s),
             paymentLines(s),
