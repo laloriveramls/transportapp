@@ -164,9 +164,7 @@ function line(label, value, emoji = "") {
 }
 
 function tripLines(s) {
-    const route = s.event
-        ? `${s.event.from_label} → ${s.event.to_label}`
-        : formatRouteLabel(s.direction, s.vic_location, " → ");
+    const route = routeText(s);
     const time = specialEvents.formatTime12(s.depart_hhmm);
     const roundTrip = s.event?.is_round_trip ? `, regreso ${s.event.return_label}` : "";
 
@@ -194,8 +192,37 @@ function occupancyLine(s) {
     return left <= 2 ? line("Cupo", `<b>${text}</b>`, "⚠️") : line("Cupo", text, "🪑");
 }
 
+function routeText(s) {
+    return s.event
+        ? `${s.event.from_label} → ${s.event.to_label}`
+        : formatRouteLabel(s.direction, s.vic_location, " → ");
+}
+
+function customerWhatsappText(s) {
+    const name = String(s.customer_name || "").trim();
+    const isPackage = String(s.type).toUpperCase() === "PACKAGE";
+    const pm = String(s.payment_method || "").toUpperCase();
+    const st = String(s.status || "").toUpperCase();
+    const seats = Number(s.seats || 1);
+    const kids = Number(s.child_seats || 0);
+    const roundTrip = s.event?.is_round_trip ? ` (regreso ${s.event.return_label})` : "";
+    const payment = [PAY_LABELS[pm], STATUS_LABELS[st] && STATUS_LABELS[st].toLowerCase()].filter(Boolean).join(", ");
+
+    return [
+        `Hola${name ? ` ${name}` : ""}, te escribimos de Servicio de Transporte Victoria ↔ Llera sobre tu reserva ${s.folio}.`,
+        "",
+        s.event ? `Viaje: ${s.event.title}` : null,
+        `Ruta: ${routeText(s)}${roundTrip}`,
+        `Fecha: ${prettyDate(s.trip_date)}, ${specialEvents.formatTime12(s.depart_hhmm)}`,
+        isPackage
+            ? `Paquete: ${s.package_details || "sin descripción"}`
+            : `Pasajeros: ${seats}${kids > 0 ? ` (${plural(kids, "niño", "niños")})` : ""}`,
+        `Total: ${money(s.amount_total_mxn)}${payment ? ` (${payment})` : ""}`,
+    ].filter((x) => x !== null).join("\n");
+}
+
 function contactLines(s) {
-    const wa = waUrl(s.phone, `Hola ${s.customer_name || ""}, te contacto por tu reserva ${s.folio}.`);
+    const wa = waUrl(s.phone, customerWhatsappText(s));
     const phone = escapeHtml(prettyPhone(s.phone));
     return [
         line("Contacto", escapeHtml(s.customer_name || "-"), "👤"),
@@ -231,7 +258,7 @@ function buttonsFor(s) {
     const tripUrl = base ? `${base}/admin/trip/${s.trip_id}` : "";
     if (isPublicHttpsUrl(tripUrl)) row1.push({text: "Ver salida", url: tripUrl});
 
-    const wa = waUrl(s.phone, `Hola ${s.customer_name || ""}, te contacto por tu reserva ${s.folio}.`);
+    const wa = waUrl(s.phone, customerWhatsappText(s));
     if (wa) row2.push({text: "WhatsApp al cliente", url: wa});
 
     return [row1, row2].filter((row) => row.length);
