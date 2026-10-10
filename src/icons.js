@@ -56,6 +56,10 @@ function getIconNode(name) {
     return { official, node };
 }
 
+function hasIcon(name) {
+    return Array.isArray(lucide[toPascalCase(resolveName(name))]);
+}
+
 function attrsToString(attrs) {
     return Object.entries(attrs || {})
         .filter(([key, value]) => key !== "key" && value != null)
@@ -153,6 +157,7 @@ function getClientIconMap() {
 module.exports = {
     renderIcon,
     resolveName,
+    hasIcon,
     getClientIconMap,
     ALIASES,
     CLIENT_ICONS,

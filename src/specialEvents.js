@@ -1,12 +1,57 @@
 "use strict";
 
+const {hasIcon, resolveName} = require("./icons");
+
 const SPECIAL_MAX_CAP = 60;
 const ACTIVE_RESERVATION_STATUSES = "('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')";
+const DEFAULT_ICON = "ferris-wheel";
+
+// Suggested Lucide icons for the admin picker; any other valid Lucide name is accepted too.
+const ICON_CHOICES = [
+    {name: "ferris-wheel", label: "Feria"},
+    {name: "tent", label: "Carpa"},
+    {name: "party-popper", label: "Fiesta"},
+    {name: "music", label: "Música"},
+    {name: "mic-vocal", label: "Concierto"},
+    {name: "guitar", label: "Guitarra"},
+    {name: "drama", label: "Teatro"},
+    {name: "trophy", label: "Torneo"},
+    {name: "volleyball", label: "Deporte"},
+    {name: "medal", label: "Competencia"},
+    {name: "church", label: "Iglesia"},
+    {name: "flower", label: "Flores"},
+    {name: "sparkles", label: "Especial"},
+    {name: "star", label: "Estrella"},
+    {name: "heart", label: "Corazón"},
+    {name: "gift", label: "Regalo"},
+    {name: "cake", label: "Pastel"},
+    {name: "graduation-cap", label: "Graduación"},
+    {name: "ticket", label: "Boleto"},
+    {name: "calendar-heart", label: "Fecha especial"},
+    {name: "utensils", label: "Comida"},
+    {name: "beer", label: "Bebidas"},
+    {name: "store", label: "Tianguis"},
+    {name: "shopping-bag", label: "Compras"},
+    {name: "tractor", label: "Expo ganadera"},
+    {name: "wheat", label: "Cosecha"},
+    {name: "tree-pine", label: "Naturaleza"},
+    {name: "mountain", label: "Montaña"},
+    {name: "waves", label: "Playa / río"},
+    {name: "sun", label: "Verano"},
+    {name: "ghost", label: "Día de muertos"},
+    {name: "snowflake", label: "Invierno"},
+];
+
+function normalizeIconName(raw) {
+    const name = resolveName(String(raw || "").trim().toLowerCase());
+    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) && name.length <= 40 && hasIcon(name) ? name : "";
+}
 
 const DEFAULT_EVENT = {
     slug: "feria-tamaulipas-2026",
     title: "Feria Tamaulipas 2026",
     tab_label: "Feria 2026",
+    icon: DEFAULT_ICON,
     description: "Viaje redondo de Llera a la Feria Tamaulipas en Ciudad Victoria. Sales a las 5:00 PM y regresas a las 11:00 PM.",
     direction: "LLE_TO_VIC",
     depart_time: "17:00",
@@ -107,6 +152,7 @@ function normalizeEvent(row) {
         slug: String(row.slug || ""),
         title: String(row.title || ""),
         tab_label: String(row.tab_label || row.title || "Especial"),
+        icon: normalizeIconName(row.icon) || DEFAULT_ICON,
         description: String(row.description || ""),
         direction: row.direction,
         depart_time: hhmm(row.depart_time),
@@ -303,6 +349,9 @@ async function eventDays(conn, ev, {includePast = false} = {}) {
 
 module.exports = {
     SPECIAL_MAX_CAP,
+    DEFAULT_ICON,
+    ICON_CHOICES,
+    normalizeIconName,
     DEFAULT_EVENT,
     todayISO_MTY,
     nowHHMM_MTY,

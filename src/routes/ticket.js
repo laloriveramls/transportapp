@@ -220,6 +220,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
         ...(specialEvent ? {
             routeLabel: `${formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop)} · ${specialEvents.routeNote(specialEvent)}`,
             specialNote: specialEvents.routeNote(specialEvent),
+            specialIcon: specialEvent.icon,
         } : {}),
     }));
 });

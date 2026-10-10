@@ -1,10 +1,13 @@
 <%
 const f = ev || {
-    title: '', tab_label: '', slug: '', description: '', direction: 'LLE_TO_VIC',
+    title: '', tab_label: '', icon: 'ferris-wheel', slug: '', description: '', direction: 'LLE_TO_VIC',
     depart_time: '17:00', return_time: '', start_date: '', end_date: '',
     capacity_passengers: 14, price_mxn: 0, active: true,
 };
 const uid = ev ? `ev${ev.id}` : 'evNew';
+const choices = (typeof iconChoices !== 'undefined' && Array.isArray(iconChoices)) ? iconChoices : [];
+const currentIcon = f.icon || 'ferris-wheel';
+const isCustomIcon = !choices.some((c) => c.name === currentIcon);
 %>
 <form method="POST" action="<%= action %>" class="esp-form">
     <fieldset class="esp-fieldset">
@@ -25,6 +28,32 @@ const uid = ev ? `ev${ev.id}` : 'evNew';
             <div class="field esp-span-all">
                 <label class="mini" for="<%= uid %>-desc">Descripción</label>
                 <textarea id="<%= uid %>-desc" name="description" maxlength="255" rows="2"><%= f.description %></textarea>
+            </div>
+            <div class="field esp-span-all esp-icon-field" data-icon-picker>
+                <span class="mini" id="<%= uid %>-icon-lbl">Icono <span class="esp-hint">(pestaña del inicio, agenda y ticket)</span></span>
+                <div class="esp-icon-grid" role="radiogroup" aria-labelledby="<%= uid %>-icon-lbl">
+                    <% choices.forEach((c) => { const on = c.name === currentIcon; %>
+                    <button type="button" class="esp-icon-opt <%= on ? 'is-on' : '' %>" role="radio" aria-checked="<%= on %>"
+                            data-icon="<%= c.name %>" title="<%= c.label %> (<%= c.name %>)" aria-label="<%= c.label %>">
+                        <%- include('icon', { name: c.name, size: 20 }) %>
+                        <span class="esp-icon-opt-lbl"><%= c.label %></span>
+                    </button>
+                    <% }) %>
+                </div>
+                <div class="esp-icon-custom">
+                    <span class="esp-icon-preview <%= isCustomIcon ? 'is-on' : '' %>" data-icon-preview aria-hidden="true">
+                        <%- include('icon', { name: currentIcon, size: 20 }) %>
+                    </span>
+                    <div class="esp-icon-input">
+                        <label class="mini" for="<%= uid %>-icon">Otro icono (nombre)</label>
+                        <input id="<%= uid %>-icon" name="icon" maxlength="40" required value="<%= currentIcon %>"
+                               pattern="[a-z0-9]+(-[a-z0-9]+)*" autocapitalize="off" spellcheck="false"
+                               placeholder="ej. music, trophy, tent" data-icon-input aria-describedby="<%= uid %>-icon-help">
+                        <small class="esp-hint" id="<%= uid %>-icon-help" data-icon-help>
+                            Elige uno de la lista o escribe su nombre en minúsculas con guiones.
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
     </fieldset>
@@ -61,7 +90,7 @@ const uid = ev ? `ev${ev.id}` : 'evNew';
             </div>
             <div class="field">
                 <label class="mini" for="<%= uid %>-price">Precio por persona (MXN)</label>
-                <input id="<%= uid %>-price" name="price_mxn" type="number" inputmode="decimal" min="0" step="0.01" required value="<%= Number(f.price_mxn || 0).toFixed(2) %>">
+                <input id="<%= uid %>-price" name="price_mxn" type="number" inputmode="decimal" min="0" step="any" required value="<%= Math.round(Number(f.price_mxn || 0) * 100) / 100 %>">
             </div>
         </div>
     </fieldset>

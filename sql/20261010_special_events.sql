@@ -18,6 +18,7 @@ CREATE TABLE transporte_special_events
     slug                VARCHAR(80)                      NOT NULL,
     title               VARCHAR(120)                     NOT NULL,
     tab_label           VARCHAR(40)                      NOT NULL,
+    icon                VARCHAR(40)                      NOT NULL DEFAULT 'ferris-wheel',
     description         VARCHAR(255)                     NULL     DEFAULT NULL,
     direction           ENUM ('VIC_TO_LLE','LLE_TO_VIC') NOT NULL DEFAULT 'LLE_TO_VIC',
     depart_time         TIME                             NOT NULL,

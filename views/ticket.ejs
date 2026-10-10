@@ -331,7 +331,7 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
             </div>
             <% if (typeof specialNote !== "undefined" && specialNote) { %>
                 <p class="pass-special-note">
-                    <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                    <%- include('partials/icon', { name: (typeof specialIcon !== 'undefined' && specialIcon) || 'ferris-wheel', size: 14 }) %>
                     <%= specialNote %>
                 </p>
             <% } %>

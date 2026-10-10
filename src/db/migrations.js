@@ -248,7 +248,16 @@ async function ensureTemplateSpecialColumn(pool) {
 
 async function ensureSpecialEventsTable(pool) {
     const [[tbl]] = await pool.query("SHOW TABLES LIKE 'transporte_special_events'");
-    if (tbl) return {applied: false, column: 'transporte_special_events'};
+    if (tbl) {
+        if (await columnExists(pool, 'transporte_special_events', 'icon')) {
+            return {applied: false, column: 'transporte_special_events'};
+        }
+        await pool.query(`
+            ALTER TABLE transporte_special_events
+                ADD COLUMN icon VARCHAR(40) NOT NULL DEFAULT 'ferris-wheel' AFTER tab_label
+        `);
+        return {applied: true, column: 'transporte_special_events.icon'};
+    }
 
     await pool.query(`
         CREATE TABLE transporte_special_events
@@ -257,6 +266,7 @@ async function ensureSpecialEventsTable(pool) {
             slug                VARCHAR(80)                      NOT NULL,
             title               VARCHAR(120)                     NOT NULL,
             tab_label           VARCHAR(40)                      NOT NULL,
+            icon                VARCHAR(40)                      NOT NULL DEFAULT 'ferris-wheel',
             description         VARCHAR(255)                     NULL     DEFAULT NULL,
             direction           ENUM ('VIC_TO_LLE','LLE_TO_VIC') NOT NULL DEFAULT 'LLE_TO_VIC',
             depart_time         TIME                             NOT NULL,

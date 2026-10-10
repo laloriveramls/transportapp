@@ -80,7 +80,7 @@
                     <div class="home-tabs-tools">
                         <div class="nav nav-tabs home-seg wizard-steps" role="tablist" aria-label="Progreso de la reserva">
                             <button type="button" class="nav-link wizard-step is-active active" data-step-target="1">
-                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %></span>
+                                <span class="wizard-ico wizard-ico-now" aria-hidden="true"><%- include('partials/icon', { name: ev.icon, size: 14 }) %></span>
                                 <span class="wizard-ico wizard-ico-done" aria-hidden="true"><%- include('partials/icon', { name: 'check', size: 14 }) %></span>
                                 <span class="wizard-lbl">Viaje</span>
                             </button>
@@ -336,7 +336,7 @@
                         <div class="reserve-panel">
                             <div class="confirm-grid">
                                 <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %> Viaje</span>
+                                    <span class="confirm-k"><%- include('partials/icon', { name: ev.icon, size: 14 }) %> Viaje</span>
                                     <span class="confirm-v"><%= ev.title %></span>
                                 </div>
                                 <div class="confirm-item">

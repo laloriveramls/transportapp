@@ -18,6 +18,7 @@ const {
 } = require("../locations");
 const {requireDb} = require("../middleware/requireDb");
 const specialEvents = require("../specialEvents");
+const {renderIcon} = require("../icons");
 const {
     isPreviewMode,
     previewAgenda,
@@ -267,6 +268,7 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                    dt.depart_time,
                    se.title                                      AS special_title,
                    se.return_time                                AS special_return_time,
+                   se.icon                                       AS special_icon,
 
                    IF(dt.special_event_id > 0, COALESCE(dt.capacity_passengers, 0),
                       LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers,
@@ -389,6 +391,7 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
                    dt.depart_time,
                    se.title                                      AS special_title,
                    se.return_time                                AS special_return_time,
+                   se.icon                                       AS special_icon,
                    IF(dt.special_event_id > 0, COALESCE(dt.capacity_passengers, 0),
                       LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers
             FROM transporte_trips t
@@ -1183,6 +1186,7 @@ function parseSpecialEventForm(body) {
     const values = {
         title,
         tab_label: (String(body.tab_label || "").trim() || title).slice(0, 40),
+        icon: specialEvents.normalizeIconName(body.icon),
         slug: slugify(body.slug || title),
         description: String(body.description || "").trim().slice(0, 255) || null,
         direction: String(body.direction || "").trim(),
@@ -1197,6 +1201,7 @@ function parseSpecialEventForm(body) {
 
     let error = null;
     if (!values.title) error = "Captura el nombre del viaje.";
+    else if (!values.icon) error = "Ese icono no existe.";
     else if (!SLUG_RE.test(values.slug)) error = "La URL (slug) solo admite letras, números y guiones.";
     else if (values.direction !== "VIC_TO_LLE" && values.direction !== "LLE_TO_VIC") error = "Dirección no válida.";
     else if (!specialEvents.isValidHHMM(values.depart_time)) error = "Hora de salida no válida.";
@@ -1230,11 +1235,18 @@ router.get("/especiales", requireAdmin, requireDb, async (req, res) => {
             msg: String(req.query.msg || ""),
             err: String(req.query.err || ""),
             maxCap: specialEvents.SPECIAL_MAX_CAP,
+            iconChoices: specialEvents.ICON_CHOICES,
         });
     } catch (e) {
         console.error(e);
         return res.status(500).send("No pude cargar los viajes especiales. ¿Se aplicó la migración?");
     }
+});
+
+router.get("/api/icon", requireAdmin, (req, res) => {
+    const name = specialEvents.normalizeIconName(req.query.name);
+    if (!name) return res.json({ok: false});
+    return res.json({ok: true, name, svg: renderIcon(name, {size: 20})});
 });
 
 router.post("/especiales", requireAdmin, requireDb, async (req, res) => {
@@ -1245,11 +1257,11 @@ router.post("/especiales", requireAdmin, requireDb, async (req, res) => {
     try {
         await conn.beginTransaction();
         const [ins] = await conn.query(
-            `INSERT INTO transporte_special_events(slug, title, tab_label, description, direction, depart_time,
+            `INSERT INTO transporte_special_events(slug, title, tab_label, icon, description, direction, depart_time,
                                                    return_time, start_date, end_date, capacity_passengers,
                                                    price_mxn, active)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [values.slug, values.title, values.tab_label, values.description, values.direction, values.depart_time,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction, values.depart_time,
                 values.return_time, values.start_date, values.end_date, values.capacity_passengers,
                 values.price_mxn, values.active]
         );
@@ -1278,10 +1290,10 @@ router.post("/especiales/:id", requireAdmin, requireDb, async (req, res) => {
         await conn.beginTransaction();
         const [upd] = await conn.query(
             `UPDATE transporte_special_events
-             SET slug=?, title=?, tab_label=?, description=?, direction=?, depart_time=?, return_time=?,
+             SET slug=?, title=?, tab_label=?, icon=?, description=?, direction=?, depart_time=?, return_time=?,
                  start_date=?, end_date=?, capacity_passengers=?, price_mxn=?, active=?
              WHERE id = ? LIMIT 1`,
-            [values.slug, values.title, values.tab_label, values.description, values.direction, values.depart_time,
+            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction, values.depart_time,
                 values.return_time, values.start_date, values.end_date, values.capacity_passengers,
                 values.price_mxn, values.active, id]
         );

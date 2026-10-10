@@ -188,7 +188,7 @@
                         <div class="agenda-trip-body">
                             <% if (isSpecial) { %>
                                 <div class="agenda-trip-special">
-                                    <%- include('partials/icon', { name: 'ferris-wheel', size: 12 }) %>
+                                    <%- include('partials/icon', { name: t.special_icon || 'ferris-wheel', size: 12 }) %>
                                     <%= t.special_title %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %><% if (tripOff) { %> · deshabilitada<% } %>
                                 </div>
                             <% } %>

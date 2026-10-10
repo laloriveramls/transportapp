@@ -66,7 +66,7 @@
                 <header class="esp-head">
                     <div class="esp-head-copy">
                         <div class="esp-kicker">
-                            <%- include('partials/icon', { name: 'ferris-wheel', size: 14 }) %>
+                            <%- include('partials/icon', { name: ev.icon, size: 14 }) %>
                             <%= ev.range_label %> · <%= dirLabel(ev.direction) %>
                         </div>
                         <h3 class="esp-title"><%= ev.title %></h3>
@@ -125,7 +125,7 @@
                         <%- include('partials/icon', { name: 'pencil', size: 14 }) %> Editar datos del viaje
                         <%- include('partials/icon', { name: 'chevron-down', size: 14, icoClass: 'esp-chevron' }) %>
                     </summary>
-                    <%- include('partials/special-event-form', { ev, action: `/admin/especiales/${ev.id}`, submitLabel: 'Guardar cambios', maxCap }) %>
+                    <%- include('partials/special-event-form', { ev, action: `/admin/especiales/${ev.id}`, submitLabel: 'Guardar cambios', maxCap, iconChoices }) %>
                 </details>
 
                 <div class="esp-days-head">
@@ -189,7 +189,7 @@
                     <%- include('partials/icon', { name: 'plus', size: 16 }) %> Nuevo viaje especial
                     <%- include('partials/icon', { name: 'chevron-down', size: 14, icoClass: 'esp-chevron' }) %>
                 </summary>
-                <%- include('partials/special-event-form', { ev: null, action: '/admin/especiales', submitLabel: 'Crear viaje', maxCap }) %>
+                <%- include('partials/special-event-form', { ev: null, action: '/admin/especiales', submitLabel: 'Crear viaje', maxCap, iconChoices }) %>
             </details>
 
         </div>
@@ -199,5 +199,66 @@
 
 <%- include('partials/admin-footer') %>
 <script src="/js/theme.js"></script>
+<script>
+    (function () {
+        const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+        document.querySelectorAll("[data-icon-picker]").forEach((picker) => {
+            const input = picker.querySelector("[data-icon-input]");
+            const preview = picker.querySelector("[data-icon-preview]");
+            const help = picker.querySelector("[data-icon-help]");
+            const opts = Array.from(picker.querySelectorAll("[data-icon]"));
+            const helpHtml = help.innerHTML;
+            let timer = null;
+            let seq = 0;
+
+            function markChoice(name) {
+                let matched = false;
+                opts.forEach((b) => {
+                    const on = b.dataset.icon === name;
+                    matched = matched || on;
+                    b.classList.toggle("is-on", on);
+                    b.setAttribute("aria-checked", String(on));
+                });
+                preview.classList.toggle("is-on", !matched);
+            }
+
+            function setValidity(ok) {
+                input.classList.toggle("is-invalid", !ok);
+                input.setCustomValidity(ok ? "" : "Ese icono no existe.");
+                if (ok) help.innerHTML = helpHtml;
+                else help.textContent = "Ese icono no existe.";
+            }
+
+            async function lookup(name) {
+                const mine = ++seq;
+                if (!NAME_RE.test(name)) return setValidity(false);
+                try {
+                    const res = await fetch(`/admin/api/icon?name=${encodeURIComponent(name)}`, {headers: {Accept: "application/json"}});
+                    const data = await res.json();
+                    if (mine !== seq) return;
+                    if (data.ok) preview.innerHTML = data.svg;
+                    setValidity(!!data.ok);
+                } catch {
+                    if (mine === seq) setValidity(true);
+                }
+            }
+
+            opts.forEach((b) => b.addEventListener("click", () => {
+                input.value = b.dataset.icon;
+                preview.innerHTML = b.querySelector("svg").outerHTML;
+                markChoice(b.dataset.icon);
+                setValidity(true);
+            }));
+
+            input.addEventListener("input", () => {
+                const name = input.value.trim().toLowerCase();
+                markChoice(name);
+                clearTimeout(timer);
+                timer = setTimeout(() => lookup(name), 250);
+            });
+        });
+    })();
+</script>
 </body>
 </html>

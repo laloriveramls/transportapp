@@ -3305,6 +3305,114 @@ html[data-theme="dark"] body.page-especiales .esp-form textarea {
     color-scheme: dark;
 }
 
+/* Icon picker */
+body.page-especiales .esp-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr));
+    gap: 0.4rem;
+}
+
+body.page-especiales .esp-icon-opt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    min-height: 64px;
+    padding: 0.5rem 0.3rem;
+    border: 0;
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--muted);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+body.page-especiales .esp-icon-opt:hover {
+    color: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+}
+
+body.page-especiales .esp-icon-opt:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 55%, transparent), 0 0 0 0.22rem var(--ring);
+}
+
+body.page-especiales .esp-icon-opt.is-on {
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 9%, var(--card));
+    box-shadow: 0 0 0 2px var(--wine);
+}
+
+body.page-especiales .esp-icon-opt-lbl {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+body.page-especiales .esp-icon-custom {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+}
+
+body.page-especiales .esp-icon-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    margin-top: 1.25rem;
+    border-radius: 10px;
+    color: var(--muted);
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+body.page-especiales .esp-icon-preview.is-on {
+    color: var(--wine);
+    box-shadow: 0 0 0 2px var(--wine);
+}
+
+body.page-especiales .esp-icon-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 22rem;
+}
+
+body.page-especiales .esp-icon-input .esp-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.74rem;
+    color: var(--muted);
+}
+
+body.page-especiales .esp-form input.is-invalid {
+    box-shadow: 0 0 0 1px color-mix(in srgb, #dc3545 60%, transparent);
+}
+
+body.page-especiales .esp-icon-input .esp-hint a {
+    color: var(--wine);
+}
+
+html[data-theme="dark"] body.page-especiales .esp-icon-opt.is-on,
+html[data-theme="dark"] body.page-especiales .esp-icon-preview.is-on,
+html[data-theme="dark"] body.page-especiales .esp-icon-input .esp-hint a {
+    color: #ffb3c1;
+}
+
+@media (max-width: 576px) {
+    body.page-especiales .esp-icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    body.page-especiales .esp-icon-opt { min-height: 58px; }
+}
+
 body.page-especiales .esp-form-foot {
     display: flex;
     align-items: center;
