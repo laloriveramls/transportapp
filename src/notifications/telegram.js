@@ -108,15 +108,23 @@ async function tgCall(token, method, payload, timeoutMs = 7000) {
  *      chat_id: "-100...." // optional override
  *    })
  */
+let warnedMissingConfig = false;
+
+function warnMissingConfig(key) {
+    if (warnedMissingConfig) return;
+    warnedMissingConfig = true;
+    console.warn(`Telegram notifications disabled: ${key} is not set in this environment.`);
+}
+
 async function sendTelegram(textOrOptions) {
     const token = envClean("TG_BOT_TOKEN");
     const defaultChatId = envClean("TG_CHAT_ID");
 
-    if (!token) return;
+    if (!token) return warnMissingConfig("TG_BOT_TOKEN");
 
     const opts = typeof textOrOptions === "string" ? {text: textOrOptions} : (textOrOptions || {});
     let chatId = String(opts.chat_id || defaultChatId || "").trim();
-    if (!chatId) return;
+    if (!chatId) return warnMissingConfig("TG_CHAT_ID");
 
     const text = String(opts.text || "").trim();
     if (!text) return;

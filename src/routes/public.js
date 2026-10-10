@@ -22,7 +22,7 @@ const {
     previewSpecialEvents,
 } = require("../dev/previewData");
 const specialEvents = require("../specialEvents");
-const {sendTelegram} = require("../notifications/telegram");
+const {sendTelegram, escapeHtml} = require("../notifications/telegram");
 const {
     loadReservationSnapshot,
     newReservationMessage,
@@ -481,11 +481,19 @@ async function routeLabelForReservation(r, separator = " → ") {
 // Fire-and-forget: notifications must never break the reservation/payment flow.
 function notifyReservation(reservationId, buildMessage) {
     void (async () => {
+        let message;
         try {
             const snapshot = await loadReservationSnapshot(pool, reservationId);
-            if (!snapshot) return;
-            const {text, buttons} = buildMessage(snapshot);
-            await sendTelegram({text, parse_mode: "HTML", disable_web_page_preview: true, buttons});
+            if (snapshot) message = buildMessage(snapshot);
+        } catch (e) {
+            console.error("Telegram reservation snapshot failed:", e?.message || e);
+        }
+        if (!message) {
+            const kind = buildMessage === paymentConfirmedMessage ? "Pago confirmado" : "Nueva reserva";
+            message = {text: `🔔 <b>${kind}</b> · ID ${escapeHtml(reservationId)}\n<i>Revisa el panel admin para ver los detalles.</i>`};
+        }
+        try {
+            await sendTelegram({...message, parse_mode: "HTML", disable_web_page_preview: true});
         } catch (e) {
             console.error("Telegram reservation notify failed:", e?.message || e);
         }

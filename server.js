@@ -151,6 +151,10 @@ app.get("/health", async (req, res) => {
         DB_USER: { present: !!process.env.DB_USER, len: (process.env.DB_USER || "").length },
         DB_NAME: { present: !!process.env.DB_NAME, len: (process.env.DB_NAME || "").length },
         DB_PASS: { present: !!process.env.DB_PASS, len: (process.env.DB_PASS || "").length }, // only len
+
+        TG_BOT_TOKEN: { present: !!process.env.TG_BOT_TOKEN, len: (process.env.TG_BOT_TOKEN || "").length }, // only len
+        TG_CHAT_ID: { present: !!process.env.TG_CHAT_ID, len: (process.env.TG_CHAT_ID || "").length },
+        TG_WEBHOOK_SECRET: { present: !!process.env.TG_WEBHOOK_SECRET, len: (process.env.TG_WEBHOOK_SECRET || "").length },
     };
 
     const base = {
