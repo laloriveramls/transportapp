@@ -1120,6 +1120,10 @@ html[data-theme="dark"] .special-day.is-tight .special-day-seats {
     color: var(--muted);
 }
 
+.home-info-label-spaced {
+    margin-top: 1rem;
+}
+
 .home-stop-groups {
     display: grid;
     gap: 0.55rem;

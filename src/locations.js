@@ -3,19 +3,87 @@
 const LLERA_CODE = 'LLE';
 const VIC_CENTER_CODE = 'VIC';
 
-const VIC_LOCATIONS = [
-    {code: 'SISAL', label: 'Ej. Sisal', price_mxn: 50},
-    {code: 'EBANO', label: 'Ej. Ébano', price_mxn: 50},
-    {code: 'SAN_FRANCISCO', label: 'Ej. San Francisco (Panadero)', price_mxn: 60},
-    {code: 'ALBERCA', label: 'Ej. Alberca', price_mxn: 60},
-    {code: 'TROPICO_CANCER', label: 'Trópico de Cáncer', price_mxn: 60},
-    {code: 'RANCHO_NUEVO_NORTE', label: 'Ej. Rancho Nuevo Norte', price_mxn: 120},
-    {code: 'TRES_MESAS', label: 'Tres Mesas (Parque Eólico)', price_mxn: 120},
-    {code: 'ANGOSTURA', label: 'Ej. Angostura', price_mxn: 120},
-    {code: 'GUAYALEJO', label: 'Ej. Guayalejo', price_mxn: 120},
-];
+const DEFAULT_CITY_LABELS = Object.freeze({
+    VIC: 'Ciudad Victoria',
+    LLE: 'Llera',
+});
 
-const VIC_LOCATION_BY_CODE = new Map(VIC_LOCATIONS.map((loc) => [loc.code, loc]));
+// Semilla: tarifas por ejido según el otro extremo (Victoria o Llera).
+const DEFAULT_VIC_LOCATIONS = Object.freeze([
+    Object.freeze({code: 'SISAL', label: 'Ej. Sisal', price_to_victoria_mxn: 50, price_to_llera_mxn: 120, sort_order: 10, active: 1}),
+    Object.freeze({code: 'EBANO', label: 'Ej. Ébano', price_to_victoria_mxn: 50, price_to_llera_mxn: 120, sort_order: 20, active: 1}),
+    Object.freeze({code: 'SAN_FRANCISCO', label: 'Ej. San Francisco (Panadero)', price_to_victoria_mxn: 60, price_to_llera_mxn: 60, sort_order: 30, active: 1}),
+    Object.freeze({code: 'ALBERCA', label: 'Ej. Alberca', price_to_victoria_mxn: 60, price_to_llera_mxn: 60, sort_order: 40, active: 1}),
+    Object.freeze({code: 'TROPICO_CANCER', label: 'Trópico de Cáncer', price_to_victoria_mxn: 60, price_to_llera_mxn: 60, sort_order: 50, active: 1}),
+    Object.freeze({code: 'RANCHO_NUEVO_NORTE', label: 'Ej. Rancho Nuevo Norte', price_to_victoria_mxn: 120, price_to_llera_mxn: 50, sort_order: 60, active: 1}),
+    Object.freeze({code: 'TRES_MESAS', label: 'Tres Mesas (Parque Eólico)', price_to_victoria_mxn: 120, price_to_llera_mxn: 50, sort_order: 70, active: 1}),
+    Object.freeze({code: 'ANGOSTURA', label: 'Ej. Angostura', price_to_victoria_mxn: 120, price_to_llera_mxn: 50, sort_order: 80, active: 1}),
+    Object.freeze({code: 'GUAYALEJO', label: 'Ej. Guayalejo', price_to_victoria_mxn: 120, price_to_llera_mxn: 30, sort_order: 90, active: 1}),
+]);
+
+/** @type {{code:string,label:string,price_to_victoria_mxn:number,price_to_llera_mxn:number,sort_order:number,active:number}[]} */
+let locationsCache = cloneLocations(DEFAULT_VIC_LOCATIONS);
+/** @type {{VIC:string,LLE:string}} */
+let cityLabelsCache = {...DEFAULT_CITY_LABELS};
+/** @type {Map<string, typeof locationsCache[0]>} */
+let locationByCode = buildLocationMap(locationsCache);
+
+function cloneLocations(rows) {
+    return (rows || []).map((loc) => ({
+        code: String(loc.code || '').trim().toUpperCase(),
+        label: String(loc.label || '').trim(),
+        price_to_victoria_mxn: Number(
+            loc.price_to_victoria_mxn ?? loc.price_to_victoria_mxn ?? loc.price_mxn ?? 0
+        ),
+        price_to_llera_mxn: Number(
+            loc.price_to_llera_mxn ?? loc.price_to_llera_mxn ?? loc.price_mxn ?? 0
+        ),
+        sort_order: Number(loc.sort_order ?? loc.sort_order ?? 0),
+        active: Number(loc.active ?? 1) === 0 ? 0 : 1,
+    }));
+}
+
+function buildLocationMap(rows) {
+    return new Map((rows || []).map((loc) => [loc.code, loc]));
+}
+
+function normalizeLocationCode(raw) {
+    return String(raw || '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^A-Z0-9_]/g, '')
+        .slice(0, 40);
+}
+
+function isReservedStopCode(code) {
+    const key = normalizeLocationCode(code);
+    return key === LLERA_CODE || key === VIC_CENTER_CODE;
+}
+
+function setCityLabels(labels) {
+    cityLabelsCache = {
+        VIC: String(labels?.VIC || labels?.vic_label || DEFAULT_CITY_LABELS.VIC).trim() || DEFAULT_CITY_LABELS.VIC,
+        LLE: String(labels?.LLE || labels?.lle_label || DEFAULT_CITY_LABELS.LLE).trim() || DEFAULT_CITY_LABELS.LLE,
+    };
+    return getCityLabels();
+}
+
+function getCityLabels() {
+    return {...cityLabelsCache};
+}
+
+function setVicLocationsCache(rows) {
+    locationsCache = cloneLocations(rows?.length ? rows : DEFAULT_VIC_LOCATIONS);
+    locationsCache.sort((a, b) => (a.sort_order - b.sort_order) || a.label.localeCompare(b.label, 'es'));
+    locationByCode = buildLocationMap(locationsCache);
+    return getVicLocations({includeInactive: true});
+}
+
+function resetLocationsToDefaults() {
+    setCityLabels(DEFAULT_CITY_LABELS);
+    return setVicLocationsCache(DEFAULT_VIC_LOCATIONS);
+}
 
 function isLlera(code) {
     return String(code || '').trim().toUpperCase() === LLERA_CODE;
@@ -25,6 +93,10 @@ function isVicCenter(code) {
     return String(code || '').trim().toUpperCase() === VIC_CENTER_CODE;
 }
 
+function isCity(code) {
+    return isLlera(code) || isVicCenter(code);
+}
+
 function isVicSide(code) {
     const key = String(code || '').trim().toUpperCase();
     return isVicCenter(key) || !!resolveVicLocation(key);
@@ -32,17 +104,24 @@ function isVicSide(code) {
 
 function isValidStop(code) {
     const key = String(code || '').trim().toUpperCase();
-    return isLlera(key) || isVicSide(key);
+    return isCity(key) || !!resolveVicLocation(key);
 }
 
-function getVicLocations() {
-    return VIC_LOCATIONS.map((loc) => ({...loc}));
+function getVicLocations(opts = {}) {
+    const includeInactive = !!opts.includeInactive;
+    return locationsCache
+        .filter((loc) => includeInactive || loc.active === 1)
+        .map((loc) => ({
+            ...loc,
+            // Compat histórico
+            price_mxn: Number(loc.price_to_victoria_mxn),
+        }));
 }
 
 function resolveVicLocation(code) {
     const key = String(code || '').trim().toUpperCase();
     if (!key) return null;
-    return VIC_LOCATION_BY_CODE.get(key) || null;
+    return locationByCode.get(key) || null;
 }
 
 function resolveVicLocationLabel(code) {
@@ -50,10 +129,10 @@ function resolveVicLocationLabel(code) {
     return loc ? loc.label : null;
 }
 
-function stopLabel(code, basePricing) {
+function stopLabel(code) {
     const key = String(code || '').trim().toUpperCase();
-    if (isLlera(key)) return 'Llera';
-    if (isVicCenter(key)) return 'Ciudad Victoria';
+    if (isLlera(key)) return cityLabelsCache.LLE;
+    if (isVicCenter(key)) return cityLabelsCache.VIC;
     const loc = resolveVicLocation(key);
     if (loc) return loc.label;
     return key || '-';
@@ -64,8 +143,10 @@ function directionFromStops(fromStop, toStop) {
     const to = String(toStop || '').trim().toUpperCase();
 
     if (!isValidStop(from) || !isValidStop(to) || from === to) return null;
-    if (isLlera(from) && isVicSide(to)) return 'LLE_TO_VIC';
-    if (isVicSide(from) && isLlera(to)) return 'VIC_TO_LLE';
+    if (!isCity(from) && !isCity(to)) return null;
+
+    if (isVicCenter(from) || isLlera(to)) return 'VIC_TO_LLE';
+    if (isLlera(from) || isVicCenter(to)) return 'LLE_TO_VIC';
     return null;
 }
 
@@ -73,12 +154,8 @@ function vicLocationFromStops(fromStop, toStop) {
     const from = String(fromStop || '').trim().toUpperCase();
     const to = String(toStop || '').trim().toUpperCase();
 
-    if (isLlera(from) && isVicSide(to)) {
-        return isVicCenter(to) ? null : to;
-    }
-    if (isVicSide(from) && isLlera(to)) {
-        return isVicCenter(from) ? null : from;
-    }
+    if (resolveVicLocation(from)) return from;
+    if (resolveVicLocation(to)) return to;
     return null;
 }
 
@@ -89,28 +166,50 @@ function routeFromStops(fromStop, toStop) {
     };
 }
 
-function formatRouteEndpoint(direction, vicLocation, side) {
-    const vicDefault = 'Ciudad Victoria';
-    const vicLabel = resolveVicLocationLabel(vicLocation) || vicDefault;
-    const isV2L = direction === 'VIC_TO_LLE';
+function formatRouteEndpoint(direction, vicLocation, side, fromStop, toStop) {
+    const from = String(fromStop || '').trim();
+    const to = String(toStop || '').trim();
+    if (from && to) {
+        return side === 'from' ? stopLabel(from) : stopLabel(to);
+    }
 
-    if (side === 'from') return isV2L ? vicLabel : 'Llera';
-    return isV2L ? 'Llera' : vicLabel;
+    const vicLabel = resolveVicLocationLabel(vicLocation) || cityLabelsCache.VIC;
+    const isV2L = direction === 'VIC_TO_LLE';
+    if (side === 'from') return isV2L ? vicLabel : cityLabelsCache.LLE;
+    return isV2L ? cityLabelsCache.LLE : vicLabel;
 }
 
-function formatRouteLabel(direction, vicLocation, separator = ' → ') {
-    if (!direction) return '-';
-    return `${formatRouteEndpoint(direction, vicLocation, 'from')}${separator}${formatRouteEndpoint(direction, vicLocation, 'to')}`;
+function routeEndpoints(direction, vicLocation, fromStop, toStop) {
+    return {
+        fromLabel: formatRouteEndpoint(direction, vicLocation, 'from', fromStop, toStop),
+        toLabel: formatRouteEndpoint(direction, vicLocation, 'to', fromStop, toStop),
+    };
+}
+
+function formatRouteLabel(direction, vicLocation, separator = ' → ', fromStop, toStop) {
+    const {fromLabel, toLabel} = routeEndpoints(direction, vicLocation, fromStop, toStop);
+    if (!direction && !(String(fromStop || '').trim() && String(toStop || '').trim())) return '-';
+    return `${fromLabel}${separator}${toLabel}`;
 }
 
 function formatRouteLabelFromStops(fromStop, toStop, separator = ' → ') {
-    const direction = directionFromStops(fromStop, toStop);
-    if (!direction) return '-';
-    const vicLocation = vicLocationFromStops(fromStop, toStop);
-    return formatRouteLabel(direction, vicLocation, separator);
+    const from = String(fromStop || '').trim();
+    const to = String(toStop || '').trim();
+    if (!from || !to) return '-';
+    return `${stopLabel(from)}${separator}${stopLabel(to)}`;
 }
 
-function pricingForVicLocation(basePricing, locationCode) {
+function priceForVicLocation(locationCode, counterpartCode) {
+    const loc = resolveVicLocation(locationCode);
+    if (!loc) return null;
+
+    const counterpart = String(counterpartCode || '').trim().toUpperCase();
+    if (isLlera(counterpart)) return Number(loc.price_to_llera_mxn);
+    if (isVicCenter(counterpart)) return Number(loc.price_to_victoria_mxn);
+    return Number(loc.price_to_victoria_mxn);
+}
+
+function pricingForVicLocation(basePricing, locationCode, counterpartCode) {
     const base = {
         passenger_price_mxn: Number(basePricing?.passenger_price_mxn ?? 120),
         package_price_mxn: Number(basePricing?.package_price_mxn ?? 120),
@@ -123,7 +222,9 @@ function pricingForVicLocation(basePricing, locationCode) {
     const loc = resolveVicLocation(locationCode);
     if (!loc) return base;
 
-    const adult = Number(loc.price_mxn);
+    const adult = priceForVicLocation(locationCode, counterpartCode);
+    if (adult == null || Number.isNaN(adult)) return base;
+
     return {
         passenger_price_mxn: adult,
         package_price_mxn: adult,
@@ -133,13 +234,83 @@ function pricingForVicLocation(basePricing, locationCode) {
     };
 }
 
+function pricingForStops(basePricing, fromStop, toStop) {
+    const from = String(fromStop || '').trim().toUpperCase();
+    const to = String(toStop || '').trim().toUpperCase();
+    const locCode = vicLocationFromStops(from, to);
+    if (!locCode) return pricingForVicLocation(basePricing, null);
+
+    const counterpart = resolveVicLocation(from) ? to : from;
+    return pricingForVicLocation(basePricing, locCode, counterpart);
+}
+
+async function hydrateLocationsFromDb(pool) {
+    if (!pool) {
+        resetLocationsToDefaults();
+        return {ok: false, reason: 'no_pool'};
+    }
+
+    try {
+        const [rows] = await pool.query(`
+            SELECT code,
+                   label,
+                   price_to_victoria_mxn,
+                   price_to_llera_mxn,
+                   sort_order,
+                   active
+            FROM transporte_vic_locations
+            ORDER BY sort_order ASC, label ASC
+        `);
+
+        if (Array.isArray(rows) && rows.length) {
+            setVicLocationsCache(rows);
+        } else {
+            setVicLocationsCache(DEFAULT_VIC_LOCATIONS);
+        }
+    } catch (e) {
+        setVicLocationsCache(DEFAULT_VIC_LOCATIONS);
+        return {ok: false, reason: e.message || String(e)};
+    }
+
+    try {
+        const [[settings]] = await pool.query(`
+            SELECT vic_label, lle_label
+            FROM transporte_settings
+            WHERE id = 1
+            LIMIT 1
+        `);
+        if (settings) {
+            setCityLabels({
+                VIC: settings.vic_label,
+                LLE: settings.lle_label,
+            });
+        }
+    } catch (e) {
+        // Columnas aún no creadas: conservar defaults.
+    }
+
+    return {ok: true, count: locationsCache.length, cityLabels: getCityLabels()};
+}
+
+const VIC_LOCATIONS = DEFAULT_VIC_LOCATIONS.map((loc) => ({...loc}));
+
 module.exports = {
     LLERA_CODE,
     VIC_CENTER_CODE,
+    DEFAULT_CITY_LABELS,
+    DEFAULT_VIC_LOCATIONS,
     VIC_LOCATIONS,
+    normalizeLocationCode,
+    isReservedStopCode,
+    getCityLabels,
+    setCityLabels,
+    setVicLocationsCache,
+    resetLocationsToDefaults,
+    hydrateLocationsFromDb,
     getVicLocations,
     isLlera,
     isVicCenter,
+    isCity,
     isVicSide,
     isValidStop,
     resolveVicLocation,
@@ -151,5 +322,8 @@ module.exports = {
     formatRouteLabel,
     formatRouteEndpoint,
     formatRouteLabelFromStops,
+    routeEndpoints,
+    priceForVicLocation,
     pricingForVicLocation,
+    pricingForStops,
 };

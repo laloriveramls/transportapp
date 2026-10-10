@@ -2,26 +2,33 @@
     <p class="slots-title mb-0">Datos para transferencia</p>
     <div class="slots-sub">Transfiere y comparte el comprobante por WhatsApp.</div>
 </div>
-<div class="transfer-grid" aria-label="Datos bancarios">
+<div class="transfer-grid" aria-label="Datos bancarios" spellcheck="false" x-apple-data-detectors="false">
     <div class="transfer-item">
         <span class="transfer-key">Banco</span>
-        <span class="transfer-value" id="bankName">BBVA</span>
+        <span class="transfer-value" id="bankName">BBVA MÉXICO</span>
     </div>
     <div class="transfer-item">
         <span class="transfer-key">Beneficiario</span>
         <span class="transfer-value" id="bankOwner">Gary Treviño</span>
     </div>
     <div class="transfer-item">
-        <span class="transfer-key">Numero de tarjeta</span>
-        <span class="transfer-value mono" id="bankClabe">4152 3142 8477 3416</span>
+        <span class="transfer-key">CLABE</span>
+        <button type="button"
+                class="transfer-value mono transfer-clabe"
+                id="bankClabe"
+                spellcheck="false"
+                translate="no"
+                x-apple-data-detectors="false"
+                aria-label="CLABE 0128 1000 4925 6032 16. Mantén pulsado para copiar completa."
+                title="Mantén pulsado para copiar">0128 1000 4925 6032 16</button>
     </div>
 </div>
 <div class="transfer-actions">
-    <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar número de tarjeta">
+    <button type="button" class="tbtn" id="copyClabeBtn" aria-label="Copiar CLABE">
         <span class="tbtn-ic" aria-hidden="true">
             <%- include('icon', { name: 'copy', size: 14 }) %>
         </span>
-        <span class="tbtn-txt">Copiar tarjeta</span>
+        <span class="tbtn-txt">Copiar CLABE</span>
     </button>
     <button type="button" class="tbtn" id="copyTransferMsgBtn" aria-label="Copiar mensaje de transferencia">
         <span class="tbtn-ic" aria-hidden="true">

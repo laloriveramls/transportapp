@@ -65,6 +65,12 @@ body.admin-app .admin-seg .nav-link {
     text-decoration: none;
 }
 
+body.admin-app .home-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
 body.admin-app .page-title {
     letter-spacing: -0.03em;
     font-weight: 750;
@@ -92,7 +98,7 @@ body.admin-app .pill {
 
 body.admin-app .btn-ghost {
     border: none;
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     color: var(--text);
     border-radius: 999px;
     font-weight: 650;
@@ -280,6 +286,51 @@ body.admin-app .home-tabs-tools {
     flex-wrap: wrap;
 }
 
+/* Shared compact filter control */
+body.admin-app .admin-filter-seg {
+    display: inline-flex;
+    align-items: stretch;
+    padding: 0.18rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+body.admin-app .admin-filter-seg a,
+body.admin-app .admin-filter-seg button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    min-height: 32px;
+    padding: 0.2rem 0.72rem;
+    border: 0;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: transparent;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.admin-app .admin-filter-seg a:hover,
+body.admin-app .admin-filter-seg button:hover {
+    color: var(--text);
+}
+
+body.admin-app .admin-filter-seg a.is-on,
+body.admin-app .admin-filter-seg button.is-on {
+    color: var(--text);
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.06), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+html[data-theme="dark"] body.admin-app .admin-filter-seg a.is-on,
+html[data-theme="dark"] body.admin-app .admin-filter-seg button.is-on {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
 @media (max-width: 768px) {
     body.admin-app .home-hero {
         padding: 0.7rem 0 0.8rem;
@@ -323,88 +374,71 @@ body.admin-app .home-tabs-tools {
 
 /* ---- page-agenda ---- */
 body.page-agenda .agenda-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-    align-items: center;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.85rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-@media (min-width: 960px) {
-    body.page-agenda .agenda-toolbar {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.85rem 1.25rem;
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
 body.page-agenda .agenda-date-block {
-    min-width: min(100%, 220px);
-}
-
-body.page-agenda .agenda-date-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-body.page-agenda .agenda-date-kicker .ico {
-    display: block;
+    min-width: min(100%, 200px);
 }
 
 body.page-agenda .agenda-date-label {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
     color: var(--text);
 }
 
 body.page-agenda .agenda-date-meta {
-    margin-top: 0.18rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.55rem;
+    margin: 0.28rem 0 0;
     font-size: 0.84rem;
+    color: var(--muted);
+}
+
+body.page-agenda .agenda-today-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--wine);
+}
+
+body.page-agenda .agenda-today-dot::before {
+    content: "";
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--wine);
 }
 
 body.page-agenda .agenda-toolbar-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.45rem;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 0.5rem;
     min-width: 0;
 }
 
 body.page-agenda .agenda-day-nav {
-    grid-column: 1 / -1;
-}
-
-@media (min-width: 720px) {
-    body.page-agenda .agenda-toolbar-form {
-        grid-template-columns: minmax(12rem, 1fr) auto auto;
-    }
-
-    body.page-agenda .agenda-day-nav {
-        grid-column: auto;
-    }
-}
-
-body.page-agenda .agenda-day-nav {
     display: grid;
-    grid-template-columns: 2.4rem minmax(0, 1fr) 2.4rem;
+    grid-template-columns: 2.15rem 4.6rem 2.15rem;
     align-items: stretch;
-    gap: 0.35rem;
-    min-width: min(16.5rem, 100%);
+    gap: 0.28rem;
 }
 
 body.page-agenda .agenda-date-input {
@@ -421,8 +455,9 @@ body.page-agenda .agenda-date-fake {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 40px;
-    padding: 0 0.45rem;
+    min-height: 38px;
+    padding: 0 0.35rem;
+    font-size: 0.9rem;
     font-weight: 650;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
@@ -446,16 +481,14 @@ body.page-agenda .agenda-day-nav .form-control[type="date"] {
 }
 
 body.page-agenda .agenda-day-arrow {
-    position: relative;
-    z-index: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.4rem;
-    border-radius: 12px;
+    min-width: 2.15rem;
+    border-radius: 10px;
     color: var(--text);
     text-decoration: none;
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
     transition: background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
@@ -470,132 +503,112 @@ body.page-agenda .agenda-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 40px;
-    padding: 0.38rem 0.85rem;
+    min-height: 38px;
+    padding: 0.32rem 0.8rem;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 650;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 body.page-agenda .agenda-chip:hover {
     color: var(--text);
     background: color-mix(in srgb, var(--wine) 8%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 30%, var(--border));
-    transform: translateY(-1px);
 }
 
-body.page-agenda .agenda-chip.is-on {
-    color: #fff;
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 32%, transparent);
+body.page-agenda .agenda-seg {
+    display: inline-flex;
+    align-items: stretch;
+    padding: 0.18rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
 }
 
-body.page-agenda .agenda-chip.is-on:hover {
-    color: #fff;
+body.page-agenda .agenda-seg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0.2rem 0.78rem;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 650;
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.page-agenda .agenda-seg-btn:hover {
+    color: var(--text);
+}
+
+body.page-agenda .agenda-seg-btn.is-on {
+    color: var(--text);
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.06), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+
+html[data-theme="dark"] body.page-agenda .agenda-seg-btn.is-on {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px color-mix(in srgb, var(--border) 45%, transparent);
 }
 
 body.page-agenda .agenda-kpis {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
-    margin-bottom: 0.9rem;
-}
-
-body.page-agenda .agenda-kpi {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    min-width: 0;
-    padding: 0.78rem 0.85rem 0.82rem 0.95rem;
+    margin: 0 0 1.15rem;
     border-radius: 14px;
     overflow: hidden;
-    background: linear-gradient(
-        145deg,
-        color-mix(in srgb, var(--card) 96%, transparent),
-        color-mix(in srgb, var(--wine) 6%, var(--card))
-    );
+    background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-body.page-agenda .agenda-kpi > div:last-child {
+body.page-agenda .agenda-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
     min-width: 0;
+    padding: 0.85rem 1rem 0.9rem;
 }
 
-body.page-agenda .agenda-kpi::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--wine), var(--wine-2));
+body.page-agenda .agenda-kpi + .agenda-kpi {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-agenda .agenda-kpi--packages::before {
-    background: color-mix(in srgb, var(--wine-2) 70%, var(--muted));
+body.page-agenda .agenda-kpi-value {
+    font-size: 1.45rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    color: var(--text);
 }
 
-body.page-agenda .agenda-kpi--cancelled-passengers::before,
-body.page-agenda .agenda-kpi--cancelled-packages::before {
-    background: linear-gradient(180deg, #b91c1c, #7f1d1d);
-}
-
-body.page-agenda .agenda-kpi-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    flex: 0 0 auto;
-    border-radius: 10px;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, var(--card));
-}
-
-body.page-agenda .agenda-kpi--cancelled-passengers .agenda-kpi-ico,
-body.page-agenda .agenda-kpi--cancelled-packages .agenda-kpi-ico {
-    color: color-mix(in srgb, #b91c1c 80%, var(--text));
-    background: color-mix(in srgb, #b91c1c 10%, var(--card));
-}
-
-body.page-agenda .agenda-kpi .label {
+body.page-agenda .agenda-kpi-label {
     color: var(--muted);
     font-size: 0.72rem;
     font-weight: 650;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    overflow-wrap: break-word;
+    letter-spacing: 0.02em;
 }
 
-body.page-agenda .agenda-kpi .value {
-    margin-top: 0.12rem;
-    font-size: 1.35rem;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    color: var(--text);
+body.page-agenda .agenda-kpi.is-quiet .agenda-kpi-value {
+    color: color-mix(in srgb, var(--muted) 55%, var(--text));
 }
 
 body.page-agenda .agenda-board {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 1.35rem;
     align-items: start;
 }
 
 body.page-agenda .agenda-col {
     min-width: 0;
-    padding: 0.7rem;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--muted) 4%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 body.page-agenda .agenda-col-head {
@@ -603,8 +616,8 @@ body.page-agenda .agenda-col-head {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-bottom: 0.55rem;
-    padding: 0.1rem 0.15rem 0.55rem;
+    margin-bottom: 0.7rem;
+    padding: 0 0.1rem 0.55rem;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
@@ -612,71 +625,66 @@ body.page-agenda .agenda-col-route {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.28rem 0.4rem;
+    gap: 0.2rem 0.38rem;
     min-width: 0;
 }
 
 body.page-agenda .agenda-col-from,
 body.page-agenda .agenda-col-to {
-    font-weight: 750;
-    font-size: 0.98rem;
-    letter-spacing: -0.025em;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: -0.02em;
     line-height: 1.2;
 }
 
 body.page-agenda .agenda-col-mid {
     display: inline-flex;
-    color: var(--wine);
+    color: var(--muted);
     line-height: 1;
 }
 
 body.page-agenda .agenda-col-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5rem;
-    height: 1.5rem;
-    padding: 0 0.4rem;
-    border-radius: 999px;
-    font-size: 0.76rem;
-    font-weight: 750;
+    font-size: 0.74rem;
+    font-weight: 650;
     font-variant-numeric: tabular-nums;
     color: var(--muted);
-    background: color-mix(in srgb, var(--card) 88%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 body.page-agenda .agenda-col-empty {
-    padding: 0.85rem 0.4rem 0.55rem;
+    padding: 1.1rem 0.2rem;
     font-size: 0.88rem;
+}
+
+body.page-agenda .agenda-col-list {
+    display: grid;
+    gap: 0.55rem;
 }
 
 body.page-agenda .agenda-trip {
     position: relative;
     display: grid;
-    grid-template-columns: 4.55rem minmax(0, 1fr) auto;
-    gap: 0.7rem;
+    grid-template-columns: 4.2rem minmax(0, 1fr) auto;
+    gap: 0.85rem;
     align-items: center;
-    margin-top: 0.5rem;
-    padding: 0.7rem 0.75rem 0.7rem 0.9rem;
-    border-radius: 14px;
+    padding: 0.82rem 0.75rem 0.82rem 1rem;
+    border-radius: 12px;
     overflow: hidden;
     text-decoration: none;
     color: var(--text);
-    background: var(--card);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    background: color-mix(in srgb, var(--muted) 4%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 48%, transparent);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 body.page-agenda .agenda-trip::before {
     content: "";
     position: absolute;
     left: 0;
-    top: 8px;
-    bottom: 8px;
+    top: 10px;
+    bottom: 10px;
     width: 3px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 45%, transparent);
+    background: color-mix(in srgb, var(--muted) 42%, transparent);
 }
 
 body.page-agenda .agenda-trip.is-ok::before {
@@ -684,7 +692,7 @@ body.page-agenda .agenda-trip.is-ok::before {
 }
 
 body.page-agenda .agenda-trip.is-tight::before {
-    background: #e9c40e;
+    background: #d4a017;
 }
 
 body.page-agenda .agenda-trip.is-full::before {
@@ -693,107 +701,55 @@ body.page-agenda .agenda-trip.is-full::before {
 
 body.page-agenda .agenda-trip:hover {
     color: var(--text);
-    transform: translateY(-1px);
-    background: color-mix(in srgb, var(--wine) 5%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 28%, var(--border)), 0 10px 22px rgba(2, 6, 23, 0.08);
-}
-
-html[data-theme="dark"] body.page-agenda .agenda-trip:hover {
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border)), 0 12px 28px rgba(0, 0, 0, 0.4);
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 28%, var(--border));
 }
 
 body.page-agenda .agenda-trip-time {
-    font-size: 1.22rem;
+    font-size: 1.12rem;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;
     line-height: 1;
-    color: var(--wine);
+    color: var(--text);
 }
 
 body.page-agenda .agenda-trip-body {
     min-width: 0;
-}
-
-body.page-agenda .agenda-trip-top {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.45rem;
-    margin-bottom: 0.28rem;
-}
-
-body.page-agenda .agenda-trip-status {
-    font-size: 0.78rem;
-    font-weight: 650;
-    color: var(--muted);
-}
-
-body.page-agenda .agenda-trip.is-full .agenda-trip-status {
-    color: var(--wine);
-}
-
-body.page-agenda .agenda-trip.is-tight .agenda-trip-status {
-    color: color-mix(in srgb, #b45309 70%, var(--text));
+    align-items: center;
+    gap: 0.65rem;
 }
 
 body.page-agenda .agenda-trip-cap {
-    font-size: 0.82rem;
-    font-weight: 750;
+    font-size: 0.8rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    margin-left: auto;
 }
 
-body.page-agenda .agenda-meter {
-    height: 6px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--muted) 16%, transparent);
-}
-
-body.page-agenda .agenda-meter > span {
-    display: block;
-    height: 100%;
-    width: var(--w, 0%);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 40%, transparent);
-}
-
-body.page-agenda .agenda-trip.is-ok .agenda-meter > span {
-    background: linear-gradient(90deg, #10d88f, color-mix(in srgb, #10d88f 70%, var(--wine)));
-}
-
-body.page-agenda .agenda-trip.is-tight .agenda-meter > span {
-    background: linear-gradient(90deg, #e9c40e, color-mix(in srgb, #e9c40e 55%, var(--wine)));
-}
-
-body.page-agenda .agenda-trip.is-full .agenda-meter > span {
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-}
-
-body.page-agenda .agenda-trip-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.45rem;
-    margin-top: 0.4rem;
+body.page-agenda .agenda-trip-cap-sep {
+    color: var(--muted);
+    font-weight: 600;
 }
 
 body.page-agenda .agenda-seats {
     display: inline-flex;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 11rem;
 }
 
 body.page-agenda .agenda-seat {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 22%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
 }
 
 body.page-agenda .agenda-seat.is-on {
     background: var(--wine);
-    box-shadow: none;
 }
 
 body.page-agenda .agenda-trip.is-ok .agenda-seat.is-on {
@@ -801,20 +757,35 @@ body.page-agenda .agenda-trip.is-ok .agenda-seat.is-on {
 }
 
 body.page-agenda .agenda-trip.is-tight .agenda-seat.is-on {
-    background: #e9c40e;
+    background: #d4a017;
+}
+
+body.page-agenda .agenda-trip-aside {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 2.4rem;
+    justify-content: flex-end;
 }
 
 body.page-agenda .agenda-pack {
     display: inline-flex;
     align-items: center;
-    gap: 0.28rem;
-    font-size: 0.78rem;
-    font-weight: 650;
-    color: var(--muted);
+    gap: 0.22rem;
+    min-height: 1.4rem;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    background: color-mix(in srgb, var(--wine) 8%, var(--card));
 }
 
-body.page-agenda .agenda-pack.has-pack {
-    color: var(--text);
+body.page-agenda .agenda-pack:not(.has-pack) {
+    min-width: 0;
+    padding: 0;
+    background: transparent;
 }
 
 body.page-agenda .agenda-pack .ico {
@@ -823,12 +794,11 @@ body.page-agenda .agenda-pack .ico {
 
 body.page-agenda .agenda-trip-cta {
     display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-    font-size: 0.78rem;
-    font-weight: 700;
+    color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+
+body.page-agenda .agenda-trip:hover .agenda-trip-cta {
     color: var(--wine);
-    white-space: nowrap;
 }
 
 body.page-agenda .agenda-empty {
@@ -836,8 +806,8 @@ body.page-agenda .agenda-empty {
     justify-items: center;
     gap: 0.35rem;
     text-align: center;
-    padding: 1.6rem 1rem;
-    border-radius: 16px;
+    padding: 2.2rem 1rem;
+    border-radius: 14px;
     background: color-mix(in srgb, var(--muted) 4%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
@@ -863,55 +833,88 @@ body.page-agenda .agenda-empty .agenda-chip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    body.page-agenda .agenda-kpi:nth-child(3),
+    body.page-agenda .agenda-kpi:nth-child(4) {
+        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-agenda .agenda-kpi:nth-child(2),
+    body.page-agenda .agenda-kpi:nth-child(4) {
+        box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-agenda .agenda-kpi:nth-child(4) {
+        box-shadow:
+            inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent),
+            inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    /* Tightens spacing while keeping 2 route columns on small desktops */
+    body.page-agenda .agenda-board {
+        gap: 1rem;
+    }
+
+    body.page-agenda .agenda-trip {
+        grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+        gap: 0.55rem;
+        padding: 0.72rem 0.55rem 0.72rem 0.85rem;
+    }
+
+    body.page-agenda .agenda-trip-time {
+        font-size: 1.02rem;
+    }
+
+    body.page-agenda .agenda-seats {
+        gap: 4px;
+    }
+
+    body.page-agenda .agenda-seat {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Single column only on phones; small desktops keep 2 columns */
+@media (max-width: 640px) {
     body.page-agenda .agenda-board {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 }
 
 @media (max-width: 576px) {
-    body.page-agenda .agenda-toolbar {
-        padding: 0.75rem 0.8rem;
+    body.page-agenda .admin-shell > .home-tabs-body {
+        padding: 0.65rem 0.7rem 0.85rem;
     }
 
     body.page-agenda .agenda-date-label {
-        font-size: 1.08rem;
+        font-size: 1.15rem;
+    }
+
+    body.page-agenda .agenda-toolbar {
+        padding-bottom: 0.85rem;
+    }
+
+    body.page-agenda .agenda-kpi {
+        padding: 0.75rem 0.8rem;
+    }
+
+    body.page-agenda .agenda-kpi-value {
+        font-size: 1.25rem;
     }
 
     body.page-agenda .agenda-trip {
-        grid-template-columns: 1fr auto;
-        padding: 0.7rem 0.75rem 0.75rem 0.85rem;
+        grid-template-columns: 3.7rem minmax(0, 1fr) auto;
+        gap: 0.55rem;
+        padding: 0.68rem 0.55rem 0.68rem 0.85rem;
     }
 
     body.page-agenda .agenda-trip-time {
-        grid-column: 1;
-        font-size: 1.12rem;
-    }
-
-    body.page-agenda .agenda-trip-cta {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    body.page-agenda .agenda-trip-cta-text {
-        display: none;
-    }
-
-    body.page-agenda .agenda-trip-body {
-        grid-column: 1 / -1;
-    }
-
-    body.page-agenda .agenda-kpi-ico {
-        width: 1.7rem;
-        height: 1.7rem;
-    }
-
-    body.page-agenda .agenda-kpi .label {
-        font-size: 0.68rem;
+        font-size: 1.02rem;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body.page-agenda .agenda-chip:hover,
     body.page-agenda .agenda-trip:hover {
         transform: none;
     }
@@ -921,79 +924,77 @@ body.page-agenda .agenda-empty .agenda-chip {
 body.page-trip .trip-head {
     position: relative;
     overflow: hidden;
-    padding: 0.9rem 1rem 1rem;
-    margin-bottom: 0.95rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-trip .trip-head::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 3px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 45%, transparent);
+    display: none;
 }
-
-body.page-trip .trip-head.is-ok::before { background: #10d88f; }
-body.page-trip .trip-head.is-tight::before { background: #e9c40e; }
-body.page-trip .trip-head.is-full::before { background: var(--wine); }
 
 body.page-trip .trip-head-top {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
-    align-items: flex-start;
+    align-items: flex-end;
     justify-content: space-between;
 }
 
-body.page-trip .trip-kicker {
+body.page-trip .trip-date-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.55rem;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+}
+
+body.page-trip .trip-today-dot {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
+    gap: 0.32rem;
+    font-size: 0.68rem;
     font-weight: 750;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--wine);
 }
 
-body.page-trip .trip-date-label {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+body.page-trip .trip-today-dot::before {
+    content: "";
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--wine);
 }
 
 body.page-trip .trip-route {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.28rem 0.4rem;
+    gap: 0.2rem 0.38rem;
     margin-top: 0.35rem;
-    font-weight: 750;
-    letter-spacing: -0.025em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 body.page-trip .trip-route-mid {
     display: inline-flex;
-    color: var(--wine);
+    color: var(--muted);
     line-height: 1;
 }
 
 body.page-trip .trip-head-time {
     margin-left: 0.15rem;
-    color: var(--wine);
-    font-size: 1.15rem;
+    color: var(--text);
+    font-size: 1.08rem;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;
@@ -1003,14 +1004,14 @@ body.page-trip .trip-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 40px;
-    padding: 0.38rem 0.85rem;
+    min-height: 38px;
+    padding: 0.32rem 0.8rem;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 650;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
 }
 
@@ -1030,111 +1031,75 @@ body.page-trip .trip-chip.is-on:hover { color: #fff; }
 
 body.page-trip .trip-head-stats {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
-    gap: 0.55rem;
-    margin-top: 0.85rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0.95rem;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 body.page-trip .trip-stat {
     display: flex;
-    align-items: center;
-    gap: 0.65rem;
+    flex-direction: column;
+    gap: 0.18rem;
     min-width: 0;
-    padding: 0.7rem 0.8rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--card) 92%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+    padding: 0.85rem 1rem 0.9rem;
 }
 
-body.page-trip .trip-stat-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    flex: 0 0 auto;
-    border-radius: 10px;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, var(--card));
+body.page-trip .trip-stat + .trip-stat {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-trip .trip-stat .label {
+body.page-trip .trip-stat-value {
+    font-size: 1.35rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    color: var(--text);
+}
+
+body.page-trip .trip-stat-sep {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+body.page-trip .trip-stat-label {
     color: var(--muted);
     font-size: 0.72rem;
     font-weight: 650;
+    letter-spacing: 0.02em;
 }
 
-body.page-trip .trip-stat .value {
-    font-size: 1.2rem;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-}
-
-body.page-trip .trip-stat-occ {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.35rem;
-}
-
-body.page-trip .trip-occ-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.4rem;
-    font-size: 0.78rem;
-    font-weight: 650;
-    color: var(--muted);
-}
-
-body.page-trip .trip-head.is-full .trip-occ-top { color: var(--wine); }
-body.page-trip .trip-head.is-tight .trip-occ-top {
-    color: color-mix(in srgb, #b45309 70%, var(--text));
-}
-
-body.page-trip .trip-meter {
-    height: 6px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--muted) 16%, transparent);
-}
-
-body.page-trip .trip-meter > span {
-    display: block;
-    height: 100%;
-    width: var(--w, 0%);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 40%, transparent);
-}
-
-body.page-trip .trip-head.is-ok .trip-meter > span {
-    background: linear-gradient(90deg, #10d88f, color-mix(in srgb, #10d88f 70%, var(--wine)));
-}
-
-body.page-trip .trip-head.is-tight .trip-meter > span {
-    background: linear-gradient(90deg, #e9c40e, color-mix(in srgb, #e9c40e 55%, var(--wine)));
-}
-
-body.page-trip .trip-head.is-full .trip-meter > span {
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
+body.page-trip .trip-stat.is-quiet .trip-stat-value {
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--muted) 35%, var(--text));
 }
 
 body.page-trip .trip-seats {
     display: inline-flex;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 0.35rem;
+    max-width: 11rem;
 }
 
 body.page-trip .trip-seat {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 22%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
 }
 
-body.page-trip .trip-seat.is-on { background: var(--wine); box-shadow: none; }
+body.page-trip .trip-seat.is-on {
+    background: var(--wine);
+}
+
 body.page-trip .trip-head.is-ok .trip-seat.is-on { background: #10d88f; }
-body.page-trip .trip-head.is-tight .trip-seat.is-on { background: #e9c40e; }
+body.page-trip .trip-head.is-tight .trip-seat.is-on { background: #d4a017; }
+body.page-trip .trip-head.is-full .trip-seat.is-on { background: var(--wine); }
 
 body.page-trip .trip-list-head {
     display: flex;
@@ -1305,13 +1270,25 @@ body.page-trip .btn-pdf:hover {
         grid-template-columns: 1fr 1fr;
     }
 
-    body.page-trip .trip-stat-occ {
+    body.page-trip .trip-stat:last-child {
         grid-column: 1 / -1;
     }
 }
 
 @media (max-width: 576px) {
     body.page-trip .trip-date-label { font-size: 1.08rem; }
+
+    body.page-trip .trip-head-tools {
+        width: 100%;
+    }
+
+    body.page-trip .trip-head-tools .admin-filter-seg {
+        width: 100%;
+    }
+
+    body.page-trip .trip-head-tools .admin-filter-seg a {
+        flex: 1 1 0;
+    }
 
     body.page-trip .trip-res-actions {
         display: grid;
@@ -1324,64 +1301,42 @@ body.page-trip .btn-pdf:hover {
 
 /* ---- page-recent ---- */
 body.page-recent .recent-toolbar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-    align-items: start;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.85rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
-}
-
-@media (min-width: 1100px) {
-    body.page-recent .recent-toolbar {
-        grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1.4fr);
-        align-items: center;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.85rem 1.25rem;
+    padding: 0.35rem 0 1rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-recent .recent-intro {
-    min-width: min(100%, 180px);
-}
-
-body.page-recent .recent-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-body.page-recent .recent-kicker .ico {
-    display: block;
+    min-width: min(100%, 160px);
 }
 
 body.page-recent .recent-title {
-    margin: 0.12rem 0 0;
-    font-weight: 750;
-    font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
     color: var(--text);
 }
 
 body.page-recent .recent-meta {
-    margin-top: 0.18rem;
+    margin: 0.28rem 0 0;
     font-size: 0.84rem;
+    color: var(--muted);
 }
 
 body.page-recent .recent-toolbar-form {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 0.5rem;
     min-width: 0;
 }
@@ -1389,7 +1344,8 @@ body.page-recent .recent-toolbar-form {
 body.page-recent .recent-search {
     position: relative;
     display: block;
-    min-width: 0;
+    min-width: min(16rem, 100%);
+    flex: 1 1 14rem;
 }
 
 body.page-recent .recent-search-ico {
@@ -1407,11 +1363,23 @@ body.page-recent .recent-search .form-control {
     padding-left: 2.2rem;
 }
 
-body.page-recent .recent-filters {
+body.page-recent .recent-pay-seg {
+    flex: 0 1 auto;
+}
+
+body.page-recent .recent-form-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
     align-items: center;
+    gap: 0.45rem;
+}
+
+body.page-recent .recent-pagesize .form-select {
+    min-width: 6.5rem;
+}
+
+body.page-recent .recent-clear {
+    min-height: 40px;
 }
 
 body.page-recent .recent-chip {
@@ -1419,185 +1387,83 @@ body.page-recent .recent-chip {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    min-height: 40px;
-    padding: 0.38rem 0.8rem;
+    min-height: 38px;
+    padding: 0.32rem 0.8rem;
     border-radius: 999px;
     text-decoration: none;
     font-weight: 650;
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
+    background: transparent;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
-}
-
-body.page-recent .recent-chip .ico {
-    display: block;
 }
 
 body.page-recent .recent-chip:hover {
     color: var(--text);
     background: color-mix(in srgb, var(--wine) 8%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 30%, var(--border));
-    transform: translateY(-1px);
-}
-
-body.page-recent .recent-chip.is-on {
-    color: #fff;
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 32%, transparent);
-}
-
-body.page-recent .recent-chip.is-on:hover {
-    color: #fff;
-}
-
-body.page-recent .recent-form-actions {
-    display: flex;
-    gap: 0.45rem;
-    align-items: center;
-    min-width: 0;
-}
-
-body.page-recent .recent-pagesize {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-body.page-recent .recent-pagesize .form-select {
-    width: 100%;
-    min-width: 7.5rem;
-}
-
-body.page-recent .recent-apply {
-    flex: 0 0 auto;
-    min-height: 40px;
-    padding: 0.38rem 1rem;
-    border-radius: 999px;
-}
-
-@media (min-width: 720px) {
-    body.page-recent .recent-toolbar-form {
-        grid-template-columns: minmax(12rem, 1fr) auto;
-        align-items: center;
-    }
-
-    body.page-recent .recent-search {
-        grid-column: 1 / -1;
-    }
-
-    body.page-recent .recent-form-actions {
-        justify-content: flex-end;
-    }
-
-    body.page-recent .recent-pagesize {
-        flex: 0 0 auto;
-    }
 }
 
 body.page-recent .recent-kpis {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
-    margin-bottom: 0.9rem;
-}
-
-body.page-recent .recent-kpi {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    min-width: 0;
-    padding: 0.78rem 0.85rem 0.82rem 0.95rem;
+    margin: 0 0 1.15rem;
     border-radius: 14px;
     overflow: hidden;
-    background: linear-gradient(
-        145deg,
-        color-mix(in srgb, var(--card) 96%, transparent),
-        color-mix(in srgb, var(--wine) 6%, var(--card))
-    );
+    background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
-body.page-recent .recent-kpi > div:last-child {
+body.page-recent .recent-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
     min-width: 0;
+    padding: 0.85rem 1rem 0.9rem;
 }
 
-body.page-recent .recent-kpi::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--wine), var(--wine-2));
+body.page-recent .recent-kpi + .recent-kpi {
+    box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
 }
 
-body.page-recent .recent-kpi--paid::before {
-    background: #10d88f;
+body.page-recent .recent-kpi-value {
+    font-size: 1.45rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    color: var(--text);
 }
 
-body.page-recent .recent-kpi--pending::before {
-    background: #e9c40e;
-}
-
-body.page-recent .recent-kpi--board::before {
-    background: #3b82f6;
-}
-
-body.page-recent .recent-kpi--cancel::before {
-    background: linear-gradient(180deg, #b91c1c, #7f1d1d);
-}
-
-body.page-recent .recent-kpi-ico {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
-    flex: 0 0 auto;
-    border-radius: 10px;
-    color: var(--wine);
-    background: color-mix(in srgb, var(--wine) 10%, var(--card));
-}
-
-body.page-recent .recent-kpi--paid .recent-kpi-ico {
-    color: color-mix(in srgb, #059669 80%, var(--text));
-    background: color-mix(in srgb, #10d88f 14%, var(--card));
-}
-
-body.page-recent .recent-kpi--pending .recent-kpi-ico {
-    color: color-mix(in srgb, #b45309 80%, var(--text));
-    background: color-mix(in srgb, #e9c40e 16%, var(--card));
-}
-
-body.page-recent .recent-kpi--board .recent-kpi-ico {
-    color: color-mix(in srgb, #2563eb 80%, var(--text));
-    background: color-mix(in srgb, #3b82f6 12%, var(--card));
-}
-
-body.page-recent .recent-kpi--cancel .recent-kpi-ico {
-    color: color-mix(in srgb, #b91c1c 80%, var(--text));
-    background: color-mix(in srgb, #b91c1c 10%, var(--card));
-}
-
-body.page-recent .recent-kpi .label {
+body.page-recent .recent-kpi-label {
     color: var(--muted);
     font-size: 0.72rem;
     font-weight: 650;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    overflow-wrap: break-word;
+    letter-spacing: 0.02em;
 }
 
-body.page-recent .recent-kpi .value {
-    margin-top: 0.12rem;
-    font-size: 1.35rem;
-    font-weight: 750;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    color: var(--text);
+body.page-recent .recent-kpi.is-quiet .recent-kpi-value {
+    color: color-mix(in srgb, var(--muted) 55%, var(--text));
+}
+
+@media (max-width: 900px) {
+    body.page-recent .recent-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-recent .recent-kpi:nth-child(3),
+    body.page-recent .recent-kpi:nth-child(4) {
+        box-shadow: inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-recent .recent-kpi:nth-child(even) {
+        box-shadow: inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
+
+    body.page-recent .recent-kpi:nth-child(4) {
+        box-shadow:
+            inset 1px 0 0 color-mix(in srgb, var(--border) 70%, transparent),
+            inset 0 1px 0 color-mix(in srgb, var(--border) 70%, transparent);
+    }
 }
 
 body.page-recent .recent-table-card {
@@ -1967,55 +1833,46 @@ body.page-recent .recent-page-dots {
 }
 
 @media (max-width: 576px) {
-    body.page-recent .recent-toolbar {
-        padding: 0.75rem 0.8rem;
-    }
-
     body.page-recent .recent-title {
         font-size: 1.08rem;
     }
 
     body.page-recent .recent-kpis {
-        gap: 0.45rem;
         margin-bottom: 0.75rem;
     }
 
     body.page-recent .recent-kpi {
-        padding: 0.65rem 0.7rem 0.68rem 0.8rem;
-        gap: 0.5rem;
+        padding: 0.7rem 0.8rem 0.75rem;
     }
 
-    body.page-recent .recent-kpi-ico {
-        width: 1.7rem;
-        height: 1.7rem;
+    body.page-recent .recent-kpi-value {
+        font-size: 1.2rem;
     }
 
-    body.page-recent .recent-kpi .label {
-        font-size: 0.68rem;
+    body.page-recent .recent-toolbar-form {
+        width: 100%;
     }
 
-    body.page-recent .recent-kpi .value {
-        font-size: 1.15rem;
-    }
-
-    body.page-recent .recent-filters {
-        flex-wrap: nowrap;
+    body.page-recent .recent-pay-seg {
+        width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.15rem;
-        margin-inline: -0.15rem;
-        padding-inline: 0.15rem;
     }
 
-    body.page-recent .recent-chip {
-        flex: 0 0 auto;
-        padding: 0.38rem 0.72rem;
-        font-size: 0.8rem;
+    body.page-recent .recent-pay-seg a {
+        flex: 1 1 auto;
+        white-space: nowrap;
     }
 
     body.page-recent .recent-form-actions {
+        width: 100%;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    body.page-recent .recent-clear {
+        grid-column: 1 / -1;
+        justify-content: center;
     }
 
     body.page-recent .recent-pager {
@@ -2028,69 +1885,50 @@ body.page-recent .recent-page-dots {
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    body.page-recent .recent-chip:hover {
-        transform: none;
-    }
-}
-
 /* ---- page-horarios ---- */
 body.page-horarios .horarios-toolbar {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    margin-bottom: 0.85rem;
-    border-radius: var(--home-radius, 16px);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--wine) 6%, var(--card)),
-        color-mix(in srgb, var(--card) 96%, transparent)
-    );
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+    padding: 0.2rem 0 0.9rem;
+    margin-bottom: 0.55rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
 }
 
 body.page-horarios .horarios-toolbar-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 1.1rem;
 }
 
-@media (min-width: 960px) {
-    body.page-horarios .horarios-toolbar-top {
-        grid-template-columns: minmax(0, 1fr) auto;
-    }
-}
-
-body.page-horarios .horarios-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--wine);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+body.page-horarios .horarios-date-block {
+    min-width: min(100%, 200px);
 }
 
 body.page-horarios .horarios-date-label {
-    margin: 0.12rem 0 0;
+    margin: 0;
     font-weight: 750;
     font-size: 1.22rem;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+    color: var(--text);
 }
 
 body.page-horarios .horarios-date-meta {
-    margin-top: 0.18rem;
-    font-size: 0.84rem;
+    margin: 0.22rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
 }
 
 body.page-horarios .horarios-toolbar-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.5rem;
     align-items: center;
     justify-content: flex-end;
     min-width: 0;
@@ -2109,7 +1947,7 @@ body.page-horarios .horarios-date-input {
     display: block;
     min-width: 0;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
 }
@@ -2149,6 +1987,7 @@ body.page-horarios .horarios-day-arrow {
     color: var(--text);
     background: color-mix(in srgb, var(--muted) 8%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 body.page-horarios .horarios-day-arrow:hover {
@@ -2157,9 +1996,7 @@ body.page-horarios .horarios-day-arrow:hover {
 }
 
 body.page-horarios .horarios-dir {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    flex: 0 1 auto;
 }
 
 body.page-horarios .horarios-dir[hidden],
@@ -2167,36 +2004,8 @@ body.page-horarios .horarios-day-nav[hidden] {
     display: none !important;
 }
 
-body.page-horarios .horarios-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    padding: 0.38rem 0.85rem;
-    border: 0;
-    border-radius: 999px;
-    font-weight: 650;
-    font-size: 0.86rem;
-    color: var(--text);
-    background: color-mix(in srgb, var(--muted) 8%, var(--card));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-}
-
-body.page-horarios .horarios-chip:hover {
-    background: color-mix(in srgb, var(--wine) 8%, var(--card));
-}
-
-body.page-horarios .horarios-chip.is-on {
-    color: #fff;
-    background: linear-gradient(90deg, var(--wine), var(--wine-2));
-    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 32%, transparent);
-}
-
 body.page-horarios #loadBtn {
-    min-height: 40px;
-    border-radius: 999px;
-    font-weight: 700;
-    padding-inline: 1.05rem;
+    min-height: 32px;
 }
 
 body.page-horarios .horarios-tabs-bar {
@@ -2204,15 +2013,15 @@ body.page-horarios .horarios-tabs-bar {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.65rem;
+    gap: 0.55rem 0.75rem;
 }
 
 body.page-horarios .tabs-panel {
     flex: 1 1 280px;
     min-width: 0;
     padding: 4px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 10%, var(--card));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--muted) 9%, var(--card));
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
 }
 
@@ -2228,23 +2037,24 @@ body.page-horarios .tabbtn {
     align-items: center;
     gap: 0.4rem;
     border: 0;
-    border-radius: 999px;
-    padding: 0.4rem 0.8rem;
+    border-radius: 11px;
+    padding: 0.42rem 0.78rem;
     font-weight: 650;
     font-size: 0.86rem;
     color: var(--muted);
     background: transparent;
+    transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 body.page-horarios .tabbtn:hover {
     color: var(--text);
-    background: color-mix(in srgb, var(--card) 70%, transparent);
+    background: color-mix(in srgb, var(--card) 78%, transparent);
 }
 
 body.page-horarios .tabbtn.is-active {
     color: #fff;
     background: var(--wine);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--wine) 30%, transparent);
+    box-shadow: 0 3px 10px color-mix(in srgb, var(--wine) 28%, transparent);
 }
 
 body.page-horarios .tabbtn .badge {
@@ -2280,7 +2090,7 @@ body.page-horarios .status-pill {
 
 body.page-horarios .slots-wrap {
     border-radius: 16px;
-    padding: 0.15rem 0.1rem 0.35rem;
+    padding: 0.1rem 0 0.2rem;
 }
 
 body.page-horarios .hint {
@@ -2292,15 +2102,15 @@ body.page-horarios .hint {
 body.page-horarios .ops-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 0.85rem;
     align-items: start;
 }
 
 body.page-horarios .ops-col {
     min-width: 0;
-    padding: 0.7rem;
+    padding: 0.75rem;
     border-radius: 16px;
-    background: color-mix(in srgb, var(--muted) 4%, var(--card));
+    background: color-mix(in srgb, var(--muted) 4.5%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
 }
 
@@ -2309,8 +2119,8 @@ body.page-horarios .ops-col-head {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    margin-bottom: 0.55rem;
-    padding: 0.1rem 0.15rem 0.55rem;
+    margin-bottom: 0.45rem;
+    padding: 0.05rem 0.1rem 0.5rem;
     border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
 }
 
@@ -2346,7 +2156,7 @@ body.page-horarios .ops-col-count {
 }
 
 body.page-horarios .horarios-empty-col {
-    padding: 0.85rem 0.4rem 0.45rem;
+    padding: 0.95rem 0.45rem 0.55rem;
     color: var(--muted);
     font-size: 0.88rem;
 }
@@ -2354,15 +2164,20 @@ body.page-horarios .horarios-empty-col {
 body.page-horarios .slot-row {
     position: relative;
     display: grid;
-    grid-template-columns: 4.4rem minmax(0, 1fr) auto;
-    gap: 0.65rem;
+    grid-template-columns: 4.35rem minmax(0, 1fr) auto;
+    gap: 0.7rem;
     align-items: center;
-    margin-top: 0.5rem;
-    padding: 0.7rem 0.75rem 0.7rem 0.85rem;
+    margin-top: 0.45rem;
+    padding: 0.68rem 0.72rem 0.68rem 0.9rem;
     overflow: hidden;
     border-radius: 14px;
     background: var(--card);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+    transition: box-shadow 0.15s ease, background 0.15s ease;
+}
+
+body.page-horarios .slot-row:hover {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 22%, var(--border));
 }
 
 body.page-horarios .slot-row::before {
@@ -2381,11 +2196,15 @@ body.page-horarios .slot-row.is-tight::before { background: #e9c40e; }
 body.page-horarios .slot-row.is-full::before { background: var(--wine); }
 
 body.page-horarios .slot-time {
-    font-size: 1.12rem;
+    font-size: 1.14rem;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.04em;
     color: var(--wine);
+}
+
+body.page-horarios .slot-body {
+    min-width: 0;
 }
 
 body.page-horarios .slot-top {
@@ -2393,11 +2212,11 @@ body.page-horarios .slot-top {
     align-items: baseline;
     justify-content: space-between;
     gap: 0.45rem;
-    margin-bottom: 0.28rem;
+    margin-bottom: 0.35rem;
 }
 
 body.page-horarios .slot-status {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 650;
     color: var(--muted);
 }
@@ -2406,18 +2225,27 @@ body.page-horarios .slot-row.is-full .slot-status { color: var(--wine); }
 body.page-horarios .slot-row.is-tight .slot-status {
     color: color-mix(in srgb, #b45309 70%, var(--text));
 }
+body.page-horarios .slot-row.is-ok .slot-status {
+    color: color-mix(in srgb, #0f9f6e 55%, var(--text));
+}
 
 body.page-horarios .slot-cap {
-    font-size: 0.82rem;
-    font-weight: 750;
+    font-size: 0.84rem;
+    font-weight: 650;
     font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+body.page-horarios .slot-cap strong {
+    font-weight: 800;
+    color: var(--text);
 }
 
 body.page-horarios .slot-meter {
-    height: 6px;
+    height: 7px;
     border-radius: 999px;
     overflow: hidden;
-    background: color-mix(in srgb, var(--muted) 16%, transparent);
+    background: color-mix(in srgb, var(--muted) 14%, transparent);
 }
 
 body.page-horarios .slot-meter > span {
@@ -2426,6 +2254,7 @@ body.page-horarios .slot-meter > span {
     width: var(--w, 0%);
     border-radius: 999px;
     background: color-mix(in srgb, var(--muted) 40%, transparent);
+    transition: width 0.25s ease;
 }
 
 body.page-horarios .slot-row.is-ok .slot-meter > span {
@@ -2438,28 +2267,10 @@ body.page-horarios .slot-row.is-full .slot-meter > span {
     background: linear-gradient(90deg, var(--wine), var(--wine-2));
 }
 
-body.page-horarios .slot-seats {
-    display: inline-flex;
-    gap: 4px;
-    margin-top: 0.38rem;
-}
-
-body.page-horarios .slot-seat {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 22%, transparent);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
-}
-
-body.page-horarios .slot-seat.is-on { background: var(--wine); box-shadow: none; }
-body.page-horarios .slot-row.is-ok .slot-seat.is-on { background: #10d88f; }
-body.page-horarios .slot-row.is-tight .slot-seat.is-on { background: #e9c40e; }
-
 body.page-horarios .slot-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.4rem;
     align-items: center;
     justify-content: flex-end;
 }
@@ -2467,8 +2278,9 @@ body.page-horarios .slot-actions {
 body.page-horarios .switch {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.28rem 0.55rem;
+    gap: 0.42rem;
+    min-height: 34px;
+    padding: 0.28rem 0.58rem;
     border-radius: 999px;
     font-size: 0.76rem;
     font-weight: 650;
@@ -2476,6 +2288,11 @@ body.page-horarios .switch {
     background: color-mix(in srgb, var(--muted) 7%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
     user-select: none;
+    cursor: pointer;
+}
+
+body.page-horarios .switch .switch-text {
+    line-height: 1;
 }
 
 body.page-horarios .switch input {
@@ -2483,6 +2300,12 @@ body.page-horarios .switch input {
     height: 20px;
     margin: 0;
     accent-color: var(--wine);
+    cursor: pointer;
+}
+
+body.page-horarios .switch:has(input:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
 body.page-horarios .disabled-row { opacity: 0.62; }
@@ -2493,17 +2316,50 @@ body.page-horarios .day-cancelled {
 }
 
 body.page-horarios .btn-mini {
-    padding: 0.42rem 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    min-height: 34px;
+    padding: 0.4rem 0.72rem;
     border-radius: 999px;
     border: 0;
     background: color-mix(in srgb, var(--card) 92%, transparent);
     color: var(--text);
     font-weight: 650;
+    font-size: 0.8rem;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 body.page-horarios .btn-mini:hover {
     background: color-mix(in srgb, var(--wine) 8%, var(--card));
+}
+
+body.page-horarios .btn-mini:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+body.page-horarios .btn-mini-primary {
+    color: #fff;
+    background: var(--wine);
+    box-shadow: none;
+}
+
+body.page-horarios .btn-mini-primary:hover {
+    background: color-mix(in srgb, var(--wine) 88%, #000);
+    color: #fff;
+}
+
+body.page-horarios .btn-mini-ghost {
+    color: var(--muted);
+    background: transparent;
+}
+
+body.page-horarios .btn-mini-ghost:hover {
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 7%, var(--card));
 }
 
 body.page-horarios .group-date { margin-top: 0.85rem; }
@@ -2522,21 +2378,81 @@ body.page-horarios .group-date-label {
     letter-spacing: -0.02em;
 }
 
+body.page-horarios .tpl-add {
+    margin-bottom: 0.85rem;
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    background:
+        linear-gradient(160deg, color-mix(in srgb, var(--wine) 5%, var(--card)), var(--card) 52%);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 14%, var(--border));
+}
+
+body.page-horarios .tpl-add-head {
+    margin-bottom: 0.7rem;
+}
+
+body.page-horarios .tpl-add-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+body.page-horarios .tpl-add-sub {
+    margin: 0.22rem 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+body.page-horarios .tpl-add .row-form {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+body.page-horarios .tpl-list {
+    display: grid;
+    gap: 0.45rem;
+}
+
+body.page-horarios .tpl-row.slot-row {
+    grid-template-columns: 4.35rem minmax(0, 1fr) auto;
+    padding: 0.62rem 0.72rem 0.62rem 0.9rem;
+}
+
 body.page-horarios .tpl-fields {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
-    margin-top: 0.45rem;
+    gap: 0.5rem;
+    margin-top: 0;
 }
 
 body.page-horarios .tpl-field {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    min-width: 7.5rem;
+    gap: 0.22rem;
+    min-width: 7.2rem;
     font-size: 0.72rem;
     font-weight: 650;
     color: var(--muted);
+}
+
+body.page-horarios .tpl-field em,
+body.page-horarios .row-form .mini em {
+    font-style: normal;
+    font-weight: 600;
+    opacity: 0.75;
+}
+
+body.page-horarios .tpl-field-cap {
+    min-width: 5.5rem;
+    max-width: 6.5rem;
 }
 
 body.page-horarios .tpl-field input {
@@ -2544,16 +2460,21 @@ body.page-horarios .tpl-field input {
     border: 0;
     border-radius: 10px;
     padding: 0.4rem 0.6rem;
-    background: var(--card);
+    background: color-mix(in srgb, var(--muted) 5%, var(--card));
     color: var(--text);
     font-weight: 650;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
 }
 
+body.page-horarios .tpl-field input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wine) 28%, transparent);
+}
+
 body.page-horarios .row-form {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.7rem;
+    gap: 0.65rem;
     align-items: flex-end;
     margin-bottom: 0.85rem;
     padding: 0.85rem;
@@ -2562,7 +2483,9 @@ body.page-horarios .row-form {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
 }
 
-body.page-horarios .row-form .field { min-width: 150px; }
+body.page-horarios .row-form .field { min-width: 140px; flex: 1 1 140px; }
+body.page-horarios .row-form .field-cap { flex: 0 1 7rem; min-width: 6rem; }
+body.page-horarios .row-form .field-active { flex: 0 1 8rem; min-width: 7rem; }
 
 body.page-horarios .row-form .mini {
     display: block;
@@ -2585,6 +2508,12 @@ body.page-horarios .row-form select {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
 }
 
+body.page-horarios .row-form .btn-wine {
+    flex: 0 0 auto;
+    min-height: 40px;
+    border-radius: 12px;
+}
+
 body.page-horarios .muted {
     color: var(--muted);
     font-size: 0.88rem;
@@ -2601,17 +2530,24 @@ body.page-horarios .muted {
         width: 100%;
     }
 
-    body.page-horarios #loadBtn { width: 100%; }
+    body.page-horarios .horarios-dir.admin-filter-seg a,
+    body.page-horarios .horarios-dir.admin-filter-seg button {
+        flex: 1 1 0;
+    }
 
     body.page-horarios .tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
+        scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
     }
 
+    body.page-horarios .tabs::-webkit-scrollbar { display: none; }
+
     body.page-horarios .tabbtn { flex: 0 0 auto; white-space: nowrap; }
 
-    body.page-horarios .slot-row {
+    body.page-horarios .slot-row,
+    body.page-horarios .tpl-row.slot-row {
         grid-template-columns: 1fr auto;
     }
 
@@ -2630,17 +2566,441 @@ body.page-horarios .muted {
     }
 
     body.page-horarios .switch {
-        flex: 1 1 calc(50% - 0.45rem);
+        flex: 1 1 calc(50% - 0.4rem);
         justify-content: space-between;
     }
 
-    body.page-horarios .btn-mini { flex: 1 1 calc(50% - 0.45rem); }
+    body.page-horarios .btn-mini { flex: 1 1 calc(50% - 0.4rem); }
 
     body.page-horarios .row-form,
     body.page-horarios .tpl-fields { display: grid; grid-template-columns: 1fr; }
     body.page-horarios .row-form .field,
-    body.page-horarios .tpl-field { min-width: 0; }
+    body.page-horarios .row-form .field-cap,
+    body.page-horarios .row-form .field-active,
+    body.page-horarios .tpl-field,
+    body.page-horarios .tpl-field-cap { min-width: 0; max-width: none; }
     body.page-horarios .row-form .btn-wine { width: 100%; border-radius: 14px; }
+}
+
+
+/* ---- horarios: precios y lugares ---- */
+body.page-horarios .pricing-desk {
+    display: grid;
+    gap: 1rem;
+}
+
+body.page-horarios .pricing-panel {
+    padding: 1.05rem 1.1rem 1.2rem;
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-horarios .pricing-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.55rem 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+body.page-horarios .pricing-panel-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+body.page-horarios .pricing-panel-title .ico {
+    color: var(--wine);
+}
+
+body.page-horarios .pricing-panel-sub {
+    margin: 0.3rem 0 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.4;
+}
+
+body.page-horarios .pricing-updated {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+}
+
+body.page-horarios .pricing-base-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    align-items: end;
+}
+
+body.page-horarios .pricing-field,
+body.page-horarios .loc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.34rem;
+    min-width: 0;
+}
+
+body.page-horarios .pricing-field-label,
+body.page-horarios .loc-field-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    font-size: 0.73rem;
+    font-weight: 650;
+    color: var(--muted);
+}
+
+body.page-horarios .pricing-field-label .ico,
+body.page-horarios .loc-field-label .ico {
+    width: 14px;
+    height: 14px;
+    color: color-mix(in srgb, var(--wine) 80%, var(--muted));
+    flex: 0 0 auto;
+}
+
+body.page-horarios .pricing-field > input,
+body.page-horarios .loc-field > input {
+    min-height: 44px;
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 0.55rem 0.75rem;
+    background: color-mix(in srgb, var(--muted) 5%, var(--card));
+    color: var(--text);
+    font-weight: 650;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+body.page-horarios .price-input {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--muted) 5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+body.page-horarios .price-input-prefix {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.55rem;
+    padding: 0 0.05rem 0 0.55rem;
+    font-weight: 780;
+    font-size: 0.95rem;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 9%, transparent);
+}
+
+body.page-horarios .price-input-prefix .ico {
+    display: none;
+}
+
+body.page-horarios .price-input input {
+    min-height: 44px;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    padding: 0.55rem 0.75rem 0.55rem 0.4rem;
+    background: transparent;
+    color: var(--text);
+    font-weight: 720;
+    font-variant-numeric: tabular-nums;
+    box-shadow: none;
+}
+
+body.page-horarios .price-input:focus-within,
+body.page-horarios .pricing-field > input:focus,
+body.page-horarios .loc-field > input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wine) 30%, transparent);
+}
+
+body.page-horarios .pricing-field-price .price-input,
+body.page-horarios .loc-field-price .price-input {
+    background: color-mix(in srgb, var(--wine) 3%, var(--card));
+}
+
+body.page-horarios .pricing-base-actions,
+body.page-horarios .loc-add-actions {
+    display: flex;
+    align-items: end;
+}
+
+body.page-horarios .pricing-base-actions .btn,
+body.page-horarios .loc-add-actions .btn {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+body.page-horarios .loc-add-card {
+    margin-bottom: 1rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--wine) 4.5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 16%, var(--border));
+}
+
+body.page-horarios .loc-add-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 720;
+    color: var(--text);
+}
+
+body.page-horarios .loc-add-grid {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.9fr) minmax(10rem, 1.4fr) repeat(2, minmax(7.5rem, 1fr)) minmax(4.5rem, 5.5rem) auto;
+    gap: 0.7rem;
+    align-items: end;
+}
+
+body.page-horarios .loc-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+body.page-horarios .pricing-empty {
+    padding: 1.1rem 0.35rem;
+    text-align: center;
+}
+
+body.page-horarios .loc-card {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.95rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--muted) 3.5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-horarios .loc-card.is-disabled {
+    opacity: 0.68;
+}
+
+body.page-horarios .loc-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.55rem 0.8rem;
+}
+
+body.page-horarios .loc-card-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem 0.8rem;
+    min-width: 0;
+}
+
+body.page-horarios .loc-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.58rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.03em;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 10%, transparent);
+}
+
+body.page-horarios .loc-switch {
+    gap: 0.35rem;
+}
+
+body.page-horarios .loc-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+body.page-horarios .loc-card-actions .btn-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    min-height: 38px;
+    padding: 0.4rem 0.75rem;
+}
+
+body.page-horarios .loc-card-grid {
+    display: grid;
+    grid-template-columns: minmax(11rem, 1.45fr) repeat(2, minmax(8rem, 1fr)) minmax(5rem, 6rem);
+    gap: 0.7rem;
+}
+
+body.page-horarios .loc-field-order input {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Admin chrome: better mobile tabs/toolbar across /admin/* */
+body.admin-app .admin-shell > .home-tabs-head {
+    gap: 0.65rem;
+}
+
+body.admin-app .admin-seg {
+    flex-wrap: wrap;
+}
+
+body.page-horarios .price-input input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+body.page-horarios .price-input input[type="number"]::-webkit-outer-spin-button,
+body.page-horarios .price-input input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    body.page-horarios .pricing-base-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-horarios .pricing-base-actions {
+        grid-column: 1 / -1;
+    }
+
+    body.page-horarios .loc-add-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-horarios .loc-add-actions {
+        grid-column: 1 / -1;
+    }
+
+    body.page-horarios .loc-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.page-horarios .loc-field-name {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    body.admin-app .admin-shell > .home-tabs-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.admin-app .home-tabs-tools {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    body.admin-app .admin-seg {
+        width: 100%;
+    }
+
+    body.admin-app .admin-seg .nav-item {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    body.admin-app .admin-seg .nav-link {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.admin-app .admin-shell > .home-tabs-body {
+        padding: 0.7rem 0.75rem 0.95rem;
+    }
+
+    body.page-horarios .pricing-panel {
+        padding: 0.85rem 0.8rem 1rem;
+        border-radius: 14px;
+    }
+
+    body.page-horarios .pricing-panel-head {
+        margin-bottom: 0.85rem;
+        padding-bottom: 0.7rem;
+    }
+
+    body.page-horarios .pricing-base-grid,
+    body.page-horarios .loc-add-grid,
+    body.page-horarios .loc-card-grid {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
+
+    body.page-horarios .pricing-base-actions,
+    body.page-horarios .loc-add-actions,
+    body.page-horarios .loc-field-name {
+        grid-column: auto;
+    }
+
+    body.page-horarios .loc-card {
+        padding: 0.8rem;
+    }
+
+    body.page-horarios .loc-card-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    body.page-horarios .loc-card-actions {
+        width: 100%;
+    }
+
+    body.page-horarios .loc-card-actions .btn-mini {
+        flex: 1 1 calc(50% - 0.4rem);
+    }
+
+    body.page-horarios .pricing-field > input,
+    body.page-horarios .loc-field > input,
+    body.page-horarios .price-input,
+    body.page-horarios .price-input input,
+    body.page-horarios .pricing-base-actions .btn,
+    body.page-horarios .loc-add-actions .btn {
+        min-height: 46px;
+        font-size: 1rem;
+    }
+
+    body.page-horarios .tabs {
+        gap: 0.35rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.15rem;
+    }
+
+    body.page-horarios .tabbtn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        font-size: 0.84rem;
+        padding: 0.55rem 0.8rem;
+    }
+
+    body.page-agenda .agenda-toolbar,
+    body.page-recent .recent-toolbar {
+        gap: 0.75rem;
+    }
+
+    body.page-trip .trip-head-top {
+        gap: 0.65rem;
+    }
 }
 
 
@@ -3290,6 +3650,16 @@ html[data-theme="dark"] body.page-especiales .esp-day.is-tight .esp-day-status {
 
 .agenda-trip-special {
     margin-bottom: 0.15rem;
+}
+
+body.page-agenda .agenda-trip.is-special .agenda-trip-body {
+    flex-wrap: wrap;
+    row-gap: 0.35rem;
+}
+
+body.page-agenda .agenda-trip.is-special .agenda-trip-special {
+    flex: 1 0 100%;
+    margin-bottom: 0;
 }
 
 .trip-special-note {

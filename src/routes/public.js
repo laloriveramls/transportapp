@@ -30,9 +30,11 @@ const {
 } = require("../notifications/reservationMessages");
 const {
     getVicLocations,
+    getCityLabels,
     resolveVicLocation,
     resolveVicLocationLabel,
     pricingForVicLocation,
+    pricingForStops,
     directionFromStops,
     vicLocationFromStops,
     routeFromStops,
@@ -52,7 +54,7 @@ const stripe = process.env.STRIPE_SECRET_KEY
    ========================= */
 
 // I keep a strict cap (also clamped by template capacity in DB).
-const MAX_CAP = 6;
+const MAX_CAP = 14;
 
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
@@ -264,7 +266,9 @@ function computeTotalsFromReservation(r, pricing) {
     const totalSeats = Number(r?.seats || 1);
     const children = Number(r?.child_seats || 0);
     const adults = Math.max(0, totalSeats - children);
-    const effectivePricing = pricingForVicLocation(pricing, r?.vic_location);
+    const effectivePricing = r?.from_stop && r?.to_stop
+        ? pricingForStops(pricing, r.from_stop, r.to_stop)
+        : pricingForVicLocation(pricing, r?.vic_location);
     return computeTotalsWithPricing(r?.type, adults, effectivePricing, children);
 }
 
@@ -273,6 +277,7 @@ function reserveViewData(extra = {}) {
     const baseUrl = extra.baseUrl || process.env.BASE_URL || "";
     return {
         vicLocations: getVicLocations(),
+        cityLabels: getCityLabels(),
         seoPage: "reserve",
         ...extra,
         jsonLd: extra.jsonLd || seo.reserveJsonLd({baseUrl, pricing}),
@@ -507,9 +512,11 @@ router.get(
             const pricing = previewPricing();
             const templates = previewTemplates();
             const vicLocations = getVicLocations();
+            const cityLabels = getCityLabels();
             return res.render("index", {
                 templates,
                 vicLocations,
+                cityLabels,
                 pricing,
                 specialEvents: previewSpecialEvents(),
                 seoPage: "home",
@@ -535,6 +542,7 @@ router.get(
         try {
             const pricing = await getPricing(conn);
             const vicLocations = getVicLocations();
+            const cityLabels = getCityLabels();
             let homeSpecialEvents = [];
             try {
                 homeSpecialEvents = await loadPublicSpecialEvents(conn);
@@ -544,6 +552,7 @@ router.get(
             res.render("index", {
                 templates,
                 vicLocations,
+                cityLabels,
                 pricing,
                 specialEvents: homeSpecialEvents,
                 seoPage: "home",
@@ -791,7 +800,7 @@ router.post(
 
             // ✅ pricing source of truth (inside TX)
             const pricing = await getPricing(conn);
-            const effectivePricing = pricingForVicLocation(pricing, vic_location);
+            const effectivePricing = pricingForStops(pricing, from_stop, to_stop);
             const adultSeats = type === "PASSENGER" ? Math.max(0, seats - childSeats) : 0;
             const {unit_price_mxn, amount_total_mxn, child_seats: childSeatsStored} =
                 computeTotalsWithPricing(type, adultSeats, effectivePricing, childSeats);

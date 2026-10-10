@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const { pool, hasDb } = require("../db");
 const { requireDb } = require("../middleware/requireDb");
-const { formatRouteLabel, formatRouteEndpoint } = require("../locations");
+const { formatRouteLabel, routeEndpoints } = require("../locations");
 const specialEvents = require("../specialEvents");
 
 const router = express.Router();
@@ -18,10 +18,6 @@ const router = express.Router();
 
 function directionLabel(direction) {
     return direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria";
-}
-
-function directionLabelShort(direction) {
-    return direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria";
 }
 
 function buildBaseUrl(req) {
@@ -115,6 +111,8 @@ function buildTicketViewModel(row, extras) {
             ? Number(row.amount_total_mxn)
             : null;
 
+    const endpoints = routeEndpoints(row.direction, row.vic_location, row.from_stop, row.to_stop);
+
     return {
         row,
         isPassenger,
@@ -129,9 +127,9 @@ function buildTicketViewModel(row, extras) {
         tripDateLabel: formatTripDate(row.trip_date),
         tripDateRaw: String(row.trip_date || "").slice(0, 10),
         departTime: pickHHMM(row.depart_time),
-        fromLabel: formatRouteEndpoint(row.direction, row.vic_location, "from"),
-        toLabel: formatRouteEndpoint(row.direction, row.vic_location, "to"),
-        routeLabel: formatRouteLabel(row.direction, row.vic_location),
+        fromLabel: endpoints.fromLabel,
+        toLabel: endpoints.toLabel,
+        routeLabel: formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop),
         phoneHref: phoneHref(row.phone),
         ...extras,
     };
@@ -155,6 +153,8 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
                 r.seats,
                 r.package_details,
                 r.vic_location,
+                r.from_stop,
+                r.to_stop,
                 r.payment_method,
                 r.transfer_ref,
                 r.amount_total_mxn,
@@ -174,7 +174,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
             WHERE tk.code = ?
             GROUP BY
                 tk.code, r.id, r.customer_name, r.phone, r.type, r.status, r.seats, r.package_details,
-                r.vic_location, r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
+                r.vic_location, r.from_stop, r.to_stop, r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
                 t.trip_date, dt.direction, dt.depart_time, dt.special_event_id
             LIMIT 1
         `,
@@ -218,7 +218,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
         printUrl: `${ticketPath}/print`,
         directionLabel,
         ...(specialEvent ? {
-            routeLabel: `${formatRouteLabel(row.direction, row.vic_location)} · ${specialEvents.routeNote(specialEvent)}`,
+            routeLabel: `${formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop)} · ${specialEvents.routeNote(specialEvent)}`,
             specialNote: specialEvents.routeNote(specialEvent),
         } : {}),
     }));
@@ -257,6 +257,9 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
                 r.status,
                 r.seats,
                 r.package_details,
+                r.vic_location,
+                r.from_stop,
+                r.to_stop,
                 r.payment_method,
                 r.transfer_ref,
                 r.amount_total_mxn,
@@ -326,7 +329,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     };
 
     const hhmm = pickHHMM(row.depart_time);
-    const ruta = directionLabelShort(row.direction);
+    const ruta = formatRouteLabel(row.direction, row.vic_location, " - ", row.from_stop, row.to_stop);
 
     const pay = String(row.payment_method || "-").toUpperCase();
     const payNice =

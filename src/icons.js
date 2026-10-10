@@ -119,6 +119,7 @@ const CLIENT_ICONS = [
     "loader-circle",
     "lock",
     "map",
+    "list",
     "message-circle",
     "minus",
     "moon",

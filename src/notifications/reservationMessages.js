@@ -5,7 +5,7 @@ const {escapeHtml} = require("./telegram");
 const {formatRouteLabel} = require("../locations");
 const specialEvents = require("../specialEvents");
 
-const REGULAR_MAX_CAP = 6;
+const REGULAR_MAX_CAP = 14;
 
 const TYPE_LABELS = {PASSENGER: "Pasaje", PACKAGE: "Paquetería"};
 const PAY_LABELS = {TAQUILLA: "Taquilla", TRANSFERENCIA: "Transferencia", ONLINE: "Pago en línea"};

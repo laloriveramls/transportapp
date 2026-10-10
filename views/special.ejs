@@ -561,11 +561,11 @@
         /* ----- Copiar datos de transferencia ----- */
         document.getElementById("copyClabeBtn")?.addEventListener("click", async () => {
             try {
-                const card = (document.getElementById("bankClabe")?.textContent || "").replace(/[\s-]/g, "");
-                await navigator.clipboard.writeText(card);
-                toast("Número de tarjeta copiado", "success");
+                const clabe = (document.getElementById("bankClabe")?.textContent || "").replace(/[\s-]/g, "");
+                await navigator.clipboard.writeText(clabe);
+                toast("CLABE copiada", "success");
             } catch {
-                toast("No pude copiar el número. Selecciónalo manualmente.");
+                toast("No pude copiar la CLABE. Selecciónala manualmente.");
             }
         });
 
