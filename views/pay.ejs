@@ -247,6 +247,7 @@
 </main>
 
 <script src="/js/theme.js"></script>
+<script src="/js/copy.js"></script>
 
 <script type="application/json" id="reservationData">
 <%- JSON.stringify({
@@ -379,15 +380,13 @@
         waBtn.href = "#";
     }
 
-    copyBtn?.addEventListener("click", async () => {
-        try{
-            await navigator.clipboard.writeText(String(data.folio || ""));
-            copyToast.style.display = "inline-flex";
-            clearTimeout(window.__copyToastTimer);
-            window.__copyToastTimer = setTimeout(() => copyToast.style.display = "none", 1200);
-        } catch {
-            alert("No pude copiar. Selecciona el folio manualmente.");
-        }
+    copyBtn?.addEventListener("click", () => {
+        window.copyText(String(data.folio || ""), {
+            toastEl: copyToast,
+            selectEl: document.getElementById("folioText"),
+            okMs: 1200,
+            errorText: "No se pudo copiar. Selecciona el folio para copiarlo."
+        });
     });
 
     const refreshBtn = document.getElementById("refreshStatusBtn");

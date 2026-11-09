@@ -1421,3 +1421,16 @@ body.page-checkout.drawer-open {
                 justify-content: center;
             }
 }
+
+/* Aviso de error al copiar (reusa el toast "Copiado") */
+.copy-toast.is-error,
+.page-pay .copy-toast.is-error,
+.page-ticket .copy-toast.is-error {
+    color: #b42318;
+}
+
+html[data-theme="dark"] .copy-toast.is-error,
+html[data-theme="dark"] .page-pay .copy-toast.is-error,
+html[data-theme="dark"] .page-ticket .copy-toast.is-error {
+    color: #ff8a93;
+}

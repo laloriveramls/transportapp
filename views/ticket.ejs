@@ -430,20 +430,19 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
 <%- include('partials/site-footer') %>
 
 <script src="/js/theme.js"></script>
+<script src="/js/copy.js"></script>
 <script>
     const btn = document.getElementById('copyBtn');
     const toast = document.getElementById('copyToast');
 
-    btn?.addEventListener('click', async () => {
-        const txt = document.getElementById('ticketUrl')?.innerText || '';
-        try {
-            await navigator.clipboard.writeText(txt);
-            toast.style.display = 'inline-flex';
-            clearTimeout(window.__copyToastTimer);
-            window.__copyToastTimer = setTimeout(() => toast.style.display = 'none', 1400);
-        } catch {
-            alert('No pude copiar. Selecciona el link manualmente.');
-        }
+    btn?.addEventListener('click', () => {
+        const urlEl = document.getElementById('ticketUrl');
+        window.copyText(urlEl?.innerText || '', {
+            toastEl: toast,
+            selectEl: urlEl,
+            okMs: 1400,
+            errorText: 'No se pudo copiar. Selecciona el enlace para copiarlo.'
+        });
     });
 </script>
 

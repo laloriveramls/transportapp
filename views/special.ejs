@@ -446,7 +446,6 @@
 
         const toast = (msg, variant = "danger") => {
             if (typeof window.notify === "function") window.notify(msg, {variant, delay: 2400});
-            else alert(msg);
         };
 
         const money = (n) => "$" + Number(n || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});

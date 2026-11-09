@@ -24,7 +24,15 @@
         const iconEl = document.getElementById("appToastIcon");
 
         if (!toastEl || !msgEl) {
-            alert(msg);
+            // Página sin el partial de toast: aviso mínimo no bloqueante (nunca alert()).
+            const bar = document.createElement("div");
+            bar.setAttribute("role", variant === "danger" ? "alert" : "status");
+            bar.textContent = msg;
+            bar.style.cssText = "position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%);z-index:2100;" +
+                "max-width:min(92vw,28rem);padding:.7rem 1rem;border-radius:12px;font:600 .9rem/1.3 system-ui,sans-serif;" +
+                "color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.3);background:" + (variant === "danger" ? "#c92a3a" : "#1f2937");
+            document.body.appendChild(bar);
+            setTimeout(() => bar.remove(), Math.max(delay, 2200));
             return;
         }
 
