@@ -644,6 +644,7 @@ body.page-agenda .agenda-col-mid {
 }
 
 body.page-agenda .agenda-col-count {
+    text-align: right;
     font-size: 0.74rem;
     font-weight: 650;
     font-variant-numeric: tabular-nums;
@@ -717,8 +718,89 @@ body.page-agenda .agenda-trip-time {
 body.page-agenda .agenda-trip-body {
     min-width: 0;
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.32rem;
+}
+
+body.page-agenda .agenda-trip-meter-row {
+    display: flex;
     align-items: center;
     gap: 0.65rem;
+    min-width: 0;
+}
+
+body.page-agenda .agenda-trip-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+body.page-agenda .agenda-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.2rem;
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--muted) 12%, var(--card));
+}
+
+body.page-agenda .agenda-tag.is-next {
+    color: #fff;
+    background: var(--wine);
+}
+
+body.page-agenda .agenda-tag.is-off {
+    color: #b42318;
+    background: color-mix(in srgb, #dc3545 10%, var(--card));
+}
+
+html[data-theme="dark"] body.page-agenda .agenda-tag.is-off { color: #ff8a93; }
+
+body.page-agenda .agenda-trip-status {
+    font-size: 0.74rem;
+    font-weight: 650;
+    color: var(--muted);
+}
+
+body.page-agenda .agenda-trip.is-tight .agenda-trip-status { color: #a67c00; }
+body.page-agenda .agenda-trip.is-full .agenda-trip-status { color: var(--wine); }
+
+html[data-theme="dark"] body.page-agenda .agenda-trip.is-tight .agenda-trip-status { color: #e9c40e; }
+
+/* Barra de ocupación para cupos grandes (más de 20 asientos) */
+body.page-agenda .agenda-meter {
+    flex: 1 1 auto;
+    height: 8px;
+    min-width: 4rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
+body.page-agenda .agenda-meter > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--wine);
+    transition: width 0.25s ease;
+}
+
+body.page-agenda .agenda-trip.is-ok .agenda-meter > span { background: #10d88f; }
+body.page-agenda .agenda-trip.is-tight .agenda-meter > span { background: #d4a017; }
+
+/* Salidas ya pasadas (solo hoy) y salida próxima */
+body.page-agenda .agenda-trip.is-past { opacity: 0.55; }
+body.page-agenda .agenda-trip.is-past:hover { opacity: 1; }
+body.page-agenda .agenda-trip.is-off { opacity: 0.7; }
+
+body.page-agenda .agenda-trip.is-next {
+    background: var(--card);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wine) 34%, transparent);
 }
 
 body.page-agenda .agenda-trip-cap {
@@ -739,6 +821,7 @@ body.page-agenda .agenda-seats {
     flex-wrap: wrap;
     gap: 5px;
     max-width: 11rem;
+    flex: 1 1 auto;
 }
 
 body.page-agenda .agenda-seat {
@@ -2362,6 +2445,27 @@ body.page-horarios .btn-mini-ghost:hover {
     background: color-mix(in srgb, var(--wine) 7%, var(--card));
 }
 
+body.page-horarios .btn-mini-danger {
+    color: #b42318;
+    background: color-mix(in srgb, #dc3545 7%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, #dc3545 28%, transparent);
+}
+
+body.page-horarios .btn-mini-danger:hover {
+    color: #fff;
+    background: #c92a3a;
+}
+
+html[data-theme="dark"] body.page-horarios .btn-mini-danger { color: #ff8a93; }
+html[data-theme="dark"] body.page-horarios .btn-mini-danger:hover { color: #fff; }
+
+/* Plantilla con cambios sin guardar */
+body.page-horarios .tpl-row.is-dirty {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--wine) 38%, transparent);
+}
+
+body.page-horarios .tpl-field input[type="number"] { width: 100%; }
+
 body.page-horarios .group-date { margin-top: 0.85rem; }
 body.page-horarios .group-date:first-child { margin-top: 0; }
 
@@ -3812,13 +3916,7 @@ html[data-theme="dark"] body.page-especiales .esp-day.is-tight .esp-day-status {
     margin-bottom: 0.15rem;
 }
 
-body.page-agenda .agenda-trip.is-special .agenda-trip-body {
-    flex-wrap: wrap;
-    row-gap: 0.35rem;
-}
-
 body.page-agenda .agenda-trip.is-special .agenda-trip-special {
-    flex: 1 0 100%;
     margin-bottom: 0;
 }
 

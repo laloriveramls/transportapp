@@ -46,6 +46,19 @@
         return `${parts[2]}/${parts[1]}`;
     })();
 
+    // Minutes since midnight in Monterrey, to mark departures already gone / the next one (today only).
+    const nowMin = (() => {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'America/Monterrey', hour: '2-digit', minute: '2-digit', hour12: false,
+        }).format(new Date()).split(':').map(Number);
+        return (parts[0] % 24) * 60 + parts[1];
+    })();
+    const toMin = (hhmm) => {
+        const [h, m] = String(hhmm || '').split(':').map(Number);
+        return Number.isFinite(h) ? h * 60 + (m || 0) : null;
+    };
+    const SEAT_DOTS_MAX = 20; // above this, a progress bar replaces one dot per seat
+
     function hasActivity(t) {
         return Number(t.used_seats || 0) > 0 || Number(t.packages || 0) > 0;
     }
@@ -66,6 +79,18 @@
             items: shownTrips.filter((t) => t.direction === 'LLE_TO_VIC'),
         },
     ];
+    groups.forEach((g) => {
+        g.pax = g.items.reduce((n, t) => n + Number(t.used_seats || 0), 0);
+        g.packs = g.items.reduce((n, t) => n + Number(t.packages || 0), 0);
+        g.nextKey = null;
+        if (isToday) {
+            const next = g.items.find((t) => {
+                const m = toMin(String(t.depart_time || '').slice(0, 5));
+                return m !== null && m >= nowMin && String(t.trip_status || 'OPEN').toUpperCase() === 'OPEN';
+            });
+            g.nextKey = next ? next.trip_id : null;
+        }
+    });
     %>
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
@@ -158,7 +183,10 @@
                             <span class="agenda-col-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
                             <span class="agenda-col-to"><%= group.to %></span>
                         </div>
-                        <span class="agenda-col-count"><%= group.items.length %></span>
+                        <span class="agenda-col-count" title="Salidas · pasajeros · paquetes">
+                            <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>
+                            · <%= group.pax %> pax<% if (group.packs > 0) { %> · <%= group.packs %> paq.<% } %>
+                        </span>
                     </div>
 
                     <% if (!group.items.length) { %>
@@ -180,28 +208,50 @@
                         else if (used > 0 && remaining <= 2) tone = 'tight';
                         else if (used > 0) tone = 'ok';
                         if (packs > 0 && used === 0) tone = 'ok';
+                        const tMin = toMin(hhmm);
+                        const isPast = isToday && tMin !== null && tMin < nowMin;
+                        const isNext = isToday && group.nextKey === t.trip_id;
+                        const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
+                        const useDots = cap > 0 && cap <= SEAT_DOTS_MAX;
+                        let statusText = 'Sin pasajeros';
+                        if (cap === 0) statusText = 'Sin cupo';
+                        else if (used >= cap) statusText = used > cap ? 'Sobrecupo +' + (used - cap) : 'Llena';
+                        else if (used > 0) statusText = remaining + (remaining === 1 ? ' libre' : ' libres');
                     %>
-                    <a class="agenda-trip is-<%= tone %> <%= isSpecial ? 'is-special' : '' %>"
+                    <a class="agenda-trip is-<%= tone %> <%= isSpecial ? 'is-special' : '' %> <%= isPast ? 'is-past' : '' %> <%= isNext ? 'is-next' : '' %> <%= tripOff ? 'is-off' : '' %>"
                        href="/admin/trip/<%= t.trip_id %>"
-                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos">
+                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos, <%= statusText %><%= tripOff ? ', deshabilitada' : '' %>">
                         <div class="agenda-trip-time mono"><%= hhmm %></div>
                         <div class="agenda-trip-body">
+                            <% if (isSpecial || isNext || tripOff) { %>
+                                <div class="agenda-trip-tags">
+                                    <% if (isNext) { %><span class="agenda-tag is-next">Próxima</span><% } %>
+                                    <% if (tripOff) { %><span class="agenda-tag is-off">Deshabilitada</span><% } %>
+                                </div>
+                            <% } %>
                             <% if (isSpecial) { %>
                                 <div class="agenda-trip-special">
                                     <%- include('partials/icon', { name: t.special_icon || 'ferris-wheel', size: 12 }) %>
-                                    <%= t.special_title %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %><% if (tripOff) { %> · deshabilitada<% } %>
+                                    <%= t.special_title %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %>
                                 </div>
                             <% } %>
-                            <span class="agenda-seats" aria-hidden="true">
-                                <% for (let i = 0; i < cap; i++) { %>
-                                    <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
+                            <div class="agenda-trip-meter-row">
+                                <% if (useDots) { %>
+                                    <span class="agenda-seats" aria-hidden="true">
+                                        <% for (let i = 0; i < cap; i++) { %>
+                                            <span class="agenda-seat <%= i < used ? 'is-on' : '' %>"></span>
+                                        <% } %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="agenda-meter" aria-hidden="true"><span style="width: <%= pct %>%"></span></span>
                                 <% } %>
-                            </span>
-                            <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
+                                <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
+                            </div>
+                            <span class="agenda-trip-status"><%= statusText %></span>
                         </div>
                         <div class="agenda-trip-aside">
                             <% if (packs > 0) { %>
-                                <span class="agenda-pack has-pack">
+                                <span class="agenda-pack has-pack" title="<%= packs %> paquete<%= packs === 1 ? '' : 's' %>">
                                     <%- include('partials/icon', { name: 'package', size: 14 }) %>
                                     <%= packs %>
                                 </span>
