@@ -794,9 +794,20 @@ body.page-agenda .agenda-trip.is-ok .agenda-meter > span { background: #10d88f; 
 body.page-agenda .agenda-trip.is-tight .agenda-meter > span { background: #d4a017; }
 
 /* Salidas ya pasadas (solo hoy) y salida próxima */
-body.page-agenda .agenda-trip.is-past { opacity: 0.55; }
-body.page-agenda .agenda-trip.is-past:hover { opacity: 1; }
-body.page-agenda .agenda-trip.is-off { opacity: 0.7; }
+/* Sin bajar la opacidad: el contenido conserva su contraste, solo cambia la hora. */
+body.page-agenda .agenda-trip.is-past .agenda-trip-time {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+body.page-agenda .agenda-trip.is-off {
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0 10px,
+        color-mix(in srgb, #dc3545 5%, transparent) 10px 20px
+    );
+}
 
 body.page-agenda .agenda-trip.is-next {
     background: var(--card);
