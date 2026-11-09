@@ -3,7 +3,7 @@
 <head>
     <%- include('partials/head', {
     title: 'Transporte Victoria ↔ Llera | Pasaje y paquetería',
-    description: 'Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios, hasta 14 asientos y paradas en ejidos.',
+    description: 'Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios y paradas en ejidos.',
     canonicalUrl: (typeof baseUrl !== 'undefined' ? String(baseUrl).replace(/\/+$/, '') : 'https://serviciodetransportevic.com') + '/'
     }) %>
 
@@ -32,7 +32,7 @@
             <div class="home-brand-copy">
                 <p class="home-kicker">Victoria - Llera</p>
                 <h1 class="home-brand-name">Servicio de Transporte</h1>
-                <p class="home-brand-tag">Hasta 14 asientos · Pasaje y paquetería · Reserva en minutos</p>
+                <p class="home-brand-tag">Pasaje y paquetería · Paradas en ejidos · Reserva en minutos</p>
             </div>
         </div>
 
@@ -89,6 +89,17 @@
 
             <div class="home-tabs-body">
                 <div class="home-pane is-active" id="pane-horarios" role="tabpanel" aria-labelledby="tab-horarios">
+                    <%
+                    const time12 = (hhmm) => {
+                        const [h, m] = String(hhmm || '').split(':').map(Number);
+                        if (!Number.isFinite(h)) return String(hhmm || '');
+                        return `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`;
+                    };
+                    %>
+                    <p class="schedule-legend" id="scheduleLegend">
+                        <span><span class="schedule-legend-dot is-next" aria-hidden="true"></span> Próxima salida</span>
+                        <span><span class="schedule-legend-dot" aria-hidden="true"></span> Ya salió hoy</span>
+                    </p>
                     <div class="schedule-board" id="nextCard">
                         <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
                         <article class="schedule-row">
@@ -110,7 +121,7 @@
                                 <a class="chip-time"
                                    data-dir="VIC_TO_LLE"
                                    data-time="<%= hhmm %>"
-                                   href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                                   href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= time12(hhmm) %></a>
                                 <% }) %>
                                 <% if (v2l.length === 0) { %>
                                     <div class="subtle">Sin horarios publicados.</div>
@@ -138,7 +149,7 @@
                                 <a class="chip-time"
                                    data-dir="LLE_TO_VIC"
                                    data-time="<%= hhmm %>"
-                                   href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= hhmm %></a>
+                                   href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= time12(hhmm) %></a>
                                 <% }) %>
                                 <% if (l2v.length === 0) { %>
                                     <div class="subtle">Sin horarios publicados.</div>
@@ -240,40 +251,50 @@
                     <div class="map-grid">
                         <article class="map-card">
                             <header class="map-card-head">
-                                <div>
+                                <span class="map-card-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
+                                <div class="map-card-copy">
                                     <h3 class="map-title">Ciudad Victoria</h3>
                                     <p class="map-sub">Punto de salida</p>
-                                </div>
-                                <div class="map-actions">
-                                    <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
-                                       href="https://www.google.com/maps?q=23.737544,-99.130954">Abrir</a>
-                                    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
-                                       href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">Cómo llegar</a>
                                 </div>
                             </header>
                             <iframe class="map-frame" loading="lazy"
                                     referrerpolicy="no-referrer-when-downgrade"
                                     title="Mapa de salida en Ciudad Victoria"
                                     src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
+                            <div class="map-actions">
+                                <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
+                                   href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">
+                                    <%- include('partials/icon', { name: 'navigation', size: 15 }) %> Cómo llegar
+                                </a>
+                                <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
+                                   href="https://www.google.com/maps?q=23.737544,-99.130954">
+                                    <%- include('partials/icon', { name: 'external-link', size: 15 }) %> Abrir en Maps
+                                </a>
+                            </div>
                         </article>
 
                         <article class="map-card">
                             <header class="map-card-head">
-                                <div>
+                                <span class="map-card-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
+                                <div class="map-card-copy">
                                     <h3 class="map-title">Llera</h3>
                                     <p class="map-sub">Punto de salida</p>
-                                </div>
-                                <div class="map-actions">
-                                    <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
-                                       href="https://www.google.com/maps?q=23.317522,-99.023979">Abrir</a>
-                                    <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
-                                       href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">Cómo llegar</a>
                                 </div>
                             </header>
                             <iframe class="map-frame" loading="lazy"
                                     referrerpolicy="no-referrer-when-downgrade"
                                     title="Mapa de salida en Llera"
                                     src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
+                            <div class="map-actions">
+                                <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
+                                   href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">
+                                    <%- include('partials/icon', { name: 'navigation', size: 15 }) %> Cómo llegar
+                                </a>
+                                <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
+                                   href="https://www.google.com/maps?q=23.317522,-99.023979">
+                                    <%- include('partials/icon', { name: 'external-link', size: 15 }) %> Abrir en Maps
+                                </a>
+                            </div>
                         </article>
                     </div>
                 </div>
@@ -349,6 +370,21 @@
                                         </span>
                                     </li>
                                 </ul>
+
+                                <ol class="home-steps" aria-label="Cómo reservar">
+                                    <li class="home-step">
+                                        <span class="home-step-num" aria-hidden="true">1</span>
+                                        <span class="home-step-copy"><strong>Elige tu salida</strong><small>Ruta, fecha y horario</small></span>
+                                    </li>
+                                    <li class="home-step">
+                                        <span class="home-step-num" aria-hidden="true">2</span>
+                                        <span class="home-step-copy"><strong>Reserva y paga</strong><small>En línea, transferencia o al abordar</small></span>
+                                    </li>
+                                    <li class="home-step">
+                                        <span class="home-step-num" aria-hidden="true">3</span>
+                                        <span class="home-step-copy"><strong>Recibe tu boleto</strong><small>Lo consultas desde tu enlace</small></span>
+                                    </li>
+                                </ol>
 
                                 <% if (stopGroupsVictoria.length || stopGroupsLlera.length) { %>
                                     <div class="home-info-stops">
@@ -570,6 +606,27 @@
                     : real.when;
             }
         }
+
+        // Marca los horarios de hoy que ya salieron y resalta el siguiente de cada ruta.
+        (function markChips() {
+            const parts = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "America/Monterrey", hour: "2-digit", minute: "2-digit", hour12: false,
+            }).format(new Date()).split(":").map(Number);
+            const nowMin = (parts[0] % 24) * 60 + parts[1];
+            ["VIC_TO_LLE", "LLE_TO_VIC"].forEach((dir) => {
+                let nextSet = false;
+                document.querySelectorAll('.chip-time[data-dir="' + dir + '"]').forEach((chip) => {
+                    const [h, m] = String(chip.dataset.time || "").split(":").map(Number);
+                    if (!Number.isFinite(h)) return;
+                    if (h * 60 + m < nowMin) {
+                        chip.classList.add("is-past");
+                    } else if (!nextSet) {
+                        chip.classList.add("is-next");
+                        nextSet = true;
+                    }
+                });
+            });
+        })();
 
         Promise.all([
             findNext("VIC_TO_LLE", 0),
