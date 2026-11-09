@@ -1,8 +1,11 @@
 "use strict";
 
 const {hasIcon, resolveName} = require("./icons");
+const {getCityLabels} = require("./locations");
+const {MAX_TRIP_CAPACITY} = require("./capacity");
 
-const SPECIAL_MAX_CAP = 60;
+const SPECIAL_MAX_CAP = MAX_TRIP_CAPACITY;
+const MAX_PLACE_LEN = 40; // matches transporte_reservations.from_stop / to_stop
 const ACTIVE_RESERVATION_STATUSES = "('PENDING_PAYMENT', 'PAY_AT_BOARDING', 'PAID')";
 const DEFAULT_ICON = "ferris-wheel";
 
@@ -138,15 +141,64 @@ function formatRangeLabel(startISO, endISO) {
     return `${a.day} de ${a.month} al ${b.day} de ${b.month}`;
 }
 
-function endpoints(direction) {
+function plainKey(s) {
+    return String(s || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[.]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+// Victoria / Llera map to the configured city names and stop codes; any other place is kept as typed.
+function resolveEndpoint(raw) {
+    const text = String(raw || "").trim().slice(0, MAX_PLACE_LEN);
+    if (!text) return null;
+    const key = plainKey(text);
+    const labels = getCityLabels();
+    if (["victoria", "ciudad victoria", "cd victoria", plainKey(labels.VIC)].includes(key)) {
+        return {label: labels.VIC, stop: "VIC"};
+    }
+    if (["llera", "llera de canales", plainKey(labels.LLE)].includes(key)) {
+        return {label: labels.LLE, stop: "LLE"};
+    }
+    // All-lowercase input ("monterrey") is shown capitalized.
+    const label = text === text.toLowerCase()
+        ? text.replace(/(^|\s)(\S)/g, (_, sp, ch) => sp + ch.toUpperCase())
+        : text;
+    return {label, stop: label};
+}
+
+function samePlace(a, b) {
+    const x = resolveEndpoint(a);
+    const y = resolveEndpoint(b);
+    return !!x && !!y && plainKey(x.label) === plainKey(y.label);
+}
+
+// `direction` is only an internal bucket for custom routes (template key); the visible route uses the labels.
+function directionForRoute(fromLabel) {
+    return resolveEndpoint(fromLabel)?.stop === "LLE" ? "LLE_TO_VIC" : "VIC_TO_LLE";
+}
+
+function endpoints(direction, fromLabel, toLabel) {
+    const from = resolveEndpoint(fromLabel);
+    const to = resolveEndpoint(toLabel);
+    if (from && to) return {from: from.label, to: to.label, fromStop: from.stop, toStop: to.stop};
+
     return direction === "VIC_TO_LLE"
         ? {from: "Ciudad Victoria", to: "Llera", fromStop: "VIC", toStop: "LLE"}
         : {from: "Llera", to: "Ciudad Victoria", fromStop: "LLE", toStop: "VIC"};
 }
 
+function routeLabelsFromRow(row) {
+    const ep = endpoints(row?.direction, row?.from_label, row?.to_label);
+    return {from_label: ep.from, to_label: ep.to};
+}
+
 function normalizeEvent(row) {
     if (!row) return null;
-    const ep = endpoints(row.direction);
+    const ep = endpoints(row.direction, row.from_label, row.to_label);
     const ev = {
         id: Number(row.id),
         slug: String(row.slug || ""),
@@ -349,6 +401,11 @@ async function eventDays(conn, ev, {includePast = false} = {}) {
 
 module.exports = {
     SPECIAL_MAX_CAP,
+    MAX_PLACE_LEN,
+    resolveEndpoint,
+    samePlace,
+    directionForRoute,
+    routeLabelsFromRow,
     DEFAULT_ICON,
     ICON_CHOICES,
     normalizeIconName,

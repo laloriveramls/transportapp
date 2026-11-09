@@ -271,6 +271,8 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                    se.title                                      AS special_title,
                    se.return_time                                AS special_return_time,
                    se.icon                                       AS special_icon,
+                   se.from_label                                 AS special_from_label,
+                   se.to_label                                   AS special_to_label,
 
                    IF(dt.special_event_id > 0, COALESCE(dt.capacity_passengers, 0),
                       LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers,
@@ -310,6 +312,16 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
         `,
         [MAX_CAP, MAX_CAP, date]
     );
+
+    for (const t of trips) {
+        if (!t.special_title) continue;
+        const ep = specialEvents.routeLabelsFromRow({
+            direction: t.direction,
+            from_label: t.special_from_label,
+            to_label: t.special_to_label,
+        });
+        t.special_route = `${ep.from_label} → ${ep.to_label}`;
+    }
 
     const totalPassengers = trips.reduce(
         (sum, t) => sum + Number(t.used_seats || 0),
@@ -627,6 +639,10 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
 ========================================================= */
 router.get("/horarios", requireAdmin, requireDb, async (req, res) => {
     res.render("admin_horarios", {title: "Admin horarios"});
+
+router.get("/precios", requireAdmin, requireDb, async (req, res) => {
+    res.render("admin_precios", {title: "Admin precios"});
+});
 });
 
 /* -----------------------------
@@ -1250,7 +1266,9 @@ function parseSpecialEventForm(body) {
         icon: specialEvents.normalizeIconName(body.icon),
         slug: slugify(body.slug || title),
         description: String(body.description || "").trim().slice(0, 255) || null,
-        direction: String(body.direction || "").trim(),
+        from_label: specialEvents.resolveEndpoint(body.from_label)?.label || "",
+        to_label: specialEvents.resolveEndpoint(body.to_label)?.label || "",
+        direction: "",
         depart_time: String(body.depart_time || "").trim().slice(0, 5),
         return_time: String(body.return_time || "").trim().slice(0, 5) || null,
         start_date: String(body.start_date || "").trim(),
@@ -1264,7 +1282,8 @@ function parseSpecialEventForm(body) {
     if (!values.title) error = "Captura el nombre del viaje.";
     else if (!values.icon) error = "Ese icono no existe.";
     else if (!SLUG_RE.test(values.slug)) error = "La URL (slug) solo admite letras, números y guiones.";
-    else if (values.direction !== "VIC_TO_LLE" && values.direction !== "LLE_TO_VIC") error = "Dirección no válida.";
+    else if (!values.from_label || !values.to_label) error = "Captura el origen y el destino.";
+    else if (specialEvents.samePlace(values.from_label, values.to_label)) error = "El origen y el destino no pueden ser el mismo lugar.";
     else if (!specialEvents.isValidHHMM(values.depart_time)) error = "Hora de salida no válida.";
     else if (values.return_time && !specialEvents.isValidHHMM(values.return_time)) error = "Hora de regreso no válida.";
     else if (!specialEvents.isValidISODate(values.start_date) || !specialEvents.isValidISODate(values.end_date)) error = "Fechas no válidas.";
@@ -1272,6 +1291,8 @@ function parseSpecialEventForm(body) {
     else if (!Number.isFinite(values.capacity_passengers) || values.capacity_passengers < 1 || values.capacity_passengers > specialEvents.SPECIAL_MAX_CAP) {
         error = `La capacidad debe estar entre 1 y ${specialEvents.SPECIAL_MAX_CAP}.`;
     } else if (!Number.isFinite(values.price_mxn) || values.price_mxn < 0) error = "Precio no válido.";
+
+    values.direction = specialEvents.directionForRoute(values.from_label);
 
     return {values, error};
 }
@@ -1318,13 +1339,13 @@ router.post("/especiales", requireAdmin, requireDb, async (req, res) => {
     try {
         await conn.beginTransaction();
         const [ins] = await conn.query(
-            `INSERT INTO transporte_special_events(slug, title, tab_label, icon, description, direction, depart_time,
-                                                   return_time, start_date, end_date, capacity_passengers,
-                                                   price_mxn, active)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction, values.depart_time,
-                values.return_time, values.start_date, values.end_date, values.capacity_passengers,
-                values.price_mxn, values.active]
+            `INSERT INTO transporte_special_events(slug, title, tab_label, icon, description, direction, from_label,
+                                                   to_label, depart_time, return_time, start_date, end_date,
+                                                   capacity_passengers, price_mxn, active)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction,
+                values.from_label, values.to_label, values.depart_time, values.return_time, values.start_date,
+                values.end_date, values.capacity_passengers, values.price_mxn, values.active]
         );
         await specialEvents.syncEventTemplate(conn, ins.insertId);
         await conn.commit();
@@ -1351,12 +1372,12 @@ router.post("/especiales/:id", requireAdmin, requireDb, async (req, res) => {
         await conn.beginTransaction();
         const [upd] = await conn.query(
             `UPDATE transporte_special_events
-             SET slug=?, title=?, tab_label=?, icon=?, description=?, direction=?, depart_time=?, return_time=?,
-                 start_date=?, end_date=?, capacity_passengers=?, price_mxn=?, active=?
+             SET slug=?, title=?, tab_label=?, icon=?, description=?, direction=?, from_label=?, to_label=?,
+                 depart_time=?, return_time=?, start_date=?, end_date=?, capacity_passengers=?, price_mxn=?, active=?
              WHERE id = ? LIMIT 1`,
-            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction, values.depart_time,
-                values.return_time, values.start_date, values.end_date, values.capacity_passengers,
-                values.price_mxn, values.active, id]
+            [values.slug, values.title, values.tab_label, values.icon, values.description, values.direction,
+                values.from_label, values.to_label, values.depart_time, values.return_time, values.start_date,
+                values.end_date, values.capacity_passengers, values.price_mxn, values.active, id]
         );
         if (!upd.affectedRows) {
             await conn.rollback();
@@ -1373,6 +1394,53 @@ router.post("/especiales/:id", requireAdmin, requireDb, async (req, res) => {
         console.error(e);
         const dup = String(e?.code) === "ER_DUP_ENTRY";
         return especialesRedirect(res, {err: dup ? "Ya existe un viaje con esa URL (slug)." : "No pude guardar el viaje especial.", id});
+    } finally {
+        conn.release();
+    }
+});
+
+// Duplicates an event as an inactive copy, to reuse it with another route, time or dates.
+router.post("/especiales/:id/duplicate", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    if (!id) return especialesRedirect(res, {err: "ID inválido."});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [[src]] = await conn.query(`SELECT * FROM transporte_special_events WHERE id = ? LIMIT 1`, [id]);
+        if (!src) {
+            await conn.rollback();
+            return especialesRedirect(res, {err: "Viaje especial no encontrado."});
+        }
+
+        const base = `${src.slug}-copia`.slice(0, 74);
+        let slug = base;
+        for (let n = 2; n < 100; n++) {
+            const [taken] = await conn.query(`SELECT 1 FROM transporte_special_events WHERE slug = ? LIMIT 1`, [slug]);
+            if (!taken.length) break;
+            slug = `${base}-${n}`;
+        }
+
+        const labels = specialEvents.routeLabelsFromRow(src);
+        const [ins] = await conn.query(
+            `INSERT INTO transporte_special_events(slug, title, tab_label, icon, description, direction, from_label,
+                                                   to_label, depart_time, return_time, start_date, end_date,
+                                                   capacity_passengers, price_mxn, active)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+            [slug, `${src.title} (copia)`.slice(0, 120), String(src.tab_label || src.title).slice(0, 40), src.icon,
+                src.description, src.direction, labels.from_label, labels.to_label, src.depart_time, src.return_time,
+                src.start_date, src.end_date, src.capacity_passengers, src.price_mxn]
+        );
+        await specialEvents.syncEventTemplate(conn, ins.insertId);
+        await conn.commit();
+        return especialesRedirect(res, {
+            msg: "Copia creada e inactiva. Ajusta ruta, horario y fechas, y actívala cuando esté lista.",
+            id: ins.insertId,
+        });
+    } catch (e) {
+        await conn.rollback();
+        console.error(e);
+        return especialesRedirect(res, {err: "No pude duplicar el viaje especial.", id});
     } finally {
         conn.release();
     }

@@ -70,13 +70,19 @@
             key: 'VIC_TO_LLE',
             from: 'Victoria',
             to: 'Llera',
-            items: shownTrips.filter((t) => t.direction === 'VIC_TO_LLE'),
+            items: shownTrips.filter((t) => !t.special_title && t.direction === 'VIC_TO_LLE'),
         },
         {
             key: 'LLE_TO_VIC',
             from: 'Llera',
             to: 'Victoria',
-            items: shownTrips.filter((t) => t.direction === 'LLE_TO_VIC'),
+            items: shownTrips.filter((t) => !t.special_title && t.direction === 'LLE_TO_VIC'),
+        },
+        {
+            key: 'SPECIAL',
+            from: 'Viajes',
+            to: 'especiales',
+            items: shownTrips.filter((t) => !!t.special_title),
         },
     ];
     groups.forEach((g) => {
@@ -175,13 +181,17 @@
         </div>
     <% } else { %>
         <div class="agenda-board">
-            <% groups.forEach((group) => { %>
-                <section class="agenda-col" aria-label="<%= group.from %> a <%= group.to %>">
+            <% groups.filter((g) => g.key !== 'SPECIAL' || g.items.length).forEach((group) => { %>
+                <section class="agenda-col <%= group.key === 'SPECIAL' ? 'agenda-col-special' : '' %>" aria-label="<%= group.key === 'SPECIAL' ? 'Viajes especiales' : group.from + ' a ' + group.to %>">
                     <div class="agenda-col-head">
                         <div class="agenda-col-route">
+                            <% if (group.key === 'SPECIAL') { %>
+                                <span class="agenda-col-from">Viajes especiales</span>
+                            <% } else { %>
                             <span class="agenda-col-from"><%= group.from %></span>
                             <span class="agenda-col-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
                             <span class="agenda-col-to"><%= group.to %></span>
+                            <% } %>
                         </div>
                         <span class="agenda-col-count" title="Salidas · pasajeros · paquetes">
                             <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>
@@ -208,6 +218,7 @@
                         else if (used > 0 && remaining <= 2) tone = 'tight';
                         else if (used > 0) tone = 'ok';
                         if (packs > 0 && used === 0) tone = 'ok';
+                        const routeText = isSpecial && t.special_route ? t.special_route : (group.from + ' → ' + group.to);
                         const tMin = toMin(hhmm);
                         const isPast = isToday && tMin !== null && tMin < nowMin;
                         const isNext = isToday && group.nextKey === t.trip_id;
@@ -220,7 +231,7 @@
                     %>
                     <a class="agenda-trip is-<%= tone %> <%= isSpecial ? 'is-special' : '' %> <%= isPast ? 'is-past' : '' %> <%= isNext ? 'is-next' : '' %> <%= tripOff ? 'is-off' : '' %>"
                        href="/admin/trip/<%= t.trip_id %>"
-                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= group.from %> a <%= group.to %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos, <%= statusText %><%= tripOff ? ', deshabilitada' : '' %>">
+                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= routeText %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos, <%= statusText %><%= tripOff ? ', deshabilitada' : '' %>">
                         <div class="agenda-trip-time mono"><%= hhmm %></div>
                         <div class="agenda-trip-body">
                             <% if (isSpecial || isNext || tripOff) { %>
@@ -232,7 +243,7 @@
                             <% if (isSpecial) { %>
                                 <div class="agenda-trip-special">
                                     <%- include('partials/icon', { name: t.special_icon || 'ferris-wheel', size: 12 }) %>
-                                    <%= t.special_title %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %>
+                                    <%= t.special_title %><% if (t.special_route) { %> · <%= t.special_route %><% } %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %>
                                 </div>
                             <% } %>
                             <div class="agenda-trip-meter-row">

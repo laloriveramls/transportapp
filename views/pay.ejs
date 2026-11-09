@@ -353,7 +353,7 @@
         `Teléfono: ${data.phone || "-"}`,
         `Tipo: ${typeLabel}`,
         isPassenger ? `Pasajeros: ${Math.max(1, Number(seats || 1))}` : null,
-        `Ruta: ${niceRoute(data.direction)}`,
+        `Ruta: ${data.route_label || niceRoute(data.direction)}`,
         `Fecha: ${data.trip_date || "-"}`,
         `Hora: ${data.depart_time || "-"}`,
         `Método de pago: ${payLabel}`,

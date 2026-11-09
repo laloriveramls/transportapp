@@ -643,6 +643,14 @@ body.page-agenda .agenda-col-mid {
     line-height: 1;
 }
 
+body.page-agenda .agenda-col-special {
+    grid-column: 1 / -1;
+}
+
+body.page-agenda .agenda-col-special .agenda-col-list {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+}
+
 body.page-agenda .agenda-col-count {
     text-align: right;
     font-size: 0.74rem;
@@ -2476,6 +2484,55 @@ body.page-horarios .tpl-row.is-dirty {
 }
 
 body.page-horarios .tpl-field input[type="number"] { width: 100%; }
+
+body.page-horarios .slot-tag-off {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.4rem;
+    padding: 0 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--muted) 12%, var(--card));
+}
+
+/* Resumen de salidas deshabilitadas dentro de Salidas */
+body.page-horarios .ops-disabled {
+    margin-bottom: 0.9rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, #dc3545 5%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, #dc3545 24%, transparent);
+}
+
+body.page-horarios .ops-disabled > summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.86rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+body.page-horarios .ops-disabled > summary::-webkit-details-marker { display: none; }
+
+body.page-horarios .ops-disabled-hint {
+    margin-left: auto;
+    color: var(--wine);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+body.page-horarios .ops-disabled[open] .ops-disabled-hint::after { content: " ▴"; }
+body.page-horarios .ops-disabled:not([open]) .ops-disabled-hint::after { content: " ▾"; }
+
+body.page-horarios .ops-disabled-body {
+    padding: 0 0.9rem 0.9rem;
+    display: grid;
+    gap: 0.5rem;
+}
 
 body.page-horarios .group-date { margin-top: 0.85rem; }
 body.page-horarios .group-date:first-child { margin-top: 0; }

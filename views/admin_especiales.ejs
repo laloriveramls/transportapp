@@ -67,7 +67,7 @@
                     <div class="esp-head-copy">
                         <div class="esp-kicker">
                             <%- include('partials/icon', { name: ev.icon, size: 14 }) %>
-                            <%= ev.range_label %> · <%= dirLabel(ev.direction) %>
+                            <%= ev.range_label %> · <%= ev.from_label %> → <%= ev.to_label %>
                         </div>
                         <h3 class="esp-title"><%= ev.title %></h3>
                         <div class="esp-meta subtle">
@@ -79,6 +79,11 @@
                         <a class="btn-mini" href="/especial/<%= encodeURIComponent(ev.slug) %>" target="_blank" rel="noopener">
                             <%- include('partials/icon', { name: 'eye', size: 14 }) %> Ver en sitio
                         </a>
+                        <form method="POST" action="/admin/especiales/<%= ev.id %>/duplicate">
+                            <button class="btn-mini" type="submit" title="Crear una copia inactiva para otra ruta, horario o fechas">
+                                <%- include('partials/icon', { name: 'copy', size: 14 }) %> Duplicar
+                            </button>
+                        </form>
                         <form method="POST" action="/admin/especiales/<%= ev.id %>/active">
                             <input type="hidden" name="active" value="<%= ev.active ? '0' : '1' %>">
                             <button class="btn-mini <%= ev.active ? 'esp-danger' : '' %>" type="submit">

@@ -135,7 +135,8 @@ function stopLabel(code) {
     if (isVicCenter(key)) return cityLabelsCache.VIC;
     const loc = resolveVicLocation(key);
     if (loc) return loc.label;
-    return key || '-';
+    // Free-form stops (special trips, e.g. "Monterrey") keep the text as it was typed.
+    return String(code || '').trim() || '-';
 }
 
 function directionFromStops(fromStop, toStop) {

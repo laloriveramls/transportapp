@@ -249,14 +249,27 @@ async function ensureTemplateSpecialColumn(pool) {
 async function ensureSpecialEventsTable(pool) {
     const [[tbl]] = await pool.query("SHOW TABLES LIKE 'transporte_special_events'");
     if (tbl) {
-        if (await columnExists(pool, 'transporte_special_events', 'icon')) {
-            return {applied: false, column: 'transporte_special_events'};
+        const applied = [];
+        if (!(await columnExists(pool, 'transporte_special_events', 'icon'))) {
+            await pool.query(`
+                ALTER TABLE transporte_special_events
+                    ADD COLUMN icon VARCHAR(40) NOT NULL DEFAULT 'ferris-wheel' AFTER tab_label
+            `);
+            applied.push('icon');
         }
-        await pool.query(`
-            ALTER TABLE transporte_special_events
-                ADD COLUMN icon VARCHAR(40) NOT NULL DEFAULT 'ferris-wheel' AFTER tab_label
-        `);
-        return {applied: true, column: 'transporte_special_events.icon'};
+        // Free-form route (e.g. Victoria -> Monterrey). NULL = legacy event, derived from `direction`.
+        if (!(await columnExists(pool, 'transporte_special_events', 'from_label'))) {
+            await pool.query(`
+                ALTER TABLE transporte_special_events
+                    ADD COLUMN from_label VARCHAR(40) NULL DEFAULT NULL AFTER direction,
+                    ADD COLUMN to_label VARCHAR(40) NULL DEFAULT NULL AFTER from_label
+            `);
+            applied.push('from_label,to_label');
+        }
+        return {
+            applied: applied.length > 0,
+            column: applied.length ? `transporte_special_events.${applied.join('+')}` : 'transporte_special_events',
+        };
     }
 
     await pool.query(`
@@ -269,6 +282,8 @@ async function ensureSpecialEventsTable(pool) {
             icon                VARCHAR(40)                      NOT NULL DEFAULT 'ferris-wheel',
             description         VARCHAR(255)                     NULL     DEFAULT NULL,
             direction           ENUM ('VIC_TO_LLE','LLE_TO_VIC') NOT NULL DEFAULT 'LLE_TO_VIC',
+            from_label          VARCHAR(40)                      NULL     DEFAULT NULL,
+            to_label            VARCHAR(40)                      NULL     DEFAULT NULL,
             depart_time         TIME                             NOT NULL,
             return_time         TIME                             NULL     DEFAULT NULL,
             start_date          DATE                             NOT NULL,

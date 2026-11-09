@@ -1,6 +1,6 @@
 <%
 const f = ev || {
-    title: '', tab_label: '', icon: 'ferris-wheel', slug: '', description: '', direction: 'LLE_TO_VIC',
+    title: '', tab_label: '', icon: 'ferris-wheel', slug: '', description: '', from_label: 'Llera', to_label: 'Ciudad Victoria',
     depart_time: '17:00', return_time: '', start_date: '', end_date: '',
     capacity_passengers: 14, price_mxn: 0, active: true,
 };
@@ -69,12 +69,21 @@ const isCustomIcon = !choices.some((c) => c.name === currentIcon);
         <legend class="esp-legend-title">Viaje</legend>
         <div class="esp-grid">
             <div class="field">
-                <label class="mini" for="<%= uid %>-dir">Dirección</label>
-                <select id="<%= uid %>-dir" name="direction">
-                    <option value="LLE_TO_VIC" <%= f.direction === 'LLE_TO_VIC' ? 'selected' : '' %>>Llera → Victoria</option>
-                    <option value="VIC_TO_LLE" <%= f.direction === 'VIC_TO_LLE' ? 'selected' : '' %>>Victoria → Llera</option>
-                </select>
+                <label class="mini" for="<%= uid %>-origin">Origen</label>
+                <input id="<%= uid %>-origin" name="from_label" maxlength="40" required list="<%= uid %>-places"
+                       value="<%= f.from_label %>" placeholder="Ciudad Victoria" autocomplete="off">
             </div>
+            <div class="field">
+                <label class="mini" for="<%= uid %>-dest">Destino</label>
+                <input id="<%= uid %>-dest" name="to_label" maxlength="40" required list="<%= uid %>-places"
+                       value="<%= f.to_label %>" placeholder="Monterrey" autocomplete="off">
+            </div>
+            <datalist id="<%= uid %>-places">
+                <option value="Ciudad Victoria"></option>
+                <option value="Llera"></option>
+                <option value="Monterrey"></option>
+            </datalist>
+            <p class="esp-hint esp-span-all">Puedes escribir cualquier lugar. Victoria y Llera usan los nombres configurados en Precios.</p>
             <div class="field">
                 <label class="mini" for="<%= uid %>-dep">Salida</label>
                 <input id="<%= uid %>-dep" name="depart_time" type="time" required value="<%= f.depart_time %>">
