@@ -54,7 +54,8 @@ const stripe = process.env.STRIPE_SECRET_KEY
    ========================= */
 
 // I keep a strict cap (also clamped by template capacity in DB).
-const MAX_CAP = 14;
+const {MAX_TRIP_CAPACITY} = require("../capacity");
+const MAX_CAP = 14; // Max passengers per single booking (not the trip capacity).
 
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
@@ -394,7 +395,7 @@ async function computeAvailable(conn, tripId) {
             WHERE t.id = ?
             GROUP BY dt.capacity_passengers
         `,
-        [MAX_CAP, tripId]
+        [MAX_TRIP_CAPACITY, tripId]
     );
 
     return Number(row?.available ?? 0);
@@ -672,7 +673,7 @@ router.get(
                     GROUP BY dt.id, dt.depart_time, dt.capacity_passengers, t.id, t.status
                     ORDER BY dt.depart_time
                 `,
-                [MAX_CAP, String(date), String(direction)]
+                [MAX_TRIP_CAPACITY, String(date), String(direction)]
             );
 
             const results = [];

@@ -137,6 +137,7 @@ const CLIENT_ICONS = [
     "sunrise",
     "sunset",
     "ticket",
+    "trash-2",
     "triangle-alert",
     "undo-2",
     "user",

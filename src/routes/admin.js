@@ -35,7 +35,7 @@ const crypto = require("crypto");
 
 const router = express.Router();
 
-const MAX_CAP = 14; // System capacity ceiling (per-template capacity is configurable in admin).
+const {MAX_TRIP_CAPACITY: MAX_CAP} = require("../capacity"); // Sanity ceiling; capacity is set per template in admin.
 
 /* -----------------------------
    Middleware
@@ -889,15 +889,25 @@ router.get("/api/templates", requireAdmin, requireDb, async (req, res) => {
     }
 });
 
+// Capacity must be an integer between 0 and MAX_CAP; null when invalid (0 is a valid value).
+function parseCapacity(raw) {
+    if (raw === undefined || raw === null || String(raw).trim() === "") return null;
+    const n = Number(raw);
+    return Number.isInteger(n) && n >= 0 && n <= MAX_CAP ? n : null;
+}
+
 router.post("/api/templates/create", requireAdmin, requireDb, async (req, res) => {
     try {
         const direction = String(req.body.direction || "").trim();
         const depart_time = String(req.body.depart_time || "").trim(); // "HH:MM"
-        const capacity = Math.max(0, Math.min(MAX_CAP, Number(req.body.capacity_passengers || MAX_CAP)));
+        const capacity = parseCapacity(req.body.capacity_passengers);
         const active = Number(req.body.active) ? 1 : 0;
 
         if (!direction || !depart_time) {
             return res.status(400).json({ok: false, message: "Falta dirección u hora."});
+        }
+        if (capacity === null) {
+            return res.status(400).json({ok: false, message: `El cupo debe ser un entero entre 0 y ${MAX_CAP}.`});
         }
 
         await pool.query(
@@ -922,11 +932,14 @@ router.post("/api/templates/update", requireAdmin, requireDb, async (req, res) =
         const id = Number(req.body.id);
         const direction = String(req.body.direction || "").trim();
         const depart_time = String(req.body.depart_time || "").trim();
-        const capacity = Math.max(0, Math.min(MAX_CAP, Number(req.body.capacity_passengers || MAX_CAP)));
+        const capacity = parseCapacity(req.body.capacity_passengers);
         const active = Number(req.body.active) ? 1 : 0;
 
         if (!id || !direction || !depart_time) {
             return res.status(400).json({ok: false, message: "Datos inválidos."});
+        }
+        if (capacity === null) {
+            return res.status(400).json({ok: false, message: `El cupo debe ser un entero entre 0 y ${MAX_CAP}.`});
         }
 
         await pool.query(
@@ -965,6 +978,52 @@ router.post("/api/templates/disable", requireAdmin, requireDb, async (req, res) 
     } catch (e) {
         console.error(e);
         return res.status(500).json({ok: false});
+    }
+});
+
+// Hard delete: only when no reservation was ever made on any of its trips.
+router.post("/api/templates/delete", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.body.id);
+    if (!id) return res.status(400).json({ok: false, message: "Datos inválidos."});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [[tpl]] = await conn.query(
+            `SELECT id FROM transporte_departure_templates WHERE id = ? AND special_event_id = 0 FOR UPDATE`,
+            [id]
+        );
+        if (!tpl) {
+            await conn.rollback();
+            return res.status(404).json({ok: false, message: "El horario no existe."});
+        }
+
+        const [[used]] = await conn.query(
+            `SELECT COUNT(*) AS n
+             FROM transporte_reservations r
+                      JOIN transporte_trips t ON t.id = r.trip_id
+             WHERE t.template_id = ?`,
+            [id]
+        );
+        if (Number(used.n) > 0) {
+            await conn.rollback();
+            return res.status(409).json({
+                ok: false,
+                message: `No se puede eliminar: tiene ${used.n} reserva(s) registradas. Desactívalo en su lugar.`,
+            });
+        }
+
+        await conn.query(`DELETE FROM transporte_trips WHERE template_id = ?`, [id]);
+        await conn.query(`DELETE FROM transporte_departure_templates WHERE id = ? AND special_event_id = 0 LIMIT 1`, [id]);
+        await conn.commit();
+        return res.json({ok: true});
+    } catch (e) {
+        await conn.rollback().catch(() => {});
+        console.error(e);
+        return res.status(500).json({ok: false, message: "No pude eliminar el horario."});
+    } finally {
+        conn.release();
     }
 });
 
