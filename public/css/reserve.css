@@ -1520,3 +1520,423 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
         transform: none;
     }
 }
+
+/* ===== Refinamiento visual (mismos tokens y estados que la portada) ===== */
+.page-reserve {
+    --rv-radius: 12px;
+    --rv-control: 44px;
+}
+
+/* Menos sombra y brillo */
+.page-reserve .step-actions .btn-wine,
+.page-reserve .seg-pill.is-on,
+.page-reserve .pay-pill.is-on {
+    box-shadow: none;
+}
+
+.page-reserve .step-actions .btn:hover {
+    transform: none;
+}
+
+/* Tarjetas y paneles con el mismo radio */
+.page-reserve .reserve-panel,
+.page-reserve .trip-quote,
+.page-reserve .confirm-item,
+.page-reserve .pay-pill,
+.page-reserve .cancel-policy,
+.page-reserve .transfer-item {
+    border-radius: var(--rv-radius);
+}
+
+/* Controles de formulario */
+.page-reserve .reserve-form .form-control,
+.page-reserve .reserve-form .form-select {
+    min-height: var(--rv-control);
+    border-radius: 10px;
+}
+
+.page-reserve .stepper,
+.page-reserve .seg-pill {
+    min-height: var(--rv-control);
+    height: var(--rv-control);
+    border-radius: 10px;
+}
+
+.page-reserve .stepper .btn-step {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+}
+
+.page-reserve .step-actions .btn {
+    min-height: var(--rv-control);
+    padding-inline: 1.1rem;
+}
+
+/* Horarios: cuadrícula uniforme, igual que la portada */
+.page-reserve .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.4rem, 1fr));
+    gap: 8px;
+}
+
+.page-reserve .slot-pill {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0.3rem 0.4rem;
+    gap: 0.12rem;
+    border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+    border-radius: 10px;
+    background: var(--home-chip-bg, color-mix(in srgb, var(--text) 6%, var(--card)));
+    color: var(--home-chip-fg, var(--text));
+    box-shadow: none;
+}
+
+.page-reserve .slot-pill .time {
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+.page-reserve .slot-pill .mini {
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1;
+    opacity: 0.7;
+}
+
+.page-reserve .slot-pill:hover {
+    border-color: var(--wine-2);
+    background: color-mix(in srgb, var(--wine) 45%, var(--home-chip-bg, var(--card)));
+    color: #fff;
+}
+
+.page-reserve .slot-pill[aria-selected="true"],
+.page-reserve .slot-pill[aria-selected="true"]:hover {
+    border-color: var(--wine-2);
+    background: var(--wine);
+    color: #fff;
+}
+
+.page-reserve .slot-pill[aria-selected="true"] .mini {
+    opacity: 0.9;
+}
+
+.page-reserve .slot-pill.is-danger {
+    opacity: 1;
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--text) 16%, transparent);
+    background: transparent;
+    color: var(--muted);
+}
+
+/* Paso activo siempre con nombre, también en celular */
+@media (max-width: 576px) {
+    .page-reserve .wizard-step.is-active .wizard-lbl {
+        display: inline;
+    }
+
+    .page-reserve .wizard-step.is-active {
+        flex: 2 1 0;
+    }
+
+    .page-reserve .slots {
+        grid-template-columns: repeat(auto-fill, minmax(4.9rem, 1fr));
+    }
+}
+
+/* Más aire en escritorio */
+@media (min-width: 769px) {
+    .page-reserve .home-tabs-head {
+        padding: 0.7rem 1.2rem;
+    }
+
+    .page-reserve .home-tabs-body {
+        padding: 1.1rem 1.2rem 1.2rem;
+    }
+
+    .page-reserve .step-title {
+        font-size: 1.15rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .page-reserve .reserve-panel {
+        padding: 1rem 1.1rem;
+    }
+
+    .page-reserve .form-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .page-reserve .step-actions {
+        padding-top: 0.6rem;
+    }
+}
+
+/* Confirmación en celular: resumen compacto y acciones en dos filas */
+@media (max-width: 768px) {
+    .page-reserve .confirm-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-auto-flow: dense;
+        gap: 0.5rem;
+    }
+
+    .page-reserve .confirm-item:first-child,
+    .page-reserve .confirm-item.total-item {
+        grid-column: 1 / -1;
+    }
+
+    .page-reserve .reserve-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .page-reserve .reserve-actions .reserve-submit {
+        order: -1;
+        flex: 1 1 100%;
+    }
+
+    .page-reserve .reserve-actions .btn-ghost {
+        flex: 1 1 0;
+    }
+}
+
+/* ===== Fecha: tarjetas de días + selector de calendario ===== */
+.page-reserve .trip-date {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.page-reserve .date-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 2px 6px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+}
+
+.page-reserve .date-card {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    gap: 0;
+    width: 62px;
+    min-height: 80px;
+    padding: 8px 4px;
+    border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+    border-radius: 12px;
+    background: var(--home-chip-bg, color-mix(in srgb, var(--text) 6%, var(--card)));
+    color: var(--text);
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.page-reserve .date-card:hover {
+    border-color: var(--wine-2);
+}
+
+.page-reserve .date-card-wd {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.page-reserve .date-card-num {
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.page-reserve .date-card-tag {
+    font-style: normal;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.page-reserve .date-card[aria-checked="true"] {
+    border-color: var(--wine-2);
+    background: var(--wine);
+    color: #fff;
+}
+
+.page-reserve .date-card[aria-checked="true"] .date-card-wd,
+.page-reserve .date-card[aria-checked="true"] .date-card-tag {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.page-reserve .date-other {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+}
+
+.page-reserve .date-other-lbl {
+    font-size: 0.82rem;
+    font-weight: 650;
+    color: var(--muted);
+}
+
+.page-reserve .date-other .field-ico-wrap {
+    flex: 0 1 14rem;
+    min-width: 0;
+}
+
+/* ===== Resumen persistente ===== */
+.page-reserve .reserve-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.page-reserve .reserve-summary {
+    display: none;
+}
+
+@media (min-width: 960px) {
+    .page-reserve .reserve-layout {
+        grid-template-columns: minmax(0, 1fr) 19rem;
+        column-gap: 1.1rem;
+        align-items: start;
+    }
+
+    /* el resumen ya no vive dentro del paso 1 */
+    .page-reserve .trip-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "route"
+            "details"
+            "slots";
+    }
+
+    .page-reserve .reserve-summary {
+        position: sticky;
+        top: 4.5rem;
+        display: grid;
+        gap: 0.8rem;
+        padding: 1.1rem 1.15rem;
+        border-radius: var(--home-radius, 16px);
+        background: var(--card);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    }
+}
+
+.page-reserve .reserve-summary-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.page-reserve .rs-route {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.page-reserve .rs-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.page-reserve .rs-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.92rem;
+}
+
+.page-reserve .rs-list span {
+    color: var(--muted);
+}
+
+.page-reserve .rs-list b {
+    font-weight: 650;
+    text-align: right;
+}
+
+.page-reserve .rs-break {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.page-reserve .rs-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 0.8rem;
+    border-top: 1px dashed color-mix(in srgb, var(--border) 90%, transparent);
+}
+
+.page-reserve .rs-total span {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.page-reserve .rs-total b {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Total dentro de la barra fija de acciones (solo celular) */
+.page-reserve .dock-total {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .page-reserve .step-actions .dock-total {
+        display: block;
+        flex: 0 0 auto;
+        line-height: 1.1;
+        padding-inline: 0.2rem;
+    }
+
+    .page-reserve .dock-total small {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .page-reserve .dock-total b {
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .page-reserve .date-other .field-ico-wrap {
+        flex: 1 1 auto;
+    }
+
+    .page-reserve .date-card {
+        width: 58px;
+    }
+}
+
+/* El selector de servicio ocupa toda la fila, igual que la fecha */
+.page-reserve .trip-details-grid > :has(> .seg-pills) {
+    grid-column: 1 / -1;
+}

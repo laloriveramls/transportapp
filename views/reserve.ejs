@@ -72,6 +72,7 @@
         <% } %>
 
         <form id="reserveForm" method="POST" action="/reserve" class="reserve-form" novalidate>
+            <div class="reserve-layout">
             <div class="tabs-card home-tabs reserve-shell">
                 <div class="home-tabs-head">
                     <h2 class="home-section-title">Tu reserva</h2>
@@ -137,11 +138,15 @@
                             <section class="trip-section trip-section-details">
                                 <h3 class="trip-section-title">Fecha y viajeros</h3>
                                 <div class="trip-details-grid">
-                                    <div>
+                                    <div class="trip-date">
                                         <label class="form-label" for="trip_date">Fecha</label>
-                                        <div class="field-ico-wrap">
-                                            <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'calendar', size: 16 }) %></span>
-                                            <input id="trip_date" name="trip_date" type="date" class="form-control" required>
+                                        <div class="date-strip" id="dateStrip" role="radiogroup" aria-label="Fecha del viaje"></div>
+                                        <div class="date-other">
+                                            <span class="date-other-lbl">¿Otro día?</span>
+                                            <div class="field-ico-wrap">
+                                                <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'calendar', size: 16 }) %></span>
+                                                <input id="trip_date" name="trip_date" type="date" class="form-control" required>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
@@ -218,7 +223,7 @@
                                         </div>
                                         <div class="trip-note" id="passengerCapHint">
                                             <span aria-hidden="true"><%- include('partials/icon', { name: 'info', size: 14 }) %></span>
-                                            <span>La disponibilidad se calcula con adultos + niños.</span>
+                                            <span>Cada adulto y cada niño ocupa un lugar en el horario.</span>
                                         </div>
                                     </div>
 
@@ -230,12 +235,6 @@
                                 </div>
                             </section>
 
-                            <aside class="trip-quote" aria-live="polite">
-                                <p class="trip-quote-k">Estimado</p>
-                                <p class="trip-quote-total" id="tripQuoteTotal">$0</p>
-                                <p class="trip-quote-route" id="tripQuoteRoute">Ciudad Victoria → Llera</p>
-                                <div class="trip-quote-breakdown" id="tripQuoteBreakdown"></div>
-                            </aside>
 
                             <section class="trip-section trip-section-slots">
                                 <h3 class="trip-section-title">Horario</h3>
@@ -258,6 +257,7 @@
                         </div>
 
                         <div class="step-actions">
+                            <div class="dock-total" aria-hidden="true"><small>Total</small><b data-dock-total>$0</b></div>
                             <button type="button" class="btn btn-wine" data-next-step>
                                 Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
                             </button>
@@ -300,6 +300,7 @@
                             <button type="button" class="btn btn-ghost" data-prev-step>
                                 <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
                             </button>
+                            <div class="dock-total" aria-hidden="true"><small>Total</small><b data-dock-total>$0</b></div>
                             <button type="button" class="btn btn-wine" data-next-step>
                                 Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
                             </button>
@@ -379,6 +380,7 @@
                             <button type="button" class="btn btn-ghost" data-prev-step>
                                 <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Anterior
                             </button>
+                            <div class="dock-total" aria-hidden="true"><small>Total</small><b data-dock-total>$0</b></div>
                             <button type="button" class="btn btn-wine" data-next-step>
                                 Siguiente <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %>
                             </button>
@@ -448,6 +450,20 @@
                     </div>
                 </div>
                 </div>
+            </div>
+
+            <aside class="reserve-summary" aria-live="polite" aria-label="Resumen de tu viaje">
+                <h2 class="reserve-summary-title">Tu viaje</h2>
+                <p class="rs-route" id="tripQuoteRoute">Ciudad Victoria → Llera</p>
+                <ul class="rs-list">
+                    <li><span>Fecha</span><b id="rsDate">-</b></li>
+                    <li><span>Hora</span><b id="rsTime">Sin elegir</b></li>
+                    <li><span>Viajeros</span><b id="rsPax">-</b></li>
+                    <li><span>Pago</span><b id="rsPay">-</b></li>
+                </ul>
+                <div class="rs-break" id="tripQuoteBreakdown"></div>
+                <div class="rs-total"><span>Total</span><b id="tripQuoteTotal">$0</b></div>
+            </aside>
             </div>
         </form>
     </section>
@@ -1370,6 +1386,7 @@
         const quoteBreakdown = document.getElementById("tripQuoteBreakdown");
         const totalShort = formatMXNShort(total);
         if (quoteTotal) quoteTotal.textContent = totalShort;
+        document.querySelectorAll("[data-dock-total]").forEach((el) => { el.textContent = totalShort; });
         if (quoteRoute) quoteRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
 
         if (isPassenger) {
@@ -1464,7 +1481,70 @@
         if (quoteRoute) quoteRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
     }
 
+    // ===== Tira de fechas: acompaña al selector de calendario =====
+    const DATE_STRIP_DAYS = 8;
+    const WD_SHORT = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+    const MO_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+    function dateFromISO(iso) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+        return m ? new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))) : null;
+    }
+
+    function syncDateStrip() {
+        document.querySelectorAll("#dateStrip .date-card").forEach((btn) => {
+            btn.setAttribute("aria-checked", btn.dataset.date === tripDate.value ? "true" : "false");
+        });
+    }
+
+    function buildDateStrip() {
+        const strip = document.getElementById("dateStrip");
+        const base = dateFromISO(todayISO());
+        if (!strip || !base) return;
+        strip.innerHTML = "";
+        for (let i = 0; i < DATE_STRIP_DAYS; i++) {
+            const d = new Date(base.getTime() + i * 86400000);
+            const iso = d.toISOString().slice(0, 10);
+            const tag = i === 0 ? "Hoy" : (i === 1 ? "Mañana" : MO_SHORT[d.getUTCMonth()]);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "date-card";
+            btn.dataset.date = iso;
+            btn.setAttribute("role", "radio");
+            btn.setAttribute("aria-checked", "false");
+            btn.setAttribute("aria-label", `${tag === "Hoy" || tag === "Mañana" ? tag + ", " : ""}${WD_SHORT[d.getUTCDay()]} ${d.getUTCDate()} de ${MO_SHORT[d.getUTCMonth()]}`);
+            btn.innerHTML = `<span class="date-card-wd">${WD_SHORT[d.getUTCDay()]}</span><b class="date-card-num">${d.getUTCDate()}</b><em class="date-card-tag">${tag}</em>`;
+            btn.addEventListener("click", () => {
+                tripDate.value = iso;
+                tripDate.dispatchEvent(new Event("change", {bubbles: true}));
+            });
+            strip.appendChild(btn);
+        }
+        syncDateStrip();
+    }
+
+    // ===== Resumen persistente (columna derecha / barra inferior en celular) =====
+    function renderLiveSummary() {
+        const rsDate = document.getElementById("rsDate");
+        if (!rsDate) return;
+        const d = dateFromISO(tripDate.value);
+        rsDate.textContent = d ? `${WD_SHORT[d.getUTCDay()]} ${d.getUTCDate()} ${MO_SHORT[d.getUTCMonth()]}` : "-";
+        document.getElementById("rsTime").textContent = departTimeHidden.value || "Sin elegir";
+        const isPassenger = typeSel.value === "PASSENGER";
+        let pax = "1 paquete";
+        if (isPassenger) {
+            const adults = getAdultSeats();
+            const children = getChildSeats();
+            pax = `${adults} adulto${adults === 1 ? "" : "s"}`;
+            if (children > 0) pax += ` + ${children} niño${children === 1 ? "" : "s"}`;
+        }
+        document.getElementById("rsPax").textContent = pax;
+        document.getElementById("rsPay").textContent = paymentLabel(paymentMethod.value);
+    }
+
     function updateSummary() {
+        renderLiveSummary();
+        syncDateStrip();
         const sumRoute = document.getElementById("sumRoute");
         const sumDate = document.getElementById("sumDate");
         const sumTime = document.getElementById("sumTime");
@@ -1738,12 +1818,14 @@
     // ✅ I apply query prefill before syncing direction and loading availability
     applyPrefillFromQuery();
 
+    buildDateStrip();
     goToStep(restoredStep || 1, true);
     syncDirection();
     updateUIByType();
     updateUIByPayment();
 
     if (!tripDate.value) tripDate.value = todayISO();
+    syncDateStrip();
 
     syncPassengerSteppers();
     renderPassengerInputs();
