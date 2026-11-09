@@ -116,6 +116,15 @@
             : "";
     }
 
+    // Aviso emergente a prueba de fallos: si notify.js no cargó, no rompe el flujo de guardado.
+    function safeNotify(message, opts){
+        try {
+            if (typeof window.notify === "function") window.notify(message, opts);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     function todayISO(){
         return new Date().toLocaleDateString("en-CA", { timeZone: "America/Monterrey" });
     }
@@ -329,28 +338,25 @@
             if (!resp?.ok) {
                 tripToggle.checked = !enabled;
                 statusText.textContent = "No se guardó";
-                notify(resp?.message || "No pude actualizar el horario del día.", {variant: "danger", delay: 3500});
+                safeNotify(resp?.message || "No pude actualizar el horario del día.", {variant: "danger", delay: 3500});
                 return;
             }
 
-            if (!enabled) {
-                const c = Number(resp.cancelledReservations || 0);
-                const p = Number(resp.rejectedPayments || 0);
-                notify(
-                    c || p
-                        ? `Salida de las ${time} deshabilitada. Cancelé ${c} reserva(s) y rechacé ${p} pago(s) pendiente(s).`
-                        : `Salida de las ${time} deshabilitada para ese día.`,
-                    {variant: "success", delay: 3000}
-                );
-                statusText.textContent = `Deshabilitada ${time}`;
-            } else {
-                notify(`Salida de las ${time} habilitada para ese día.`, {variant: "success", delay: 2500});
-                statusText.textContent = `Habilitada ${time}`;
-            }
+            // Primero el estado real en pantalla; el aviso emergente nunca debe poder bloquearlo.
+            statusText.textContent = enabled ? `Habilitada ${time}` : `Deshabilitada ${time}`;
 
             // refresco la fila y el resumen de deshabilitadas
             await refreshOpsRow(templateId, date, rowDir);
             await refreshDisabledSummary();
+
+            const c = Number(resp.cancelledReservations || 0);
+            const p = Number(resp.rejectedPayments || 0);
+            const msg = enabled
+                ? `Salida de las ${time} habilitada para ese día.`
+                : (c || p
+                    ? `Salida de las ${time} deshabilitada. Cancelé ${c} reserva(s) y rechacé ${p} pago(s) pendiente(s).`
+                    : `Salida de las ${time} deshabilitada para ese día.`);
+            safeNotify(msg, {variant: "success", delay: 3000});
         });
     }
 
@@ -558,12 +564,12 @@
 
                 if (!r?.ok){
                     statusText.textContent = "—";
-                    notify("No pude habilitar.", {variant:"danger", delay:2200});
+                    safeNotify("No pude habilitar.", {variant:"danger", delay:2200});
                     return;
                 }
 
                 statusText.textContent = "Actualizado.";
-                notify("Salida habilitada.", {variant:"success", delay:1400});
+                safeNotify("Salida habilitada.", {variant:"success", delay:1400});
                 load();
             });
         });
@@ -678,9 +684,9 @@
             const cap = Number(document.getElementById("addCap").value || 0);
             const active = Number(document.getElementById("addActive").value || 1);
 
-            if (!time) { notify("Indica la hora.", {variant:"danger", delay:2300}); return; }
+            if (!time) { safeNotify("Indica la hora.", {variant:"danger", delay:2300}); return; }
             if (!Number.isInteger(cap) || cap < 0 || cap > TEMPLATE_MAX_CAP) {
-                notify(`El cupo debe ser un entero entre 0 y ${TEMPLATE_MAX_CAP}.`, {variant:"danger", delay:2800});
+                safeNotify(`El cupo debe ser un entero entre 0 y ${TEMPLATE_MAX_CAP}.`, {variant:"danger", delay:2800});
                 return;
             }
 
@@ -700,12 +706,12 @@
 
             if (!r?.ok){
                 statusText.textContent = "No se agregó";
-                notify(r?.message || "No pude agregar el horario.", {variant:"danger", delay:3500});
+                safeNotify(r?.message || "No pude agregar el horario.", {variant:"danger", delay:3500});
                 return;
             }
 
             statusText.textContent = "Agregado.";
-            notify("Horario base agregado.", {variant:"success", delay:1500});
+            safeNotify("Horario base agregado.", {variant:"success", delay:1500});
             load();
         });
 
@@ -731,9 +737,9 @@
 
             saveBtn?.addEventListener("click", async () => {
                 const capValue = Number(capEl.value);
-                if (!timeEl.value) { notify("Indica la hora.", {variant:"danger", delay:2300}); return; }
+                if (!timeEl.value) { safeNotify("Indica la hora.", {variant:"danger", delay:2300}); return; }
                 if (!Number.isInteger(capValue) || capValue < 0 || capValue > TEMPLATE_MAX_CAP) {
-                    notify(`El cupo debe ser un entero entre 0 y ${TEMPLATE_MAX_CAP}.`, {variant:"danger", delay:2800});
+                    safeNotify(`El cupo debe ser un entero entre 0 y ${TEMPLATE_MAX_CAP}.`, {variant:"danger", delay:2800});
                     return;
                 }
 
@@ -754,12 +760,12 @@
                 if (!r?.ok){
                     saveBtn.disabled = false;
                     statusText.textContent = "No se guardó";
-                    notify(r?.message || "No pude guardar.", {variant:"danger", delay:3500});
+                    safeNotify(r?.message || "No pude guardar.", {variant:"danger", delay:3500});
                     return;
                 }
 
                 statusText.textContent = "Guardado";
-                notify(`Horario de las ${hhmm(timeEl.value)} guardado.`, {variant:"success", delay:2200});
+                safeNotify(`Horario de las ${hhmm(timeEl.value)} guardado.`, {variant:"success", delay:2200});
                 load();
             });
 
@@ -783,7 +789,7 @@
 
                 if (!deleted) return;
                 statusText.textContent = "Eliminado.";
-                notify(`Horario de las ${label} eliminado.`, {variant:"success", delay:2200});
+                safeNotify(`Horario de las ${label} eliminado.`, {variant:"success", delay:2200});
                 load();
             });
         });
