@@ -84,6 +84,15 @@
                                 <%- include('partials/icon', { name: 'copy', size: 14 }) %> Duplicar
                             </button>
                         </form>
+                        <form method="POST" action="/admin/especiales/<%= ev.id %>/delete"
+                              data-confirm="Se borrará &quot;<%= ev.title %>&quot; con todas sus fechas. Esta acción no se puede deshacer. Si ya tiene reservas, no se podrá eliminar."
+                              data-confirm-title="Eliminar viaje especial"
+                              data-confirm-ok="Eliminar"
+                              data-confirm-tone="danger">
+                            <button class="btn-mini esp-danger" type="submit" title="Eliminar viaje (solo si no tiene reservas)">
+                                <%- include('partials/icon', { name: 'trash-2', size: 14 }) %> Eliminar
+                            </button>
+                        </form>
                         <form method="POST" action="/admin/especiales/<%= ev.id %>/active">
                             <input type="hidden" name="active" value="<%= ev.active ? '0' : '1' %>">
                             <button class="btn-mini <%= ev.active ? 'esp-danger' : '' %>" type="submit">
@@ -172,7 +181,10 @@
                             <% } %>
                             <% if (!day.past) { %>
                                 <form method="POST" action="/admin/especiales/<%= ev.id %>/day"
-                                      <% if (enabled && occ.u > 0) { %>onsubmit="return confirm('Se cancelarán las reservas sin pagar de esta fecha. ¿Continuar?');"<% } %>>
+                                      <% if (enabled && occ.u > 0) { %>data-confirm="Se cancelarán las reservas sin pagar de esta fecha. Las reservas ya pagadas no se tocan."
+                                      data-confirm-title="Deshabilitar <%= day.long %>"
+                                      data-confirm-ok="Deshabilitar"
+                                      data-confirm-tone="danger"<% } %>>
                                     <input type="hidden" name="date" value="<%= day.date %>">
                                     <input type="hidden" name="enabled" value="<%= enabled ? '0' : '1' %>">
                                     <button class="btn-mini <%= enabled ? 'esp-danger' : 'esp-enable' %>" type="submit"

@@ -275,7 +275,10 @@
                     <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
                         <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
                               class="m-0"
-                              onsubmit="return confirm('Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”. ¿Continuar?')">
+                              data-confirm="Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”."
+                              data-confirm-title="Cancelar reserva pagada"
+                              data-confirm-ok="Continuar"
+                              data-confirm-tone="danger">
                             <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
                         </form>
                         <a class="btn btn-outline-danger btn-xs"
@@ -285,12 +288,18 @@
                         </a>
                         <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
                               class="m-0"
-                              onsubmit="return confirm('¿Confirmas que YA hiciste el reembolso en Stripe? Esto marcará la reserva como CANCELLED y libera cupo.')">
+                              data-confirm="Esto marcará la reserva como cancelada y liberará el cupo. Confírmalo solo si ya hiciste el reembolso en Stripe."
+                              data-confirm-title="¿Ya reembolsaste en Stripe?"
+                              data-confirm-ok="Sí, ya reembolsé"
+                              data-confirm-tone="danger">
                             <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> Ya reembolsé</button>
                         </form>
                     <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
                         <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
-                              onsubmit="return confirm('¿Cancelar esta reserva? Esto libera cupo.')">
+                              data-confirm="Se cancelará la reserva y se liberará el cupo."
+                              data-confirm-title="Cancelar reserva"
+                              data-confirm-ok="Cancelar reserva"
+                              data-confirm-tone="danger">
                             <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
                         </form>
                     <% } %>

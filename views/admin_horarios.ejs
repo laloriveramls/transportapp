@@ -199,18 +199,43 @@
         }[m]));
     }
 
+    // Nunca lanza: devuelve {ok:false, message} si falla la red, la sesión expiró o la respuesta no es JSON.
+    async function parseResponse(res){
+        const type = String(res.headers.get("content-type") || "");
+        if (res.redirected && /\/login/.test(res.url)) {
+            return {ok: false, message: "Tu sesión expiró. Vuelve a iniciar sesión."};
+        }
+        if (!type.includes("application/json")) {
+            return {ok: false, message: res.status === 401 || res.status === 403
+                ? "Tu sesión expiró. Vuelve a iniciar sesión."
+                : `Respuesta inesperada del servidor (${res.status}).`};
+        }
+        try {
+            return await res.json();
+        } catch {
+            return {ok: false, message: "No pude leer la respuesta del servidor."};
+        }
+    }
+
     async function apiGet(url){
-        const res = await fetch(url);
-        return res.json();
+        try {
+            return await parseResponse(await fetch(url, {credentials: "same-origin"}));
+        } catch {
+            return {ok: false, message: "Sin conexión con el servidor."};
+        }
     }
 
     async function apiPost(url, body){
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(body)
-        });
-        return res.json();
+        try {
+            return await parseResponse(await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify(body)
+            }));
+        } catch {
+            return {ok: false, message: "Sin conexión con el servidor."};
+        }
     }
 
     /* -----------------------------
@@ -219,7 +244,8 @@
     function opsRowTemplate(r) {
         const disabledBecauseTemplate = !r.template_active;
         const tripEnabled = (String(r.trip_status || "OPEN").toUpperCase() === "OPEN");
-        const dayCancelledClass = (!tripEnabled && !disabledBecauseTemplate) ? "day-cancelled" : "";
+        const dayOff = !tripEnabled && !disabledBecauseTemplate;
+        const dayCancelledClass = dayOff ? "day-cancelled" : "";
         const occ = occupancyMeta(r.used, r.capacity);
         const time = hhmm(r.depart_time);
 
@@ -233,13 +259,14 @@
                 <div class="slot-time mono">${escapeHtml(time)}</div>
                 <div class="slot-body">
                     <div class="slot-top">
-                        <span class="slot-status">${occ.status}</span>
+                        <span class="slot-status">${dayOff ? "Deshabilitada este día" : occ.status}</span>
                         <span class="slot-cap mono"><strong>${occ.u}</strong>/${occ.c}</span>
                     </div>
                     <div class="slot-meter" role="meter" aria-valuemin="0" aria-valuemax="${occ.c}" aria-valuenow="${occ.u}" aria-label="${occ.u} de ${occ.c} asientos" style="--w:${occ.pct}%"><span></span></div>
                 </div>
                 <div class="slot-actions">
                     ${disabledBecauseTemplate ? `<span class="slot-tag-off" title="El horario base está inactivo: no se ofrece en ninguna fecha">Horario base inactivo</span>` : ""}
+                    ${dayOff ? `<span class="slot-tag-off is-day">Deshabilitada</span>` : ""}
                     <label class="switch" title="Habilita o deshabilita solo esta salida en la fecha elegida">
                         <span class="switch-text">Este día</span>
                         <input class="trip-toggle" type="checkbox"
@@ -267,12 +294,18 @@
         // ✅ Mejora 1 + 2: confirmación inteligente + refrescar SOLO fila
         tripToggle?.addEventListener("change", async () => {
             const enabled = tripToggle.checked;
+            const time = hhmm(rowEl.dataset.depart);
 
             // confirmación inteligente al DESHABILITAR si hay usados
             if (!enabled) {
                 const used = Number(rowEl.dataset.used || 0);
                 if (used > 0) {
-                    const ok = confirm(`Hay ${used} asiento(s) usados en este horario.\n\n¿Seguro que deseas DESHABILITAR este día?`);
+                    const ok = await Confirm.ask({
+                        title: `Deshabilitar la salida de las ${time}`,
+                        message: `Hay ${used} asiento(s) usados en este horario.\nSe cancelarán las reservas sin pagar de ese día.`,
+                        confirmText: "Deshabilitar",
+                        tone: "danger"
+                    });
                     if (!ok) {
                         tripToggle.checked = true;
                         return;
@@ -281,6 +314,7 @@
             }
 
             tripToggle.disabled = true;
+            rowEl.classList.add("is-saving");
             statusText.textContent = enabled ? "Habilitando…" : "Deshabilitando…";
 
             const resp = await apiPost("/admin/api/horarios/trip", {
@@ -290,33 +324,33 @@
             });
 
             tripToggle.disabled = false;
+            rowEl.classList.remove("is-saving");
 
             if (!resp?.ok) {
                 tripToggle.checked = !enabled;
-                statusText.textContent = "—";
-                notify("No pude actualizar el horario del día.", {variant: "danger", delay: 2200});
+                statusText.textContent = "No se guardó";
+                notify(resp?.message || "No pude actualizar el horario del día.", {variant: "danger", delay: 3500});
                 return;
             }
 
             if (!enabled) {
                 const c = Number(resp.cancelledReservations || 0);
                 const p = Number(resp.rejectedPayments || 0);
-                if (c || p) {
-                    notify(`Deshabilitado. Cancelé ${c} reserva(s) y rechacé ${p} pago(s) pendiente(s).`, {
-                        variant: "success",
-                        delay: 2400
-                    });
-                } else {
-                    notify("Deshabilitado para ese día.", {variant: "success", delay: 1600});
-                }
+                notify(
+                    c || p
+                        ? `Salida de las ${time} deshabilitada. Cancelé ${c} reserva(s) y rechacé ${p} pago(s) pendiente(s).`
+                        : `Salida de las ${time} deshabilitada para ese día.`,
+                    {variant: "success", delay: 3000}
+                );
+                statusText.textContent = `Deshabilitada ${time}`;
             } else {
-                notify("Habilitado para ese día.", {variant: "success", delay: 1600});
+                notify(`Salida de las ${time} habilitada para ese día.`, {variant: "success", delay: 2500});
+                statusText.textContent = `Habilitada ${time}`;
             }
 
-            statusText.textContent = "Actualizado.";
-
-            // refresco solo la fila (sin load completo)
+            // refresco la fila y el resumen de deshabilitadas
             await refreshOpsRow(templateId, date, rowDir);
+            await refreshDisabledSummary();
         });
     }
 
@@ -327,7 +361,7 @@
         const rowData = (data.rows || []).find(x => Number(x.template_id) === Number(templateId));
         if (!rowData) return;
 
-        const old = listEl.querySelector(`.slot-row[data-templateid="${templateId}"]`);
+        const old = listEl.querySelector(`.ops-grid .slot-row[data-templateid="${templateId}"]`);
         if (!old) return;
 
         const tmp = document.createElement("div");
@@ -336,6 +370,32 @@
 
         old.replaceWith(fresh);
         bindOpsRow(fresh, date);
+    }
+
+    async function refreshDisabledSummary(){
+        const from = todayISO();
+        const to = addDaysISO(from, 60);
+        const url = (dir) => `/admin/api/horarios/disabled-days?direction=${encodeURIComponent(dir)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+        const [x, y] = await Promise.all([apiGet(url("VIC_TO_LLE")), apiGet(url("LLE_TO_VIC"))]);
+        if (!x?.ok || !y?.ok) return;
+
+        const rows = [...(x.rows || []), ...(y.rows || [])]
+            .sort((p, q) => String(p.trip_date).localeCompare(String(q.trip_date)) || String(p.depart_time).localeCompare(String(q.depart_time)));
+
+        const old = listEl.querySelector(".ops-disabled");
+        const wasOpen = !!old?.open;
+        const html = disabledSummaryHtml(rows);
+
+        if (!html) { old?.remove(); return; }
+
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        const fresh = tmp.firstElementChild;
+        fresh.open = wasOpen;
+
+        if (old) old.replaceWith(fresh);
+        else listEl.prepend(fresh);
+        bindDisabledSummary();
     }
 
     async function loadOps() {
@@ -625,6 +685,7 @@
             }
 
             addBtn.disabled = true;
+            addBtn.classList.add("is-busy");
             statusText.textContent = "Agregando…";
 
             const r = await apiPost("/admin/api/templates/create", {
@@ -635,10 +696,11 @@
             });
 
             addBtn.disabled = false;
+            addBtn.classList.remove("is-busy");
 
             if (!r?.ok){
-                statusText.textContent = "—";
-                notify(r?.message || "No pude agregar el horario.", {variant:"danger", delay:2300});
+                statusText.textContent = "No se agregó";
+                notify(r?.message || "No pude agregar el horario.", {variant:"danger", delay:3500});
                 return;
             }
 
@@ -676,6 +738,7 @@
                 }
 
                 saveBtn.disabled = true;
+                saveBtn.classList.add("is-busy");
                 statusText.textContent = "Guardando…";
 
                 const r = await apiPost("/admin/api/templates/update", {
@@ -686,37 +749,41 @@
                     active: activeEl.checked ? 1 : 0
                 });
 
+                saveBtn.classList.remove("is-busy");
+
                 if (!r?.ok){
                     saveBtn.disabled = false;
-                    statusText.textContent = "—";
-                    notify(r?.message || "No pude guardar.", {variant:"danger", delay:2300});
+                    statusText.textContent = "No se guardó";
+                    notify(r?.message || "No pude guardar.", {variant:"danger", delay:3500});
                     return;
                 }
 
-                statusText.textContent = "Actualizado.";
-                notify("Horario base actualizado.", {variant:"success", delay:1500});
+                statusText.textContent = "Guardado";
+                notify(`Horario de las ${hhmm(timeEl.value)} guardado.`, {variant:"success", delay:2200});
                 load();
             });
 
-            row.querySelector(".t-delete")?.addEventListener("click", async (ev) => {
-                const btn = ev.currentTarget;
-                if (!confirm(`¿Eliminar definitivamente el horario de las ${hhmm(timeEl.value)}? Esta acción no se puede deshacer.`)) return;
+            row.querySelector(".t-delete")?.addEventListener("click", async () => {
+                const label = hhmm(initial.time);
+                const deleted = await Confirm.ask({
+                    title: `Eliminar el horario de las ${label}`,
+                    message: "Se borrará el horario base y sus salidas ya creadas. Esta acción no se puede deshacer. Si ya tiene reservas, no se podrá eliminar: desactívalo en su lugar.",
+                    confirmText: "Eliminar",
+                    tone: "danger",
+                    action: async () => {
+                        statusText.textContent = "Eliminando…";
+                        const r = await apiPost("/admin/api/templates/delete", { id });
+                        if (!r?.ok) {
+                            statusText.textContent = "No se eliminó";
+                            return { ok: false, message: r?.message || "No pude eliminar el horario." };
+                        }
+                        return { ok: true };
+                    }
+                });
 
-                btn.disabled = true;
-                statusText.textContent = "Eliminando…";
-
-                const r = await apiPost("/admin/api/templates/delete", { id });
-
-                btn.disabled = false;
-
-                if (!r?.ok){
-                    statusText.textContent = "—";
-                    notify(r?.message || "No pude eliminar.", {variant:"danger", delay:3500});
-                    return;
-                }
-
+                if (!deleted) return;
                 statusText.textContent = "Eliminado.";
-                notify("Horario eliminado.", {variant:"success", delay:1500});
+                notify(`Horario de las ${label} eliminado.`, {variant:"success", delay:2200});
                 load();
             });
         });

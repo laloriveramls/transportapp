@@ -66,18 +66,44 @@
         }[m]));
     }
 
+    // Nunca lanza: devuelve {ok:false, message} si falla la red, la sesión expiró o la respuesta no es JSON.
+    async function parseResponse(res){
+        const type = String(res.headers.get("content-type") || "");
+        if (res.redirected && /\/login/.test(res.url)) {
+            return {ok: false, error: "Tu sesión expiró. Vuelve a iniciar sesión.", message: "Tu sesión expiró. Vuelve a iniciar sesión."};
+        }
+        if (!type.includes("application/json")) {
+            const msg = res.status === 401 || res.status === 403
+                ? "Tu sesión expiró. Vuelve a iniciar sesión."
+                : `Respuesta inesperada del servidor (${res.status}).`;
+            return {ok: false, error: msg, message: msg};
+        }
+        try {
+            return await res.json();
+        } catch {
+            return {ok: false, error: "No pude leer la respuesta del servidor.", message: "No pude leer la respuesta del servidor."};
+        }
+    }
+
     async function apiGet(url){
-        const res = await fetch(url);
-        return res.json();
+        try {
+            return await parseResponse(await fetch(url, {credentials: "same-origin"}));
+        } catch {
+            return {ok: false, error: "Sin conexión con el servidor.", message: "Sin conexión con el servidor."};
+        }
     }
 
     async function apiPost(url, body){
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(body)
-        });
-        return res.json();
+        try {
+            return await parseResponse(await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify(body)
+            }));
+        } catch {
+            return {ok: false, error: "Sin conexión con el servidor.", message: "Sin conexión con el servidor."};
+        }
     }
 
     /* -----------------------------
@@ -275,7 +301,7 @@
             btn.disabled = false;
             if (!r?.ok){
                 statusText.textContent = "—";
-                notify("No pude guardar tarifas.", {variant:"danger", delay:2200});
+                notify(r?.message || r?.error || "No pude guardar tarifas.", {variant:"danger", delay:3500});
                 return;
             }
 
@@ -337,6 +363,15 @@
             });
 
             disableBtn?.addEventListener("click", async () => {
+                const name = row.querySelector(".l-label")?.value || code;
+                const ok = await Confirm.ask({
+                    title: `Desactivar "${name}"`,
+                    message: "Dejará de aparecer al reservar. Las reservas existentes no se modifican y puedes volver a activarla cuando quieras.",
+                    confirmText: "Desactivar",
+                    tone: "danger"
+                });
+                if (!ok) return;
+
                 disableBtn.disabled = true;
                 statusText.textContent = "Desactivando…";
                 const r = await apiPost("/admin/api/locations/disable", { code });

@@ -2497,6 +2497,15 @@ body.page-horarios .slot-tag-off {
     background: color-mix(in srgb, var(--muted) 12%, var(--card));
 }
 
+body.page-horarios .slot-tag-off.is-day {
+    color: #b42318;
+    background: color-mix(in srgb, #dc3545 12%, var(--card));
+}
+
+html[data-theme="dark"] body.page-horarios .slot-tag-off.is-day { color: #ff8a93; }
+
+body.page-horarios .slot-row.is-saving { opacity: 0.75; pointer-events: none; }
+
 /* Resumen de salidas deshabilitadas dentro de Salidas */
 body.page-horarios .ops-disabled {
     margin-bottom: 0.9rem;

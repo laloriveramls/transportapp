@@ -1446,6 +1446,59 @@ router.post("/especiales/:id/duplicate", requireAdmin, requireDb, async (req, re
     }
 });
 
+// Hard delete: only when no reservation was ever made on any of its dates (otherwise deactivate it).
+router.post("/especiales/:id/delete", requireAdmin, requireDb, async (req, res) => {
+    const id = Number(req.params.id || 0);
+    if (!id) return especialesRedirect(res, {err: "ID inválido."});
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [[ev]] = await conn.query(
+            `SELECT id, title FROM transporte_special_events WHERE id = ? FOR UPDATE`,
+            [id]
+        );
+        if (!ev) {
+            await conn.rollback();
+            return especialesRedirect(res, {err: "Viaje especial no encontrado."});
+        }
+
+        const [[used]] = await conn.query(
+            `SELECT COUNT(*) AS n
+             FROM transporte_reservations r
+                      JOIN transporte_trips t ON t.id = r.trip_id
+                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
+             WHERE dt.special_event_id = ?`,
+            [id]
+        );
+        if (Number(used.n) > 0) {
+            await conn.rollback();
+            return especialesRedirect(res, {
+                err: `No se puede eliminar "${ev.title}": tiene ${used.n} reserva(s) registradas. Desactívalo en su lugar.`,
+                id,
+            });
+        }
+
+        await conn.query(
+            `DELETE t FROM transporte_trips t
+                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
+             WHERE dt.special_event_id = ?`,
+            [id]
+        );
+        await conn.query(`DELETE FROM transporte_departure_templates WHERE special_event_id = ?`, [id]);
+        await conn.query(`DELETE FROM transporte_special_events WHERE id = ? LIMIT 1`, [id]);
+        await conn.commit();
+        return especialesRedirect(res, {msg: `Viaje especial "${ev.title}" eliminado.`});
+    } catch (e) {
+        await conn.rollback();
+        console.error(e);
+        return especialesRedirect(res, {err: "No pude eliminar el viaje especial.", id});
+    } finally {
+        conn.release();
+    }
+});
+
 router.post("/especiales/:id/active", requireAdmin, requireDb, async (req, res) => {
     const id = Number(req.params.id || 0);
     const active = req.body.active === "1" ? 1 : 0;
