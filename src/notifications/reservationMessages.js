@@ -5,8 +5,6 @@ const {escapeHtml} = require("./telegram");
 const {formatRouteLabel} = require("../locations");
 const specialEvents = require("../specialEvents");
 
-const REGULAR_MAX_CAP = 14;
-
 const TYPE_LABELS = {PASSENGER: "Pasaje", PACKAGE: "Paquetería"};
 const PAY_LABELS = {TAQUILLA: "Taquilla", TRANSFERENCIA: "Transferencia", ONLINE: "Pago en línea"};
 const STATUS_LABELS = {
@@ -95,6 +93,8 @@ async function loadReservationSnapshot(db, reservationId) {
                    r.phone,
                    r.package_details,
                    r.vic_location,
+                   r.from_stop,
+                   r.to_stop,
                    r.payment_method,
                    r.transfer_ref,
                    r.status,
@@ -142,9 +142,7 @@ async function loadReservationSnapshot(db, reservationId) {
 
     const isSpecial = Number(r.special_event_id || 0) > 0;
     const ev = isSpecial ? await specialEvents.getEventById(db, r.special_event_id).catch(() => null) : null;
-    const capacity = isSpecial
-        ? Number(r.capacity_passengers || 0)
-        : Math.min(REGULAR_MAX_CAP, Number(r.capacity_passengers || 0));
+    const capacity = Number(r.capacity_passengers || 0);
 
     return {
         ...r,
@@ -195,7 +193,7 @@ function occupancyLine(s) {
 function routeText(s) {
     return s.event
         ? `${s.event.from_label} → ${s.event.to_label}`
-        : formatRouteLabel(s.direction, s.vic_location, " → ");
+        : formatRouteLabel(s.direction, s.vic_location, " → ", s.from_stop, s.to_stop);
 }
 
 function customerWhatsappText(s) {
@@ -207,6 +205,24 @@ function customerWhatsappText(s) {
     const kids = Number(s.child_seats || 0);
     const roundTrip = s.event?.is_round_trip ? ` (regreso ${s.event.return_label})` : "";
     const payment = [PAY_LABELS[pm], STATUS_LABELS[st] && STATUS_LABELS[st].toLowerCase()].filter(Boolean).join(", ");
+    const base = baseUrl();
+    const viewUrl = base && s.public_token ? `${base}/pay/t/${encodeURIComponent(s.public_token)}` : "";
+
+    let closing;
+    if (st === "PAID") {
+        closing = "Tu pago está confirmado. Aquí puedes consultar tu boleto:";
+    } else if (st === "PAY_AT_BOARDING") {
+        closing = "Recuerda que el pago se realiza al abordar. Aquí puedes consultar tu reserva:";
+    } else if (st === "PENDING_PAYMENT") {
+        closing = pm === "TRANSFERENCIA"
+            ? "Tu pago aún está pendiente. Para confirmar tu lugar, envíanos tu comprobante de transferencia. Tu reserva:"
+            : "Tu pago aún está pendiente. Puedes completarlo desde tu reserva:";
+    } else if (st === "CANCELLED" || st === "EXPIRED") {
+        closing = "Esta reserva ya no está vigente. Si aún deseas viajar, con gusto te ayudamos a reservar de nuevo.";
+    } else {
+        closing = "Aquí puedes consultar tu reserva:";
+    }
+    const showLink = viewUrl && st !== "CANCELLED" && st !== "EXPIRED";
 
     return [
         `Hola${name ? ` ${name}` : ""}, te escribimos de Servicio de Transporte Victoria ↔ Llera sobre tu reserva ${s.folio}.`,
@@ -216,8 +232,13 @@ function customerWhatsappText(s) {
         `Fecha: ${prettyDate(s.trip_date)}, ${specialEvents.formatTime12(s.depart_hhmm)}`,
         isPackage
             ? `Paquete: ${s.package_details || "sin descripción"}`
-            : `Pasajeros: ${seats}${kids > 0 ? ` (${plural(kids, "niño", "niños")})` : ""}`,
+            : `Pasajeros: ${seats}${kids > 0 ? ` (${plural(kids, "niño", "niños")} de 6 a 10 años)` : ""}`,
         `Total: ${money(s.amount_total_mxn)}${payment ? ` (${payment})` : ""}`,
+        "",
+        closing,
+        showLink ? viewUrl : null,
+        "",
+        "Cualquier duda, estamos a tus órdenes.",
     ].filter((x) => x !== null).join("\n");
 }
 
