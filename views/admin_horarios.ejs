@@ -13,7 +13,7 @@
 <body class="home-page admin-app page-horarios">
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
-<%- include('partials/admin-hero', { heading: 'Horarios', tag: 'Plantillas, cupos, precios y lugares' }) %>
+<%- include('partials/admin-hero', { heading: 'Horarios', tag: 'Salidas por fecha y horarios base' }) %>
 
 <main class="home-main admin-main">
 <section class="container">
@@ -59,17 +59,11 @@
         <div class="horarios-tabs-bar">
             <div class="tabs-panel">
                 <div class="tabs" id="tabs" role="tablist" aria-label="Secciones de horarios">
-                    <button type="button" class="tabbtn is-active" data-tab="ops" role="tab" aria-selected="true" title="Operación por fecha">
-                        Operación <span class="badge" id="bOps">—</span>
+                    <button type="button" class="tabbtn is-active" data-tab="ops" role="tab" aria-selected="true" title="Salidas por fecha: habilita o deshabilita un día">
+                        Salidas <span class="badge" id="bOps">—</span>
                     </button>
-                    <button type="button" class="tabbtn" data-tab="disabled_day" role="tab" aria-selected="false" title="Desactivar salidas por día">
-                        Por día <span class="badge" id="bDisabledDay">—</span>
-                    </button>
-                    <button type="button" class="tabbtn" data-tab="templates" role="tab" aria-selected="false" title="Configuración de horarios base">
-                        Plantillas <span class="badge" id="bTemplates">—</span>
-                    </button>
-                    <button type="button" class="tabbtn" data-tab="pricing" role="tab" aria-selected="false" title="Precios, origen, destino y paradas">
-                        Precios <span class="badge" id="bPricing">—</span>
+                    <button type="button" class="tabbtn" data-tab="templates" role="tab" aria-selected="false" title="Horarios base: hora, cupo y estado para todas las fechas">
+                        Horarios base <span class="badge" id="bTemplates">—</span>
                     </button>
                 </div>
             </div>
@@ -111,9 +105,7 @@
 
     const tabsEl = document.getElementById("tabs");
     const bOps = document.getElementById("bOps");
-    const bDisabledDay = document.getElementById("bDisabledDay");
     const bTemplates = document.getElementById("bTemplates");
-    const bPricing = document.getElementById("bPricing");
 
     let currentTab = "ops";
     const TEMPLATE_MAX_CAP = 200; // Mismo tope de seguridad que src/capacity.js (solo evita errores de dedo).
@@ -247,16 +239,14 @@
                     <div class="slot-meter" role="meter" aria-valuemin="0" aria-valuemax="${occ.c}" aria-valuenow="${occ.u}" aria-label="${occ.u} de ${occ.c} asientos" style="--w:${occ.pct}%"><span></span></div>
                 </div>
                 <div class="slot-actions">
-                    <label class="switch" title="Activa o desactiva el horario base (todas las fechas)">
-                        <span class="switch-text">Plantilla</span>
-                        <input class="template-toggle" type="checkbox" ${r.template_active ? "checked" : ""}>
-                    </label>
-                    <label class="switch" title="Activa o desactiva solo este día">
-                        <span class="switch-text">Hoy</span>
+                    ${disabledBecauseTemplate ? `<span class="slot-tag-off" title="El horario base está inactivo: no se ofrece en ninguna fecha">Horario base inactivo</span>` : ""}
+                    <label class="switch" title="Habilita o deshabilita solo esta salida en la fecha elegida">
+                        <span class="switch-text">Este día</span>
                         <input class="trip-toggle" type="checkbox"
                                ${tripEnabled ? "checked" : ""}
                                ${disabledBecauseTemplate ? "disabled" : ""}>
                     </label>
+                    <button class="btn-mini btn-mini-ghost tpl-link" type="button" title="Cambiar hora, cupo o estado para todas las fechas">${ico("wrench", 14)} Horario base</button>
                 </div>
             </div>
         `;
@@ -265,40 +255,14 @@
     function bindOpsRow(rowEl, date) {
         const templateId = Number(rowEl.dataset.templateid);
         const rowDir = String(rowEl.dataset.direction || "");
-        const depart = String(rowEl.dataset.depart || "");
-        const capacity = Number(rowEl.dataset.capacity || 0);
 
-        const templateToggle = rowEl.querySelector(".template-toggle");
-        const tripToggle = rowEl.querySelector(".trip-toggle");
-
-        templateToggle?.addEventListener("change", async () => {
-            templateToggle.disabled = true;
-            const active = templateToggle.checked;
-
-            statusText.textContent = "Guardando (base)…";
-
-            const r = await apiPost("/admin/api/templates/update", {
-                id: templateId,
-                direction: rowDir,
-                depart_time: depart,
-                capacity_passengers: capacity || 14,
-                active: active ? 1 : 0
-            });
-
-            templateToggle.disabled = false;
-
-            if (!r?.ok) {
-                templateToggle.checked = !active;
-                statusText.textContent = "—";
-                notify("No pude actualizar el horario base.", {variant: "danger", delay: 2200});
-                return;
-            }
-
-            statusText.textContent = "Actualizado.";
-            notify("Horario base actualizado.", {variant: "success", delay: 1400});
-            // aquí sí recargamos tab para reflejar locks/disabled
-            load();
+        rowEl.querySelector(".tpl-link")?.addEventListener("click", () => {
+            directionEl.value = rowDir;
+            syncDirectionChips();
+            setActiveTab("templates");
         });
+
+        const tripToggle = rowEl.querySelector(".trip-toggle");
 
         // ✅ Mejora 1 + 2: confirmación inteligente + refrescar SOLO fila
         tripToggle?.addEventListener("change", async () => {
@@ -393,10 +357,19 @@
         hint.textContent = "Cargando…";
         statusText.textContent = "";
 
-        const [a, b] = await Promise.all([
+        const from = todayISO();
+        const to = addDaysISO(from, 60);
+        const disabledUrl = (dir) => `/admin/api/horarios/disabled-days?direction=${encodeURIComponent(dir)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+
+        const [a, b, offA, offB] = await Promise.all([
             apiGet(`/admin/api/horarios?date=${encodeURIComponent(date)}&direction=${encodeURIComponent("VIC_TO_LLE")}`),
-            apiGet(`/admin/api/horarios?date=${encodeURIComponent(date)}&direction=${encodeURIComponent("LLE_TO_VIC")}`)
+            apiGet(`/admin/api/horarios?date=${encodeURIComponent(date)}&direction=${encodeURIComponent("LLE_TO_VIC")}`),
+            apiGet(disabledUrl("VIC_TO_LLE")).catch(() => null),
+            apiGet(disabledUrl("LLE_TO_VIC")).catch(() => null)
         ]);
+
+        const disabledRows = [...(offA?.rows || []), ...(offB?.rows || [])]
+            .sort((x, y) => String(x.trip_date).localeCompare(String(y.trip_date)) || String(x.depart_time).localeCompare(String(y.depart_time)));
 
         if (!a?.ok || !b?.ok) {
             hint.textContent = "Error al cargar.";
@@ -410,7 +383,7 @@
 
         bOps.textContent = String(left.length + right.length);
 
-        listEl.innerHTML = `
+        listEl.innerHTML = disabledSummaryHtml(disabledRows) + `
             <div class="ops-grid">
                 <section class="ops-col" aria-label="Victoria a Llera">
                     <div class="ops-col-head">
@@ -445,11 +418,12 @@
         statusText.textContent = `${left.length + right.length} horario(s)`;
 
         // bind events
-        listEl.querySelectorAll(".slot-row").forEach(row => bindOpsRow(row, date));
+        listEl.querySelectorAll(".ops-grid .slot-row").forEach(row => bindOpsRow(row, date));
+        bindDisabledSummary();
     }
 
     /* -----------------------------
-       TAB: Desactivar por día (lista global)
+       Filas de salidas deshabilitadas (resumen dentro de Salidas)
     ----------------------------- */
     function disabledDayRowTemplate(r){
         const occ = occupancyMeta(r.used, r.capacity);
@@ -470,48 +444,17 @@
         `;
     }
 
-    async function loadDisabledDay(){
-        const direction = directionEl.value;
+    function disabledSummaryHtml(rows){
+        if (!rows.length) return "";
 
-        directionWrap.hidden = false;
-        dateWrap.hidden = true;
-
-        const from = todayISO();
-        const to = addDaysISO(from, 60);
-
-        kDir.textContent = dirLabel(direction);
-        setDateHeading("", "Por día");
-        if (kDatePretty) kDatePretty.textContent = "Próximos 60 días";
-
-        hint.textContent = "Cargando cancelados…";
-        statusText.textContent = "";
-
-        const data = await apiGet(`/admin/api/horarios/disabled-days?direction=${encodeURIComponent(direction)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-        if (!data?.ok){
-            hint.textContent = "Error al cargar.";
-            statusText.textContent = "—";
-            listEl.innerHTML = "";
-            return;
-        }
-
-        const rows = data.rows || [];
-        bDisabledDay.textContent = String(rows.length);
-
-        if (!rows.length){
-            listEl.innerHTML = `<div class="muted mt-3">No hay horarios desactivados por día en el rango.</div>`;
-            hint.textContent = "Listo.";
-            statusText.textContent = "0";
-            return;
-        }
-
-        const map = new Map();
+        const byDate = new Map();
         rows.forEach(r => {
-            if (!map.has(r.trip_date)) map.set(r.trip_date, []);
-            map.get(r.trip_date).push(r);
+            if (!byDate.has(r.trip_date)) byDate.set(r.trip_date, []);
+            byDate.get(r.trip_date).push(r);
         });
 
         const blocks = [];
-        for (const [d, items] of map.entries()){
+        for (const [d, items] of byDate.entries()){
             blocks.push(`
                 <div class="group-date">
                     <div class="group-title">
@@ -523,11 +466,20 @@
             `);
         }
 
-        listEl.innerHTML = blocks.join("");
-        hint.textContent = "Listo.";
-        statusText.textContent = `${rows.length} cancelado(s)`;
+        return `
+            <details class="ops-disabled">
+                <summary>
+                    ${ico("ban", 14)}
+                    <strong>${rows.length}</strong> salida${rows.length === 1 ? "" : "s"} deshabilitada${rows.length === 1 ? "" : "s"} en los próximos 60 días
+                    <span class="ops-disabled-hint">Ver y habilitar</span>
+                </summary>
+                <div class="ops-disabled-body">${blocks.join("")}</div>
+            </details>
+        `;
+    }
 
-        listEl.querySelectorAll(".slot-row").forEach(row => {
+    function bindDisabledSummary(){
+        listEl.querySelectorAll(".ops-disabled .slot-row").forEach(row => {
             const templateId = Number(row.dataset.templateid);
             const tripDate = String(row.dataset.tripdate || "");
             const enableBtn = row.querySelector(".enableBtn");
@@ -551,7 +503,7 @@
                 }
 
                 statusText.textContent = "Actualizado.";
-                notify("Horario habilitado.", {variant:"success", delay:1400});
+                notify("Salida habilitada.", {variant:"success", delay:1400});
                 load();
             });
         });
@@ -771,285 +723,6 @@
     }
 
     /* -----------------------------
-       TAB: Precios
-    ----------------------------- */
-    async function loadPricing(){
-        directionWrap.hidden = true;
-        dateWrap.hidden = true;
-
-        kDir.textContent = "Catálogo";
-        setDateHeading("", "Precios y lugares");
-        if (kDatePretty) kDatePretty.textContent = "Tarifas base, ciudades y paradas";
-
-        hint.textContent = "Cargando catálogo…";
-        statusText.textContent = "";
-
-        const data = await apiGet("/admin/api/pricing");
-        if (!data?.ok){
-            hint.textContent = "Error al cargar precios y lugares.";
-            statusText.textContent = "—";
-            listEl.innerHTML = "";
-            return;
-        }
-
-        const locations = Array.isArray(data.locations) ? data.locations : [];
-        bPricing.textContent = String(locations.filter((x) => Number(x.active) !== 0).length);
-
-        const priceValue = (n) => String(Math.round(Number(n || 0) * 100) / 100);
-        const passenger = priceValue(data.passenger_price_mxn);
-        const pkg = priceValue(data.package_price_mxn);
-        const child = priceValue(data.child_price_mxn ?? (Number(data.passenger_price_mxn || 0) / 2));
-        const updated = data.updated_at ? String(data.updated_at) : "—";
-        const vicLabel = escapeHtml(data.vic_label || data.city_labels?.VIC || "Ciudad Victoria");
-        const lleLabel = escapeHtml(data.lle_label || data.city_labels?.LLE || "Llera");
-
-        const moneyIco = ico("dollar-sign", 14);
-        const mapIco = ico("map", 14);
-        const userIco = ico("user", 14);
-        const childIco = ico("users", 14);
-        const pkgIco = ico("package", 14);
-        const listIco = ico("list", 14);
-        const pricePrefix = `<span class="price-input-prefix" aria-hidden="true">$</span>`;
-
-        const locationRows = locations.map((loc) => {
-            const active = Number(loc.active) !== 0;
-            const code = escapeHtml(loc.code || "");
-            return `
-            <article class="loc-card ${active ? "" : "is-disabled"}" data-code="${code}">
-                <div class="loc-card-head">
-                    <div class="loc-card-id">
-                        <span class="loc-code mono">${code}</span>
-                        <label class="switch loc-switch" title="Visible en reserva">
-                            <input class="l-active" type="checkbox" ${active ? "checked" : ""}>
-                            <span class="switch-text">Activa</span>
-                        </label>
-                    </div>
-                    <div class="loc-card-actions">
-                        <button type="button" class="btn-mini btn-mini-primary l-save">${ico("check", 14)} Guardar</button>
-                        <button type="button" class="btn-mini btn-mini-ghost l-disable" ${active ? "" : "disabled"}>${ico("ban", 14)} Desactivar</button>
-                    </div>
-                </div>
-                <div class="loc-card-grid">
-                    <label class="loc-field loc-field-name">
-                        <span class="loc-field-label">${mapIco} Nombre</span>
-                        <input class="l-label" type="text" maxlength="120" value="${escapeHtml(loc.label || "")}">
-                    </label>
-                    <label class="loc-field loc-field-price">
-                        <span class="loc-field-label">→ Victoria</span>
-                        <span class="price-input">
-                            ${pricePrefix}
-                            <input class="l-price-vic" type="number" min="0" step="any" inputmode="decimal" value="${priceValue(loc.price_to_victoria_mxn)}">
-                        </span>
-                    </label>
-                    <label class="loc-field loc-field-price">
-                        <span class="loc-field-label">→ Llera</span>
-                        <span class="price-input">
-                            ${pricePrefix}
-                            <input class="l-price-lle" type="number" min="0" step="any" inputmode="decimal" value="${priceValue(loc.price_to_llera_mxn)}">
-                        </span>
-                    </label>
-                    <label class="loc-field loc-field-order">
-                        <span class="loc-field-label">${listIco} Orden</span>
-                        <input class="l-order" type="number" min="0" step="1" inputmode="numeric" value="${Number(loc.sort_order || 0)}">
-                    </label>
-                </div>
-            </article>`;
-        }).join("");
-
-        listEl.innerHTML = `
-            <div class="pricing-desk">
-                <section class="pricing-panel">
-                    <div class="pricing-panel-head">
-                        <div>
-                            <h3 class="pricing-panel-title">${moneyIco} Tarifas base</h3>
-                            <p class="pricing-panel-sub">Pasaje ciudad ↔ ciudad y nombres de origen/destino.</p>
-                        </div>
-                        <span class="pricing-updated">${updated !== "—" ? "Actualizado " + escapeHtml(updated) : "Sin fecha de actualización"}</span>
-                    </div>
-
-                    <div class="pricing-base-grid">
-                        <label class="pricing-field pricing-field-price">
-                            <span class="pricing-field-label">${userIco} Adulto</span>
-                            <span class="price-input">
-                                ${pricePrefix}
-                                <input id="pPassenger" type="number" step="any" min="0" inputmode="decimal" value="${passenger}">
-                            </span>
-                        </label>
-                        <label class="pricing-field pricing-field-price">
-                            <span class="pricing-field-label">${childIco} Niño 6–10</span>
-                            <span class="price-input">
-                                ${pricePrefix}
-                                <input id="pChild" type="number" step="any" min="0" inputmode="decimal" value="${child}">
-                            </span>
-                        </label>
-                        <label class="pricing-field pricing-field-price">
-                            <span class="pricing-field-label">${pkgIco} Paquete</span>
-                            <span class="price-input">
-                                ${pricePrefix}
-                                <input id="pPackage" type="number" step="any" min="0" inputmode="decimal" value="${pkg}">
-                            </span>
-                        </label>
-                        <label class="pricing-field">
-                            <span class="pricing-field-label">${mapIco} Origen (Victoria)</span>
-                            <input id="pVicLabel" type="text" maxlength="80" value="${vicLabel}">
-                        </label>
-                        <label class="pricing-field">
-                            <span class="pricing-field-label">${mapIco} Destino (Llera)</span>
-                            <input id="pLleLabel" type="text" maxlength="80" value="${lleLabel}">
-                        </label>
-                        <div class="pricing-base-actions">
-                            <button class="btn btn-wine" type="button" id="savePricingBtn">${ico("check", 16)} Guardar tarifas</button>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="pricing-panel">
-                    <div class="pricing-panel-head">
-                        <div>
-                            <h3 class="pricing-panel-title">${mapIco} Paradas y ejidos</h3>
-                            <p class="pricing-panel-sub">Tarifa del niño = mitad del ejido. Visible al reservar.</p>
-                        </div>
-                    </div>
-
-                    <div class="loc-add-card" id="addLocationForm">
-                        <div class="loc-add-title">${ico("plus", 14)} Nueva parada</div>
-                        <div class="loc-add-grid">
-                            <label class="loc-field">
-                                <span class="loc-field-label">Código</span>
-                                <input id="addLocCode" type="text" maxlength="40" placeholder="EJ_NUEVO" autocomplete="off">
-                            </label>
-                            <label class="loc-field loc-field-name">
-                                <span class="loc-field-label">${mapIco} Nombre</span>
-                                <input id="addLocLabel" type="text" maxlength="120" placeholder="Ej. Nueva parada">
-                            </label>
-                            <label class="loc-field loc-field-price">
-                                <span class="loc-field-label">→ Victoria</span>
-                                <span class="price-input">
-                                    ${pricePrefix}
-                                    <input id="addLocVic" type="number" min="0" step="any" inputmode="decimal" value="60">
-                                </span>
-                            </label>
-                            <label class="loc-field loc-field-price">
-                                <span class="loc-field-label">→ Llera</span>
-                                <span class="price-input">
-                                    ${pricePrefix}
-                                    <input id="addLocLle" type="number" min="0" step="any" inputmode="decimal" value="60">
-                                </span>
-                            </label>
-                            <label class="loc-field loc-field-order">
-                                <span class="loc-field-label">${listIco} Orden</span>
-                                <input id="addLocOrder" type="number" min="0" step="1" inputmode="numeric" value="${(locations.length + 1) * 10}">
-                            </label>
-                            <div class="loc-add-actions">
-                                <button class="btn btn-wine" type="button" id="addLocBtn">${ico("plus", 14)} Agregar</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="loc-list">
-                        ${locationRows || `<div class="pricing-empty muted">Aún no hay paradas configuradas.</div>`}
-                    </div>
-                </section>
-            </div>
-        `;
-
-        hint.textContent = "Listo.";
-        statusText.textContent = `${locations.length} lugares`;
-
-        document.getElementById("savePricingBtn")?.addEventListener("click", async (ev) => {
-            const btn = ev.currentTarget;
-            btn.disabled = true;
-            statusText.textContent = "Guardando tarifas…";
-
-            const r = await apiPost("/admin/api/pricing", {
-                passenger_price_mxn: Number(document.getElementById("pPassenger").value || 0),
-                child_price_mxn: Number(document.getElementById("pChild").value || 0),
-                package_price_mxn: Number(document.getElementById("pPackage").value || 0),
-                vic_label: document.getElementById("pVicLabel").value || "",
-                lle_label: document.getElementById("pLleLabel").value || "",
-            });
-
-            btn.disabled = false;
-            if (!r?.ok){
-                statusText.textContent = "—";
-                notify("No pude guardar tarifas.", {variant:"danger", delay:2200});
-                return;
-            }
-
-            statusText.textContent = "Tarifas guardadas.";
-            notify("Tarifas y nombres de ciudad guardados.", {variant:"success", delay:1600});
-            load();
-        });
-
-        document.getElementById("addLocBtn")?.addEventListener("click", async (ev) => {
-            const btn = ev.currentTarget;
-            btn.disabled = true;
-            statusText.textContent = "Agregando parada…";
-
-            const r = await apiPost("/admin/api/locations/upsert", {
-                code: document.getElementById("addLocCode").value || "",
-                label: document.getElementById("addLocLabel").value || "",
-                price_to_victoria_mxn: Number(document.getElementById("addLocVic").value || 0),
-                price_to_llera_mxn: Number(document.getElementById("addLocLle").value || 0),
-                sort_order: Number(document.getElementById("addLocOrder").value || 0),
-                active: 1,
-            });
-
-            btn.disabled = false;
-            if (!r?.ok){
-                statusText.textContent = "—";
-                notify(r?.error || "No pude agregar la parada.", {variant:"danger", delay:2200});
-                return;
-            }
-
-            notify("Parada agregada.", {variant:"success", delay:1500});
-            load();
-        });
-
-        listEl.querySelectorAll(".loc-card[data-code]").forEach((row) => {
-            const code = row.dataset.code;
-            const saveBtn = row.querySelector(".l-save");
-            const disableBtn = row.querySelector(".l-disable");
-
-            saveBtn?.addEventListener("click", async () => {
-                saveBtn.disabled = true;
-                statusText.textContent = "Guardando parada…";
-                const r = await apiPost("/admin/api/locations/upsert", {
-                    code,
-                    label: row.querySelector(".l-label").value || "",
-                    price_to_victoria_mxn: Number(row.querySelector(".l-price-vic").value || 0),
-                    price_to_llera_mxn: Number(row.querySelector(".l-price-lle").value || 0),
-                    sort_order: Number(row.querySelector(".l-order").value || 0),
-                    active: row.querySelector(".l-active").checked ? 1 : 0,
-                });
-                saveBtn.disabled = false;
-                if (!r?.ok){
-                    statusText.textContent = "—";
-                    notify(r?.error || "No pude guardar la parada.", {variant:"danger", delay:2200});
-                    return;
-                }
-                statusText.textContent = "Parada actualizada.";
-                notify("Parada guardada.", {variant:"success", delay:1400});
-                load();
-            });
-
-            disableBtn?.addEventListener("click", async () => {
-                disableBtn.disabled = true;
-                statusText.textContent = "Desactivando…";
-                const r = await apiPost("/admin/api/locations/disable", { code });
-                disableBtn.disabled = false;
-                if (!r?.ok){
-                    statusText.textContent = "—";
-                    notify("No pude desactivar la parada.", {variant:"danger", delay:2200});
-                    return;
-                }
-                notify("Parada desactivada.", {variant:"success", delay:1400});
-                load();
-            });
-        });
-    }
-
-    /* -----------------------------
        Router UI
     ----------------------------- */
     function setActiveTab(tab){
@@ -1064,9 +737,7 @@
 
     async function load(){
         if (currentTab === "ops") return loadOps();
-        if (currentTab === "disabled_day") return loadDisabledDay();
         if (currentTab === "templates") return loadTemplates();
-        if (currentTab === "pricing") return loadPricing();
         return loadOps();
     }
 

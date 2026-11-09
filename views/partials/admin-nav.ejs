@@ -15,6 +15,12 @@ const current = (typeof adminNav !== "undefined" && adminNav) ? String(adminNav)
            aria-selected="<%= current === 'horarios' ? 'true' : 'false' %>">Horarios</a>
     </li>
     <li class="nav-item" role="presentation">
+        <a class="nav-link <%= current === 'precios' ? 'active' : '' %>"
+           href="/admin/precios"
+           role="tab"
+           aria-selected="<%= current === 'precios' ? 'true' : 'false' %>">Precios</a>
+    </li>
+    <li class="nav-item" role="presentation">
         <a class="nav-link <%= current === 'especiales' ? 'active' : '' %>"
            href="/admin/especiales"
            role="tab"
