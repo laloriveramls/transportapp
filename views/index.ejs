@@ -15,7 +15,7 @@
     <link href="/css/home.css" rel="stylesheet">
 </head>
 
-<body class="home-page">
+<body class="home-page home-index">
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
@@ -24,29 +24,56 @@
     <div class="home-hero-veil" aria-hidden="true"></div>
 
     <div class="container home-hero-inner">
-        <div class="home-brand home-reveal">
-            <div class="logo-wrap">
-                <img class="home-brand-logo" src="/assets/logo-hero.png" alt="Servicio de Transporte Victoria Llera" width="308" height="348" decoding="async" fetchpriority="high">
-                <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
-            </div>
-            <div class="home-brand-copy">
-                <p class="home-kicker">Victoria - Llera</p>
-                <h1 class="home-brand-name">Servicio de Transporte</h1>
-                <p class="home-brand-tag">Pasaje y paquetería · Paradas en ejidos · Reserva en minutos</p>
+        <div class="home-hero-copy home-reveal">
+            <div class="home-brand">
+                <div class="logo-wrap">
+                    <img class="home-brand-logo" src="/assets/logo-hero.png" alt="Servicio de Transporte Victoria Llera" width="308" height="348" decoding="async" fetchpriority="high">
+                    <button type="button" id="adminHotspot" class="admin-hotspot" aria-label="Admin (oculto)"></button>
+                </div>
+                <div class="home-brand-body">
+                    <h1 class="home-brand-name">Servicio de Transporte</h1>
+                    <p class="home-brand-tag">Conectamos Victoria, Llera y sus ejidos. Pasaje y paquetería todos los días.</p>
+
+                    <div class="hero-actions">
+                        <a class="btn btn-wine home-cta-primary" href="/reserve">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span>
+                            Reservar
+                        </a>
+                        <a class="btn home-cta-ghost" target="_blank" rel="noopener noreferrer"
+                           href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'message-circle', size: 20 }) %></span>
+                            WhatsApp
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="hero-actions home-reveal home-reveal-delay">
-            <a class="btn btn-wine home-cta-primary" href="/reserve">
-                <span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span>
-                Reservar
+        <aside class="home-next home-reveal home-reveal-delay" aria-label="Próximas salidas">
+            <p class="home-next-title"><span class="home-next-pulse" aria-hidden="true"></span>Próximas salidas</p>
+            <a class="home-next-row is-pending" id="nextV2LPill" href="/reserve" title="Reservar próxima salida">
+                <span class="home-next-route">
+                    <small>Ciudad Victoria</small>
+                    <strong>Llera <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></strong>
+                </span>
+                <span class="home-next-clock">
+                    <b class="home-next-time">--:--</b>
+                    <span class="home-next-eta" id="nextV2LEta" hidden></span>
+                    <span class="home-next-when" id="nextV2LWhen"></span>
+                </span>
             </a>
-            <a class="btn home-cta-ghost" target="_blank" rel="noopener noreferrer"
-               href="https://wa.me/52<%= ('8344756376').replace(/\D/g, '') %>?text=<%= encodeURIComponent('Hola, quiero información del servicio de transporte.') %>">
-                <span class="btn-ico"><%- include('partials/icon', { name: 'message-circle', size: 20 }) %></span>
-                WhatsApp
+            <a class="home-next-row is-pending" id="nextL2VPill" href="/reserve" title="Reservar próxima salida">
+                <span class="home-next-route">
+                    <small>Llera</small>
+                    <strong>Ciudad Victoria <%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></strong>
+                </span>
+                <span class="home-next-clock">
+                    <b class="home-next-time">--:--</b>
+                    <span class="home-next-eta" id="nextL2VEta" hidden></span>
+                    <span class="home-next-when" id="nextL2VWhen"></span>
+                </span>
             </a>
-        </div>
+        </aside>
     </div>
 </section>
 
@@ -95,76 +122,82 @@
                         if (!Number.isFinite(h)) return String(hhmm || '');
                         return `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`;
                     };
+                    const time12Parts = (hhmm) => {
+                        const [h, m] = String(hhmm || '').split(':').map(Number);
+                        if (!Number.isFinite(h)) return {t: String(hhmm || ''), m: ''};
+                        return {t: `${h % 12 || 12}:${String(m || 0).padStart(2, '0')}`, m: h < 12 ? 'a. m.' : 'p. m.'};
+                    };
                     %>
-                    <p class="schedule-legend" id="scheduleLegend">
-                        <span><span class="schedule-legend-dot is-next" aria-hidden="true"></span> Próxima salida</span>
-                        <span><span class="schedule-legend-dot" aria-hidden="true"></span> Ya salió hoy</span>
-                    </p>
+                    <div class="schedule-legend" id="scheduleLegend">
+                        <ul class="schedule-legend-list">
+                            <li><span class="legend-chip is-next" aria-hidden="true"></span>Próxima</li>
+                            <li><span class="legend-chip" aria-hidden="true"></span>Disponible</li>
+                            <li><span class="legend-chip is-past" aria-hidden="true"></span>Ya salió</li>
+                        </ul>
+                        <span class="schedule-now" data-now hidden>
+                            <span class="schedule-now-dot" aria-hidden="true"></span>
+                            Ahora <b data-now-time></b>
+                        </span>
+                    </div>
+                    <%
+                    const periodOf = (hhmm) => {
+                        const h = Number(String(hhmm || '').slice(0, 2));
+                        return h < 12 ? 'Mañana' : (h < 18 ? 'Tarde' : 'Noche');
+                    };
+                    const groupByPeriod = (list) => ['Mañana', 'Tarde', 'Noche']
+                        .map((label) => ({label, items: list.filter((t) => periodOf(String(t.depart_time || '').slice(0, 5)) === label)}))
+                        .filter((g) => g.items.length);
+                    const scheduleRoutes = [
+                        {dir: 'VIC_TO_LLE', from: 'Ciudad Victoria', to: 'Llera', sr: 'De Ciudad Victoria hacia Llera', aria: 'Horarios Victoria a Llera'},
+                        {dir: 'LLE_TO_VIC', from: 'Llera', to: 'Ciudad Victoria', sr: 'De Llera hacia Ciudad Victoria', aria: 'Horarios Llera a Victoria'},
+                    ];
+                    %>
                     <div class="schedule-board" id="nextCard">
-                        <% const v2l = templates.filter(t => t.direction === 'VIC_TO_LLE'); %>
+                        <% scheduleRoutes.forEach((route) => {
+                            const list = templates.filter(t => t.direction === route.dir);
+                        %>
                         <article class="schedule-row">
-                            <div class="schedule-row-main">
+                            <header class="schedule-row-head">
                                 <div class="schedule-route">
-                                    <span class="visually-hidden">De Ciudad Victoria hacia Llera</span>
-                                    <span class="schedule-route-from" aria-hidden="true">Ciudad Victoria</span>
-                                    <span class="schedule-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
-                                    <strong class="schedule-route-to" aria-hidden="true">Llera</strong>
+                                    <span class="visually-hidden"><%= route.sr %></span>
+                                    <span class="schedule-route-from" aria-hidden="true"><%= route.from %></span>
+                                    <span class="schedule-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 16 }) %></span>
+                                    <strong class="schedule-route-to" aria-hidden="true"><%= route.to %></strong>
                                 </div>
-                                <a class="schedule-next-cta is-pending" id="nextV2LPill" href="/reserve" title="Reservar próxima salida">
-                                    <span class="schedule-next-label">Próxima</span>
-                                    <span class="schedule-next-time">--:--</span>
-                                    <span class="schedule-next-when" id="nextV2LWhen"></span>
-                                </a>
-                            </div>
-                            <div class="schedule-times" aria-label="Horarios Victoria a Llera">
-                                <% v2l.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                                <a class="chip-time"
-                                   data-dir="VIC_TO_LLE"
-                                   data-time="<%= hhmm %>"
-                                   href="/reserve?dir=VIC_TO_LLE&time=<%= encodeURIComponent(hhmm) %>"><%= time12(hhmm) %></a>
+                            </header>
+                            <div class="schedule-groups" aria-label="<%= route.aria %>">
+                                <% groupByPeriod(list).forEach((group) => { %>
+                                <div class="schedule-group">
+                                    <span class="schedule-group-label"><%= group.label %></span>
+                                    <div class="schedule-times">
+                                        <% group.items.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
+                                        <a class="chip-time"
+                                           data-dir="<%= route.dir %>"
+                                           data-time="<%= hhmm %>"
+                                           href="/reserve?dir=<%= route.dir %>&time=<%= encodeURIComponent(hhmm) %>"
+                                           aria-label="<%= time12(hhmm) %>"><span class="chip-time-t"><%= time12Parts(hhmm).t %></span><span class="chip-time-m"><%= time12Parts(hhmm).m %></span></a>
+                                        <% }) %>
+                                    </div>
+                                </div>
                                 <% }) %>
-                                <% if (v2l.length === 0) { %>
+                                <% if (list.length === 0) { %>
                                     <div class="subtle">Sin horarios publicados.</div>
                                 <% } %>
                             </div>
                         </article>
-
-                        <% const l2v = templates.filter(t => t.direction === 'LLE_TO_VIC'); %>
-                        <article class="schedule-row">
-                            <div class="schedule-row-main">
-                                <div class="schedule-route">
-                                    <span class="visually-hidden">De Llera hacia Ciudad Victoria</span>
-                                    <span class="schedule-route-from" aria-hidden="true">Llera</span>
-                                    <span class="schedule-route-mid" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 14 }) %></span>
-                                    <strong class="schedule-route-to" aria-hidden="true">Ciudad Victoria</strong>
-                                </div>
-                                <a class="schedule-next-cta is-pending" id="nextL2VPill" href="/reserve" title="Reservar próxima salida">
-                                    <span class="schedule-next-label">Próxima</span>
-                                    <span class="schedule-next-time">--:--</span>
-                                    <span class="schedule-next-when" id="nextL2VWhen"></span>
-                                </a>
-                            </div>
-                            <div class="schedule-times" aria-label="Horarios Llera a Victoria">
-                                <% l2v.forEach(t => { const hhmm = String(t.depart_time || '').slice(0, 5); %>
-                                <a class="chip-time"
-                                   data-dir="LLE_TO_VIC"
-                                   data-time="<%= hhmm %>"
-                                   href="/reserve?dir=LLE_TO_VIC&time=<%= encodeURIComponent(hhmm) %>"><%= time12(hhmm) %></a>
-                                <% }) %>
-                                <% if (l2v.length === 0) { %>
-                                    <div class="subtle">Sin horarios publicados.</div>
-                                <% } %>
-                            </div>
-                        </article>
+                        <% }) %>
                     </div>
                 </div>
 
                 <% homeSpecials.forEach((ev) => {
                     const evUrl = `/especial/${encodeURIComponent(ev.slug)}`;
                     const evPrice = `$${Number(ev.price_mxn || 0).toFixed(0)}`;
+                    const evCap = Number(ev.capacity_passengers || 0);
+                    const evFirst = ev.days.find((d) => d.bookable) || null;
+                    const daySeats = (d) => `${d.available} de ${evCap} lugares disponibles`;
                 %>
                 <div class="home-pane" id="pane-esp-<%= ev.slug %>" role="tabpanel" aria-labelledby="tab-esp-<%= ev.slug %>" hidden>
-                    <div class="special-board">
+                    <div class="special-board" data-special>
                         <header class="special-head">
                             <div class="special-head-copy">
                                 <p class="special-kicker">
@@ -176,71 +209,81 @@
                                     <p class="special-desc"><%= ev.description %></p>
                                 <% } %>
                             </div>
-                            <a class="btn btn-wine special-cta" href="<%= evUrl %>">
-                                <%- include('partials/icon', { name: 'ticket', size: 16 }) %>
-                                Reservar
-                            </a>
+                            <div class="special-price">
+                                <b><%= evPrice %></b>
+                                <small><%= ev.is_round_trip ? 'por persona, viaje redondo' : 'por persona' %></small>
+                            </div>
                         </header>
 
-                        <ul class="special-facts">
-                            <li class="special-fact">
-                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'clock', size: 16 }) %></span>
-                                <span class="special-fact-copy">
-                                    <strong><%= ev.depart_label %></strong>
-                                    <small>Salida de <%= ev.from_label %></small>
-                                </span>
-                            </li>
-                            <% if (ev.is_round_trip) { %>
-                            <li class="special-fact">
-                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'repeat', size: 16 }) %></span>
-                                <span class="special-fact-copy">
-                                    <strong><%= ev.return_label %></strong>
-                                    <small>Regreso de <%= ev.to_label %></small>
-                                </span>
-                            </li>
-                            <% } %>
-                            <li class="special-fact">
-                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 16 }) %></span>
-                                <span class="special-fact-copy">
-                                    <strong><%= ev.capacity_passengers %> lugares</strong>
-                                    <small>Por fecha</small>
-                                </span>
-                            </li>
-                            <li class="special-fact special-fact-price">
-                                <span class="special-fact-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 16 }) %></span>
-                                <span class="special-fact-copy">
-                                    <strong><%= evPrice %></strong>
-                                    <small><%= ev.is_round_trip ? 'Por persona, viaje redondo' : 'Por persona' %></small>
-                                </span>
-                            </li>
-                        </ul>
+                        <div class="special-grid">
+                            <div>
+                                <p class="home-info-label">Itinerario</p>
+                                <ol class="special-itin">
+                                    <li>
+                                        <i aria-hidden="true"><%- include('partials/icon', { name: 'bus', size: 16 }) %></i>
+                                        <span><b><%= ev.depart_label %></b><small>Salida de <%= ev.from_label %></small></span>
+                                    </li>
+                                    <li>
+                                        <i aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 16 }) %></i>
+                                        <span><b><%= ev.to_label %></b><small>Destino</small></span>
+                                    </li>
+                                    <% if (ev.is_round_trip) { %>
+                                    <li>
+                                        <i aria-hidden="true"><%- include('partials/icon', { name: 'repeat', size: 16 }) %></i>
+                                        <span><b><%= ev.return_label %></b><small>Regreso de <%= ev.to_label %></small></span>
+                                    </li>
+                                    <% } %>
+                                </ol>
+                            </div>
 
-                        <div class="special-days-wrap">
-                            <p class="home-info-label">Elige tu fecha</p>
-                            <div class="special-days">
-                                <% ev.days.forEach((day) => {
-                                    let tone = 'ok';
-                                    let note = `${day.available} lugar${day.available === 1 ? '' : 'es'}`;
-                                    if (day.trip_status !== 'OPEN') { tone = 'off'; note = 'Sin salida'; }
-                                    else if (day.available <= 0) { tone = 'full'; note = 'Lleno'; }
-                                    else if (day.available <= 3) { tone = 'tight'; }
-                                %>
-                                <% if (day.bookable) { %>
-                                    <a class="special-day is-<%= tone %>" href="<%= evUrl %>?date=<%= day.date %>"
-                                       aria-label="Reservar <%= day.long %>, <%= note %>">
-                                <% } else { %>
-                                    <span class="special-day is-<%= tone %>" aria-label="<%= day.long %>, <%= note %>">
-                                <% } %>
-                                        <span class="special-day-wd"><%= day.weekday %></span>
-                                        <span class="special-day-num"><%= day.day %></span>
-                                        <span class="special-day-mo"><%= day.month %></span>
-                                        <span class="special-day-seats"><%= note %></span>
-                                <% if (day.bookable) { %>
+                            <div class="special-days-wrap">
+                                <p class="home-info-label">Elige tu fecha</p>
+                                <div class="special-days">
+                                    <% ev.days.forEach((day) => {
+                                        let tone = 'ok';
+                                        let note = `${day.available} lugar${day.available === 1 ? '' : 'es'}`;
+                                        if (day.trip_status !== 'OPEN') { tone = 'off'; note = 'Sin salida'; }
+                                        else if (day.available <= 0) { tone = 'full'; note = 'Lleno'; }
+                                        else if (day.available <= 3) { tone = 'tight'; }
+                                        const used = evCap > 0 ? Math.max(0, Math.min(100, Math.round(((evCap - Math.max(0, day.available)) / evCap) * 100))) : 100;
+                                        const isFirst = evFirst && evFirst.date === day.date;
+                                    %>
+                                    <% if (day.bookable) { %>
+                                        <button type="button" class="special-day is-<%= tone %>" aria-pressed="<%= isFirst ? 'true' : 'false' %>"
+                                                data-url="<%= evUrl %>?date=<%= day.date %>"
+                                                data-label="<%= day.long %>"
+                                                data-seats="<%= daySeats(day) %>"
+                                                data-short="<%= day.weekday %> <%= day.day %>">
+                                    <% } else { %>
+                                        <span class="special-day is-<%= tone %>" aria-disabled="true" aria-label="<%= day.long %>, <%= note %>">
+                                    <% } %>
+                                            <span class="special-day-wd"><%= day.weekday %></span>
+                                            <span class="special-day-num"><%= day.day %></span>
+                                            <span class="special-day-mo"><%= day.month %></span>
+                                            <span class="special-day-bar" aria-hidden="true"><i style="width: <%= used %>%"></i></span>
+                                            <span class="special-day-seats"><%= note %></span>
+                                    <% if (day.bookable) { %>
+                                        </button>
+                                    <% } else { %>
+                                        </span>
+                                    <% } %>
+                                    <% }) %>
+                                </div>
+
+                                <% if (evFirst) { %>
+                                <div class="special-sum">
+                                    <div class="special-sum-copy">
+                                        <strong data-sp-label><%= evFirst.long %></strong>
+                                        <small data-sp-seats><%= daySeats(evFirst) %></small>
+                                    </div>
+                                    <a class="btn btn-wine special-cta" href="<%= evUrl %>?date=<%= evFirst.date %>" data-sp-cta>
+                                        <%- include('partials/icon', { name: 'ticket', size: 16 }) %>
+                                        <span data-sp-cta-text>Reservar <%= evFirst.weekday %> <%= evFirst.day %></span>
                                     </a>
+                                </div>
                                 <% } else { %>
-                                    </span>
+                                <p class="subtle">No hay fechas disponibles por ahora.</p>
                                 <% } %>
-                                <% }) %>
                             </div>
                         </div>
                     </div>
@@ -248,54 +291,38 @@
                 <% }) %>
 
                 <div class="home-pane" id="pane-mapa" role="tabpanel" aria-labelledby="tab-mapa" hidden>
+                    <%
+                    const mapPoints = [
+                        {name: 'Ciudad Victoria', sub: 'Punto de salida hacia Llera', lat: '23.737544', lng: '-99.130954', title: 'Mapa de salida en Ciudad Victoria'},
+                        {name: 'Llera', sub: 'Punto de salida hacia Victoria', lat: '23.317522', lng: '-99.023979', title: 'Mapa de salida en Llera'},
+                    ];
+                    %>
                     <div class="map-grid">
+                        <% mapPoints.forEach((pt) => { %>
                         <article class="map-card">
                             <header class="map-card-head">
                                 <span class="map-card-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
                                 <div class="map-card-copy">
-                                    <h3 class="map-title">Ciudad Victoria</h3>
-                                    <p class="map-sub">Punto de salida</p>
+                                    <h3 class="map-title"><%= pt.name %></h3>
+                                    <p class="map-sub"><%= pt.sub %></p>
                                 </div>
                             </header>
                             <iframe class="map-frame" loading="lazy"
                                     referrerpolicy="no-referrer-when-downgrade"
-                                    title="Mapa de salida en Ciudad Victoria"
-                                    src="https://www.google.com/maps?q=23.737544,-99.130954&z=16&output=embed"></iframe>
+                                    title="<%= pt.title %>"
+                                    src="https://www.google.com/maps?q=<%= pt.lat %>,<%= pt.lng %>&z=16&output=embed"></iframe>
                             <div class="map-actions">
                                 <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
-                                   href="https://www.google.com/maps/dir/?api=1&destination=23.737544,-99.130954">
+                                   href="https://www.google.com/maps/dir/?api=1&destination=<%= pt.lat %>,<%= pt.lng %>">
                                     <%- include('partials/icon', { name: 'navigation', size: 15 }) %> Cómo llegar
                                 </a>
                                 <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
-                                   href="https://www.google.com/maps?q=23.737544,-99.130954">
+                                   href="https://www.google.com/maps?q=<%= pt.lat %>,<%= pt.lng %>">
                                     <%- include('partials/icon', { name: 'external-link', size: 15 }) %> Abrir en Maps
                                 </a>
                             </div>
                         </article>
-
-                        <article class="map-card">
-                            <header class="map-card-head">
-                                <span class="map-card-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
-                                <div class="map-card-copy">
-                                    <h3 class="map-title">Llera</h3>
-                                    <p class="map-sub">Punto de salida</p>
-                                </div>
-                            </header>
-                            <iframe class="map-frame" loading="lazy"
-                                    referrerpolicy="no-referrer-when-downgrade"
-                                    title="Mapa de salida en Llera"
-                                    src="https://www.google.com/maps?q=23.317522,-99.023979&z=16&output=embed"></iframe>
-                            <div class="map-actions">
-                                <a class="btn btn-wine btn-sm" target="_blank" rel="noopener noreferrer"
-                                   href="https://www.google.com/maps/dir/?api=1&destination=23.317522,-99.023979">
-                                    <%- include('partials/icon', { name: 'navigation', size: 15 }) %> Cómo llegar
-                                </a>
-                                <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer"
-                                   href="https://www.google.com/maps?q=23.317522,-99.023979">
-                                    <%- include('partials/icon', { name: 'external-link', size: 15 }) %> Abrir en Maps
-                                </a>
-                            </div>
-                        </article>
+                        <% }) %>
                     </div>
                 </div>
 
@@ -323,53 +350,51 @@
                             .map((price) => ({price, items: byPrice.get(price)}));
                     }
 
-                    const stopGroupsVictoria = groupStopsByPrice("price_to_victoria_mxn");
-                    const stopGroupsLlera = groupStopsByPrice("price_to_llera_mxn");
-                    const allStopPrices = [
-                        ...stopGroupsVictoria.map((g) => g.price),
-                        ...stopGroupsLlera.map((g) => g.price),
-                    ];
-                    const minStop = allStopPrices.length ? Math.min(...allStopPrices) : 30;
+                    const stopBoxes = [
+                        {key: "v", label: "A Victoria", groups: groupStopsByPrice("price_to_victoria_mxn"), to: "VIC", name: "Ciudad Victoria"},
+                        {key: "l", label: "A Llera", groups: groupStopsByPrice("price_to_llera_mxn"), to: "LLE", name: "Llera"},
+                    ].filter((b) => b.groups.length);
                     %>
                     <div class="home-info" id="servicio">
                         <h3 class="visually-hidden">Tarifas y paradas</h3>
                         <div class="home-info-layout">
                             <div class="home-info-main">
-                                <ul class="home-info-grid">
-                                    <li class="home-info-tile">
-                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></span>
-                                        <span class="home-info-tile-copy">
-                                            <strong>Pasaje</strong>
-                                            <span class="home-info-tile-hint">Adulto y niño</span>
-                                        </span>
-                                        <span class="home-info-tile-price">
-                                            <b><%= mxn(adultPrice) %></b>
-                                            <small><%= mxn(childPrice) %> niño</small>
-                                        </span>
-                                    </li>
-                                    <li class="home-info-tile">
-                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></span>
-                                        <span class="home-info-tile-copy">
-                                            <strong>Paquetería</strong>
-                                            <span class="home-info-tile-hint">Misma ruta</span>
-                                        </span>
-                                        <span class="home-info-tile-price">
-                                            <b><%= mxn(packPrice) %></b>
-                                            <small>por envío</small>
-                                        </span>
-                                    </li>
-                                    <li class="home-info-tile">
-                                        <span class="home-info-tile-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
-                                        <span class="home-info-tile-copy">
-                                            <strong>Paradas</strong>
-                                            <span class="home-info-tile-hint">Según abordaje</span>
-                                        </span>
-                                        <span class="home-info-tile-price">
-                                            <b><%= mxn(minStop) %></b>
-                                            <small>desde</small>
-                                        </span>
-                                    </li>
-                                </ul>
+                                <section class="home-quote" aria-labelledby="quoteTitle">
+                                    <div class="home-quote-head">
+                                        <h4 id="quoteTitle"><span class="home-block-ico" aria-hidden="true"><%- include('partials/icon', { name: 'calculator', size: 16 }) %></span>Calcula tu viaje</h4>
+                                        <small>Victoria ↔ Llera directo</small>
+                                    </div>
+                                    <div class="home-quote-rows">
+                                        <div class="home-quote-row">
+                                            <span class="home-quote-label"><i class="home-quote-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 18 }) %></i><span><strong>Adultos</strong><small><%= mxn(adultPrice) %> c/u</small></span></span>
+                                            <div class="home-stepper" data-price="<%= adultPrice %>">
+                                                <button type="button" aria-label="Quitar adulto">−</button>
+                                                <output aria-live="polite">1</output>
+                                                <button type="button" aria-label="Agregar adulto">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="home-quote-row">
+                                            <span class="home-quote-label"><i class="home-quote-ico" aria-hidden="true"><%- include('partials/icon', { name: 'baby', size: 18 }) %></i><span><strong>Niños</strong><small><%= mxn(childPrice) %> c/u</small></span></span>
+                                            <div class="home-stepper" data-price="<%= childPrice %>">
+                                                <button type="button" aria-label="Quitar niño">−</button>
+                                                <output aria-live="polite">0</output>
+                                                <button type="button" aria-label="Agregar niño">+</button>
+                                            </div>
+                                        </div>
+                                        <div class="home-quote-row">
+                                            <span class="home-quote-label"><i class="home-quote-ico" aria-hidden="true"><%- include('partials/icon', { name: 'package', size: 18 }) %></i><span><strong>Paquetes</strong><small><%= mxn(packPrice) %> por envío</small></span></span>
+                                            <div class="home-stepper" data-price="<%= packPrice %>">
+                                                <button type="button" aria-label="Quitar paquete">−</button>
+                                                <output aria-live="polite">0</output>
+                                                <button type="button" aria-label="Agregar paquete">+</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="home-quote-total">
+                                        <span>Total estimado</span>
+                                        <b id="quoteTotal"><%= mxn(adultPrice) %></b>
+                                    </div>
+                                </section>
 
                                 <ol class="home-steps" aria-label="Cómo reservar">
                                     <li class="home-step">
@@ -385,74 +410,79 @@
                                         <span class="home-step-copy"><strong>Recibe tu boleto</strong><small>Lo consultas desde tu enlace</small></span>
                                     </li>
                                 </ol>
-
-                                <% if (stopGroupsVictoria.length || stopGroupsLlera.length) { %>
-                                    <div class="home-info-stops">
-                                        <% if (stopGroupsVictoria.length) { %>
-                                            <p class="home-info-label">Ejidos a Ciudad Victoria</p>
-                                            <div class="home-stop-groups">
-                                                <% stopGroupsVictoria.forEach((group) => { %>
-                                                    <div class="home-stop-group">
-                                                        <span class="home-stop-group-price"><%= mxn(group.price) %></span>
-                                                        <ul class="home-stop-list">
-                                                            <% group.items.forEach((loc) => { %>
-                                                                <li>
-                                                                    <a class="home-stop-chip"
-                                                                       href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=VIC"
-                                                                       title="Reservar <%= loc.label %> ↔ Ciudad Victoria">
-                                                                        <%= loc.label %>
-                                                                    </a>
-                                                                </li>
-                                                            <% }) %>
-                                                        </ul>
-                                                    </div>
-                                                <% }) %>
-                                            </div>
-                                        <% } %>
-
-                                        <% if (stopGroupsLlera.length) { %>
-                                            <p class="home-info-label home-info-label-spaced">Ejidos a Llera</p>
-                                            <div class="home-stop-groups">
-                                                <% stopGroupsLlera.forEach((group) => { %>
-                                                    <div class="home-stop-group">
-                                                        <span class="home-stop-group-price"><%= mxn(group.price) %></span>
-                                                        <ul class="home-stop-list">
-                                                            <% group.items.forEach((loc) => { %>
-                                                                <li>
-                                                                    <a class="home-stop-chip"
-                                                                       href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=LLE"
-                                                                       title="Reservar <%= loc.label %> ↔ Llera">
-                                                                        <%= loc.label %>
-                                                                    </a>
-                                                                </li>
-                                                            <% }) %>
-                                                        </ul>
-                                                    </div>
-                                                <% }) %>
-                                            </div>
-                                        <% } %>
-                                    </div>
-                                <% } %>
                             </div>
 
-                            <aside class="home-faq" id="preguntas">
-                                <p class="home-info-label">Preguntas frecuentes</p>
-                                <% faqItems.forEach((item) => { %>
-                                    <details class="home-faq-item">
-                                        <summary><%= item.question %></summary>
-                                        <p><%= item.answer %></p>
-                                    </details>
-                                <% }) %>
-                            </aside>
+                            <div class="home-info-side">
+                                <% if (stopBoxes.length) { %>
+                                    <section class="home-info-stops" aria-labelledby="stopsTitle">
+                                        <div class="home-stops-head">
+                                            <h4 id="stopsTitle"><span class="home-block-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 16 }) %></span>Paradas en ejidos</h4>
+                                            <% if (stopBoxes.length > 1) { %>
+                                            <div class="home-seg-mini" role="group" aria-label="Dirección de las paradas">
+                                                <% stopBoxes.forEach((box, i) => { %>
+                                                <button type="button" data-home-stops="<%= box.key %>" aria-pressed="<%= i === 0 ? 'true' : 'false' %>"><%= box.label %></button>
+                                                <% }) %>
+                                            </div>
+                                            <% } %>
+                                        </div>
+                                        <% stopBoxes.forEach((box, i) => { %>
+                                        <div class="home-stop-groups" data-home-stopbox="<%= box.key %>"<%= i === 0 ? '' : ' hidden' %>>
+                                            <% box.groups.forEach((group) => { %>
+                                                <div class="home-stop-group">
+                                                    <span class="home-stop-group-price"><%= mxn(group.price) %></span>
+                                                    <ul class="home-stop-list">
+                                                        <% group.items.forEach((loc) => { %>
+                                                            <li>
+                                                                <a class="home-stop-chip"
+                                                                   href="/reserve?from=<%= encodeURIComponent(loc.code) %>&to=<%= box.to %>"
+                                                                   title="Reservar <%= loc.label %> ↔ <%= box.name %>">
+                                                                    <%= loc.label %>
+                                                                </a>
+                                                            </li>
+                                                        <% }) %>
+                                                    </ul>
+                                                </div>
+                                            <% }) %>
+                                        </div>
+                                        <% }) %>
+                                    </section>
+                                <% } %>
+
+                                <aside class="home-faq" id="preguntas">
+                                    <h4 class="home-block-title"><span class="home-block-ico" aria-hidden="true"><%- include('partials/icon', { name: 'circle-help', size: 16 }) %></span>Preguntas frecuentes</h4>
+                                    <% faqItems.forEach((item, i) => { %>
+                                        <details class="home-faq-item"<%= i === 0 ? ' open' : '' %>>
+                                            <summary><%= item.question %></summary>
+                                            <p><%= item.answer %></p>
+                                        </details>
+                                    <% }) %>
+                                </aside>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <div class="container">
+        <div class="road" id="road" aria-hidden="true">
+            <div class="road-car" id="roadCar">
+                <div class="car-flip">
+                    <img class="car-img" src="/assets/car-xpander.webp" alt="" width="520" height="277" loading="lazy" decoding="async" draggable="false">
+                </div>
+            </div>
+            <div class="road-line"></div>
+        </div>
+    </div>
 </main>
 
-<%- include('partials/site-footer') %>
+<footer class="home-footer home-footer-rich" id="contacto">
+    <div class="container hf-bottom">
+        <span>© <%= new Date().getFullYear() %> Servicio de Transporte</span>
+        <span>Ciudad Victoria · Llera de Canales, Tamaulipas</span>
+    </div>
+</footer>
 
 <script src="/js/theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -590,9 +620,48 @@
             return null;
         }
 
-        function fillNext(pill, whenEl, real, ok, dir) {
+        // Hora y fecha actuales en Monterrey, como "reloj de pared" en UTC para poder restar.
+        function nowMTY() {
+            const p = {};
+            new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/Monterrey", year: "numeric", month: "2-digit", day: "2-digit",
+                hour: "2-digit", minute: "2-digit", hour12: false,
+            }).formatToParts(new Date()).forEach((x) => { p[x.type] = x.value; });
+            return {
+                ms: Date.UTC(+p.year, +p.month - 1, +p.day, (+p.hour) % 24, +p.minute),
+                minutes: ((+p.hour) % 24) * 60 + (+p.minute),
+            };
+        }
+
+        function etaText(dateISO, hhmm) {
+            const [y, m, d] = String(dateISO).split("-").map(Number);
+            const [h, mi] = String(hhmm).split(":").map(Number);
+            if (![y, m, d, h, mi].every(Number.isFinite)) return "";
+            const diff = Math.round((Date.UTC(y, m - 1, d, h, mi) - nowMTY().ms) / 60000);
+            if (diff < 0) return "";
+            if (diff < 1) return "Sale ahora";
+            const hours = Math.floor(diff / 60);
+            const mins = diff % 60;
+            if (hours >= 24) return "";
+            const parts = [];
+            if (hours) parts.push(hours + " h");
+            if (mins || !hours) parts.push(mins + " min");
+            return "Sale en " + parts.join(" ");
+        }
+
+        const etaTargets = [];
+
+        function refreshEta() {
+            etaTargets.forEach((t) => {
+                const text = etaText(t.dateISO, t.hhmm);
+                t.el.textContent = text;
+                t.el.hidden = !text;
+            });
+        }
+
+        function fillNext(pill, whenEl, etaEl, real, ok, dir) {
             if (!real || !pill) return;
-            const timeEl = pill.querySelector(".schedule-next-time");
+            const timeEl = pill.querySelector(".home-next-time");
             const full = Number(real.available || 0) <= 0;
             const target = full && ok ? ok : real;
 
@@ -601,23 +670,35 @@
             pill.href = `/reserve?dir=${dir}&time=${encodeURIComponent(target.hhmm)}&date=${encodeURIComponent(target.dateISO)}`;
 
             if (whenEl) {
-                whenEl.textContent = full
-                    ? (ok ? `${real.when} · lleno` : `${real.when} · lleno`)
-                    : real.when;
+                whenEl.textContent = full ? `${real.when} · lleno` : real.when;
+            }
+            if (etaEl) {
+                etaTargets.push({el: etaEl, dateISO: target.dateISO, hhmm: target.hhmm});
+                refreshEta();
             }
         }
 
-        // Marca los horarios de hoy que ya salieron y resalta el siguiente de cada ruta.
-        (function markChips() {
-            const parts = new Intl.DateTimeFormat("en-GB", {
-                timeZone: "America/Monterrey", hour: "2-digit", minute: "2-digit", hour12: false,
-            }).format(new Date()).split(":").map(Number);
-            const nowMin = (parts[0] % 24) * 60 + parts[1];
+        function time12(hhmm) {
+            const [h, m] = String(hhmm).split(":").map(Number);
+            return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "a. m." : "p. m."}`;
+        }
+
+        // Marca los horarios de hoy que ya salieron, resalta el siguiente de cada ruta
+        // y muestra la hora actual en cada tarjeta.
+        function markChips() {
+            const nowMin = nowMTY().minutes;
+            const label = time12(String(Math.floor(nowMin / 60)).padStart(2, "0") + ":" + String(nowMin % 60).padStart(2, "0"));
+            document.querySelectorAll("[data-now]").forEach((el) => {
+                el.hidden = false;
+                const t = el.querySelector("[data-now-time]");
+                if (t) t.textContent = label;
+            });
             ["VIC_TO_LLE", "LLE_TO_VIC"].forEach((dir) => {
                 let nextSet = false;
                 document.querySelectorAll('.chip-time[data-dir="' + dir + '"]').forEach((chip) => {
                     const [h, m] = String(chip.dataset.time || "").split(":").map(Number);
                     if (!Number.isFinite(h)) return;
+                    chip.classList.remove("is-past", "is-next");
                     if (h * 60 + m < nowMin) {
                         chip.classList.add("is-past");
                     } else if (!nextSet) {
@@ -626,7 +707,10 @@
                     }
                 });
             });
-        })();
+        }
+
+        markChips();
+        setInterval(() => { markChips(); refreshEta(); }, 30000);
 
         Promise.all([
             findNext("VIC_TO_LLE", 0),
@@ -634,8 +718,8 @@
             findNext("VIC_TO_LLE", 1),
             findNext("LLE_TO_VIC", 1),
         ]).then(([nextV2LReal, nextL2VReal, nextV2LOk, nextL2VOk]) => {
-            fillNext(elV2LPill, elV2LWhen, nextV2LReal, nextV2LOk, "VIC_TO_LLE");
-            fillNext(elL2VPill, elL2VWhen, nextL2VReal, nextL2VOk, "LLE_TO_VIC");
+            fillNext(elV2LPill, elV2LWhen, document.getElementById("nextV2LEta"), nextV2LReal, nextV2LOk, "VIC_TO_LLE");
+            fillNext(elL2VPill, elL2VWhen, document.getElementById("nextL2VEta"), nextL2VReal, nextL2VOk, "LLE_TO_VIC");
         }).catch(() => {});
     })();
 
@@ -684,6 +768,187 @@
         });
 
         showTab(tabFromLocation());
+    })();
+
+    /* ===== Viaje especial: elegir fecha y actualizar el resumen ===== */
+    (function () {
+        document.querySelectorAll("[data-special]").forEach((board) => {
+            const days = Array.from(board.querySelectorAll("button.special-day"));
+            const label = board.querySelector("[data-sp-label]");
+            const seats = board.querySelector("[data-sp-seats]");
+            const cta = board.querySelector("[data-sp-cta]");
+            const ctaText = board.querySelector("[data-sp-cta-text]");
+            if (!days.length || !label || !seats || !cta) return;
+
+            days.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    days.forEach((d) => d.setAttribute("aria-pressed", d === btn ? "true" : "false"));
+                    label.textContent = btn.dataset.label || "";
+                    seats.textContent = btn.dataset.seats || "";
+                    cta.href = btn.dataset.url || cta.href;
+                    if (ctaText) ctaText.textContent = "Reservar " + (btn.dataset.short || "");
+                });
+            });
+        });
+    })();
+
+    /* ===== Info: calculadora de viaje y paradas por dirección ===== */
+    (function () {
+        const total = document.getElementById("quoteTotal");
+        const steppers = Array.from(document.querySelectorAll(".home-stepper"));
+
+        function recalc() {
+            if (!total) return;
+            const sum = steppers.reduce((acc, el) => {
+                const qty = Number(el.querySelector("output").textContent) || 0;
+                return acc + qty * (Number(el.dataset.price) || 0);
+            }, 0);
+            total.textContent = "$" + sum;
+        }
+
+        steppers.forEach((el) => {
+            const out = el.querySelector("output");
+            const [minus, plus] = el.querySelectorAll("button");
+            minus.addEventListener("click", () => {
+                out.textContent = Math.max(0, (Number(out.textContent) || 0) - 1);
+                recalc();
+            });
+            plus.addEventListener("click", () => {
+                out.textContent = Math.min(10, (Number(out.textContent) || 0) + 1);
+                recalc();
+            });
+        });
+        recalc();
+
+        const toggles = Array.from(document.querySelectorAll("[data-home-stops]"));
+        const boxes = Array.from(document.querySelectorAll("[data-home-stopbox]"));
+        toggles.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                toggles.forEach((b) => b.setAttribute("aria-pressed", b === btn ? "true" : "false"));
+                boxes.forEach((box) => {
+                    box.hidden = box.getAttribute("data-home-stopbox") !== btn.getAttribute("data-home-stops");
+                });
+            });
+        });
+    })();
+
+    /* ===== Camioneta en la carretera: sigue al mouse, recorre sola y da un saltito al tocarla ===== */
+    (function () {
+        const road = document.getElementById("road");
+        const car = document.getElementById("roadCar");
+        if (!road || !car) return;
+
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const finePointer = window.matchMedia("(pointer: fine)");
+
+        let width = 0;
+        let carW = 0;
+        let x = 0;
+        let dir = 1;
+        let target = null;
+        let last = 0;
+        let raf = 0;
+        let visible = false;
+        let releaseTimer = 0;
+
+        function measure() {
+            width = road.clientWidth;
+            carW = car.offsetWidth;
+        }
+
+        function paint(moving) {
+            car.style.transform = "translate3d(" + x.toFixed(1) + "px,0,0)";
+            car.classList.toggle("is-flip", dir > 0);
+            car.classList.toggle("is-moving", !!moving);
+        }
+
+        function frame(t) {
+            raf = 0;
+            if (!visible || document.hidden) { last = 0; return; }
+            const dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
+            last = t;
+            const max = Math.max(0, width - carW);
+            let moving = true;
+
+            if (target !== null) {
+                const goal = Math.min(max, Math.max(0, target - carW / 2));
+                const dx = goal - x;
+                if (Math.abs(dx) > 4) {
+                    dir = dx > 0 ? 1 : -1;
+                    const speed = Math.min(420, Math.abs(dx) * 5 + 40);
+                    x += dir * Math.min(Math.abs(dx), speed * dt);
+                } else {
+                    moving = false;
+                }
+            } else {
+                const speed = finePointer.matches ? 70 : 45;
+                x += dir * speed * dt;
+                if (x >= max) { x = max; dir = -1; }
+                else if (x <= 0) { x = 0; dir = 1; }
+            }
+
+            paint(moving);
+            raf = requestAnimationFrame(frame);
+        }
+
+        function start() {
+            if (raf || reduce.matches || !visible) return;
+            last = 0;
+            raf = requestAnimationFrame(frame);
+        }
+
+        function parkIfReduced() {
+            if (!reduce.matches) return;
+            measure();
+            x = Math.max(0, (width - carW) / 2);
+            paint(false);
+        }
+
+        road.addEventListener("pointermove", (e) => {
+            if (e.pointerType === "touch" || reduce.matches) return;
+            target = e.clientX - road.getBoundingClientRect().left;
+            clearTimeout(releaseTimer);
+            start();
+        });
+
+        road.addEventListener("pointerleave", () => {
+            clearTimeout(releaseTimer);
+            releaseTimer = setTimeout(() => { target = null; }, 1200);
+        });
+
+        road.addEventListener("pointerdown", () => {
+            if (reduce.matches) return;
+            car.classList.remove("is-hop");
+            void car.offsetWidth;
+            car.classList.add("is-hop");
+        });
+
+        car.addEventListener("animationend", (e) => {
+            if (e.animationName === "road-car-hop") car.classList.remove("is-hop");
+        });
+
+        window.addEventListener("resize", () => {
+            measure();
+            x = Math.min(x, Math.max(0, width - carW));
+            parkIfReduced();
+        });
+        document.addEventListener("visibilitychange", start);
+        if (reduce.addEventListener) reduce.addEventListener("change", () => { parkIfReduced(); start(); });
+
+        measure();
+        x = Math.max(0, (width - carW) * 0.25);
+        paint(false);
+        parkIfReduced();
+
+        if ("IntersectionObserver" in window) {
+            new IntersectionObserver((entries) => {
+                visible = entries[0].isIntersecting;
+                if (visible) start();
+            }).observe(road);
+        } else {
+            visible = true;
+            start();
+        }
     })();
 </script>
 
