@@ -93,7 +93,11 @@
                                 <%- include('partials/icon', { name: 'trash-2', size: 14 }) %> Eliminar
                             </button>
                         </form>
-                        <form method="POST" action="/admin/especiales/<%= ev.id %>/active">
+                        <form method="POST" action="/admin/especiales/<%= ev.id %>/active"
+                              <% if (ev.active) { %>data-confirm="Dejará de verse y de poder reservarse en el sitio. Las reservas existentes no se modifican y puedes volver a activarlo cuando quieras."
+                              data-confirm-title="Desactivar &quot;<%= ev.title %>&quot;"
+                              data-confirm-ok="Desactivar"
+                              data-confirm-tone="danger"<% } %>>
                             <input type="hidden" name="active" value="<%= ev.active ? '0' : '1' %>">
                             <button class="btn-mini <%= ev.active ? 'esp-danger' : '' %>" type="submit">
                                 <%- include('partials/icon', { name: 'power', size: 14 }) %>

@@ -287,7 +287,16 @@
 
         document.getElementById("savePricingBtn")?.addEventListener("click", async (ev) => {
             const btn = ev.currentTarget;
+            const mxn = (id) => "$" + Number(document.getElementById(id).value || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});
+            const okSave = await Confirm.ask({
+                title: "Guardar tarifas",
+                message: `Adulto ${mxn("pPassenger")} · Niño ${mxn("pChild")} · Paquete ${mxn("pPackage")}\nAplican a las nuevas reservas; las existentes conservan su precio.`,
+                confirmText: "Guardar tarifas"
+            });
+            if (!okSave) return;
+
             btn.disabled = true;
+            btn.classList.add("is-busy");
             statusText.textContent = "Guardando tarifas…";
 
             const r = await apiPost("/admin/api/pricing", {
@@ -299,8 +308,9 @@
             });
 
             btn.disabled = false;
+            btn.classList.remove("is-busy");
             if (!r?.ok){
-                statusText.textContent = "—";
+                statusText.textContent = "No se guardó";
                 notify(r?.message || r?.error || "No pude guardar tarifas.", {variant:"danger", delay:3500});
                 return;
             }

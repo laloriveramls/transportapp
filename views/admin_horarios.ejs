@@ -743,6 +743,16 @@
                     return;
                 }
 
+                if (initial.active && !activeEl.checked) {
+                    const okOff = await Confirm.ask({
+                        title: `Desactivar el horario de las ${hhmm(timeEl.value)}`,
+                        message: "Dejará de ofrecerse en todas las fechas. Las reservas existentes no se modifican.",
+                        confirmText: "Desactivar",
+                        tone: "danger"
+                    });
+                    if (!okOff) return;
+                }
+
                 saveBtn.disabled = true;
                 saveBtn.classList.add("is-busy");
                 statusText.textContent = "Guardando…";

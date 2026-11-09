@@ -25,7 +25,10 @@ const heroTag = (typeof tag !== "undefined" && tag) ? String(tag) : "Agenda, pag
                 <span class="btn-ico"><%- include('icon', { name: 'house', size: 18 }) %></span>
                 Inicio
             </a>
-            <form method="POST" action="/admin/logout" class="admin-logout">
+            <form method="POST" action="/admin/logout" class="admin-logout"
+                  data-confirm="Tendrás que volver a iniciar sesión para entrar al panel."
+                  data-confirm-title="¿Cerrar sesión?"
+                  data-confirm-ok="Salir">
                 <button class="btn home-cta-ghost" type="submit">
                     <span class="btn-ico"><%- include('icon', { name: 'log-out', size: 18 }) %></span>
                     Salir

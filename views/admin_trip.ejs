@@ -251,11 +251,17 @@
 
                 <div class="trip-res-actions">
                     <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
+                              data-confirm="Se registrará el pago en efectivo de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto."
+                              data-confirm-title="Marcar como pagada en efectivo"
+                              data-confirm-ok="Sí, ya pagó">
                             <input type="hidden" name="method" value="CASH">
                             <button class="btn btn-wine btn-xs" type="submit"><%- include('partials/icon', { name: 'banknote', size: 14 }) %> Efectivo</button>
                         </form>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0">
+                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
+                              data-confirm="Se registrará la transferencia de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto. Confirma que ya la recibiste."
+                              data-confirm-title="Marcar como pagada por transferencia"
+                              data-confirm-ok="Sí, la recibí">
                             <input type="hidden" name="method" value="TRANSFER">
                             <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transfer</button>
                         </form>
