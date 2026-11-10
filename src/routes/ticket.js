@@ -45,9 +45,12 @@ function money(n) {
     }
 }
 
-function folioFrom(tripDate, reservationId) {
+function folioFrom(tripDate, reservationId, dailySeq) {
+    // Same rule as public.js: the daily sequence wins, the reservation id is only a fallback.
     const ymd = String(tripDate || "").replaceAll("-", "");
-    return `RES-${ymd}-${String(reservationId || "").padStart(6, "0")}`;
+    const seqRaw = Number(dailySeq);
+    const n = Number.isFinite(seqRaw) && seqRaw > 0 ? seqRaw : Number(reservationId || 0);
+    return `RES-${ymd}-${n > 0 ? String(n).padStart(3, "0") : "000"}`;
 }
 
 function pickHHMM(timeStr) {
@@ -146,6 +149,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
             SELECT
                 tk.code,
                 r.id AS reservation_id,
+                r.daily_seq,
                 r.customer_name,
                 r.phone,
                 r.type,
@@ -173,7 +177,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
                      LEFT JOIN transporte_reservation_passengers p ON p.reservation_id = r.id
             WHERE tk.code = ?
             GROUP BY
-                tk.code, r.id, r.customer_name, r.phone, r.type, r.status, r.seats, r.package_details,
+                tk.code, r.id, r.daily_seq, r.customer_name, r.phone, r.type, r.status, r.seats, r.package_details,
                 r.vic_location, r.from_stop, r.to_stop, r.payment_method, r.transfer_ref, r.amount_total_mxn, r.created_at,
                 t.trip_date, dt.direction, dt.depart_time, dt.special_event_id
             LIMIT 1
@@ -202,7 +206,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
 
     const baseUrl = buildBaseUrl(req);
     const url = `${baseUrl}/ticket/${row.code}`;
-    const folio = folioFrom(row.trip_date, row.reservation_id);
+    const folio = folioFrom(row.trip_date, row.reservation_id, row.daily_seq);
     const qrDataUrl = await QRCode.toDataURL(url, { margin: 1, width: 420, color: { dark: "#111111", light: "#ffffff" } });
     const returnUrl = req.query.return ? String(req.query.return) : null;
     const ticketPath = `/ticket/${row.code}`;
@@ -252,6 +256,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
             SELECT
                 tk.code,
                 r.id AS reservation_id,
+                r.daily_seq,
                 r.customer_name,
                 r.phone,
                 r.type,
@@ -283,7 +288,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
 
     const baseUrl = buildBaseUrl(req);
     const url = `${baseUrl}/ticket/${row.code}`;
-    const folio = folioFrom(row.trip_date, row.reservation_id);
+    const folio = folioFrom(row.trip_date, row.reservation_id, row.daily_seq);
 
     // I generate a tight QR for crisp thermal print.
     const qrPng = await QRCode.toBuffer(url, { margin: 0, scale: 10 });

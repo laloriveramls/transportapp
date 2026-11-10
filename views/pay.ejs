@@ -71,7 +71,36 @@
         return "";
     }
 
+    function titleText() {
+        if (status === "CANCELLED") return "Reserva cancelada";
+        if (status === "PAID") return "Pago confirmado";
+        if (isPendingOnline) return "Falta completar tu pago";
+        if (status === "EXPIRED") return "Reserva expirada";
+        return "Reserva registrada";
+    }
+
+    function prettyDate(v) {
+        const m = String(v || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+        const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(v);
+        if (isNaN(d.getTime())) return String(v || "-");
+        const t = d.toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+        return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+
+    function prettyTime(v) {
+        const m = String(v || "").match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return String(v || "-");
+        const h = Number(m[1]);
+        return `${((h + 11) % 12) + 1}:${m[2]} ${h >= 12 ? "p. m." : "a. m."}`;
+    }
+
+    const routeText = (typeof routeLabel !== "undefined" && routeLabel)
+            ? routeLabel
+            : (r.direction === "VIC_TO_LLE" ? "Victoria → Llera" : "Llera → Victoria");
+
     function headerMeta() {
+        if (status === "CANCELLED") return "Esta reserva ya no está activa.";
+        if (status === "PAID") return "Tu pago fue confirmado. Guarda tu folio y preséntalo al abordar.";
         if (payment === "ONLINE") {
             if (status === "PAID") return "Tu pago fue confirmado. Guarda tu folio y comparte el resumen si lo necesitas.";
             return "Guarda tu folio. Si tu pago está pendiente, puedes completarlo aquí o escribirnos por WhatsApp.";
@@ -83,6 +112,7 @@
     }
 
     function noteText(){
+        if (status === "CANCELLED") return "Esta reserva fue cancelada. Si necesitas apartar otro lugar, haz una nueva reserva.";
         if (payment === "TAQUILLA"){
             return "Tu reserva quedó registrada. El pago se realiza en taquilla. Puedes enviar el folio por WhatsApp para agilizar.";
         }
@@ -99,43 +129,31 @@
 
     <div class="card-soft">
         <div class="top">
-            <div class="header-row">
-                <div class="header-left">
-                    <div class="pills">
-                        <div class="pill <%= statusClass() %>"><%- include('partials/icon', { name: 'check', size: 16 }) %> Reserva creada</div>
-                        <div class="pill"><%- include('partials/icon', { name: 'receipt', size: 16 }) %> <%= statusText() %></div>
-                        <div class="pill"><%- include('partials/icon', { name: 'credit-card', size: 16 }) %> <%= paymentLabel() %></div>
-                    </div>
+            <div class="pills">
+                <div class="pill <%= statusClass() %>"><%- include('partials/icon', { name: isPaid ? 'circle-check' : (status === 'CANCELLED' ? 'circle-x' : 'clock'), size: 16 }) %> <%= statusText() %></div>
+                <div class="pill"><%- include('partials/icon', { name: 'credit-card', size: 16 }) %> <%= paymentLabel() %></div>
+                <div class="pill"><%- include('partials/icon', { name: isPassenger ? 'users' : 'package', size: 16 }) %> <%= typeLabel() %></div>
+            </div>
 
-                    <h1 class="h3 title mt-2">Listo</h1>
-                    <div class="meta mt-1"><%= headerMeta() %></div>
-                </div>
+            <h1 class="title mt-3"><%= titleText() %></h1>
+            <div class="meta mt-1"><%= headerMeta() %></div>
 
-                <div class="btn-group-top">
-                    <% if (isPaid && hasTicket) { %>
-                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener">
-                            <%- include('partials/icon', { name: 'ticket', size: 16 }) %> Ver ticket
-                        </a>
-                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank" rel="noopener">
-                            <%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF
-                        </a>
-                    <% } %>
-
-                        <a class="btn btn-wa btn-xs" id="waBtn" target="_blank" rel="noopener" href="#"><%- include('partials/icon', { name: 'message-circle', size: 16 }) %> WhatsApp</a>
+            <div class="trip-hero">
+                <div class="trip-route"><%- include('partials/icon', { name: 'map-pin', size: 20 }) %> <%= routeText %></div>
+                <div class="trip-when">
+                    <span><%- include('partials/icon', { name: 'calendar', size: 16 }) %> <%= prettyDate(r.trip_date) %></span>
+                    <span><%- include('partials/icon', { name: 'clock', size: 16 }) %> <%= prettyTime(r.depart_time) %></span>
                 </div>
             </div>
 
-            <div class="folio-wrap">
-                <div class="folio-box">
-                    <div class="folio-left">
-                        <div class="folio-label">Tu folio</div>
-                        <div class="mono" id="folioText"><%= folio %></div>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                        <button type="button" class="btn btn-ghost btn-xs" id="copyBtn"><%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar</button>
-                        <span class="copy-toast" id="copyToast"><%- include('partials/icon', { name: 'check', size: 14 }) %> Copiado</span>
-                    </div>
+            <div class="folio-box">
+                <div class="folio-left">
+                    <div class="folio-label">Tu folio</div>
+                    <div class="mono" id="folioText"><%= folio %></div>
+                </div>
+                <div class="folio-actions">
+                    <span class="copy-toast" id="copyToast"><%- include('partials/icon', { name: 'check', size: 14 }) %> Copiado</span>
+                    <button type="button" class="btn btn-ghost btn-xs" id="copyBtn"><%- include('partials/icon', { name: 'copy', size: 16 }) %> Copiar</button>
                 </div>
             </div>
         </div>
@@ -146,95 +164,92 @@
                 <% if (isPendingOnline) { %>
                     <div class="note-strong">
                         <div class="note-title"><%- include('partials/icon', { name: 'credit-card', size: 16 }) %> Pago en línea pendiente</div>
-                        <div class="mt-1" style="color: var(--muted);">
-                            Total a pagar:
-                            <span style="color: var(--text); font-weight: 650;"><%= fmtMXN(total) %></span>
+                        <div class="pay-total">
+                            <span>Total a pagar</span>
+                            <strong><%= fmtMXN(total) %></strong>
                         </div>
-
                         <div class="sub-actions">
-                            <a class="btn btn-wine btn-xs"
-                               href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">
+                            <a class="btn btn-wine btn-xs" href="/checkout/t/<%= encodeURIComponent(publicToken || "") %>">
                                 <%- include('partials/icon', { name: 'lock', size: 16 }) %> Pagar ahora
                             </a>
-                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn"><%- include('partials/icon', { name: 'refresh-cw', size: 16 }) %> Actualizar
-                            </button>
-                            <a class="btn btn-ghost btn-xs" href="/reserve"><%- include('partials/icon', { name: 'plus', size: 16 }) %> Nueva reserva</a>
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn"><%- include('partials/icon', { name: 'refresh-cw', size: 16 }) %> Actualizar</button>
                         </div>
                     </div>
                 <% } %>
 
                 <% if (isPaid && !hasTicket) { %>
                     <div class="note-strong">
-                        <div class="note-title"><%- include('partials/icon', { name: 'check', size: 16 }) %> Pago confirmado</div>
-                        <div class="mt-1" style="color: var(--muted);">
-                            Estamos generando tu ticket. Si no aparece todavía, presiona Actualizar.
-                        </div>
+                        <div class="note-title"><%- include('partials/icon', { name: 'loader', size: 16 }) %> Generando tu ticket</div>
+                        <div class="note-text">Si no aparece todavía, presiona Actualizar.</div>
                         <div class="sub-actions">
-                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2"><%- include('partials/icon', { name: 'refresh-cw', size: 16 }) %> Actualizar
-                            </button>
+                            <button type="button" class="btn btn-ghost btn-xs" id="refreshStatusBtn2"><%- include('partials/icon', { name: 'refresh-cw', size: 16 }) %> Actualizar</button>
                         </div>
                     </div>
                 <% } %>
 
                 <% if (isPaid && hasTicket) { %>
                     <div class="note-strong">
-                        <div class="note-title"><%- include('partials/icon', { name: 'ticket', size: 16 }) %> Ticket listo</div>
-                        <div class="mt-1" style="color: var(--muted);">
-                            Ya puedes abrir tu ticket o descargar el PDF.
-                        </div>
+                        <div class="note-title"><%- include('partials/icon', { name: 'ticket', size: 16 }) %> Tu ticket está listo</div>
+                        <div class="note-text">Preséntalo al abordar. Ábrelo o descarga el PDF.</div>
                         <div class="sub-actions">
-                            <a class="btn btn-ghost btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'ticket', size: 16 }) %>
-                                Ver ticket</a>
-                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank"
-                               rel="noopener"><%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF</a>
+                            <a class="btn btn-wine btn-xs" href="/ticket/<%= tkCode %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'ticket', size: 16 }) %> Ver ticket</a>
+                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= tkCode %>/pdf" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF</a>
                         </div>
                     </div>
                 <% } %>
+
+                <% if (status === "CANCELLED") { %>
+                    <div class="note danger">
+                        <div class="note-title"><%- include('partials/icon', { name: 'circle-x', size: 16 }) %> Esta reserva fue cancelada</div>
+                        <div class="note-text">Si crees que es un error, escríbenos por WhatsApp con tu folio.</div>
+                    </div>
+                <% } %>
+
+                <a class="btn btn-wa btn-xs btn-wa-main" id="waBtn" target="_blank" rel="noopener" href="#"><%- include('partials/icon', { name: 'message-circle', size: 16 }) %> Enviar folio por WhatsApp</a>
             </div>
 
-            <div class="details-card mb-3">
-                <p class="details-title">Detalles de la reserva</p>
+            <div class="detail-groups">
+                <section class="details-card">
+                    <p class="details-title"><%- include('partials/icon', { name: 'bus', size: 16 }) %> Detalle</p>
+                    <ul class="kv">
+                        <li><span class="k">Servicio</span><span class="v"><%= typeLabel() %></span></li>
+                        <% if (isPassenger) { %>
+                            <li><span class="k">Pasajeros</span><span class="v"><%= Math.max(1, Number(r.seats || 1)) %></span></li>
+                        <% } %>
+                        <% if (isPackage) { %>
+                            <li><span class="k">Paquete</span><span class="v"><%= (r.package_details || "-") %></span></li>
+                        <% } %>
+                    </ul>
+                </section>
 
-                <ul class="kv">
-                    <li><span class="k">Tipo</span><span class="v"><%= typeLabel() %></span></li>
+                <section class="details-card">
+                    <p class="details-title"><%- include('partials/icon', { name: 'user', size: 16 }) %> Contacto</p>
+                    <ul class="kv">
+                        <li><span class="k">Nombre</span><span class="v"><%= r.customer_name %></span></li>
+                        <li><span class="k">Teléfono</span><span class="v" id="phoneText"><%= r.phone %></span></li>
+                    </ul>
+                </section>
 
-                    <% if (isPassenger) { %>
-                        <li><span class="k">Pasajeros</span><span
-                                    class="v"><%= Math.max(1, Number(r.seats || 1)) %></span></li>
-                    <% } %>
-
-                    <% if (isPackage) { %>
-                        <li><span class="k">Detalle</span><span class="v"><%= (r.package_details || "-") %></span></li>
-                    <% } %>
-
-                    <li><span class="k">Ruta</span><span
-                                class="v"><%= typeof routeLabel !== "undefined" ? routeLabel : (r.direction === "VIC_TO_LLE" ? "Victoria - Llera" : "Llera - Victoria") %></span>
-                    </li>
-                    <li><span class="k">Fecha</span><span class="v"><%= r.trip_date %></span></li>
-                    <li><span class="k">Hora</span><span class="v"><%= r.depart_time %></span></li>
-
-                    <li><span class="k">Contacto</span><span class="v"><%= r.customer_name %></span></li>
-                    <li><span class="k">Teléfono</span><span class="v" id="phoneText"><%= r.phone %></span></li>
-
-                    <li><span class="k">Método de pago</span><span class="v"><%= paymentLabel() %></span></li>
-
-                    <% if (payment === "TRANSFERENCIA" && r.transfer_ref) { %>
-                        <li><span class="k">Referencia</span><span class="v"><%= r.transfer_ref %></span></li>
-                    <% } %>
-
-                    <li><span class="k">Precio</span><span class="v"><%= fmtMXN(unit) %></span></li>
-                    <li><span class="k">Total</span><span class="v"><%= fmtMXN(total) %></span></li>
-
-                    <li><span class="k">Estado</span><span class="v"><%= statusText() %></span></li>
-
-                    <% if (isPaid && hasTicket) { %>
-                        <li><span class="k">Ticket</span><span class="v"><%= tkCode %></span></li>
-                    <% } %>
-                </ul>
+                <section class="details-card">
+                    <p class="details-title"><%- include('partials/icon', { name: 'receipt', size: 16 }) %> Pago</p>
+                    <ul class="kv">
+                        <li><span class="k">Método</span><span class="v"><%= paymentLabel() %></span></li>
+                        <% if (payment === "TRANSFERENCIA" && r.transfer_ref) { %>
+                            <li><span class="k">Referencia</span><span class="v"><%= r.transfer_ref %></span></li>
+                        <% } %>
+                        <% if (isPassenger && seats > 1) { %>
+                            <li><span class="k">Precio por pasajero</span><span class="v"><%= fmtMXN(unit) %></span></li>
+                        <% } %>
+                        <% if (isPaid && hasTicket) { %>
+                            <li><span class="k">Ticket</span><span class="v mono-sm"><%= tkCode %></span></li>
+                        <% } %>
+                        <li class="kv-total"><span class="k">Total</span><span class="v"><%= fmtMXN(total) %></span></li>
+                    </ul>
+                </section>
             </div>
 
-            <div class="note">
-                <%= noteText() %>
+            <div class="note mt-3">
+                <%- include('partials/icon', { name: 'info', size: 16 }) %> <%= noteText() %>
             </div>
 
             <div class="mt-3 bottom-actions">

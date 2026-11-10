@@ -210,6 +210,26 @@ const totalLabelView = val("totalLabel", (ticketRow.amount_total_mxn != null && 
     : null);
 
 const departTimeView = val("departTime", String(ticketRow.depart_time || "").slice(0, 5));
+const timeParts = (() => {
+    const m = String(departTimeView).match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return { main: departTimeView || "-", suffix: "" };
+    const h = Number(m[1]);
+    return { main: `${((h + 11) % 12) + 1}:${m[2]}`, suffix: h >= 12 ? "p. m." : "a. m." };
+})();
+
+// Cancelled and online-unpaid tickets are not valid; pay-at-boarding tickets are valid (paid on the bus).
+const rawStatusView = String(ticketRow.status || "").toUpperCase();
+const isCancelledTicket = rawStatusView === "CANCELLED" || statusView.cls === "pill--bad";
+const isUnpaidOnline = rawStatusView === "PENDING_PAYMENT";
+const isPayAtBoarding = rawStatusView === "PAY_AT_BOARDING";
+const isValidTicket = !isCancelledTicket && !isUnpaidOnline;
+const alertKind = isCancelledTicket ? "bad" : ((isUnpaidOnline || isPayAtBoarding) ? "warn" : "");
+const alertTitle = isCancelledTicket ? "Ticket cancelado" : (isUnpaidOnline ? "Ticket pendiente de pago" : "Pago pendiente en taquilla");
+const alertText = isCancelledTicket
+    ? "Esta reserva fue cancelada y no es válida para abordar."
+    : (isUnpaidOnline
+        ? "Este ticket aún no es válido para abordar. Confirma tu pago para activarlo."
+        : "Tu lugar está apartado. Realiza tu pago al abordar.");
 const tripDateRawView = val("tripDateRaw", String(ticketRow.trip_date || "").slice(0, 10));
 const tripDateLabelView = val("tripDateLabel", (() => {
     const [y, m, d] = tripDateRawView.split("-").map(Number);
@@ -296,6 +316,16 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
             </div>
         </div>
 
+        <% if (alertKind) { %>
+            <div class="pass-alert pass-alert--<%= alertKind %>" role="alert">
+                <%- include('partials/icon', { name: isCancelledTicket ? 'circle-x' : 'clock', size: 18 }) %>
+                <div>
+                    <strong><%= alertTitle %></strong>
+                    <span><%= alertText %></span>
+                </div>
+            </div>
+        <% } %>
+
         <div class="pass-body">
             <section class="pass-journey" aria-label="Ruta <%= routeLabelView %>">
                 <div class="pass-stop">
@@ -318,7 +348,7 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
             <div class="pass-when">
                 <div class="pass-when-item">
                     <span class="k">Salida</span>
-                    <span class="pass-time"><%= departTimeView %></span>
+                    <span class="pass-time"><%= timeParts.main %><% if (timeParts.suffix) { %><small><%= timeParts.suffix %></small><% } %></span>
                 </div>
                 <div class="pass-when-item">
                     <span class="k">Fecha</span>
@@ -400,13 +430,13 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
                 <% } %>
             </ul>
 
-            <aside class="pass-qr">
+            <aside class="pass-qr<%= isValidTicket ? '' : ' pass-qr--void' %>">
                 <div class="pass-qr-frame">
                     <img src="<%= qrDataUrl %>" width="220" height="220" alt="Código QR para validar el ticket <%= ticketFolio %>">
                 </div>
                 <p class="pass-qr-hint">
-                    <%- include('partials/icon', { name: 'scan-line', size: 16 }) %>
-                    Escanea para validar
+                    <%- include('partials/icon', { name: isValidTicket ? 'scan-line' : 'ban', size: 16 }) %>
+                    <%= isValidTicket ? 'Muestra este QR al abordar' : 'No válido para abordar' %>
                 </p>
                 <p class="pass-qr-code mono"><%= ticketCode %></p>
             </aside>

@@ -382,9 +382,10 @@ body.page-ticket {
 }
 
 .page-ticket .pass-kv--total .v {
-    color: var(--wine);
-    font-weight: 750;
-    font-size: 1.02rem;
+    color: var(--text);
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
 }
 
 .page-ticket .pass-qr {
@@ -475,6 +476,51 @@ body.page-ticket {
     display: none;
     align-items: center;
     gap: 0.3rem;
+}
+
+.page-ticket .pass-time small {
+    display: inline-block;
+    margin-left: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    color: var(--muted);
+}
+
+.page-ticket .pass-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.page-ticket .pass-alert > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.page-ticket .pass-alert > svg {
+    flex: none;
+    margin-top: 0.1rem;
+}
+
+.page-ticket .pass-alert--bad {
+    background: rgba(239, 68, 68, 0.12);
+    color: color-mix(in srgb, #ef4444 55%, var(--text));
+}
+
+.page-ticket .pass-alert--warn {
+    background: rgba(245, 158, 11, 0.12);
+    color: color-mix(in srgb, #d97706 60%, var(--text));
+}
+
+.page-ticket .pass-qr--void .pass-qr-frame {
+    opacity: 0.28;
+    filter: grayscale(1);
 }
 
 @media (max-width: 720px) {
