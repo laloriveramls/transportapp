@@ -94,8 +94,9 @@
     }
 
     /* ----- Detalle de salida ----- */
-    html body.page-trip .trip-head-stats {
+    html body.page-trip .trip-summary {
         margin-top: 0.65rem;
+        gap: 0.5rem;
     }
 
     html body.page-trip .trip-stat {
@@ -107,8 +108,8 @@
     }
 
     html body.page-trip .trip-revenue {
-        margin-top: 0.45rem;
-        padding: 0.6rem 0.9rem;
+        padding: 0.65rem 0.9rem;
+        gap: 0.4rem;
     }
 
     html body.page-trip .trip-revenue-value {

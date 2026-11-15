@@ -106,6 +106,8 @@
     });
     const paidTrip = Number(typeof tripPaidMxn !== 'undefined' ? tripPaidMxn : 0);
     const pendingTrip = Number(typeof tripPendingMxn !== 'undefined' ? tripPendingMxn : 0);
+    const totalTrip = paidTrip + pendingTrip;
+    const paidPct = totalTrip > 0 ? Math.round((paidTrip / totalTrip) * 100) : 0;
 
     function statusInfo(stU) {
         if (stU === 'PAID') return { cls: 'badge-paid', icon: 'check', label: 'Pagado', tone: 'paid' };
@@ -162,6 +164,7 @@
             </div>
         </div>
 
+        <div class="trip-summary">
         <div class="trip-head-stats" role="group" aria-label="Resumen de la salida">
             <div class="trip-stat">
                 <span class="trip-stat-value mono"><%= used %><span class="trip-stat-sep">/</span><%= cap %></span>
@@ -183,21 +186,28 @@
         </div>
 
         <div class="trip-revenue" role="group" aria-label="Ingresos de la salida">
-            <div class="trip-revenue-main">
-                <span class="trip-revenue-label">Ingresos de la salida</span>
-                <span class="trip-revenue-value"><%= mxn(paidTrip + pendingTrip) %></span>
+            <div class="trip-revenue-top">
+                <div class="trip-revenue-main">
+                    <span class="trip-revenue-label">Ingresos de la salida</span>
+                    <span class="trip-revenue-value"><%= mxn(totalTrip) %></span>
+                </div>
+                <span class="trip-revenue-pct" title="Porcentaje ya cobrado"><%= paidPct %>% cobrado</span>
             </div>
-            <div class="trip-revenue-item is-paid">
-                <span class="trip-revenue-dot" aria-hidden="true"></span>
-                <span class="trip-revenue-item-label">Cobrado</span>
-                <span class="trip-revenue-item-value"><%= mxn(paidTrip) %></span>
-            </div>
-            <div class="trip-revenue-item is-pending">
-                <span class="trip-revenue-dot" aria-hidden="true"></span>
-                <span class="trip-revenue-item-label">Por cobrar</span>
-                <span class="trip-revenue-item-value"><%= mxn(pendingTrip) %></span>
+            <div class="trip-revenue-bar" role="img" aria-label="<%= paidPct %>% cobrado"><span style="width: <%= paidPct %>%"></span></div>
+            <div class="trip-revenue-split">
+                <div class="trip-revenue-item is-paid">
+                    <span class="trip-revenue-dot" aria-hidden="true"></span>
+                    <span class="trip-revenue-item-label">Cobrado</span>
+                    <span class="trip-revenue-item-value"><%= mxn(paidTrip) %></span>
+                </div>
+                <div class="trip-revenue-item is-pending">
+                    <span class="trip-revenue-dot" aria-hidden="true"></span>
+                    <span class="trip-revenue-item-label">Por cobrar</span>
+                    <span class="trip-revenue-item-value"><%= mxn(pendingTrip) %></span>
+                </div>
             </div>
         </div>
+    </div>
     </div>
 
     <div class="trip-list-head">
@@ -245,13 +255,13 @@
                         </div>
                     </div>
                     <div class="trip-res-side">
+                        <% if (r.amount_total_mxn != null && r.amount_total_mxn !== '') { %>
+                            <span class="trip-res-amount mono is-<%= st.tone %>"><%= mxn(r.amount_total_mxn) %></span>
+                        <% } %>
                         <span class="badge-soft <%= st.cls %>">
                             <% if (st.icon) { %><%- include('partials/icon', { name: st.icon, size: 14 }) %><% } %>
                             <%= st.label %>
                         </span>
-                        <% if (r.amount_total_mxn != null && r.amount_total_mxn !== '') { %>
-                            <span class="trip-res-amount mono <%= stU === 'CANCELLED' ? 'is-void' : '' %>"><%= mxn(r.amount_total_mxn) %></span>
-                        <% } %>
                     </div>
                 </div>
 
@@ -270,11 +280,14 @@
                 </div>
 
                 <div class="trip-res-detail">
+                    <span class="trip-res-detail-ico" aria-hidden="true"><%- include('partials/icon', { name: r.type === 'PASSENGER' ? 'users' : 'package', size: 14 }) %></span>
+                    <span>
                     <% if (r.type === 'PASSENGER') { %>
                         <%= displayNames %>
                     <% } else { %>
                         <%= r.package_details || '—' %>
                     <% } %>
+                    </span>
                 </div>
 
                 <div class="trip-res-actions">
