@@ -168,11 +168,11 @@
         </div>
         <div class="agenda-kpi is-quiet">
             <span class="agenda-kpi-value"><%= Number(cancelledPassengers || 0) %></span>
-            <span class="agenda-kpi-label">Pax cancelados</span>
+            <span class="agenda-kpi-label">Pasajeros cancelados</span>
         </div>
         <div class="agenda-kpi is-quiet">
             <span class="agenda-kpi-value"><%= Number(cancelledPackages || 0) %></span>
-            <span class="agenda-kpi-label">Paq. cancelados</span>
+            <span class="agenda-kpi-label">Paquetes cancelados</span>
         </div>
     </div>
 
@@ -226,7 +226,7 @@
                         </div>
                         <span class="agenda-col-count" title="Salidas · pasajeros · paquetes">
                             <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>
-                            · <%= group.pax %> pax<% if (group.packs > 0) { %> · <%= group.packs %> paq.<% } %><% if (group.revenue > 0) { %> · <%= mxn(group.revenue) %><% } %>
+                            · <%= group.pax %> pasajero<%= group.pax === 1 ? '' : 's' %><% if (group.packs > 0) { %> · <%= group.packs %> paquete<%= group.packs === 1 ? '' : 's' %><% } %><% if (group.revenue > 0) { %> · <%= mxn(group.revenue) %><% } %>
                         </span>
                     </div>
 
