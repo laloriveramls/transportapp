@@ -59,6 +59,13 @@
     };
     const SEAT_DOTS_MAX = 20; // above this, a progress bar replaces one dot per seat
 
+    const mxn = (n) => Number(n || 0).toLocaleString('es-MX', {
+        style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2,
+    });
+    const paidDay = Number(typeof totalPaidMxn !== 'undefined' ? totalPaidMxn : 0);
+    const pendingDay = Number(typeof totalPendingMxn !== 'undefined' ? totalPendingMxn : 0);
+    const revenueDay = paidDay + pendingDay;
+
     function hasActivity(t) {
         return Number(t.used_seats || 0) > 0 || Number(t.packages || 0) > 0;
     }
@@ -88,6 +95,7 @@
     groups.forEach((g) => {
         g.pax = g.items.reduce((n, t) => n + Number(t.used_seats || 0), 0);
         g.packs = g.items.reduce((n, t) => n + Number(t.packages || 0), 0);
+        g.revenue = g.items.reduce((n, t) => n + Number(t.paid_mxn || 0) + Number(t.pending_mxn || 0), 0);
         g.nextKey = null;
         if (isToday) {
             const next = g.items.find((t) => {
@@ -168,6 +176,29 @@
         </div>
     </div>
 
+    <div class="agenda-revenue" role="group" aria-label="Ingresos del día">
+        <div class="agenda-revenue-main">
+            <span class="agenda-revenue-ico" aria-hidden="true"><%- include('partials/icon', { name: 'banknote', size: 20 }) %></span>
+            <div>
+                <span class="agenda-revenue-label">Ingresos del día</span>
+                <span class="agenda-revenue-value"><%= mxn(revenueDay) %></span>
+            </div>
+        </div>
+        <div class="agenda-revenue-split">
+            <div class="agenda-revenue-item is-paid">
+                <span class="agenda-revenue-dot" aria-hidden="true"></span>
+                <span class="agenda-revenue-item-label">Cobrado</span>
+                <span class="agenda-revenue-item-value"><%= mxn(paidDay) %></span>
+            </div>
+            <div class="agenda-revenue-item is-pending">
+                <span class="agenda-revenue-dot" aria-hidden="true"></span>
+                <span class="agenda-revenue-item-label">Por cobrar</span>
+                <span class="agenda-revenue-item-value"><%= mxn(pendingDay) %></span>
+            </div>
+        </div>
+        <p class="agenda-revenue-note">Excluye reservas canceladas. «Por cobrar» incluye pagos pendientes y cobro en taquilla.</p>
+    </div>
+
     <% if (!shownTrips.length) { %>
         <div class="agenda-empty">
             <div class="agenda-empty-ico" aria-hidden="true"><%- include('partials/icon', { name: 'bus', size: 22 }) %></div>
@@ -195,7 +226,7 @@
                         </div>
                         <span class="agenda-col-count" title="Salidas · pasajeros · paquetes">
                             <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>
-                            · <%= group.pax %> pax<% if (group.packs > 0) { %> · <%= group.packs %> paq.<% } %>
+                            · <%= group.pax %> pax<% if (group.packs > 0) { %> · <%= group.packs %> paq.<% } %><% if (group.revenue > 0) { %> · <%= mxn(group.revenue) %><% } %>
                         </span>
                     </div>
 
@@ -212,6 +243,9 @@
                         const tripOff = String(t.trip_status || 'OPEN').toUpperCase() !== 'OPEN';
                         const remaining = Math.max(0, cap - used);
                         const packs = Number(t.packages || 0);
+                        const paidMxn = Number(t.paid_mxn || 0);
+                        const pendingMxn = Number(t.pending_mxn || 0);
+                        const tripMxn = paidMxn + pendingMxn;
                         const hhmm = String(t.depart_time || '').slice(0, 5);
                         let tone = 'empty';
                         if (cap > 0 && used >= cap) tone = 'full';
@@ -231,7 +265,7 @@
                     %>
                     <a class="agenda-trip is-<%= tone %> <%= isSpecial ? 'is-special' : '' %> <%= isPast ? 'is-past' : '' %> <%= isNext ? 'is-next' : '' %> <%= tripOff ? 'is-off' : '' %>"
                        href="/admin/trip/<%= t.trip_id %>"
-                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= routeText %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos, <%= statusText %><%= tripOff ? ', deshabilitada' : '' %>">
+                       aria-label="<%= isSpecial ? t.special_title + ', ' : '' %><%= routeText %> a las <%= hhmm %>, <%= used %> de <%= cap %> asientos, <%= statusText %><%= tripMxn > 0 ? ', ingresos ' + mxn(tripMxn) + (pendingMxn > 0 ? ', por cobrar ' + mxn(pendingMxn) : ', cobrado') : '' %><%= tripOff ? ', deshabilitada' : '' %>">
                         <div class="agenda-trip-time mono"><%= hhmm %></div>
                         <div class="agenda-trip-body">
                             <% if (isSpecial || isNext || tripOff) { %>
@@ -259,6 +293,19 @@
                                 <span class="agenda-trip-cap mono"><%= used %><span class="agenda-trip-cap-sep">/</span><%= cap %></span>
                             </div>
                             <span class="agenda-trip-status"><%= statusText %></span>
+                            <% if (tripMxn > 0) { %>
+                                <div class="agenda-trip-money">
+                                    <span class="agenda-trip-money-total mono"><%= mxn(tripMxn) %></span>
+                                    <% if (pendingMxn <= 0) { %>
+                                        <span class="agenda-money-tag is-paid">Cobrado</span>
+                                    <% } else if (paidMxn <= 0) { %>
+                                        <span class="agenda-money-tag is-pending">Por cobrar</span>
+                                    <% } else { %>
+                                        <span class="agenda-money-tag is-paid"><%= mxn(paidMxn) %> cobrado</span>
+                                        <span class="agenda-money-tag is-pending"><%= mxn(pendingMxn) %> pendiente</span>
+                                    <% } %>
+                                </div>
+                            <% } %>
                         </div>
                         <div class="agenda-trip-aside">
                             <% if (packs > 0) { %>

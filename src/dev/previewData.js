@@ -84,8 +84,14 @@ const DEV_AGENDA_TRIPS = [
 ];
 
 function previewAgenda(date) {
-    const trips = DEV_AGENDA_TRIPS.map((row) => ({...row, trip_date: date}));
+    const trips = DEV_AGENDA_TRIPS.map((row) => {
+        const used = Number(row.used_seats || 0);
+        const paid = Math.floor(used / 2) * 120;
+        return {...row, trip_date: date, paid_mxn: paid, pending_mxn: (used - Math.floor(used / 2)) * 120};
+    });
     return {
+        totalPaidMxn: trips.reduce((sum, t) => sum + t.paid_mxn, 0),
+        totalPendingMxn: trips.reduce((sum, t) => sum + t.pending_mxn, 0),
         date,
         trips,
         totalPassengers: trips.reduce((sum, t) => sum + Number(t.used_seats || 0), 0),
@@ -110,6 +116,7 @@ function previewTrip(tripId, date) {
     const reservations = [
         {
             id: 9001,
+            amount_total_mxn: 240,
             type: 'PASSENGER',
             status: 'PAID',
             customer_name: 'Ana Ruiz',
@@ -125,6 +132,7 @@ function previewTrip(tripId, date) {
         },
         {
             id: 9002,
+            amount_total_mxn: 120,
             type: 'PASSENGER',
             status: 'PENDING_PAYMENT',
             customer_name: 'Carlos Méndez',
@@ -140,6 +148,7 @@ function previewTrip(tripId, date) {
         },
         {
             id: 9003,
+            amount_total_mxn: 120,
             type: 'PACKAGE',
             status: 'PAY_AT_BOARDING',
             customer_name: 'María López',

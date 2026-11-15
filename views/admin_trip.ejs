@@ -101,6 +101,12 @@
         return st === 'PENDING_PAYMENT' || st === 'PAY_AT_BOARDING';
     }).length;
 
+    const mxn = (n) => Number(n || 0).toLocaleString('es-MX', {
+        style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2,
+    });
+    const paidTrip = Number(typeof tripPaidMxn !== 'undefined' ? tripPaidMxn : 0);
+    const pendingTrip = Number(typeof tripPendingMxn !== 'undefined' ? tripPendingMxn : 0);
+
     function statusInfo(stU) {
         if (stU === 'PAID') return { cls: 'badge-paid', icon: 'check', label: 'Pagado', tone: 'paid' };
         if (stU === 'CANCELLED') return { cls: 'badge-cancel', icon: 'ban', label: 'Cancelado', tone: 'cancel' };
@@ -175,6 +181,23 @@
                 <span class="trip-stat-label">Estado</span>
             </div>
         </div>
+
+        <div class="trip-revenue" role="group" aria-label="Ingresos de la salida">
+            <div class="trip-revenue-main">
+                <span class="trip-revenue-label">Ingresos de la salida</span>
+                <span class="trip-revenue-value"><%= mxn(paidTrip + pendingTrip) %></span>
+            </div>
+            <div class="trip-revenue-item is-paid">
+                <span class="trip-revenue-dot" aria-hidden="true"></span>
+                <span class="trip-revenue-item-label">Cobrado</span>
+                <span class="trip-revenue-item-value"><%= mxn(paidTrip) %></span>
+            </div>
+            <div class="trip-revenue-item is-pending">
+                <span class="trip-revenue-dot" aria-hidden="true"></span>
+                <span class="trip-revenue-item-label">Por cobrar</span>
+                <span class="trip-revenue-item-value"><%= mxn(pendingTrip) %></span>
+            </div>
+        </div>
     </div>
 
     <div class="trip-list-head">
@@ -221,10 +244,15 @@
                             <% } %>
                         </div>
                     </div>
-                    <span class="badge-soft <%= st.cls %>">
-                        <% if (st.icon) { %><%- include('partials/icon', { name: st.icon, size: 14 }) %><% } %>
-                        <%= st.label %>
-                    </span>
+                    <div class="trip-res-side">
+                        <span class="badge-soft <%= st.cls %>">
+                            <% if (st.icon) { %><%- include('partials/icon', { name: st.icon, size: 14 }) %><% } %>
+                            <%= st.label %>
+                        </span>
+                        <% if (r.amount_total_mxn != null && r.amount_total_mxn !== '') { %>
+                            <span class="trip-res-amount mono <%= stU === 'CANCELLED' ? 'is-void' : '' %>"><%= mxn(r.amount_total_mxn) %></span>
+                        <% } %>
+                    </div>
                 </div>
 
                 <div class="trip-res-tags">

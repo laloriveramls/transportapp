@@ -278,7 +278,9 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                       LEAST(COALESCE(dt.capacity_passengers, 0), ?)) AS capacity_passengers,
                    IF(dt.special_event_id > 0, COALESCE(agg.used_seats, 0),
                       LEAST(COALESCE(agg.used_seats, 0), ?))         AS used_seats,
-                   COALESCE(agg.packages, 0)                     AS packages
+                   COALESCE(agg.packages, 0)                     AS packages,
+                   COALESCE(agg.paid_mxn, 0)                     AS paid_mxn,
+                   COALESCE(agg.pending_mxn, 0)                  AS pending_mxn
 
             FROM transporte_trips t
                      JOIN transporte_departure_templates dt ON dt.id = t.template_id
@@ -299,7 +301,16 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
                                                        THEN COALESCE(NULLIF(r.seats, 0), 1)
                                                    ELSE 0
                                                    END
-                                       ) AS packages
+                                       ) AS packages,
+
+                                       SUM(CASE WHEN r.status = 'PAID' THEN COALESCE(r.amount_total_mxn, 0) ELSE 0 END)
+                                           AS paid_mxn,
+
+                                       SUM(CASE
+                                               WHEN r.status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING')
+                                                   THEN COALESCE(r.amount_total_mxn, 0)
+                                               ELSE 0
+                                           END) AS pending_mxn
 
                                 FROM transporte_reservations r
                                          LEFT JOIN (SELECT reservation_id, COUNT(*) AS passenger_count
@@ -331,6 +342,13 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
         (sum, t) => sum + Number(t.packages || 0),
         0
     );
+
+    for (const t of trips) {
+        t.paid_mxn = Number(t.paid_mxn || 0);
+        t.pending_mxn = Number(t.pending_mxn || 0);
+    }
+    const totalPaidMxn = trips.reduce((sum, t) => sum + t.paid_mxn, 0);
+    const totalPendingMxn = trips.reduce((sum, t) => sum + t.pending_mxn, 0);
 
     const [[cancelAgg]] = await pool.query(
         `
@@ -365,6 +383,8 @@ router.get("/agenda", requireAdmin, requireDb, async (req, res) => {
         totalPackages,
         cancelledPassengers,
         cancelledPackages,
+        totalPaidMxn,
+        totalPendingMxn,
         onlyWithTrip,
         agendaPrevDate,
         agendaNextDate,
@@ -386,9 +406,13 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
                 x.status === "PENDING_PAYMENT" || x.status === "PAY_AT_BOARDING"
             );
         }
+        const previewSum = (list) => list.reduce((n, x) => n + Number(x.amount_total_mxn || 0), 0);
         return res.render("admin_trip", {
             trip: preview.trip,
             reservations,
+            tripPaidMxn: previewSum(preview.reservations.filter((x) => x.status === "PAID")),
+            tripPendingMxn: previewSum(preview.reservations.filter((x) =>
+                x.status === "PENDING_PAYMENT" || x.status === "PAY_AT_BOARDING")),
             directionLabel,
             onlyPending,
             baseUrl: process.env.BASE_URL,
@@ -436,9 +460,25 @@ router.get("/trip/:tripId", requireAdmin, requireDb, async (req, res) => {
         [tripId, onlyPending ? 1 : 0]
     );
 
+    // Totals cover the whole trip, even when the list is filtered to pending only.
+    const [[money]] = await pool.query(
+        `
+            SELECT COALESCE(SUM(CASE WHEN status = 'PAID' THEN COALESCE(amount_total_mxn, 0) ELSE 0 END), 0) AS paid_mxn,
+                   COALESCE(SUM(CASE
+                                    WHEN status IN ('PENDING_PAYMENT', 'PAY_AT_BOARDING')
+                                        THEN COALESCE(amount_total_mxn, 0)
+                                    ELSE 0 END), 0)                                                          AS pending_mxn
+            FROM transporte_reservations
+            WHERE trip_id = ?
+        `,
+        [tripId]
+    );
+
     res.render("admin_trip", {
         trip,
         reservations,
+        tripPaidMxn: Number(money?.paid_mxn || 0),
+        tripPendingMxn: Number(money?.pending_mxn || 0),
         directionLabel,
         onlyPending,
         baseUrl: process.env.BASE_URL,
