@@ -249,8 +249,9 @@ body.home-page .app-navbar .theme-btn:hover {
     background: var(--card);
     border: none;
     box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent),
-        0 12px 32px rgba(2, 6, 23, 0.07);
+        0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent),
+        0 1px 2px rgba(15, 23, 42, 0.05),
+        0 14px 34px rgba(15, 23, 42, 0.09);
     border-radius: var(--home-radius);
     padding: 0;
     overflow: visible;
@@ -3267,23 +3268,85 @@ body.home-index .home-main {
     margin-bottom: 1.2rem;
 }
 
-/* ===== Carretera con camioneta ===== */
-body.home-index .road {
-    position: relative;
-    height: 96px;
-    margin-top: 1.4rem;
-    overflow: hidden;
-    touch-action: pan-y;
+/* ===== Carretera Victoria ↔ Llera: el suelo de la página, justo sobre el pie ===== */
+body.home-index .home-main {
+    margin-bottom: 0;
 }
 
-body.home-index .road-line {
+body.home-index .road-scene {
+    --pad: 32px;
+    --carw: 160px;
+    --px: 0;
+    position: relative;
+    isolation: isolate;
+    height: 172px;
+    margin-top: auto;
+    overflow: hidden;
+    touch-action: pan-y;
+    /* Los cerros se funden con el fondo de la página por arriba */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 38%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 38%);
+}
+
+body.home-index .home-footer-rich {
+    margin-top: 0;
+    border-top: 0;
+    background: color-mix(in srgb, var(--muted) 7%, var(--bg));
+}
+
+/* Cerros en capas con parallax */
+body.home-index .road-hills {
+    position: absolute;
+    left: -64px;
+    width: calc(100% + 128px);
+    bottom: 28px;
+    z-index: -2;
+    pointer-events: none;
+}
+
+body.home-index .road-hills path { fill: currentColor; }
+
+body.home-index .road-hills.is-far {
+    height: 112px;
+    color: color-mix(in srgb, var(--muted) 9%, var(--bg));
+    transform: translate3d(calc(var(--px) * -26px), 0, 0);
+}
+
+body.home-index .road-hills.is-near {
+    height: 66px;
+    z-index: -1;
+    color: color-mix(in srgb, var(--muted) 16%, var(--bg));
+    transform: translate3d(calc(var(--px) * -58px), 0, 0);
+}
+
+html[data-theme="dark"] body.home-index .road-hills.is-far {
+    color: color-mix(in srgb, var(--wine) 11%, var(--bg));
+}
+
+html[data-theme="dark"] body.home-index .road-hills.is-near {
+    color: color-mix(in srgb, var(--wine) 20%, var(--bg));
+}
+
+/* Asfalto: ocupa todo el ancho y termina donde empieza el pie */
+body.home-index .road {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 6px;
-    height: 2px;
-    background: repeating-linear-gradient(90deg, var(--muted) 0 14px, transparent 14px 28px);
-    opacity: 0.45;
+    bottom: 0;
+    height: 30px;
+    background: color-mix(in srgb, var(--muted) 24%, var(--bg));
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+/* Líneas de orilla y raya central discontinua */
+body.home-index .road::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 5px;
+    height: 1px;
+    background: color-mix(in srgb, var(--text) 22%, transparent);
 }
 
 body.home-index .road::after {
@@ -3291,16 +3354,73 @@ body.home-index .road::after {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
-    height: 1px;
-    background: color-mix(in srgb, var(--border) 90%, transparent);
+    top: 15px;
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--text) 34%, transparent) 0 22px,
+        transparent 22px 44px
+    );
 }
 
+/* Letreros de carretera en cada ciudad */
+body.home-index .road-sign {
+    position: absolute;
+    bottom: 28px;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+body.home-index .road-sign.is-start { left: calc(var(--pad) + var(--carw) + 22px); }
+body.home-index .road-sign.is-end { right: calc(var(--pad) + var(--carw) + 22px); }
+
+body.home-index .road-sign-board {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--muted);
+    background: var(--card);
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent),
+        0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.home-index .road-sign-board .ico { color: var(--wine); transition: color 0.3s ease; }
+
+body.home-index .road-sign-post {
+    width: 3px;
+    height: 26px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+
+body.home-index .road-sign.is-here .road-sign-board {
+    color: #fff;
+    background: var(--wine);
+    box-shadow:
+        0 0 0 1px var(--wine),
+        0 6px 18px color-mix(in srgb, var(--wine) 45%, transparent);
+}
+
+body.home-index .road-sign.is-here .road-sign-board .ico { color: #fff; }
+
+/* Camioneta */
 body.home-index .road-car {
     position: absolute;
     left: 0;
-    bottom: 7px;
-    width: 156px;
+    bottom: 4px;
+    z-index: 1;
+    width: 160px;
     pointer-events: none;
     will-change: transform;
 }
@@ -3319,14 +3439,31 @@ body.home-index .road-car.is-flip .car-flip {
 body.home-index .car-flip::after {
     content: "";
     position: absolute;
-    left: 6%;
-    right: 4%;
-    bottom: -3px;
-    height: 10px;
+    left: 5%;
+    right: 3%;
+    bottom: -4px;
+    height: 11px;
     border-radius: 50%;
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), transparent 70%);
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 70%);
     z-index: 0;
 }
+
+/* Faros: solo en tema oscuro (de noche) */
+body.home-index .car-flip::before {
+    content: "";
+    position: absolute;
+    right: 100%;
+    bottom: 10%;
+    width: 78%;
+    height: 40%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at right center, rgba(255, 236, 170, 0.5), transparent 72%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 2;
+}
+
+html[data-theme="dark"] body.home-index .car-flip::before { opacity: 1; }
 
 body.home-index .car-img {
     position: relative;
@@ -3336,16 +3473,56 @@ body.home-index .car-img {
     height: auto;
     user-select: none;
     -webkit-user-drag: none;
+    transform-origin: 50% 100%;
+    rotate: var(--tilt, 0deg);
 }
 
-@media (max-width: 640px) {
-    body.home-index .road-car {
-        width: 118px;
-    }
+/* Botón de pausa: discreto, en la esquina de la escena */
+body.home-index .road-toggle {
+    position: absolute;
+    top: 52px;
+    right: clamp(10px, 2.2vw, 30px);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 65%, transparent);
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
 
-    body.home-index .road {
-        height: 78px;
-    }
+body.home-index .road-toggle:hover,
+body.home-index .road-toggle:focus-visible {
+    opacity: 1;
+    color: var(--text);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wine) 35%, var(--border));
+}
+
+body.home-index .road-toggle:focus-visible {
+    outline: 2px solid var(--wine);
+    outline-offset: 2px;
+}
+
+body.home-index .road-toggle [hidden] { display: none; }
+
+@media (max-width: 640px) {
+    body.home-index .road-scene { height: 132px; }
+    body.home-index .road-car { width: 114px; }
+    body.home-index .road-hills.is-far { height: 84px; }
+    body.home-index .road-hills.is-near { height: 50px; }
+    body.home-index .road-sign.is-start { left: 10px; }
+    body.home-index .road-sign.is-end { right: 10px; }
+    body.home-index .road-sign-board { font-size: 0.68rem; padding: 0.24rem 0.5rem; }
+    body.home-index .road-sign-post { height: 38px; }
+    body.home-index .road-toggle { top: 8px; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -3355,9 +3532,9 @@ body.home-index .car-img {
     }
 
     @keyframes road-car-hop {
-        0% { transform: translateY(0) rotate(0); }
-        40% { transform: translateY(-18px) rotate(-3deg); }
-        100% { transform: translateY(0) rotate(0); }
+        0% { transform: translateY(0); }
+        40% { transform: translateY(-16px); }
+        100% { transform: translateY(0); }
     }
 
     body.home-index .road-car.is-moving .car-img {
@@ -3369,7 +3546,34 @@ body.home-index .car-img {
     }
 }
 
-/* Camioneta oculta por ahora. Para mostrarla de nuevo, borra esta regla. */
-body.home-index .road {
-    display: none;
+/* ===== Tema claro: carretera con más contraste ===== */
+html:not([data-theme="dark"]) body.home-index .road-hills.is-far {
+    color: color-mix(in srgb, var(--wine) 5%, color-mix(in srgb, var(--muted) 13%, var(--bg)));
+}
+
+html:not([data-theme="dark"]) body.home-index .road-hills.is-near {
+    color: color-mix(in srgb, var(--wine) 7%, color-mix(in srgb, var(--muted) 24%, var(--bg)));
+}
+
+html:not([data-theme="dark"]) body.home-index .road {
+    background: color-mix(in srgb, var(--muted) 46%, var(--bg));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+html:not([data-theme="dark"]) body.home-index .road::before {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+html:not([data-theme="dark"]) body.home-index .road::after {
+    background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.82) 0 22px, transparent 22px 44px);
+}
+
+html:not([data-theme="dark"]) body.home-index .home-footer-rich {
+    background: color-mix(in srgb, var(--muted) 12%, var(--bg));
+}
+
+html:not([data-theme="dark"]) body.home-index .road-sign-board {
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--border) 90%, transparent),
+        0 4px 12px rgba(15, 23, 42, 0.12);
 }
