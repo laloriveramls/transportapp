@@ -4372,7 +4372,7 @@ body.page-trip .trip-res-pay {
     gap: 0.4rem;
 }
 
-/* Boleto: Ver · PDF · WhatsApp como un solo control */
+/* Boleto: Ver, PDF y WhatsApp como un solo control */
 body.page-trip .trip-btn-group {
     display: inline-flex;
     overflow: hidden;
@@ -4465,4 +4465,218 @@ body.page-trip .trip-res-more-menu {
     border-radius: 12px;
     background: color-mix(in srgb, #e04555 5%, var(--card));
     box-shadow: 0 0 0 1px color-mix(in srgb, #e04555 18%, var(--border));
+}
+
+/* ===== Encabezado de sección de admin: ícono + título + apoyo ===== */
+body.admin-app .admin-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+body.admin-app .admin-title-ico {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 12px;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 10%, var(--card));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wine) 14%, transparent);
+}
+
+html[data-theme="dark"] body.admin-app .admin-title-ico {
+    color: color-mix(in srgb, var(--wine) 14%, #fff);
+    background: color-mix(in srgb, var(--wine) 38%, var(--card));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wine) 45%, transparent);
+}
+
+body.admin-app .admin-title-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+body.admin-app .admin-title .home-section-title {
+    font-size: 1.12rem;
+    letter-spacing: -0.035em;
+}
+
+body.admin-app .admin-title-sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 550;
+    line-height: 1.2;
+}
+
+@media (max-width: 700px) {
+    body.admin-app .admin-title-ico { width: 2.1rem; height: 2.1rem; }
+    body.admin-app .admin-title .home-section-title { font-size: 1.05rem; }
+}
+
+@media (max-width: 420px) {
+    body.admin-app .admin-title-sub { display: none; }
+}
+
+/* ===== Registros: tarjetas en tablet y celular (la tabla de 920 px no cabe) ===== */
+@media (max-width: 900px) {
+    body.page-recent .recent-table-scroll { overflow: visible; }
+
+    body.page-recent .recent-table,
+    body.page-recent .recent-table tbody,
+    body.page-recent .recent-table tr,
+    body.page-recent .recent-table td {
+        display: block;
+    }
+
+    body.page-recent .recent-table {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* Encabezados solo para lectores de pantalla */
+    body.page-recent .recent-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    body.page-recent .recent-table tbody {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+        padding: 0.7rem;
+    }
+
+    body.page-recent .recent-table tbody tr {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: 0.7rem;
+        row-gap: 0.3rem;
+        padding: 0.8rem 0.9rem 0.85rem 1.1rem;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--card);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 75%, transparent);
+    }
+
+    body.page-recent .recent-table tbody tr::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 8px;
+        bottom: 8px;
+        width: 3px;
+        border-radius: 999px;
+        background: #94a3b8;
+    }
+
+    body.page-recent .recent-table tbody tr.is-paid::before { background: #10d88f; }
+    body.page-recent .recent-table tbody tr.is-pending::before { background: #e9c40e; }
+    body.page-recent .recent-table tbody tr.is-board::before { background: #3b82f6; }
+    body.page-recent .recent-table tbody tr.is-cancel { opacity: 0.78; }
+
+    body.page-recent .recent-table tbody td,
+    body.page-recent .recent-table tbody td:first-child,
+    body.page-recent .recent-table tbody td + td {
+        position: static;
+        width: auto;
+        padding: 0 !important;
+        border: 0 !important;
+        text-align: left;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* Anula los anchos fijos de la tabla */
+    body.page-recent .recent-table tbody td[class*="col-"] {
+        width: auto !important;
+        white-space: normal;
+        text-align: left !important;
+    }
+
+    body.page-recent .recent-table .col-reserva { grid-column: 1; grid-row: 1; }
+    body.page-recent .recent-table .col-status { grid-column: 2; grid-row: 1; align-self: start; }
+
+    /* Datos con etiqueta a la izquierda */
+    body.page-recent .recent-table .col-trip,
+    body.page-recent .recent-table .col-type,
+    body.page-recent .recent-table .col-pay,
+    body.page-recent .recent-table .col-ticket {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 4.4rem minmax(0, 1fr);
+        column-gap: 0.5rem;
+        align-items: baseline;
+    }
+
+    body.page-recent .recent-table td[data-label]::before {
+        content: attr(data-label);
+        grid-column: 1;
+        grid-row: 1;
+        color: var(--muted);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    body.page-recent .recent-table .col-trip > *,
+    body.page-recent .recent-table .col-type > *,
+    body.page-recent .recent-table .col-pay > *,
+    body.page-recent .recent-table .col-ticket > * {
+        grid-column: 2;
+        justify-self: start;
+        max-width: 100%;
+        text-align: left;
+    }
+
+    body.page-recent .recent-table .recent-trip-line,
+    body.page-recent .recent-table .recent-pay-line {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    body.page-recent .recent-table .recent-type-extra,
+    body.page-recent .recent-table .recent-ref {
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 100%;
+        text-align: left;
+    }
+
+    body.page-recent .recent-table .col-reserva::before,
+    body.page-recent .recent-table .col-status::before,
+    body.page-recent .recent-table .col-actions::before { display: none; }
+
+    body.page-recent .recent-table .col-actions {
+        grid-column: 1 / -1;
+        margin-top: 0.35rem;
+        padding-top: 0.7rem !important;
+        border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent) !important;
+    }
+
+    body.page-recent .recent-table .recent-row-cta {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    body.page-recent .recent-table .recent-row-cta .btn {
+        flex: 1 1 0;
+        justify-content: center;
+        min-height: 40px;
+    }
+}
+
+@media (min-width: 680px) and (max-width: 900px) {
+    body.page-recent .recent-table tbody { grid-template-columns: 1fr 1fr; }
 }

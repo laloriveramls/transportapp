@@ -2139,7 +2139,7 @@ html[data-theme="dark"] body.home-index .home-info-stops {
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 60%, transparent);
 }
 
-/* Radios unificados: panel 16 · tarjeta 12 · control 10 */
+/* Radios unificados: panel 16, tarjeta 12, control 10 */
 body.home-index .schedule-row,
 body.home-index .map-card,
 body.home-index .special-head,
@@ -3576,4 +3576,168 @@ html:not([data-theme="dark"]) body.home-index .road-sign-board {
     box-shadow:
         0 0 0 1px color-mix(in srgb, var(--border) 90%, transparent),
         0 4px 12px rgba(15, 23, 42, 0.12);
+}
+
+/* ===== Escritorio: la portada cabe en la ventana, sin scroll de página =====
+   El hero, la carretera y el pie se ajustan a la altura disponible; si el panel de
+   horarios no cabe (por ejemplo la pestaña Info), hace scroll por dentro. */
+@media (min-width: 901px) and (min-height: 540px) {
+    html:has(body.home-index) {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    body.home-index {
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.home-index .app-navbar { flex: 0 0 auto; }
+
+    /* Hero: todo escala con la altura de la ventana */
+    /* En pantallas altas, el hero absorbe el espacio sobrante y centra su contenido */
+    body.home-index .home-hero {
+        flex: 1 0 auto;
+        padding: clamp(0.6rem, 2.2vh, 2.4rem) 0 clamp(3.3rem, 7vh, 5.2rem);
+    }
+
+    body.home-index .home-brand-logo {
+        max-height: clamp(96px, 20vh, 210px);
+        max-width: min(200px, 30vw);
+    }
+
+    body.home-index .home-brand-name {
+        font-size: clamp(1.6rem, 0.6rem + 3.6vh, 3.1rem);
+    }
+
+    body.home-index .home-brand-tag {
+        margin: clamp(0.4rem, 1.2vh, 1rem) 0 clamp(0.7rem, 2vh, 1.5rem);
+    }
+
+    body.home-index .hero-actions .btn {
+        min-height: clamp(38px, 5.4vh, 46px);
+    }
+
+    body.home-index .home-next {
+        gap: clamp(0.4rem, 1vh, 0.7rem);
+        padding: clamp(0.6rem, 1.6vh, 1.1rem);
+    }
+
+    body.home-index .home-next-row {
+        padding-block: clamp(0.4rem, 1.2vh, 0.7rem);
+    }
+
+    body.home-index .home-next-time {
+        font-size: clamp(1.4rem, 3.7vh, 2rem);
+        margin-bottom: 0;
+    }
+
+    body.home-index .home-next-clock {
+        row-gap: clamp(0.1rem, 0.5vh, 0.5rem);
+    }
+
+    /* Panel de horarios: ocupa lo que quede y hace scroll por dentro */
+    body.home-index .home-main {
+        flex: 0 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+        padding-bottom: 0.5rem;
+    }
+
+    body.home-index .home-section {
+        flex: 0 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body.home-index .home-tabs.tabs-card {
+        flex: 0 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body.home-index .home-tabs-head { flex: 0 0 auto; }
+
+    body.home-index .home-tabs-body {
+        flex: 0 1 auto;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+    }
+
+    /* Carretera y pie */
+    body.home-index .road-scene {
+        flex: 0 0 auto;
+        height: clamp(92px, 15vh, 172px);
+        margin-top: auto;
+    }
+
+    body.home-index .road-car { width: clamp(110px, 20vh, 160px); }
+    body.home-index .road-hills.is-far { height: clamp(64px, 12vh, 112px); }
+    body.home-index .road-hills.is-near { height: clamp(38px, 7vh, 66px); }
+    body.home-index .road-sign-post { height: clamp(14px, 3vh, 26px); }
+
+    body.home-index .home-footer-rich {
+        flex: 0 0 auto;
+        padding: 0.55rem 0 calc(0.55rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Pantallas bajas: compacta también el interior del panel */
+@media (min-width: 901px) and (min-height: 540px) and (max-height: 720px) {
+    body.home-index .home-tabs-head { padding-block: 0.4rem; }
+    body.home-index .home-tabs-body { padding-top: 0.45rem; padding-bottom: 0.5rem; }
+    body.home-index .schedule-board { gap: 0.55rem; }
+}
+
+/* ===== Tablet vertical (600 a 900 px): aprovecha el ancho en lugar de estirar el diseño de celular ===== */
+@media (min-width: 600px) and (max-width: 900px) {
+    body.home-index .home-brand .hero-actions,
+    body.home-index .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        width: auto;
+        gap: 0.6rem;
+    }
+
+    body.home-index .hero-actions .btn {
+        flex: 0 0 auto;
+        min-width: 11rem;
+    }
+
+    /* Próximas salidas: una al lado de la otra */
+    body.home-index .home-next {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    body.home-index .home-next-title { grid-column: 1 / -1; }
+
+    /* Horarios: las dos rutas lado a lado */
+    body.home-index .schedule-board {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    body.home-index .schedule-row { padding: 0.9rem 0.9rem 1rem; }
+
+    /* Leyenda en una sola fila */
+    body.home-index .schedule-legend {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    body.home-index .schedule-legend-list {
+        width: auto;
+        justify-content: flex-start;
+        gap: 0.4rem 1rem;
+    }
 }

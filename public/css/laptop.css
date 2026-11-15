@@ -142,3 +142,24 @@
         padding-bottom: 0.5rem;
     }
 }
+
+/* ---------- Pantallas táctiles (tablets, celulares, laptops con pantalla táctil) ---------- */
+@media (pointer: coarse) {
+    html body[class] .nav-tabs .nav-link,
+    html body[class] .wizard-step,
+    html body[class] .home-tabs-wa,
+    html body[class] .btn-xs,
+    html body[class] .btn-sm,
+    html body[class] .admin-filter-seg a,
+    html body[class] .home-seg-mini button,
+    html body[class] .agenda-day-arrow,
+    html body[class] .trip-res-more > summary,
+    html body[class] .trip-btn-group .btn {
+        min-height: 42px;
+    }
+
+    html body[class] .road-toggle {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
