@@ -1,13 +1,16 @@
 {
   "name": "servicios_transporte",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "Reservas, pagos y tickets para servicios de transporte",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "migrate:vic-locations": "node scripts/run-migration-vic-locations.js",
     "icons": "node scripts/build-icons.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "keywords": [],
   "author": "",
@@ -19,10 +22,12 @@
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "express-session": "^1.18.2",
-    "lucide": "^1.39.0",
     "mysql2": "^3.23.1",
     "pdfkit": "^0.17.2",
     "qrcode": "^1.5.4",
     "stripe": "^20.1.1"
+  },
+  "devDependencies": {
+    "lucide": "^1.39.0"
   }
 }
