@@ -1,0 +1,143 @@
+/* public/css/laptop.css — Ajustes para laptops de pantalla chica (≈1280×720 / 1366×768 / 1440×900).
+   Se carga desde partials/head.ejs. Los selectores usan "html body[class]" para ganar en
+   especificidad a las hojas por página (home, admin, reserve) que se cargan después. */
+
+/* ---------- Laptop: ancho medio y poca altura ---------- */
+@media (min-width: 901px) and (max-width: 1600px) and (max-height: 860px) {
+    /* Escala todo lo definido en rem (~6 % más compacto) */
+    html {
+        font-size: 93.75%;
+    }
+
+    /* Aprovecha más ancho: Bootstrap deja 1140 px en 1200–1399 */
+    html body .container {
+        max-width: 1240px;
+    }
+
+    /* Navbar */
+    html body[class] .app-navbar {
+        padding-top: 0.18rem;
+        padding-bottom: 0.18rem;
+    }
+
+    /* Hero más bajo: el contenido útil sube en pantalla */
+    html body[class]:not(.home-index) .home-hero {
+        padding: 0.55rem 0 0.65rem;
+    }
+
+    html body[class]:not(.home-index) .home-brand-logo,
+    html body[class]:not(.home-index) .home-brand-logo-wide {
+        max-height: 92px;
+    }
+
+    html body[class]:not(.home-index) .home-brand-name {
+        font-size: clamp(1.45rem, 1.1rem + 1.2vw, 2rem);
+    }
+
+    html body[class] .home-main {
+        padding-top: 0.4rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* Paneles / pestañas */
+    html body[class] .home-tabs-head {
+        padding: 0.4rem 0.75rem;
+    }
+
+    html body[class] .home-tabs-body {
+        padding: 0.5rem 0.75rem 0.6rem;
+    }
+
+    /* ----- Agenda ----- */
+    html body.page-agenda .agenda-toolbar {
+        padding-bottom: 0.7rem;
+    }
+
+    html body.page-agenda .agenda-kpi {
+        padding: 0.6rem 0.9rem 0.65rem;
+    }
+
+    html body.page-agenda .agenda-kpi-value {
+        font-size: 1.25rem;
+    }
+
+    html body.page-agenda .agenda-kpis,
+    html body.page-agenda .agenda-revenue {
+        margin-bottom: 0.8rem;
+    }
+
+    html body.page-agenda .agenda-revenue {
+        padding: 0.65rem 1rem;
+        gap: 0.4rem 1.5rem;
+    }
+
+    html body.page-agenda .agenda-revenue-ico {
+        width: 2.1rem;
+        height: 2.1rem;
+    }
+
+    html body.page-agenda .agenda-revenue-value {
+        font-size: 1.5rem;
+    }
+
+    html body.page-agenda .agenda-board {
+        gap: 1rem;
+    }
+
+    html body.page-agenda .agenda-trip {
+        padding: 0.6rem 0.65rem 0.6rem 0.9rem;
+        gap: 0.65rem;
+    }
+
+    html body.page-agenda .agenda-col-list {
+        gap: 0.4rem;
+    }
+
+    /* ----- Detalle de salida ----- */
+    html body.page-trip .trip-head-stats {
+        margin-top: 0.65rem;
+    }
+
+    html body.page-trip .trip-stat {
+        padding: 0.6rem 0.9rem 0.65rem;
+    }
+
+    html body.page-trip .trip-stat-value {
+        font-size: 1.2rem;
+    }
+
+    html body.page-trip .trip-revenue {
+        margin-top: 0.45rem;
+        padding: 0.6rem 0.9rem;
+    }
+
+    html body.page-trip .trip-revenue-value {
+        font-size: 1.35rem;
+    }
+
+    /* ----- Reserva: el resumen fijo debe quedar bajo el navbar sin ocupar de más ----- */
+    html body.page-reserve .trip-quote {
+        top: 3.6rem;
+    }
+}
+
+/* ---------- Laptop muy baja (viewport ≤ 700 px de alto, p. ej. 1366×768 con barras) ---------- */
+@media (min-width: 901px) and (max-width: 1600px) and (max-height: 700px) {
+    html body[class]:not(.home-index) .home-brand-logo,
+    html body[class]:not(.home-index) .home-brand-logo-wide {
+        max-height: 72px;
+    }
+
+    html body[class]:not(.home-index) .home-hero {
+        padding: 0.4rem 0 0.5rem;
+    }
+
+    html body.page-agenda .agenda-kpi-value {
+        font-size: 1.15rem;
+    }
+
+    html body.page-agenda .agenda-trip {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}

@@ -600,6 +600,168 @@ body.page-agenda .agenda-kpi.is-quiet .agenda-kpi-value {
     color: color-mix(in srgb, var(--muted) 55%, var(--text));
 }
 
+body.page-agenda .agenda-revenue {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.75rem;
+    margin: 0 0 1.15rem;
+    padding: 0.95rem 1.1rem;
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-agenda .agenda-revenue-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+body.page-agenda .agenda-revenue-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 10%, var(--card));
+}
+
+html[data-theme="dark"] body.page-agenda .agenda-revenue-ico {
+    color: color-mix(in srgb, var(--wine) 40%, #fff);
+    background: color-mix(in srgb, var(--wine) 26%, var(--card));
+}
+
+body.page-agenda .agenda-revenue-label,
+body.page-agenda .agenda-revenue-value {
+    display: block;
+}
+
+body.page-agenda .agenda-revenue-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+}
+
+body.page-agenda .agenda-revenue-value {
+    font-size: 1.75rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+    color: var(--text);
+}
+
+body.page-agenda .agenda-revenue-split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-left: auto;
+}
+
+body.page-agenda .agenda-revenue-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.45rem;
+    align-items: center;
+}
+
+body.page-agenda .agenda-revenue-dot {
+    grid-row: 1 / span 2;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10d88f;
+}
+
+body.page-agenda .agenda-revenue-item.is-pending .agenda-revenue-dot {
+    background: #d4a017;
+}
+
+body.page-agenda .agenda-revenue-item-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+}
+
+body.page-agenda .agenda-revenue-item-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+body.page-agenda .agenda-revenue-note {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+body.page-agenda .agenda-trip-money {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.45rem;
+    margin-top: 0.3rem;
+}
+
+body.page-agenda .agenda-trip-money-total {
+    font-size: 0.86rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+}
+
+body.page-agenda .agenda-money-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.25rem;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+body.page-agenda .agenda-money-tag.is-paid {
+    color: #0b7a53;
+    background: color-mix(in srgb, #10d88f 16%, var(--card));
+}
+
+body.page-agenda .agenda-money-tag.is-pending {
+    color: #8a6500;
+    background: color-mix(in srgb, #d4a017 18%, var(--card));
+}
+
+html[data-theme="dark"] body.page-agenda .agenda-money-tag.is-paid {
+    color: #4de8b0;
+}
+
+html[data-theme="dark"] body.page-agenda .agenda-money-tag.is-pending {
+    color: #e8c04d;
+}
+
+@media (max-width: 576px) {
+    body.page-agenda .agenda-revenue {
+        padding: 0.8rem;
+    }
+
+    body.page-agenda .agenda-revenue-split {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
+
+    body.page-agenda .agenda-revenue-value {
+        font-size: 1.5rem;
+    }
+}
+
 body.page-agenda .agenda-board {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -839,7 +1001,7 @@ body.page-agenda .agenda-seats {
     display: inline-flex;
     flex-wrap: wrap;
     gap: 5px;
-    max-width: 11rem;
+    max-width: 14rem;
     flex: 1 1 auto;
 }
 
@@ -1178,6 +1340,97 @@ body.page-trip .trip-stat.is-quiet .trip-stat-value {
     font-size: 1rem;
     letter-spacing: -0.02em;
     color: color-mix(in srgb, var(--muted) 35%, var(--text));
+}
+
+body.page-trip .trip-revenue {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.75rem;
+    margin-top: 0.6rem;
+    padding: 0.8rem 1rem;
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-trip .trip-revenue-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-right: auto;
+}
+
+body.page-trip .trip-revenue-label,
+body.page-trip .trip-revenue-item-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+}
+
+body.page-trip .trip-revenue-value {
+    font-size: 1.6rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.045em;
+    line-height: 1.1;
+    color: var(--text);
+}
+
+body.page-trip .trip-revenue-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.45rem;
+    align-items: center;
+}
+
+body.page-trip .trip-revenue-dot {
+    grid-row: 1 / span 2;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10d88f;
+}
+
+body.page-trip .trip-revenue-item.is-pending .trip-revenue-dot {
+    background: #d4a017;
+}
+
+body.page-trip .trip-revenue-item-value {
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+body.page-trip .trip-res-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+body.page-trip .trip-res-amount {
+    font-size: 0.95rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+body.page-trip .trip-res-amount.is-void {
+    color: var(--muted);
+    text-decoration: line-through;
+    font-weight: 600;
+}
+
+@media (max-width: 576px) {
+    body.page-trip .trip-revenue-main {
+        flex-basis: 100%;
+    }
 }
 
 body.page-trip .trip-seats {
