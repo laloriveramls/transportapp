@@ -246,7 +246,7 @@
                     <div class="trip-res-who">
                         <div class="trip-res-name"><%= r.customer_name %></div>
                         <div class="trip-res-meta">
-                            <% if (r.phone) { %><span><%= r.phone %></span><% } %>
+                            <% if (r.phone) { %><% if (digits.length >= 10) { %><a class="trip-res-phone" href="tel:+52<%= digits %>"><%- include('partials/icon', { name: 'phone', size: 12 }) %> <%= r.phone %></a><% } else { %><span><%= r.phone %></span><% } %><% } %>
                             <% if (r.from_stop && r.to_stop && typeof stopLabel === 'function') { %>
                                 <span><%- include('partials/icon', { name: 'map-pin', size: 12 }) %> <%= stopLabel(r.from_stop) %> → <%= stopLabel(r.to_stop) %></span>
                             <% } else if (r.vic_location) { %>
@@ -290,67 +290,90 @@
                     </span>
                 </div>
 
+                <%
+                const canPay = !r.ticket_code && stU !== 'CANCELLED';
+                const showRefund = stU !== 'CANCELLED' && isPaidOnline;
+                const showCancel = stU !== 'CANCELLED' && !isPaidOnline && !isPaid;
+                const hasActions = canPay || !!r.ticket_code || showRefund || showCancel;
+                %>
+                <% if (hasActions) { %>
                 <div class="trip-res-actions">
-                    <% if (!r.ticket_code && stU !== 'CANCELLED') { %>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
-                              data-confirm="Se registrará el pago en efectivo de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto."
-                              data-confirm-title="Marcar como pagada en efectivo"
-                              data-confirm-ok="Sí, ya pagó">
-                            <input type="hidden" name="method" value="CASH">
-                            <button class="btn btn-wine btn-xs" type="submit"><%- include('partials/icon', { name: 'banknote', size: 14 }) %> Efectivo</button>
-                        </form>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
-                              data-confirm="Se registrará la transferencia de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto. Confirma que ya la recibiste."
-                              data-confirm-title="Marcar como pagada por transferencia"
-                              data-confirm-ok="Sí, la recibí">
-                            <input type="hidden" name="method" value="TRANSFER">
-                            <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transfer</button>
-                        </form>
+                    <% if (canPay) { %>
+                        <div class="trip-res-pay">
+                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
+                                  data-confirm="Se registrará el pago en efectivo de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto."
+                                  data-confirm-title="Marcar como pagada en efectivo"
+                                  data-confirm-ok="Sí, ya pagó">
+                                <input type="hidden" name="method" value="CASH">
+                                <button class="btn btn-wine btn-xs" type="submit"><%- include('partials/icon', { name: 'banknote', size: 14 }) %> Cobrar en efectivo</button>
+                            </form>
+                            <form method="POST" action="/admin/reservation/<%= r.id %>/mark-paid" class="m-0"
+                                  data-confirm="Se registrará la transferencia de <%= r.customer_name || 'este cliente' %> por <%= Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) %> y se emitirá su boleto. Confirma que ya la recibiste."
+                                  data-confirm-title="Marcar como pagada por transferencia"
+                                  data-confirm-ok="Sí, la recibí">
+                                <input type="hidden" name="method" value="TRANSFER">
+                                <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transferencia</button>
+                            </form>
+                        </div>
                     <% } %>
 
                     <% if (r.ticket_code) { %>
-                        <a class="btn btn-ghost btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= returnTo %>" target="_blank"><%- include('partials/icon', { name: 'eye', size: 14 }) %> Ver</a>
-                        <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= returnTo %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'file-text', size: 14 }) %> PDF</a>
-                        <% if (digits.length >= 10) { %>
-                            <a class="btn btn-wa btn-xs" target="_blank"
-                               href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
-                                       'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
-                               ) %>"><%- include('partials/icon', { name: 'message-circle', size: 14 }) %> WhatsApp</a>
-                        <% } %>
+                        <div class="trip-btn-group" role="group" aria-label="Boleto de <%= r.customer_name || 'la reserva' %>">
+                            <a class="btn btn-xs" href="/ticket/<%= r.ticket_code %>?return=<%= returnTo %>" target="_blank"><%- include('partials/icon', { name: 'eye', size: 14 }) %> Ver</a>
+                            <a class="btn btn-pdf btn-xs" href="/ticket/<%= r.ticket_code %>/pdf/view?return=<%= returnTo %>" target="_blank" rel="noopener"><%- include('partials/icon', { name: 'file-text', size: 14 }) %> PDF</a>
+                            <% if (digits.length >= 10) { %>
+                                <a class="btn btn-wa btn-xs" target="_blank" rel="noopener"
+                                   href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(
+                                           'Tu ticket está listo\n' + (baseUrl || 'http://localhost:3000') + '/ticket/' + r.ticket_code
+                                   ) %>"><%- include('partials/icon', { name: 'message-circle', size: 14 }) %> WhatsApp</a>
+                            <% } %>
+                        </div>
                     <% } %>
 
-                    <% if (stU !== 'CANCELLED' && isPaidOnline) { %>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
-                              class="m-0"
-                              data-confirm="Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”."
-                              data-confirm-title="Cancelar reserva pagada"
-                              data-confirm-ok="Continuar"
-                              data-confirm-tone="danger">
-                            <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
-                        </form>
-                        <a class="btn btn-outline-danger btn-xs"
-                           href="/admin/reservation/<%= r.id %>/stripe-refund"
-                           target="_blank" rel="noopener">
-                            <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> Stripe
-                        </a>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
-                              class="m-0"
-                              data-confirm="Esto marcará la reserva como cancelada y liberará el cupo. Confírmalo solo si ya hiciste el reembolso en Stripe."
-                              data-confirm-title="¿Ya reembolsaste en Stripe?"
-                              data-confirm-ok="Sí, ya reembolsé"
-                              data-confirm-tone="danger">
-                            <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> Ya reembolsé</button>
-                        </form>
-                    <% } else if (stU !== 'CANCELLED' && !isPaid) { %>
-                        <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
-                              data-confirm="Se cancelará la reserva y se liberará el cupo."
-                              data-confirm-title="Cancelar reserva"
-                              data-confirm-ok="Cancelar reserva"
-                              data-confirm-tone="danger">
-                            <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar</button>
-                        </form>
+                    <% if (showRefund || showCancel) { %>
+                        <details class="trip-res-more">
+                            <summary>
+                                <%- include('partials/icon', { name: 'ellipsis', size: 14 }) %>
+                                <span><%= showRefund ? 'Cancelar o reembolsar' : 'Cancelar' %></span>
+                                <span class="trip-res-more-chev" aria-hidden="true"><%- include('partials/icon', { name: 'chevron-down', size: 14 }) %></span>
+                            </summary>
+                            <div class="trip-res-more-menu">
+                            <% if (showRefund) { %>
+                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
+                                      class="m-0"
+                                      data-confirm="Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”."
+                                      data-confirm-title="Cancelar reserva pagada"
+                                      data-confirm-ok="Continuar"
+                                      data-confirm-tone="danger">
+                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> 1 · Cancelar</button>
+                                </form>
+                                <a class="btn btn-outline-danger btn-xs"
+                                   href="/admin/reservation/<%= r.id %>/stripe-refund"
+                                   target="_blank" rel="noopener">
+                                    <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> 2 · Reembolsar en Stripe
+                                </a>
+                                <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
+                                      class="m-0"
+                                      data-confirm="Esto marcará la reserva como cancelada y liberará el cupo. Confírmalo solo si ya hiciste el reembolso en Stripe."
+                                      data-confirm-title="¿Ya reembolsaste en Stripe?"
+                                      data-confirm-ok="Sí, ya reembolsé"
+                                      data-confirm-tone="danger">
+                                    <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> 3 · Ya reembolsé</button>
+                                </form>
+                            <% } else { %>
+                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
+                                      data-confirm="Se cancelará la reserva y se liberará el cupo."
+                                      data-confirm-title="Cancelar reserva"
+                                      data-confirm-ok="Cancelar reserva"
+                                      data-confirm-tone="danger">
+                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar reserva</button>
+                                </form>
+                            <% } %>
+                            </div>
+                        </details>
                     <% } %>
                 </div>
+                <% } %>
             </article>
             <% }) %>
         </div>
