@@ -468,12 +468,85 @@
 </main>
 
 <div class="road-scene" id="roadScene">
+    <%
+    /* Vegetación del paisaje: t = tipo, x = posición (%), h = alto (% de la escena), d = desfase del vaivén (s) */
+    const floraBox = {pine: [40, 80], fir: [36, 80], oak: [60, 80], aspen: [30, 80], fern: [40, 24], rock: [50, 24], bush: [50, 26], grass: [30, 20], flower: [30, 20]};
+    // Bosquecillos con claros entre ellos: menos piezas, más aire
+    const floraFar = [
+        {t: 'fir', x: 3, h: 34, d: 0.2}, {t: 'pine', x: 7, h: 29, d: 1.1}, {t: 'fir', x: 11, h: 36, d: 2.0},
+        {t: 'fir', x: 31, h: 33, d: 0.6}, {t: 'pine', x: 35, h: 37, d: 1.7}, {t: 'oak', x: 40, h: 25, d: 2.6},
+        {t: 'aspen', x: 58, h: 27, d: 0.9}, {t: 'fir', x: 62, h: 36, d: 0.3}, {t: 'pine', x: 66, h: 31, d: 1.4},
+        {t: 'fir', x: 85, h: 34, d: 2.2}, {t: 'pine', x: 89, h: 38, d: 0.8}, {t: 'fir', x: 94, h: 31, d: 1.9},
+    ];
+    const floraNear = [
+        {t: 'fir', x: 4, h: 50, d: 1.3}, {t: 'fern', x: 9, h: 11, d: 0.5}, {t: 'aspen', x: 14, h: 44, d: 0.7},
+        {t: 'rock', x: 26, h: 10, d: 0}, {t: 'oak', x: 42, h: 42, d: 1.8}, {t: 'flower', x: 48, h: 11, d: 0.4},
+        {t: 'bush', x: 54, h: 13, d: 1.5}, {t: 'fir', x: 66, h: 50, d: 0.9}, {t: 'aspen', x: 72, h: 46, d: 0.2},
+        {t: 'fern', x: 80, h: 11, d: 2.0}, {t: 'pine', x: 90, h: 52, d: 2.7}, {t: 'rock', x: 95, h: 9, d: 0},
+    ];
+    const cloudList = [
+        {x: 12, y: 24, w: 96, d: 130, o: -20}, {x: 52, y: 36, w: 70, d: 170, o: -95}, {x: 80, y: 18, w: 54, d: 210, o: -150},
+    ];
+    const floraLayer = (list) => list.map((f) => {
+        const b = floraBox[f.t];
+        return `<svg class="flora is-${f.t}" viewBox="0 0 ${b[0]} ${b[1]}" style="left:${f.x}%;height:${Math.min(92, Math.round(f.h * 1.15))}%;--d:${(f.x * 0.085 + f.d * 0.15).toFixed(2)}s" focusable="false"><use href="#fl-${f.t}"/></svg>`;
+    }).join('');
+    %>
+    <svg class="road-defs" width="0" height="0" aria-hidden="true" focusable="false">
+        <defs>
+            <symbol id="fl-pine" viewBox="0 0 40 80">
+                <rect class="fl-trunk" x="18" y="64" width="4" height="16" rx="1"/>
+                <path d="M20 3 33 30H7zM20 17 36 46H4zM20 31 38 68H2z"/>
+            </symbol>
+            <symbol id="fl-fir" viewBox="0 0 36 80">
+                <rect class="fl-trunk" x="16" y="68" width="4" height="12" rx="1"/>
+                <path d="M18 2 26 22H10zM18 14 29 38H7zM18 28 32 54H4zM18 42 35 72H1z"/>
+            </symbol>
+            <symbol id="fl-aspen" viewBox="0 0 30 80">
+                <rect class="fl-trunk-light" x="13" y="38" width="4" height="42" rx="1"/>
+                <ellipse cx="15" cy="22" rx="11" ry="20"/><ellipse cx="9" cy="35" rx="7" ry="11"/><ellipse cx="21" cy="35" rx="7" ry="11"/>
+            </symbol>
+            <symbol id="fl-fern" viewBox="0 0 40 24">
+                <path d="M20 24C16 14 8 8 1 8c8 1 13 6 19 16zM20 24C24 14 32 8 39 8c-8 1-13 6-19 16zM20 24C18 12 17 5 19 0c3 6 3 14 1 24zM20 24C13 18 8 17 2 18c7 1 12 3 18 6zM20 24C27 18 32 17 38 18c-7 1-12 3-18 6z"/>
+            </symbol>
+            <symbol id="fl-rock" viewBox="0 0 50 24">
+                <path class="fl-rock" d="M1 24 7 11 18 3l12 2 11 6 8 13z"/>
+                <path class="fl-rock-hi" d="M18 3 30 5l-6 8-10 1z"/>
+            </symbol>
+            <symbol id="fl-oak" viewBox="0 0 60 80">
+                <path class="fl-trunk" d="M27 80V52c0-4-2-7-6-10l2-3c5 3 7 6 7 10 0-6 3-10 9-13l2 3c-4 3-6 6-6 11v30z"/>
+                <circle cx="30" cy="24" r="19"/><circle cx="14" cy="38" r="13"/><circle cx="46" cy="38" r="13"/><circle cx="30" cy="40" r="13"/>
+            </symbol>
+            <symbol id="fl-bush" viewBox="0 0 50 26">
+                <circle cx="13" cy="16" r="10"/><circle cx="26" cy="12" r="12"/><circle cx="38" cy="16" r="10"/><rect x="6" y="16" width="38" height="10"/>
+            </symbol>
+            <symbol id="fl-grass" viewBox="0 0 30 20">
+                <path d="M2 20C4 12 4 6 2 1c6 5 8 11 8 19zM10 20c1-8 3-14 6-20 2 7 3 13 3 20zM18 20c2-8 5-13 11-17-2 6-3 11-2 17z"/>
+            </symbol>
+            <symbol id="fl-flower" viewBox="0 0 30 20">
+                <path d="M3 20C5 14 5 9 4 5c4 3 6 9 6 15zM12 20c1-6 3-10 5-14 1 5 2 9 2 14zM21 20c1-5 3-9 7-12-1 4-1 8-1 12z"/>
+                <circle class="fl-bloom" cx="4" cy="5" r="2.6"/><circle class="fl-bloom" cx="17" cy="6" r="2.6"/><circle class="fl-bloom is-alt" cx="28" cy="8" r="2.4"/>
+            </symbol>
+            <symbol id="fl-cloud" viewBox="0 0 80 30">
+                <circle cx="22" cy="19" r="10"/><circle cx="38" cy="13" r="13"/><circle cx="56" cy="17" r="11"/><rect x="12" y="18" width="56" height="11" rx="5"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <% cloudList.forEach((c) => { %>
+    <svg class="road-cloud" viewBox="0 0 80 30" aria-hidden="true" focusable="false"
+         style="left:<%= c.x %>%;top:<%= c.y %>%;width:<%= c.w %>px;--dur:<%= c.d %>s;--off:<%= c.o %>s"><use href="#fl-cloud"/></svg>
+    <% }) %>
+
     <svg class="road-hills is-far" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true" focusable="false">
         <path d="M0 120V76C70 50 150 30 246 48c92 17 138 50 236 40 104-10 156-56 272-58 112-2 176 42 280 46 78 3 124-18 166-38v82z"/>
     </svg>
+    <div class="road-flora is-far" aria-hidden="true"><%- floraLayer(floraFar) %></div>
     <svg class="road-hills is-near" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true" focusable="false">
         <path d="M0 90V58c96-22 186 12 300 4 124-9 170-42 300-34 122 8 190 42 300 36 120-6 204-30 300-10v36z"/>
     </svg>
+    <div class="road-flora is-near" aria-hidden="true"><%- floraLayer(floraNear) %></div>
+    <div class="road-verge" aria-hidden="true"></div>
 
     <div class="road-sign is-start" data-road-end="start" aria-hidden="true">
         <span class="road-sign-board"><%- include('partials/icon', { name: 'building-2', size: 13 }) %>Ciudad Victoria</span>
@@ -915,6 +988,9 @@
             car.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
             car.classList.toggle("is-flip", dir > 0);
             car.classList.toggle("is-moving", Math.abs(v) > 6);
+            // El cartel de la ciudad se resalta siempre que la camioneta esté en ella (también en modo seguir)
+            const b = bounds();
+            setAt(x <= b.min + 10 ? "start" : (x >= b.max - 10 ? "end" : ""));
             // Parallax de los cerros según la posición de la camioneta (-0.5 … 0.5)
             const px = width > 0 ? (x + carW / 2) / width - 0.5 : 0;
             scene.style.setProperty("--px", px.toFixed(3));
@@ -945,14 +1021,12 @@
                     dir = dx > 0 ? 1 : -1;
                     desired = dir * Math.min(vmax * 2.2, Math.sqrt(2 * ACCEL * 1.6 * Math.abs(dx)));
                 }
-                setAt("");
             } else if (mode === "dwell") {
                 if (dwellUntil === null) dwellUntil = t + DWELL_MS;
                 if (t >= dwellUntil) {
                     dwellUntil = null;
                     dir = -dir;
                     mode = "cruise";
-                    setAt("");
                 }
             } else {
                 const remaining = dir > 0 ? max - x : x - min;
@@ -991,7 +1065,6 @@
             x = Math.max(0, (width - carW) / 2);
             v = 0;
             tilt = 0;
-            setAt("");
             paint();
         }
 
@@ -1031,11 +1104,41 @@
             }, 1200);
         });
 
+        function spawn(cls, host, styles, text) {
+            const el = document.createElement("span");
+            el.className = cls;
+            if (text) el.textContent = text;
+            Object.assign(el.style, styles);
+            el.addEventListener("animationend", () => el.remove(), { once: true });
+            host.appendChild(el);
+        }
+
         scene.addEventListener("pointerdown", (e) => {
-            if (reduce.matches || (toggle && toggle.contains(e.target))) return;
+            if (toggle && toggle.contains(e.target)) return;
+            // En pantallas táctiles el toque manda la camioneta hacia ese punto
+            if (e.pointerType === "touch" && !paused) {
+                target = e.clientX - scene.getBoundingClientRect().left;
+                mode = "follow";
+                dwellUntil = null;
+                clearTimeout(releaseTimer);
+                releaseTimer = setTimeout(() => { target = null; mode = "cruise"; }, 1800);
+                start();
+            }
+            if (reduce.matches) return;
             car.classList.remove("is-hop");
             void car.offsetWidth;
             car.classList.add("is-hop");
+
+            // Nubecitas de polvo detrás de las llantas
+            const back = dir > 0 ? x + carW * 0.14 : x + carW * 0.86;
+            for (let i = 0; i < 4; i++) {
+                spawn("road-dust", scene, {
+                    left: (back + (Math.random() - 0.5) * 14).toFixed(0) + "px",
+                    "--dx": ((dir > 0 ? -1 : 1) * (14 + Math.random() * 26)).toFixed(0) + "px",
+                    "--s": (0.7 + Math.random() * 0.9).toFixed(2),
+                    animationDelay: (i * 40) + "ms",
+                });
+            }
         });
 
         car.addEventListener("animationend", (e) => {

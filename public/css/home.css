@@ -3327,6 +3327,104 @@ html[data-theme="dark"] body.home-index .road-hills.is-near {
     color: color-mix(in srgb, var(--wine) 20%, var(--bg));
 }
 
+/* Vegetación de montaña: pinos, abetos, encinos, álamos, helechos, rocas y flores */
+body.home-index .road-scene {
+    --leaf-far: #a9c1b2;
+    --leaf-near: #679176;
+    --trunk: #8a6a55;
+    --trunk-light: #e4e0d4;
+    --rock: #a9a69e;
+    --rock-hi: #c3c0b8;
+    --bloom: color-mix(in srgb, var(--wine) 80%, #fff);
+    --bloom-alt: #f2c14e;
+    --cloud: rgba(255, 255, 255, 0.85);
+}
+
+html[data-theme="dark"] body.home-index .road-scene {
+    --leaf-far: #263e35;
+    --leaf-near: #365a4a;
+    --trunk: #4d3d36;
+    --trunk-light: #6d6c66;
+    --rock: #34343a;
+    --rock-hi: #43434a;
+    --bloom: color-mix(in srgb, var(--wine) 70%, #fff);
+    --bloom-alt: #c9a23c;
+    --cloud: rgba(255, 255, 255, 0.07);
+}
+
+body.home-index .road-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+body.home-index .road-flora {
+    position: absolute;
+    left: -64px;
+    width: calc(100% + 128px);
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+body.home-index .road-flora.is-far {
+    z-index: -2;
+    color: var(--leaf-far);
+    transform: translate3d(calc(var(--px) * -34px), 0, 0);
+}
+
+body.home-index .road-flora.is-near {
+    z-index: -1;
+    color: var(--leaf-near);
+    transform: translate3d(calc(var(--px) * -76px), 0, 0);
+}
+
+body.home-index .flora {
+    position: absolute;
+    bottom: 28px;
+    width: auto;
+    fill: currentColor;
+    overflow: visible;
+    transform-origin: 50% 100%;
+}
+
+body.home-index .road-flora.is-far .flora { bottom: 30px; }
+
+body.home-index .flora .fl-trunk,
+body.home-index .road-defs .fl-trunk { fill: var(--trunk); }
+body.home-index .flora .fl-trunk-light,
+body.home-index .road-defs .fl-trunk-light { fill: var(--trunk-light); }
+body.home-index .flora .fl-rock { fill: var(--rock); }
+body.home-index .flora .fl-rock-hi { fill: var(--rock-hi); }
+body.home-index .flora .fl-bloom,
+body.home-index .road-defs .fl-bloom { fill: var(--bloom); }
+body.home-index .flora .fl-bloom.is-alt,
+body.home-index .road-defs .fl-bloom.is-alt { fill: var(--bloom-alt); }
+
+/* Banda de pasto continua en la base, entre el cerro y el asfalto */
+body.home-index .road-verge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 28px;
+    height: 7px;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--leaf-near);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='9' viewBox='0 0 18 9'%3E%3Cpath d='M0 9 2 2 4 9 7 0 10 9 13 3 15 9 17 4 18 9z'/%3E%3C/svg%3E") repeat-x left bottom / 18px 9px;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='9' viewBox='0 0 18 9'%3E%3Cpath d='M0 9 2 2 4 9 7 0 10 9 13 3 15 9 17 4 18 9z'/%3E%3C/svg%3E") repeat-x left bottom / 18px 9px;
+}
+
+/* Nubes */
+body.home-index .road-cloud {
+    position: absolute;
+    z-index: -3;
+    height: auto;
+    fill: var(--cloud);
+    pointer-events: none;
+}
+
 /* Asfalto: ocupa todo el ancho y termina donde empieza el pie */
 body.home-index .road {
     position: absolute;
@@ -3532,13 +3630,75 @@ body.home-index .road-toggle [hidden] { display: none; }
     }
 
     @keyframes road-car-hop {
-        0% { transform: translateY(0); }
-        40% { transform: translateY(-16px); }
-        100% { transform: translateY(0); }
+        0% { transform: translateY(0) scale(1, 1); }
+        14% { transform: translateY(0) scale(1.05, 0.93); }
+        44% { transform: translateY(-22px) scale(0.97, 1.05); }
+        72% { transform: translateY(0) scale(1.05, 0.94); }
+        86% { transform: translateY(-4px) scale(0.99, 1.02); }
+        100% { transform: translateY(0) scale(1, 1); }
+    }
+
+    @keyframes road-dust-puff {
+        0% { opacity: 0.55; transform: translate(0, 0) scale(0.4); }
+        100% { opacity: 0; transform: translate(var(--dx, -20px), -16px) scale(var(--s, 1)); }
+    }
+
+    body.home-index .road-dust {
+        position: absolute;
+        bottom: 22px;
+        z-index: 2;
+        width: 12px;
+        height: 12px;
+        margin-left: -6px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--muted) 55%, var(--bg));
+        pointer-events: none;
+        animation: road-dust-puff 0.7s ease-out forwards;
     }
 
     body.home-index .road-car.is-moving .car-img {
         animation: road-car-bob 0.34s ease-in-out infinite;
+    }
+
+    /* Brisa: la inclinación se acompaña de un leve sesgo y un retraso según la posición,
+       de modo que la ráfaga recorre el paisaje en onda en lugar de moverse todo a la vez */
+    @keyframes flora-sway {
+        0%, 100% { transform: rotate(calc(var(--amp, 1.2deg) * -0.7)) skewX(calc(var(--amp, 1.2deg) * 0.8)); }
+        42% { transform: rotate(var(--amp, 1.2deg)) skewX(calc(var(--amp, 1.2deg) * -1)); }
+        70% { transform: rotate(calc(var(--amp, 1.2deg) * 0.25)) skewX(calc(var(--amp, 1.2deg) * -0.3)); }
+    }
+
+    @keyframes cloud-drift {
+        from { transform: translateX(-160px); }
+        to { transform: translateX(calc(100vw + 160px)); }
+    }
+
+    body.home-index .flora {
+        animation: flora-sway var(--sway, 6s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+        animation-delay: calc(var(--d) - 9s); /* retraso negativo: la onda avanza de izquierda a derecha */
+    }
+
+    /* Más lento y suave al fondo, más vivo cerca */
+    body.home-index .road-flora.is-far .flora { --sway: 8s; --amp: 0.8deg; }
+    body.home-index .road-flora.is-near .flora { --sway: 5.4s; --amp: 1.3deg; }
+
+    body.home-index .road-flora.is-near .flora.is-aspen { --amp: 2.2deg; --sway: 4.6s; }
+    body.home-index .road-flora.is-near .flora.is-oak { --amp: 1.1deg; }
+    body.home-index .road-flora.is-near .flora.is-grass,
+    body.home-index .road-flora.is-near .flora.is-flower,
+    body.home-index .road-flora.is-near .flora.is-fern,
+    body.home-index .road-flora.is-near .flora.is-bush { --amp: 3deg; --sway: 3.6s; }
+    body.home-index .road-flora .flora.is-rock { animation: none; }
+
+    body.home-index .road-cloud {
+        left: 0 !important;
+        animation: cloud-drift var(--dur, 160s) linear infinite;
+        animation-delay: var(--off, 0s);
+    }
+
+    body.home-index .road-scene.is-paused .flora,
+    body.home-index .road-scene.is-paused .road-cloud {
+        animation-play-state: paused;
     }
 
     body.home-index .road-car.is-hop .car-img {
@@ -3741,3 +3901,31 @@ html:not([data-theme="dark"]) body.home-index .road-sign-board {
         gap: 0.4rem 1rem;
     }
 }
+
+
+/* ===== Footer panorámico: acabado de carretera, contacto de la camioneta con el asfalto y barra inferior ===== */
+/* Profundidad del asfalto: más claro hacia el horizonte, más oscuro hacia el frente */
+html body.home-index .road-scene .road {
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.14));
+}
+
+/* La camioneta apoyada en el asfalto: sombra más definida bajo las llantas */
+body.home-index .car-flip::after {
+    left: 6%;
+    right: 4%;
+    bottom: -3px;
+    height: 9px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.18) 55%, transparent 72%);
+}
+
+/* Barra inferior: texto más legible */
+body.home-index .hf-bottom {
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    color: color-mix(in srgb, var(--text) 68%, var(--muted));
+}
+
+/* Vegetación más ligera: la capa lejana se funde con el cielo y la banda de pasto es sutil */
+body.home-index .road-flora.is-far { opacity: 0.7; }
+body.home-index .road-verge { opacity: 0.55; }
