@@ -10,7 +10,7 @@ const PHONE_E164 = "+528344756376";
 const PHONE_DISPLAY = "834 475 6376";
 const WHATSAPP_URL = "https://wa.me/528344756376";
 
-const DEFAULT_TITLE = "Transporte Victoria ↔ Llera | Pasaje y paquetería";
+const DEFAULT_TITLE = "Transporte Victoria a Llera | Pasaje y paquetería";
 const DEFAULT_DESCRIPTION =
     "Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios y paradas en ejidos.";
 

@@ -30,9 +30,9 @@
     <div class="container home-hero-inner">
         <div class="home-brand home-reveal">
             <div class="home-brand-copy">
-                <p class="home-kicker">Viaje especial · <%= ev.range_label %></p>
+                <p class="home-kicker">Viaje especial: <%= ev.range_label %></p>
                 <h1 class="home-brand-name"><%= ev.title %></h1>
-                <p class="home-brand-tag"><%= tripKind %> <%= ev.from_label %> - <%= ev.to_label %> · <%= mxn(evPrice) %> por persona</p>
+                <p class="home-brand-tag"><%= tripKind %> <%= ev.from_label %> - <%= ev.to_label %>, <%= mxn(evPrice) %> por persona</p>
             </div>
         </div>
 
@@ -300,7 +300,7 @@
                             <div class="slots-wrap price-wrap">
                                 <div class="slots-head">
                                     <p class="slots-title mb-0">Total a pagar</p>
-                                    <div class="slots-sub"><span data-seats-label><%= seatsValue %></span> × <%= mxn(evPrice) %><%= ev.is_round_trip ? ' · ida y vuelta' : '' %></div>
+                                    <div class="slots-sub"><span data-seats-label><%= seatsValue %></span> × <%= mxn(evPrice) %><%= ev.is_round_trip ? ' (ida y vuelta)' : '' %></div>
                                 </div>
                                 <div class="price-summary">
                                     <div class="price-total-row">
@@ -362,7 +362,7 @@
                                 </div>
                                 <div class="confirm-item">
                                     <span class="confirm-k"><%- include('partials/icon', { name: 'clock', size: 14 }) %> Horario</span>
-                                    <span class="confirm-v">Salida <%= ev.depart_label %><%= ev.is_round_trip ? ` · regreso ${ev.return_label}` : '' %></span>
+                                    <span class="confirm-v">Salida <%= ev.depart_label %><%= ev.is_round_trip ? `, regreso ${ev.return_label}` : '' %></span>
                                 </div>
                                 <div class="confirm-item">
                                     <span class="confirm-k"><%- include('partials/icon', { name: 'users', size: 14 }) %> Lugares</span>
@@ -526,7 +526,7 @@
             document.getElementById("sumPayment").textContent = PAY_LABELS[payInput.value] || "-";
             const name = String(nameInput.value || "").trim();
             const phone = String(phoneInput.value || "").trim();
-            document.getElementById("sumContact").textContent = name ? `${name}${phone ? " · " + phone : ""}` : "-";
+            document.getElementById("sumContact").textContent = name ? `${name}${phone ? ", " + phone : ""}` : "-";
         }
 
         /* ----- Validación por paso ----- */

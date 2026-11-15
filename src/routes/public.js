@@ -473,7 +473,7 @@ async function routeLabelForReservation(r, separator = " → ") {
     if (!Number(r.special_event_id || 0)) return base;
     try {
         const ev = await specialEvents.getEventById(pool, r.special_event_id);
-        return ev ? `${base} · ${specialEvents.routeNote(ev)}` : base;
+        return ev ? `${base}, ${specialEvents.routeNote(ev)}` : base;
     } catch {
         return base;
     }

@@ -1,0 +1,12 @@
+<%
+const atTitle = (typeof title !== "undefined" && title) ? String(title) : "Admin";
+const atSub = (typeof subtitle !== "undefined" && subtitle) ? String(subtitle) : "";
+const atIcon = (typeof icon !== "undefined" && icon) ? String(icon) : "layout-dashboard";
+%>
+<div class="admin-title">
+    <span class="admin-title-ico" aria-hidden="true"><%- include('icon', { name: atIcon, size: 18 }) %></span>
+    <div class="admin-title-copy">
+        <h2 class="home-section-title"><%= atTitle %></h2>
+        <% if (atSub) { %><p class="admin-title-sub"><%= atSub %></p><% } %>
+    </div>
+</div>

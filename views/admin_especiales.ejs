@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Viajes especiales',
+    title: 'Viajes especiales | Admin',
     description: 'Administración de viajes especiales (fechas, cupo y precio).',
     noindex: true
     }) %>
@@ -38,7 +38,7 @@
     %>
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Viajes especiales</h2>
+            <%- include('partials/admin-title', { title: 'Especiales', icon: 'ferris-wheel', subtitle: 'Viajes con fecha, cupo y precio propios' }) %>
             <div class="home-tabs-tools">
                 <%- include('partials/admin-nav', { adminNav: 'especiales' }) %>
             </div>
@@ -67,7 +67,7 @@
                     <div class="esp-head-copy">
                         <div class="esp-kicker">
                             <%- include('partials/icon', { name: ev.icon, size: 14 }) %>
-                            <%= ev.range_label %> · <%= ev.from_label %> → <%= ev.to_label %>
+                            <%= ev.range_label %>, <%= ev.from_label %> → <%= ev.to_label %>
                         </div>
                         <h3 class="esp-title"><%= ev.title %></h3>
                         <div class="esp-meta subtle">

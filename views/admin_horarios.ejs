@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Admin horarios',
+    title: 'Horarios | Admin',
     description: 'Panel para administrar horarios y salidas.',
     noindex: true
     }) %>
@@ -19,7 +19,7 @@
 <section class="container">
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Administración de horarios</h2>
+            <%- include('partials/admin-title', { title: 'Horarios', icon: 'clock', subtitle: 'Salidas por día y horarios base' }) %>
             <div class="home-tabs-tools">
                 <%- include('partials/admin-nav', { adminNav: 'horarios' }) %>
             </div>

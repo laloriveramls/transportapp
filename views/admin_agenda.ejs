@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Agenda',
+    title: 'Agenda ' + (() => { try { return new Intl.DateTimeFormat('es-MX', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(String(date) + 'T12:00:00')).replace(' de ', ' ').replace('.', ''); } catch (e) { return String(date || ''); } })() + ' | Admin',
     description: 'Agenda administrativa de salidas y reservas.',
     noindex: true
     }) %>
@@ -108,7 +108,7 @@
     %>
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Salidas del día</h2>
+            <%- include('partials/admin-title', { title: 'Agenda', icon: 'calendar-days', subtitle: 'Salidas, cupo e ingresos del día' }) %>
             <div class="home-tabs-tools">
                 <%- include('partials/admin-nav', { adminNav: 'agenda' }) %>
             </div>
@@ -224,9 +224,8 @@
                             <span class="agenda-col-to"><%= group.to %></span>
                             <% } %>
                         </div>
-                        <span class="agenda-col-count" title="Salidas · pasajeros · paquetes">
-                            <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>
-                            · <%= group.pax %> pasajero<%= group.pax === 1 ? '' : 's' %><% if (group.packs > 0) { %> · <%= group.packs %> paquete<%= group.packs === 1 ? '' : 's' %><% } %><% if (group.revenue > 0) { %> · <%= mxn(group.revenue) %><% } %>
+                        <span class="agenda-col-count" title="Salidas, pasajeros y paquetes">
+                            <%= group.items.length %> salida<%= group.items.length === 1 ? '' : 's' %>, <%= group.pax %> pasajero<%= group.pax === 1 ? '' : 's' %><% if (group.packs > 0) { %>, <%= group.packs %> paquete<%= group.packs === 1 ? '' : 's' %><% } %><% if (group.revenue > 0) { %>, <%= mxn(group.revenue) %><% } %>
                         </span>
                     </div>
 
@@ -277,7 +276,7 @@
                             <% if (isSpecial) { %>
                                 <div class="agenda-trip-special">
                                     <%- include('partials/icon', { name: t.special_icon || 'ferris-wheel', size: 12 }) %>
-                                    <%= t.special_title %><% if (t.special_route) { %> · <%= t.special_route %><% } %><% if (t.special_return_time) { %> · regreso <%= String(t.special_return_time).slice(0, 5) %><% } %>
+                                    <%= t.special_title %><% if (t.special_route) { %>, <%= t.special_route %><% } %><% if (t.special_return_time) { %>, regreso <%= String(t.special_return_time).slice(0, 5) %><% } %>
                                 </div>
                             <% } %>
                             <div class="agenda-trip-meter-row">

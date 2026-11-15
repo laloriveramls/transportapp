@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Últimos registros',
+    title: 'Registros | Admin',
     description: 'Admin: últimos registros de reservas.',
     noindex: true
     }) %>
@@ -96,7 +96,7 @@
                 day = new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short' }).format(d);
             }
         } catch {}
-        return hhmm ? (day + ' · ' + hhmm) : day;
+        return hhmm ? (day + ', ' + hhmm) : day;
     };
 
     const countsFromRoute = (typeof statusCounts === 'undefined') ? null : statusCounts;
@@ -133,7 +133,7 @@
 
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Últimos registros</h2>
+            <%- include('partials/admin-title', { title: 'Registros', icon: 'history', subtitle: 'Últimas reservas, pagos y boletos' }) %>
             <div class="home-tabs-tools">
                 <%- include('partials/admin-nav', { adminNav: 'recent' }) %>
             </div>
@@ -147,7 +147,7 @@
                 <% if (totalN === 0) { %>
                     Sin coincidencias
                 <% } else { %>
-                    <%= from || 0 %>–<%= to || 0 %> · Pág. <%= _page %>/<%= _pages %>
+                    <%= from || 0 %>–<%= to || 0 %>, pág. <%= _page %> de <%= _pages %>
                 <% } %>
             </p>
         </div>
@@ -282,7 +282,7 @@
                         <td class="col-type" data-label="Tipo">
                             <span class="recent-tag">
                                 <%- include('partials/icon', { name: isPassenger ? 'user' : 'package', size: 14 }) %>
-                                <%= isPassenger ? ('Pasajero' + (paxShown > 1 ? 's · ' + paxShown : '')) : 'Paquete' %>
+                                <%= isPassenger ? ('Pasajero' + (paxShown > 1 ? 's (' + paxShown + ')' : '')) : 'Paquete' %>
                             </span>
                             <div class="recent-type-extra" title="<%= detailValue %>"><%= detailValue %></div>
                         </td>

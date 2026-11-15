@@ -2,7 +2,7 @@
 <html lang="es-MX" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Transporte Victoria ↔ Llera | Pasaje y paquetería',
+    title: 'Transporte Victoria a Llera | Pasaje y paquetería',
     description: 'Reserva pasaje y paquetería entre Ciudad Victoria y Llera de Canales, Tamaulipas. Horarios diarios y paradas en ejidos.',
     canonicalUrl: (typeof baseUrl !== 'undefined' ? String(baseUrl).replace(/\/+$/, '') : 'https://serviciodetransportevic.com') + '/'
     }) %>
@@ -202,7 +202,7 @@
                             <div class="special-head-copy">
                                 <p class="special-kicker">
                                     <%- include('partials/icon', { name: 'calendar-range', size: 14 }) %>
-                                    Viaje especial · <%= ev.range_label %>
+                                    Viaje especial: <%= ev.range_label %>
                                 </p>
                                 <h3 class="special-title"><%= ev.title %></h3>
                                 <% if (ev.description) { %>
@@ -501,7 +501,7 @@
 <footer class="home-footer home-footer-rich" id="contacto">
     <div class="container hf-bottom">
         <span>© <%= new Date().getFullYear() %> Servicio de Transporte</span>
-        <span>Ciudad Victoria · Llera de Canales, Tamaulipas</span>
+        <span>Ciudad Victoria y Llera de Canales, Tamaulipas</span>
     </div>
 </footer>
 
@@ -691,7 +691,7 @@
             pill.href = `/reserve?dir=${dir}&time=${encodeURIComponent(target.hhmm)}&date=${encodeURIComponent(target.dateISO)}`;
 
             if (whenEl) {
-                whenEl.textContent = full ? `${real.when} · lleno` : real.when;
+                whenEl.textContent = full ? `${real.when}, lleno` : real.when;
             }
             if (etaEl) {
                 etaTargets.push({el: etaEl, dateISO: target.dateISO, hhmm: target.hhmm});

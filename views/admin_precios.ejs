@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Admin precios',
+    title: 'Precios y paradas | Admin',
     description: 'Tarifas base, ciudades y paradas.',
     noindex: true
     }) %>
@@ -19,7 +19,7 @@
 <section class="container">
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Precios y paradas</h2>
+            <%- include('partials/admin-title', { title: 'Precios', icon: 'tag', subtitle: 'Tarifas, ciudades y paradas' }) %>
             <div class="home-tabs-tools">
                 <%- include('partials/admin-nav', { adminNav: 'precios' }) %>
             </div>
@@ -291,7 +291,7 @@
             const mxn = (id) => "$" + Number(document.getElementById(id).value || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});
             const okSave = await Confirm.ask({
                 title: "Guardar tarifas",
-                message: `Adulto ${mxn("pPassenger")} · Niño ${mxn("pChild")} · Paquete ${mxn("pPackage")}\nAplican a las nuevas reservas; las existentes conservan su precio.`,
+                message: `Adulto ${mxn("pPassenger")}, Niño ${mxn("pChild")}, Paquete ${mxn("pPackage")}\nAplican a las nuevas reservas; las existentes conservan su precio.`,
                 confirmText: "Guardar tarifas"
             });
             if (!okSave) return;

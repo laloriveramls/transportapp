@@ -222,7 +222,7 @@ router.get("/ticket/:code", requireDb, async (req, res) => {
         printUrl: `${ticketPath}/print`,
         directionLabel,
         ...(specialEvent ? {
-            routeLabel: `${formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop)} · ${specialEvents.routeNote(specialEvent)}`,
+            routeLabel: `${formatRouteLabel(row.direction, row.vic_location, " → ", row.from_stop, row.to_stop)}, ${specialEvents.routeNote(specialEvent)}`,
             specialNote: specialEvents.routeNote(specialEvent),
             specialIcon: specialEvent.icon,
         } : {}),
@@ -299,7 +299,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
 
     // Business lines (smaller)
     const BRAND_LINE_1 = "";
-    const BRAND_LINE_2 = "Comodidad • Seguridad • WiFi gratis";
+    const BRAND_LINE_2 = "Comodidad, seguridad y WiFi gratis";
     const BRAND_LINE_3 = "WhatsApp: (834) 475-63-76";
 
     // Page sizing

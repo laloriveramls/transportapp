@@ -229,7 +229,7 @@ app.use((req, res) => {
     // browser-like HTML requests
     if (req.method === "GET" && wantsHtml) {
         return res.status(404).render("404", {
-            title: "404 · Esta página no existe",
+            title: "Página no encontrada | Servicio de Transporte",
             path: req.originalUrl,
             noindex: true
         });

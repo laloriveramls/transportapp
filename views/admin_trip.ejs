@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Salida',
+    title: (() => { try { return (trip.direction === 'LLE_TO_VIC' ? 'Llera → Victoria' : 'Victoria → Llera') + ' ' + String(trip.depart_time || '').slice(0, 5) + ', ' + new Intl.DateTimeFormat('es-MX', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date((trip.trip_date instanceof Date ? trip.trip_date.toLocaleDateString('en-CA', { timeZone: 'America/Monterrey' }) : String(trip.trip_date).slice(0, 10)) + 'T12:00:00')).replace(' de ', ' ').replace('.', '') + ' | Admin'; } catch (e) { return 'Salida | Admin'; } })(),
     description: 'Administración de salida (reservas y cupo).',
     canonicalUrl: 'https://serviciodetransportevic.com/admin/trip',
     noindex: true
@@ -120,7 +120,7 @@
 
     <div class="tabs-card home-tabs admin-shell">
         <div class="home-tabs-head">
-            <h2 class="home-section-title">Salida</h2>
+            <%- include('partials/admin-title', { title: 'Salida', icon: 'bus', subtitle: 'Reservas, cupo y cobros' }) %>
             <div class="home-tabs-tools">
                 <a class="btn btn-ghost btn-sm" href="/admin/agenda?date=<%= encodeURIComponent(tripDateISO) %>">
                     <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %>
@@ -147,7 +147,7 @@
                 <% if (trip.special_title) { %>
                     <div class="trip-special-note">
                         <%- include('partials/icon', { name: trip.special_icon || 'ferris-wheel', size: 14 }) %>
-                        <%= trip.special_title %><% if (trip.special_return_time) { %> · viaje redondo, regreso <%= String(trip.special_return_time).slice(0, 5) %><% } %>
+                        <%= trip.special_title %><% if (trip.special_return_time) { %> (viaje redondo, regreso <%= String(trip.special_return_time).slice(0, 5) %>)<% } %>
                     </div>
                 <% } %>
             </div>
@@ -212,7 +212,7 @@
 
     <div class="trip-list-head">
         <h3 class="trip-list-title">Reservaciones</h3>
-        <span class="trip-list-count"><%= rows.length %> reserva<%= rows.length === 1 ? '' : 's' %><% if (!onlyPending && pendingCount) { %> · <%= pendingCount %> pendiente<%= pendingCount === 1 ? '' : 's' %><% } %><% if (onlyPending) { %> pendiente<%= rows.length === 1 ? '' : 's' %><% } %></span>
+        <span class="trip-list-count"><%= rows.length %> reserva<%= rows.length === 1 ? '' : 's' %><% if (!onlyPending && pendingCount) { %>, <%= pendingCount %> pendiente<%= pendingCount === 1 ? '' : 's' %><% } %><% if (onlyPending) { %> pendiente<%= rows.length === 1 ? '' : 's' %><% } %></span>
     </div>
 
     <% if (!rows.length) { %>
@@ -345,12 +345,12 @@
                                       data-confirm-title="Cancelar reserva pagada"
                                       data-confirm-ok="Continuar"
                                       data-confirm-tone="danger">
-                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> 1 · Cancelar</button>
+                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> 1. Cancelar</button>
                                 </form>
                                 <a class="btn btn-outline-danger btn-xs"
                                    href="/admin/reservation/<%= r.id %>/stripe-refund"
                                    target="_blank" rel="noopener">
-                                    <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> 2 · Reembolsar en Stripe
+                                    <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> 2. Reembolsar en Stripe
                                 </a>
                                 <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
                                       class="m-0"
@@ -358,7 +358,7 @@
                                       data-confirm-title="¿Ya reembolsaste en Stripe?"
                                       data-confirm-ok="Sí, ya reembolsé"
                                       data-confirm-tone="danger">
-                                    <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> 3 · Ya reembolsé</button>
+                                    <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> 3. Ya reembolsé</button>
                                 </form>
                             <% } else { %>
                                 <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
