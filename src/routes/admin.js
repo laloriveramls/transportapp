@@ -679,10 +679,10 @@ router.get("/recent", requireAdmin, requireDb, async (req, res) => {
 ========================================================= */
 router.get("/horarios", requireAdmin, requireDb, async (req, res) => {
     res.render("admin_horarios", {title: "Admin horarios"});
+});
 
 router.get("/precios", requireAdmin, requireDb, async (req, res) => {
     res.render("admin_precios", {title: "Admin precios"});
-});
 });
 
 /* -----------------------------
