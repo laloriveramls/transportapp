@@ -128,6 +128,7 @@
         const priceValue = (n) => String(Math.round(Number(n || 0) * 100) / 100);
         const passenger = priceValue(data.passenger_price_mxn);
         const pkg = priceValue(data.package_price_mxn);
+        const localPkg = priceValue(data.local_package_price_mxn ?? 30);
         const child = priceValue(data.child_price_mxn ?? (Number(data.passenger_price_mxn || 0) / 2));
         const updated = data.updated_at ? String(data.updated_at) : "—";
         const vicLabel = escapeHtml(data.vic_label || data.city_labels?.VIC || "Ciudad Victoria");
@@ -219,6 +220,13 @@
                                 <input id="pPackage" type="number" step="any" min="0" inputmode="decimal" value="${pkg}">
                             </span>
                         </label>
+                        <label class="pricing-field pricing-field-price">
+                            <span class="pricing-field-label">${pkgIco} Paquete local en ${lleLabel}</span>
+                            <span class="price-input">
+                                ${pricePrefix}
+                                <input id="pLocalPackage" type="number" step="any" min="0" inputmode="decimal" value="${localPkg}">
+                            </span>
+                        </label>
                         <label class="pricing-field">
                             <span class="pricing-field-label">${mapIco} Origen (Victoria)</span>
                             <input id="pVicLabel" type="text" maxlength="80" value="${vicLabel}">
@@ -291,7 +299,7 @@
             const mxn = (id) => "$" + Number(document.getElementById(id).value || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});
             const okSave = await Confirm.ask({
                 title: "Guardar tarifas",
-                message: `Adulto ${mxn("pPassenger")}, Niño ${mxn("pChild")}, Paquete ${mxn("pPackage")}\nAplican a las nuevas reservas; las existentes conservan su precio.`,
+                message: `Adulto ${mxn("pPassenger")}, Niño ${mxn("pChild")}, Paquete ${mxn("pPackage")}, Paquete local ${mxn("pLocalPackage")}\nAplican a las nuevas reservas; las existentes conservan su precio.`,
                 confirmText: "Guardar tarifas"
             });
             if (!okSave) return;
@@ -304,6 +312,7 @@
                 passenger_price_mxn: Number(document.getElementById("pPassenger").value || 0),
                 child_price_mxn: Number(document.getElementById("pChild").value || 0),
                 package_price_mxn: Number(document.getElementById("pPackage").value || 0),
+                local_package_price_mxn: Number(document.getElementById("pLocalPackage").value || 0),
                 vic_label: document.getElementById("pVicLabel").value || "",
                 lle_label: document.getElementById("pLleLabel").value || "",
             });

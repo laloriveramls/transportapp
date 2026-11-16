@@ -19,6 +19,7 @@ const DEV_TEMPLATES = [
 const DEV_PRICING = {
     passenger_price_mxn: 120,
     package_price_mxn: 120,
+    local_package_price_mxn: 30,
     child_price_mxn: 60,
 };
 

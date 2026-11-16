@@ -1107,6 +1107,7 @@ router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
                 ok: true,
                 passenger_price_mxn: pricing.passenger_price_mxn,
                 package_price_mxn: pricing.package_price_mxn,
+                local_package_price_mxn: pricing.local_package_price_mxn ?? 30,
                 child_price_mxn: pricing.child_price_mxn,
                 updated_at: null,
                 city_labels: cities,
@@ -1137,6 +1138,14 @@ router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
             setCityLabels({VIC: row.vic_label, LLE: row.lle_label});
         }
 
+        let localPackage = 30;
+        try {
+            const [[lrow]] = await pool.query(`SELECT local_package_price_mxn FROM transporte_settings WHERE id = 1`);
+            if (lrow?.local_package_price_mxn != null) localPackage = Number(lrow.local_package_price_mxn);
+        } catch {
+            // columna pendiente de migrar: se muestra el valor por omisión
+        }
+
         const cities = getCityLabels();
         const locations = getVicLocations({includeInactive: true}).map(serializeLocationRow);
 
@@ -1144,6 +1153,7 @@ router.get("/api/pricing", requireAdmin, requireDb, async (req, res) => {
             ok: true,
             passenger_price_mxn: passenger,
             package_price_mxn: Number(row?.package_price_mxn ?? 120),
+            local_package_price_mxn: localPackage,
             child_price_mxn: child,
             updated_at: row?.updated_at || null,
             city_labels: cities,
@@ -1188,6 +1198,17 @@ router.post("/api/pricing", requireAdmin, requireDb, async (req, res) => {
             `,
             [passenger, pkg, child, vicLabel, lleLabel]
         );
+
+        // Tarifa de paquetería local en Llera (columna aditiva; si falta la migración, se avisa sin romper el guardado)
+        if (req.body.local_package_price_mxn != null && req.body.local_package_price_mxn !== "") {
+            const localPkg = Math.max(0, Number(req.body.local_package_price_mxn || 0));
+            try {
+                await pool.query(`UPDATE transporte_settings SET local_package_price_mxn = ? WHERE id = 1`, [localPkg]);
+            } catch (e) {
+                console.error("No pude guardar la tarifa de paquetería local (¿falta la migración 20261116?):", e.message || e);
+                return res.status(500).json({ok: false, message: "Se guardaron las demás tarifas, pero falta aplicar la migración sql/20261116_local_package_price.sql para la paquetería local."});
+            }
+        }
 
         setCityLabels({VIC: vicLabel, LLE: lleLabel});
         return res.json({ok: true, city_labels: getCityLabels()});
@@ -1684,7 +1705,8 @@ router.post("/reservation/:id/mark-paid", requireAdmin, requireDb, async (req, r
 });
 
 // Cancel reservation (ADMIN)
-// Flow for ONLINE+PAID: 1) cancel first, 2) go to Stripe, 3) admin confirms "refund done".
+// Flow for ONLINE+PAID: 1) go to Stripe and refund, 2) admin confirms "refund done" (/refund-done cancels).
+// Other paid methods (cash/transfer) are cancelled directly here.
 router.post("/reservation/:id/cancel", requireAdmin, requireDb, async (req, res) => {
     const id = Number(req.params.id || 0);
     const back = req.get("Referrer") || "/admin/agenda";
@@ -1715,13 +1737,14 @@ router.post("/reservation/:id/cancel", requireAdmin, requireDb, async (req, res)
             return res.redirect(back);
         }
 
-        // I do not cancel paid reservations unless they are ONLINE (manual refund flow).
-        if (st === "PAID" && pm !== "ONLINE") {
+        // ONLINE+PAID must go through the Stripe refund flow (/refund-done), never a direct cancel.
+        if (st === "PAID" && pm === "ONLINE") {
             await conn.rollback();
             return res.redirect(back);
         }
 
-        // ✅ I do cancel here (including ONLINE+PAID). I keep Stripe IDs intact.
+        // Paid cash/transfer reservations can be cancelled directly (the refund is handled in person).
+        // I keep the ticket row, which now shows as "Cancelado" on the ticket page.
         await conn.query(
             `UPDATE transporte_reservations
              SET status='CANCELLED'
@@ -1766,7 +1789,7 @@ router.get("/reservation/:id/stripe-refund", requireAdmin, requireDb, async (req
     const st = String(r.status || "").toUpperCase();
     const pm = String(r.payment_method || "").toUpperCase();
 
-    // ✅ Allow if it's ONLINE and was paid (PAID) or already cancelled (because we cancel first).
+    // Allow if it's ONLINE and PAID (or already cancelled, to review the refund in Stripe).
     if (pm !== "ONLINE" || (st !== "PAID" && st !== "CANCELLED")) return res.redirect(back);
 
     const base = stripeDashBase();

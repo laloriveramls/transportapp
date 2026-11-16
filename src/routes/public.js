@@ -40,6 +40,8 @@ const {
     routeFromStops,
     formatRouteLabel,
     isValidStop,
+    LLERA_CODE,
+    LOCAL_PACKAGE_DEFAULT_MXN,
 } = require("../locations");
 const seo = require("../seo");
 
@@ -54,8 +56,8 @@ const stripe = process.env.STRIPE_SECRET_KEY
    ========================= */
 
 // I keep a strict cap (also clamped by template capacity in DB).
-const {MAX_TRIP_CAPACITY} = require("../capacity");
-const MAX_CAP = 14; // Max passengers per single booking (not the trip capacity).
+const {MAX_TRIP_CAPACITY, MAX_PASSENGERS_PER_BOOKING, CHILD_AGE_MIN, CHILD_AGE_MAX} = require("../capacity");
+const MAX_CAP = MAX_PASSENGERS_PER_BOOKING; // Max passengers per single booking (not the trip capacity).
 
 const ALLOWED_PAYMENT_METHODS = new Set(["TAQUILLA", "TRANSFERENCIA", "ONLINE"]);
 const ALLOWED_TYPES = new Set(["PASSENGER", "PACKAGE"]);
@@ -225,13 +227,25 @@ async function getPricing(conn) {
                 ? Number(row.child_price_mxn)
                 : moneyMXN(passenger / 2);
 
+        // Tarifa de paquetería local en Llera. Se lee aparte: si la columna aún no existe, uso el valor por omisión.
+        let local = LOCAL_PACKAGE_DEFAULT_MXN;
+        try {
+            const [[lrow]] = await conn.query(
+                `SELECT local_package_price_mxn FROM transporte_settings WHERE id = 1`
+            );
+            if (lrow?.local_package_price_mxn != null) local = Number(lrow.local_package_price_mxn);
+        } catch {
+            // columna pendiente de migrar
+        }
+
         return {
             passenger_price_mxn: moneyMXN(passenger),
             package_price_mxn: moneyMXN(pkg),
+            local_package_price_mxn: moneyMXN(local),
             child_price_mxn: moneyMXN(child),
         };
     } catch {
-        return {passenger_price_mxn: 120, package_price_mxn: 120, child_price_mxn: 60};
+        return {passenger_price_mxn: 120, package_price_mxn: 120, local_package_price_mxn: LOCAL_PACKAGE_DEFAULT_MXN, child_price_mxn: 60};
     }
 }
 
@@ -279,6 +293,8 @@ function reserveViewData(extra = {}) {
     return {
         vicLocations: getVicLocations(),
         cityLabels: getCityLabels(),
+        // Límites de la reserva: la página los muestra y los usa para validar
+        limits: {maxPassengers: MAX_PASSENGERS_PER_BOOKING, childAgeMin: CHILD_AGE_MIN, childAgeMax: CHILD_AGE_MAX},
         seoPage: "reserve",
         ...extra,
         jsonLd: extra.jsonLd || seo.reserveJsonLd({baseUrl, pricing}),
@@ -530,7 +546,7 @@ router.get(
                 pricing,
                 specialEvents: previewSpecialEvents(),
                 seoPage: "home",
-                faqs: seo.homeFaqs(pricing, vicLocations),
+                faqs: seo.homeFaqs(pricing, vicLocations, {templates}),
                 jsonLd: seo.homeJsonLd({
                     baseUrl: buildBaseUrl(req),
                     templates,
@@ -566,7 +582,7 @@ router.get(
                 pricing,
                 specialEvents: homeSpecialEvents,
                 seoPage: "home",
-                faqs: seo.homeFaqs(pricing, vicLocations),
+                faqs: seo.homeFaqs(pricing, vicLocations, {templates}),
                 jsonLd: seo.homeJsonLd({
                     baseUrl: buildBaseUrl(req),
                     templates,
@@ -732,6 +748,13 @@ router.post(
         to_stop = String(to_stop || "").trim().toUpperCase();
 
         type = String(type || "PASSENGER").trim().toUpperCase();
+        // Paquetería local en Llera: es un paquete con origen y destino en Llera, sobre un horario que sale de Llera.
+        const isLocalPackage = type === "PACKAGE_LOCAL";
+        if (isLocalPackage) {
+            type = "PACKAGE";
+            from_stop = LLERA_CODE;
+            to_stop = LLERA_CODE;
+        }
         if (!ALLOWED_TYPES.has(type)) {
             return res.status(400).render("reserve", reserveViewData({error: "Tipo de reserva no válido."}));
         }
@@ -745,7 +768,7 @@ router.post(
             return res.status(400).render("reserve", reserveViewData({error: "Origen o destino no válido."}));
         }
 
-        const direction = directionFromStops(from_stop, to_stop);
+        const direction = isLocalPackage ? "LLE_TO_VIC" : directionFromStops(from_stop, to_stop);
         if (!direction) {
             return res.status(400).render("reserve", reserveViewData({
                 error: "Ruta no válida. El viaje debe conectar Ciudad Victoria o Llera con una parada o ciudad de destino.",

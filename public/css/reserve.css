@@ -1940,3 +1940,500 @@ html[data-theme="dark"] .page-reserve .price-breakdown-item .mini-tag {
 .page-reserve .trip-details-grid > :has(> .seg-pills) {
     grid-column: 1 / -1;
 }
+
+/* ===== Pulido de la reserva: fechas, horarios, resumen ===== */
+
+/* Fechas: la tira ocupa todo el ancho en lugar de dejar un hueco a la derecha */
+@media (min-width: 720px) {
+    .page-reserve .date-strip {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 0.5rem;
+        overflow: visible;
+        padding: 2px 0 6px;
+    }
+    .page-reserve .date-card { width: auto; min-height: 84px; border-radius: 14px; }
+}
+
+.page-reserve .date-card { transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+.page-reserve .date-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--wine) 45%, var(--border)); }
+.page-reserve .date-card:focus-visible,
+.page-reserve .slot-pill:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+
+/* Horarios: píldoras parejas */
+@media (min-width: 720px) {
+    .page-reserve .slot-pill { min-width: 6.4rem; }
+}
+.page-reserve .slot-pill[aria-selected="true"] { box-shadow: 0 6px 16px color-mix(in srgb, var(--wine) 30%, transparent); }
+
+/* Títulos de sección más sobrios */
+.page-reserve .trip-section-title { font-size: 0.72rem; letter-spacing: 0.12em; color: var(--muted); }
+
+/* Botón principal de cada paso */
+.page-reserve .form-step .btn-wine { box-shadow: 0 8px 20px color-mix(in srgb, var(--wine) 28%, transparent); }
+
+/* Resumen "Tu viaje": tarjeta con cabecera y total destacado */
+@media (min-width: 960px) {
+    .page-reserve .reserve-summary {
+        padding: 0;
+        gap: 0;
+        overflow: hidden;
+        box-shadow: 0 14px 34px rgba(15, 8, 12, 0.14), 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+    }
+    .page-reserve .reserve-summary-title {
+        padding: 0.75rem 1.15rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #fff;
+        background: linear-gradient(135deg, var(--wine) 0%, var(--wine-2, var(--wine)) 100%);
+    }
+    .page-reserve .rs-route { padding: 0.95rem 1.15rem 0.2rem; font-size: 1.2rem; }
+    .page-reserve .rs-list { padding: 0.5rem 1.15rem 0.7rem; gap: 0; }
+    .page-reserve .rs-list li { padding: 0.55rem 0; border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+    .page-reserve .rs-list li:last-child { border-bottom: 0; }
+    .page-reserve .rs-break { padding: 0 1.15rem 0.7rem; }
+    .page-reserve .rs-total {
+        margin: 0;
+        padding: 0.95rem 1.15rem;
+        background: color-mix(in srgb, var(--wine) 8%, var(--card));
+    }
+    .page-reserve .rs-total b { color: var(--wine); }
+}
+
+/* ===== Reserva compacta: el paso 1 cabe en una pantalla de laptop ===== */
+@media (min-width: 720px) {
+    /* Banner superior más bajo */
+    .page-reserve .home-hero { padding-block: 0.45rem; }
+    .page-reserve .home-brand-logo-wide { max-height: 62px; width: auto; }
+
+    /* Cabecera de la tarjeta y secciones */
+    .page-reserve .home-tabs-head { padding-block: 0.4rem; }
+    .page-reserve .trip-layout { gap: 0.55rem; }
+    .page-reserve .trip-section { gap: 0.35rem; }
+    .page-reserve .trip-section-title { margin: 0 0 0.1rem; }
+
+    /* Ruta */
+    .page-reserve .route-grid .form-select { min-height: 42px; padding-block: 0.3rem; }
+
+    /* Fecha: "¿Otro día?" va en la misma línea que la etiqueta */
+    .page-reserve .trip-details-grid { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr); gap: 0.55rem 1rem; align-items: start; }
+    .page-reserve .trip-date { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.3rem 0.8rem; }
+    .page-reserve .trip-date > .form-label { grid-column: 1; grid-row: 1; margin: 0; }
+    .page-reserve .trip-date > .date-other { grid-column: 2; grid-row: 1; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .page-reserve .trip-date > .date-strip { grid-column: 1 / -1; grid-row: 2; }
+    .page-reserve .date-other .field-ico-wrap { height: 36px; }
+    .page-reserve .date-other .form-control { min-height: 36px; padding-block: 0.2rem; font-size: 0.9rem; }
+
+    /* Tarjetas de fecha bajas */
+    .page-reserve .date-card { min-height: 62px; padding: 5px 4px; border-radius: 12px; }
+
+    /* Servicio y viajeros en una sola fila */
+    .page-reserve .seg-pills .seg-pill { min-height: 40px; }
+    .page-reserve .trip-pax .stepper, .page-reserve .trip-pax [class*="stepper"] { min-height: 40px; }
+
+    /* Horarios */
+    .page-reserve .slot-pill { padding-block: 0.3rem; }
+
+    /* Botón de siguiente */
+    .page-reserve .form-step .step-actions, .page-reserve .step-nav { margin-top: 0.3rem; }
+}
+
+@media (min-width: 720px) {
+    body.page-reserve .home-hero .home-brand-logo.home-brand-logo-wide { max-height: 60px; }
+}
+
+@media (min-width: 720px) {
+    body.page-reserve .trip-details-grid > * { grid-column: auto; min-width: 0; }
+    body.page-reserve .trip-details-grid > .trip-date { grid-column: 1 / -1; }
+    body.page-reserve .trip-date > .date-other { flex-direction: row; flex-wrap: nowrap; }
+    body.page-reserve .date-other .date-other-lbl { white-space: nowrap; }
+}
+
+@media (min-width: 720px) {
+    body.page-reserve .trip-details-grid > :has(> .seg-pills) { grid-column: auto; }
+}
+
+/* ===== Pasos 2 a 4 ===== */
+/* Alineación: el contenido de cada paso arranca en el mismo margen que su título */
+.page-reserve .step-card .reserve-panel { padding-inline: 0; }
+.page-reserve .field-help { display: block; margin-top: 0.3rem; font-size: 0.76rem; color: var(--muted); }
+
+/* Paso 3: el total ya está en el resumen lateral, aquí queda en una sola línea */
+.page-reserve .price-wrap { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.4rem 1rem; padding: 0.7rem 0.9rem; border-radius: 14px; background: color-mix(in srgb, var(--wine) 7%, var(--card)); }
+.page-reserve .price-wrap .slots-head { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+.page-reserve .price-wrap .price-summary { padding: 0; }
+.page-reserve .price-wrap .price-breakdown { display: none; }
+
+/* Paso 4: confirmación más ligera */
+.page-reserve .confirm-grid { gap: 0 1.5rem; }
+.page-reserve .confirm-item:not(.total-item) { border: 0; border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent); border-radius: 0; background: none; padding: 0.6rem 0.2rem; box-shadow: none; }
+.page-reserve .confirm-item .confirm-v { font-size: 1rem; }
+.page-reserve .confirm-item.total-item { border-radius: 14px; padding: 0.8rem 1rem; }
+
+/* =====================================================================
+   Rediseño de los pasos Datos, Pago y Listo
+   ===================================================================== */
+
+/* Cabecera de paso: icono + título + frase de apoyo */
+.page-reserve .rv-step-head { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 1rem; }
+.page-reserve .rv-step-head .step-title { margin: 0; font-size: 1.25rem; letter-spacing: -0.03em; }
+.page-reserve .rv-step-sub { margin: 0.1rem 0 0; color: var(--muted); font-size: 0.9rem; }
+.page-reserve .rv-step-ico { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; color: #fff; background: linear-gradient(145deg, var(--wine-2, var(--wine)), var(--wine)); box-shadow: 0 8px 18px color-mix(in srgb, var(--wine) 28%, transparent); }
+
+/* ---------- Paso 2: Datos ---------- */
+.page-reserve .rv-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.page-reserve .rv-field { min-width: 0; }
+.page-reserve .rv-input { position: relative; }
+.page-reserve .rv-input .form-control { min-height: 48px; padding-left: 2.8rem; font-size: 1rem; border-radius: 12px; }
+.page-reserve .rv-input-ico { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); display: inline-flex; color: var(--muted); pointer-events: none; }
+.page-reserve .rv-input:focus-within .rv-input-ico { color: var(--wine); }
+
+.page-reserve .rv-names { padding: 0.9rem 1rem; border-radius: 14px; background: color-mix(in srgb, var(--wine) 5%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent); }
+.page-reserve .rv-names-row { display: flex; align-items: center; gap: 0.8rem; }
+.page-reserve .rv-names-ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--card); color: var(--wine); box-shadow: inset 0 0 0 1px var(--border); }
+.page-reserve .rv-names-copy { flex: 1 1 auto; min-width: 0; }
+.page-reserve .rv-names-title { display: block; margin: 0; font-weight: 700; font-size: 0.98rem; cursor: pointer; }
+.page-reserve .rv-names .form-switch .form-check-input { width: 2.6rem; height: 1.4rem; margin: 0; cursor: pointer; }
+
+/* ---------- Paso 3: Pago ---------- */
+.page-reserve .pay-pills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
+.page-reserve .pay-pill { position: relative; flex-direction: column; align-items: flex-start; gap: 0.6rem; min-height: 112px; padding: 0.95rem 1rem; border-radius: 16px; text-align: left; transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
+.page-reserve .pay-pill:hover { transform: translateY(-2px); }
+.page-reserve .pay-pill .pay-pill-ico { width: 42px; height: 42px; border-radius: 12px; }
+.page-reserve .pay-pill .pay-pill-title { font-size: 1.02rem; }
+.page-reserve .pay-pill::after { content: ""; position: absolute; top: 0.85rem; right: 0.85rem; width: 20px; height: 20px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--text) 25%, transparent); background: transparent; }
+.page-reserve .pay-pill.is-on::after { border-color: #fff; background: radial-gradient(#fff 42%, transparent 46%); }
+.page-reserve .pay-pill.is-on { box-shadow: 0 12px 26px color-mix(in srgb, var(--wine) 30%, transparent); }
+
+.page-reserve .price-wrap { padding: 0.85rem 1rem; border-radius: 16px; }
+.page-reserve .price-wrap .slots-title { font-weight: 800; font-size: 1rem; }
+.page-reserve #onlineWrap .alert, .page-reserve #transferWrap .reserve-panel { border-radius: 14px; }
+.page-reserve #onlineWrap .alert { border: 0; background: color-mix(in srgb, var(--wine) 7%, var(--card)); color: var(--text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wine) 18%, var(--border)); }
+
+/* ---------- Paso 4: Listo ---------- */
+.page-reserve .rv-pass { border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: 0 14px 34px rgba(15, 8, 12, 0.12), 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent); }
+.page-reserve .rv-pass-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.2rem; color: #fff; background: radial-gradient(420px 160px at 8% 0%, rgba(255, 255, 255, 0.16), transparent 60%), linear-gradient(135deg, var(--wine) 0%, var(--wine-2, var(--wine)) 100%); }
+.page-reserve .rv-pass-head small { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+.page-reserve .rv-pass-route b { font-size: clamp(1.15rem, 1rem + 1vw, 1.55rem); font-weight: 800; letter-spacing: -0.03em; }
+.page-reserve .rv-pass-total { text-align: right; }
+.page-reserve .rv-pass-total b { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.page-reserve .rv-pass-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.page-reserve .rv-item { display: grid; gap: 0.2rem; padding: 0.85rem 1.2rem; border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent); border-left: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+.page-reserve .rv-item:nth-child(3n + 1) { border-left: 0; }
+.page-reserve .rv-item:nth-child(-n + 3) { border-top: 0; }
+.page-reserve .rv-item-k { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.page-reserve .rv-item-k svg { color: var(--wine); }
+.page-reserve .rv-item-v { font-size: 1rem; font-weight: 700; overflow-wrap: anywhere; }
+
+.page-reserve .cancel-policy { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 1rem; padding: 0.8rem 1rem; border-radius: 14px; background: color-mix(in srgb, var(--wine) 5%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent); }
+.page-reserve .cancel-ico { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--card); color: var(--wine); box-shadow: inset 0 0 0 1px var(--border); }
+.page-reserve .cancel-title { margin: 0; font-weight: 700; font-size: 0.92rem; }
+.page-reserve .cancel-text { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--muted); }
+
+@media (max-width: 720px) {
+    .page-reserve .rv-fields { grid-template-columns: minmax(0, 1fr); }
+    .page-reserve .pay-pills { grid-template-columns: minmax(0, 1fr); }
+    .page-reserve .pay-pill { flex-direction: row; align-items: center; min-height: 0; }
+    .page-reserve .rv-pass-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .page-reserve .rv-item:nth-child(3n + 1) { border-left: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+    .page-reserve .rv-item:nth-child(odd) { border-left: 0; }
+    .page-reserve .rv-item:nth-child(-n + 3) { border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+    .page-reserve .rv-item:nth-child(-n + 2) { border-top: 0; }
+}
+
+/* ===== Paso Pago compacto ===== */
+.page-reserve .form-step[data-step="3"] .rv-step-head { margin-bottom: 0.6rem; }
+.page-reserve .form-step[data-step="3"] .step-card { gap: 0.6rem; }
+.page-reserve .form-step[data-step="3"] .reserve-panel { margin: 0; padding-block: 0; }
+.page-reserve .form-step[data-step="3"] .reserve-panel > .form-label { display: block; margin: 0 0 0.35rem; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.page-reserve .form-step[data-step="3"] .pay-pills { gap: 0.55rem; }
+.page-reserve .form-step[data-step="3"] .pay-pill { flex-direction: row; align-items: center; gap: 0.7rem; min-height: 0; padding: 0.6rem 2.6rem 0.6rem 0.75rem; border-radius: 14px; }
+.page-reserve .form-step[data-step="3"] .pay-pill:hover { transform: none; }
+.page-reserve .form-step[data-step="3"] .pay-pill .pay-pill-ico { width: 36px; height: 36px; border-radius: 10px; flex: none; }
+.page-reserve .form-step[data-step="3"] .pay-pill .pay-pill-title { font-size: 0.98rem; line-height: 1.15; }
+.page-reserve .form-step[data-step="3"] .pay-pill .pay-pill-sub { font-size: 0.76rem; }
+.page-reserve .form-step[data-step="3"] .pay-pill::after { top: 50%; right: 0.8rem; transform: translateY(-50%); width: 18px; height: 18px; }
+
+.page-reserve .form-step[data-step="3"] .price-wrap { padding: 0.55rem 0.8rem; gap: 0.2rem 0.8rem; border-radius: 14px; }
+.page-reserve .form-step[data-step="3"] .price-wrap .slots-title { font-size: 0.95rem; }
+.page-reserve .form-step[data-step="3"] .price-wrap .price-total-row .pill { padding: 0.3rem 0.8rem; font-size: 1.05rem; }
+.page-reserve .form-step[data-step="3"] #onlineWrap .alert { padding: 0.6rem 0.85rem; font-size: 0.88rem; }
+.page-reserve .form-step[data-step="3"] .step-actions { margin-top: 0.2rem; }
+
+/* Paso Viaje: con cabecera propia, los rótulos "Ruta" y "Fecha y viajeros" sobran */
+@media (min-width: 720px) {
+    .page-reserve .form-step[data-step="1"] .rv-step-head { margin-bottom: 0.5rem; }
+    .page-reserve .form-step[data-step="1"] .trip-section-route > .trip-section-title,
+    .page-reserve .form-step[data-step="1"] .trip-section-details > .trip-section-title { display: none; }
+    .page-reserve .form-step[data-step="1"] .trip-layout { gap: 0.4rem; }
+}
+@media (min-width: 720px) {
+    .page-reserve .form-step[data-step="1"] .trip-layout { gap: 0; }
+    .page-reserve .form-step[data-step="1"] .trip-section { padding-block: 0.35rem; margin: 0; }
+    .page-reserve .form-step[data-step="1"] .trip-section + .trip-section { padding-top: 0.5rem; }
+    .page-reserve .form-step[data-step="1"] .trip-note { margin-top: 0.1rem; }
+    .page-reserve .form-step[data-step="1"] .step-actions { margin-top: 0.2rem; padding-top: 0; }
+}
+
+/* ===== Datos: tarjetas, validación y nota de privacidad ===== */
+.page-reserve .rv-card { padding: 1rem 1.1rem; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 75%, transparent), 0 6px 16px rgba(15, 8, 12, 0.05); }
+.page-reserve .rv-card-title { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.8rem; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.page-reserve .rv-card-title svg { color: var(--wine); }
+.page-reserve .rv-names.rv-card { background: var(--card); }
+.page-reserve .rv-input .rv-input-ok { position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); display: none; color: #1e8e4e; pointer-events: none; }
+.page-reserve .rv-input.is-valid .rv-input-ok { display: inline-flex; }
+.page-reserve .rv-input.is-valid .form-control { border-color: color-mix(in srgb, #1e8e4e 55%, var(--border)); padding-right: 2.6rem; }
+.page-reserve .rv-privacy { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.page-reserve .rv-privacy svg { color: var(--wine); flex: none; }
+
+.page-reserve .step-card .reserve-panel.rv-card { padding: 1rem 1.15rem; }
+.page-reserve .step-card .rv-card + .rv-card { margin-top: 0.1rem; }
+
+/* ===== Nombres de pasajeros ===== */
+.page-reserve .rv-pax-box { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px dashed var(--border); }
+.page-reserve .rv-pax-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.page-reserve .rv-pax-count { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.page-reserve .rv-link { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--wine) 9%, var(--card)); color: var(--wine); font: inherit; font-size: 0.8rem; font-weight: 650; cursor: pointer; }
+.page-reserve .rv-link:hover { background: color-mix(in srgb, var(--wine) 16%, var(--card)); }
+.page-reserve .rv-pax-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 0.8rem; }
+.page-reserve .rv-pax { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.65rem; margin: 0; padding: 0.55rem 0.65rem; border-radius: 14px; background: color-mix(in srgb, var(--wine) 4%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 75%, transparent); cursor: text; }
+.page-reserve .rv-pax:focus-within { box-shadow: inset 0 0 0 2px var(--wine); }
+.page-reserve .rv-pax-num { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--wine); color: #fff; font-weight: 800; font-size: 0.85rem; }
+.page-reserve .rv-pax-body { display: grid; gap: 0.15rem; min-width: 0; }
+.page-reserve .rv-pax-label { font-size: 0.74rem; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
+.page-reserve .rv-pax-label em { font-style: normal; margin-left: 0.35rem; padding: 0.05rem 0.45rem; border-radius: 999px; background: var(--chip, color-mix(in srgb, var(--text) 8%, var(--card))); color: var(--text); font-size: 0.7rem; }
+.page-reserve .rv-pax .form-control { min-height: 34px; padding: 0.15rem 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-size: 0.98rem; font-weight: 600; }
+.page-reserve .rv-pax .form-control:focus { outline: 0; box-shadow: none; }
+.page-reserve .rv-pax-note { margin: 0.7rem 0 0; font-size: 0.78rem; color: var(--muted); }
+@media (max-width: 720px) { .page-reserve .rv-pax-list { grid-template-columns: minmax(0, 1fr); } }
+
+/* ===== Resumen "Tu viaje" ===== */
+@media (min-width: 960px) {
+    .page-reserve .reserve-summary-title { display: flex; align-items: center; gap: 0.5rem; }
+    .page-reserve .rs-trip { padding: 0.95rem 1.15rem 0.7rem; }
+    .page-reserve .rs-trip small, .page-reserve .rs-when-item small { display: flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .page-reserve .rs-trip .rs-route { padding: 0; margin: 0.15rem 0 0; font-size: 1.25rem; line-height: 1.2; }
+
+    .page-reserve .rs-when { display: grid; grid-template-columns: 1fr 1fr; margin: 0 1.15rem; border-block: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+    .page-reserve .rs-when-item { display: grid; gap: 0.2rem; padding: 0.75rem 0; }
+    .page-reserve .rs-when-item + .rs-when-item { padding-left: 1rem; border-left: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+    .page-reserve .rs-when-item b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .page-reserve #rsTime { color: var(--wine); }
+    .page-reserve #rsTime.is-empty { color: var(--muted); font-size: 0.95rem; font-weight: 650; }
+
+    .page-reserve .rs-list { padding: 0.35rem 1.15rem 0.5rem; }
+    .page-reserve .rs-list li span { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .page-reserve .rs-list li span svg { color: var(--wine); }
+
+    /* Desglose de precios como filas */
+    .page-reserve .rs-break { display: grid; gap: 0.35rem; padding: 0.2rem 1.15rem 0.8rem; }
+    .page-reserve .rs-break .price-breakdown-item { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; padding: 0.4rem 0.7rem; border-radius: 10px; background: color-mix(in srgb, var(--wine) 5%, var(--card)); font-size: 0.86rem; font-weight: 600; }
+    .page-reserve .rs-total span { font-weight: 700; }
+}
+
+/* Desglose de precio: etiqueta, detalle "c/u" y subtotal */
+.page-reserve .price-breakdown-item.pb-row { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; width: 100%; }
+.page-reserve .pb-label { display: grid; gap: 0.05rem; min-width: 0; }
+.page-reserve .pb-label b { font-size: 0.92rem; font-weight: 700; line-height: 1.15; }
+.page-reserve .pb-label small { font-size: 0.76rem; font-weight: 500; color: var(--muted); }
+.page-reserve .pb-amount { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text); }
+@media (min-width: 960px) {
+    .page-reserve .rs-break .price-breakdown-item.pb-row { padding: 0.5rem 0.75rem; }
+}
+
+/* Tema oscuro: los acentos en vino se aclaran para mantener el contraste */
+html[data-theme="dark"] .page-reserve #rsTime,
+html[data-theme="dark"] .page-reserve .rs-total b,
+html[data-theme="dark"] .page-reserve .rv-link,
+html[data-theme="dark"] .page-reserve .rv-input:focus-within .rv-input-ico,
+html[data-theme="dark"] .page-reserve .rv-item-k svg,
+html[data-theme="dark"] .page-reserve .rv-card-title svg,
+html[data-theme="dark"] .page-reserve .rv-privacy svg,
+html[data-theme="dark"] .page-reserve .rs-list li span svg,
+html[data-theme="dark"] .page-reserve .rv-names-ico,
+html[data-theme="dark"] .page-reserve .cancel-ico { color: #ff9fb2; }
+html[data-theme="dark"] .page-reserve #rsTime.is-empty { color: var(--muted); }
+html[data-theme="dark"] .page-reserve .rv-pax-label em { background: color-mix(in srgb, var(--text) 14%, var(--card)); }
+html[data-theme="dark"] .page-reserve .pb-amount { color: var(--text); }
+
+html[data-theme="dark"] .page-reserve .pay-pill:not(.is-on) .pay-pill-ico { color: #ff9fb2; background: color-mix(in srgb, var(--text) 10%, var(--card)); }
+
+/* Móvil: banner superior más bajo */
+@media (max-width: 719px) {
+    body.page-reserve .home-hero { padding-block: 0.5rem; }
+    body.page-reserve .home-hero .home-brand-logo.home-brand-logo-wide { max-height: 52px; width: auto; }
+    body.page-reserve .home-hero .hero-actions { gap: 0.4rem; margin-top: 0.35rem; }
+    body.page-reserve .home-hero .hero-actions .btn { min-height: 38px; padding-block: 0.3rem; font-size: 0.88rem; }
+}
+
+/* ===== Móvil: reserva más compacta y cómoda ===== */
+@media (max-width: 639px) {
+    /* Origen y destino lado a lado, con el botón de intercambio en medio */
+    body.page-reserve .route-grid { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0.35rem; align-items: end; }
+    body.page-reserve .route-grid .form-select { min-height: 46px; padding-inline: 0.65rem; font-size: 0.92rem; }
+    body.page-reserve .route-swap { transform: none; margin: 0 0 4px; width: 36px; height: 36px; }
+    body.page-reserve .route-swap:hover { transform: none; }
+
+    /* Tira de fechas: sin barra de desplazamiento visible y con tarjetas más ágiles */
+    body.page-reserve .date-strip { scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: x mandatory; margin-inline: -0.15rem; padding-inline: 0.15rem; }
+    body.page-reserve .date-strip::-webkit-scrollbar { display: none; }
+    body.page-reserve .date-card { width: 58px; min-height: 72px; }
+}
+
+/* ===== Paquetería en Llera (tipo de servicio local) ===== */
+.page-reserve .seg-pills { flex-wrap: nowrap; }
+.page-reserve .seg-pills .seg-pill { min-width: 0; white-space: nowrap; padding-inline: 0.7rem; }
+.page-reserve .local-hint { display: flex; align-items: flex-start; gap: 0.45rem; margin: 0 0 0.5rem; padding: 0.5rem 0.7rem; border-radius: 10px; background: color-mix(in srgb, var(--wine) 7%, var(--card)); font-size: 0.82rem; color: var(--text); }
+.page-reserve .local-hint[hidden] { display: none; }
+.page-reserve .local-hint svg { flex: none; margin-top: 0.1rem; color: var(--wine); }
+html[data-theme="dark"] .page-reserve .local-hint svg { color: #ff9fb2; }
+@media (min-width: 720px) {
+    .page-reserve .trip-details-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.2fr); }
+}
+
+@media (max-width: 520px) {
+    .page-reserve .seg-pills { flex-wrap: wrap; }
+    .page-reserve .seg-pills .seg-pill { flex: 1 1 calc(50% - 0.3rem); }
+}
+
+/* ===== Tipo de envío de la paquetería: entre ciudades o dentro de Llera ===== */
+.page-reserve .pkg-scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.55rem; }
+.page-reserve .scope-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.55rem; padding: 0.5rem 0.65rem; border: 0; border-radius: 12px; background: var(--home-chip-bg, color-mix(in srgb, var(--text) 6%, var(--card))); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 80%, transparent); color: var(--text); text-align: left; font: inherit; cursor: pointer; transition: box-shadow 0.15s ease, background 0.15s ease; }
+.page-reserve .scope-card:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wine) 45%, var(--border)); }
+.page-reserve .scope-card:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+.page-reserve .scope-card.is-on { background: color-mix(in srgb, var(--wine) 9%, var(--card)); box-shadow: inset 0 0 0 2px var(--wine); }
+.page-reserve .scope-ico { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--card); color: var(--wine); box-shadow: inset 0 0 0 1px var(--border); }
+.page-reserve .scope-card.is-on .scope-ico { background: var(--wine); color: #fff; box-shadow: none; }
+.page-reserve .scope-copy { display: grid; gap: 0.05rem; min-width: 0; }
+.page-reserve .scope-copy b { font-size: 0.88rem; font-weight: 700; line-height: 1.15; }
+.page-reserve .scope-copy small { font-size: 0.72rem; color: var(--muted); line-height: 1.2; }
+.page-reserve .scope-price { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.page-reserve .scope-card.is-on .scope-price { color: var(--wine); }
+html[data-theme="dark"] .page-reserve .scope-ico, html[data-theme="dark"] .page-reserve .scope-card.is-on .scope-price { color: #ff9fb2; }
+html[data-theme="dark"] .page-reserve .scope-card.is-on .scope-ico { color: #fff; }
+@media (max-width: 520px) { .page-reserve .pkg-scope { grid-template-columns: minmax(0, 1fr); } }
+
+/* ===== Servicio primero: Pasaje o Paquetería (y tipo de envío) ===== */
+.page-reserve .service-row { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 0.5rem 1rem; align-items: end; }
+.page-reserve .service-pick, .page-reserve .service-scope { min-width: 0; }
+.page-reserve .service-scope .pkg-scope { margin-bottom: 0; }
+.page-reserve .service-row .seg-pills .seg-pill { flex: 1 1 0; }
+@media (max-width: 720px) { .page-reserve .service-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* Con el servicio fuera, fecha, viajeros y detalle ocupan cada uno su fila */
+.page-reserve .trip-details-grid { grid-template-columns: minmax(0, 1fr); }
+.page-reserve .trip-details-grid > * { grid-column: 1 / -1; }
+.page-reserve .form-step[data-step="1"] .trip-section-service { padding-top: 0.1rem; }
+
+/* El servicio va primero: se agrega su área a la cuadrícula del paso Viaje */
+.page-reserve .trip-section-service { grid-area: service; }
+.page-reserve .trip-layout { grid-template-areas: "service" "route" "details" "quote" "slots"; }
+@media (min-width: 960px) {
+    .page-reserve .trip-layout { grid-template-areas: "service" "route" "details" "slots"; }
+}
+@media (min-width: 720px) {
+    .page-reserve .form-step[data-step="1"] .trip-layout { grid-template-areas: "service" "route" "details" "slots"; }
+}
+
+/* Viajeros junto al servicio cuando es Pasaje */
+.page-reserve .service-row .service-pax { min-width: 0; }
+.page-reserve .service-row .service-pax .traveler-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+.page-reserve .service-row .service-pax .trip-note { margin-top: 0.35rem; }
+@media (min-width: 721px) {
+    .page-reserve .service-row .service-pick { grid-column: 1; grid-row: 1; }
+    .page-reserve .service-row .service-scope,
+    .page-reserve .service-row .service-pax { grid-column: 2; grid-row: 1; }
+}
+
+/* ===== Viaje en escritorio: se adapta al ancho disponible ===== */
+@media (min-width: 721px) {
+    .page-reserve .service-row { align-items: start; }
+}
+
+/* Entre 960 y 1199 px el formulario comparte pantalla con el resumen y queda angosto: servicio arriba y sus opciones debajo */
+@media (min-width: 960px) and (max-width: 1199px) {
+    .page-reserve .service-row { grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
+    .page-reserve .service-row .service-pick,
+    .page-reserve .service-row .service-scope,
+    .page-reserve .service-row .service-pax { grid-column: 1; grid-row: auto; }
+    .page-reserve .service-row .seg-pills { max-width: 24rem; }
+    .page-reserve .service-row .service-pax .trip-note { margin-top: 0.3rem; }
+    .page-reserve .date-card { min-height: 58px; }
+}
+
+/* Pantallas grandes: la tarjeta no se estira de más y el contenido respira */
+@media (min-width: 1600px) {
+    .page-reserve .reserve-layout { max-width: 1240px; margin-inline: auto; }
+    .page-reserve .form-step[data-step="1"] .rv-step-head { margin-bottom: 0.8rem; }
+    .page-reserve .form-step[data-step="1"] .trip-section { padding-block: 0.5rem; }
+}
+
+/* ===== Selector de servicio (Pasaje | Paquetería): control segmentado ===== */
+.page-reserve .service-pick .seg-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    width: 100%;
+    max-width: 26rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--text) 7%, var(--card));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+}
+.page-reserve .service-pick .seg-pill {
+    height: auto;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    gap: 0.5rem;
+    border-radius: 11px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--muted);
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+.page-reserve .service-pick .seg-pill svg { width: 18px; height: 18px; flex: none; }
+.page-reserve .service-pick .seg-pill:hover { color: var(--text); background: color-mix(in srgb, var(--card) 80%, transparent); }
+.page-reserve .service-pick .seg-pill:active { transform: scale(0.98); }
+.page-reserve .service-pick .seg-pill:focus-visible { outline: 2px solid var(--wine); outline-offset: 2px; }
+.page-reserve .service-pick .seg-pill.is-on,
+.page-reserve .service-pick .seg-pill.is-on:hover {
+    color: #fff;
+    background: linear-gradient(145deg, var(--wine-2, var(--wine)), var(--wine));
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--wine) 32%, transparent);
+}
+html[data-theme="dark"] .page-reserve .service-pick .seg-pill:not(.is-on) { color: color-mix(in srgb, var(--text) 70%, var(--muted)); }
+
+@media (min-width: 960px) and (max-width: 1199px) {
+    .page-reserve .service-pick .seg-pills { max-width: 24rem; }
+}
+@media (max-width: 720px) {
+    .page-reserve .service-pick .seg-pills { max-width: none; }
+    .page-reserve .service-pick .seg-pill { min-height: 48px; font-size: 1rem; }
+}
+@media (max-width: 380px) {
+    .page-reserve .service-pick .seg-pill { gap: 0.35rem; padding-inline: 0.5rem; font-size: 0.9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-reserve .service-pick .seg-pill { transition: none; }
+}
+
+/* ===== Móvil: controles táctiles de al menos 40 px ===== */
+@media (max-width: 720px) {
+    body.page-reserve .app-navbar .theme-btn { min-height: 40px; min-width: 42px; }
+    .page-reserve .rv-link { min-height: 38px; padding-inline: 0.9rem; }
+    .page-reserve .rv-names .form-switch .form-check-input { width: 3rem; height: 1.65rem; }
+    .page-reserve #transferWrap .btn,
+    .page-reserve #transferWrap button { min-height: 40px; }
+    .page-reserve .rv-pax .form-control { min-height: 40px; }
+}
+
+/* Móvil: en la confirmación, ruta y total van uno bajo el otro y alineados a la izquierda */
+@media (max-width: 520px) {
+    .page-reserve .rv-pass-head { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+    .page-reserve .rv-pass-total { text-align: left; }
+    .page-reserve .rv-pass-total b { font-size: 1.5rem; }
+}

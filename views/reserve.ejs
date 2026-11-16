@@ -2,7 +2,7 @@
 <html lang="es-MX" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Reservar viaje Victoria ↔ Llera | Servicio de Transporte',
+    title: 'Reserva tu viaje Victoria - Llera | Servicio de Transporte',
     description: 'Reserva pasaje o paquetería entre Ciudad Victoria y Llera. Elige ruta, fecha y horario con cupo. Paga en taquilla, transferencia o en línea.',
     canonicalUrl: (typeof baseUrl !== 'undefined' ? String(baseUrl).replace(/\/+$/, '') : 'https://serviciodetransportevic.com') + '/reserve'
     }) %>
@@ -12,6 +12,7 @@
                 (typeof pricing !== "undefined" && pricing) ? pricing : {
                     passenger_price_mxn: 120,
                     package_price_mxn: 120,
+                    local_package_price_mxn: 30,
                     child_price_mxn: 60
                 }
         ) %></script>
@@ -30,6 +31,12 @@
 </head>
 
 <body class="page-reserve home-page">
+<%
+const rvLimits = (typeof limits !== "undefined" && limits) ? limits : {};
+const rvMaxPax = Number(rvLimits.maxPassengers) || 14;
+const rvKidMin = Number(rvLimits.childAgeMin) || 6;
+const rvKidMax = Number(rvLimits.childAgeMax) || 10;
+%>
 <%- include('partials/body-open') %>
 <%- include('partials/navbar') %>
 
@@ -41,12 +48,12 @@
         <div class="home-brand home-reveal">
             <div class="logo-wrap">
                 <a href="/" aria-label="Ir al inicio">
-                    <img class="home-brand-logo home-brand-logo-wide" src="/assets/logo-wide.png" alt="Servicio de Transporte Victoria ↔ Llera" width="960" height="360" decoding="async">
+                    <img class="home-brand-logo home-brand-logo-wide" src="/assets/logo-wide.png" alt="Servicio de Transporte Victoria - Llera" width="960" height="360" decoding="async">
                 </a>
             </div>
             <div class="home-brand-copy visually-hidden">
                 <p class="home-kicker">Victoria - Llera</p>
-                <h1 class="home-brand-name">Reservar viaje Victoria ↔ Llera</h1>
+                <h1 class="home-brand-name">Reservar viaje Victoria - Llera</h1>
                 <p class="home-brand-tag">Pasaje y paquetería entre Ciudad Victoria y Llera de Canales. Ruta, fecha y horario con cupo.</p>
             </div>
         </div>
@@ -109,7 +116,112 @@
                 <div class="home-tabs-body">
                 <div class="form-step is-active" data-step="1">
                     <div class="step-card trip-step">
+                        <header class="rv-step-head">
+                            <span class="rv-step-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map', size: 22 }) %></span>
+                            <div>
+                                <h2 class="step-title">Tu viaje</h2>
+                                <p class="rv-step-sub">Elige el servicio, la ruta, la fecha y el horario de salida.</p>
+                            </div>
+                        </header>
                         <div class="trip-layout">
+                            <section class="trip-section trip-section-service">
+                                <div class="service-row">
+                                    <div class="service-pick">
+                                        <span class="form-label">Servicio</span>
+                                        <select id="type" name="type" class="visually-hidden" required tabindex="-1">
+                                            <option value="PASSENGER" selected>Pasaje</option>
+                                            <option value="PACKAGE">Paquetería</option>
+                                            <option value="PACKAGE_LOCAL">Paquetería en Llera</option>
+                                        </select>
+                                        <div class="seg-pills" role="group" aria-label="Tipo de servicio">
+                                            <button type="button" class="seg-pill is-on" data-set-type="PASSENGER">
+                                                <%- include('partials/icon', { name: 'users', size: 14 }) %>
+                                                Pasaje
+                                            </button>
+                                            <button type="button" class="seg-pill" data-set-type="PACKAGE">
+                                                <%- include('partials/icon', { name: 'package', size: 14 }) %>
+                                                Paquetería
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="service-scope" id="pkgScopeWrap" style="display:none">
+                                        <span class="form-label">Tipo de envío</span>
+                                        <div class="pkg-scope" role="group" aria-label="Tipo de envío">
+                                            <button type="button" class="scope-card is-on" data-set-type="PACKAGE" aria-pressed="true">
+                                                <span class="scope-ico" aria-hidden="true"><%- include('partials/icon', { name: 'route', size: 18 }) %></span>
+                                                <span class="scope-copy"><b>Entre ciudades</b><small>Victoria - Llera</small></span>
+                                                <span class="scope-price" id="scopePriceCity">$120</span>
+                                            </button>
+                                            <button type="button" class="scope-card" data-set-type="PACKAGE_LOCAL" aria-pressed="false">
+                                                <span class="scope-ico" aria-hidden="true"><%- include('partials/icon', { name: 'map-pin', size: 18 }) %></span>
+                                                <span class="scope-copy"><b>Dentro de Llera</b><small>Se recibe y entrega en Llera</small></span>
+                                                <span class="scope-price" id="scopePriceLocal">$30</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="trip-pax service-pax" id="passengerGroup">
+                                        <div class="traveler-grid">
+                                            <div class="stepper-field" id="seatsWrap">
+                                                <label class="form-label">Adultos</label>
+                                                <div class="stepper">
+                                                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir adultos"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
+                                                    <div class="count"><span id="seatsText">1</span></div>
+                                                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar adultos"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
+                                                    <select id="seats" name="seats" class="d-none">
+                                                        <option value="0">0</option>
+                                                        <option value="1" selected>1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                        <option value="6">6</option>
+                                                        <option value="7">7</option>
+                                                        <option value="8">8</option>
+                                                        <option value="9">9</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="stepper-field" id="childSeatsWrap">
+                                                <label class="form-label">Niños de <%= rvKidMin %> a <%= rvKidMax %> años</label>
+                                                <div class="stepper">
+                                                    <button id="childMinusBtn" type="button" class="btn-step" aria-label="Disminuir niños"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
+                                                    <div class="count"><span id="childSeatsText">0</span></div>
+                                                    <button id="childPlusBtn" type="button" class="btn-step" aria-label="Aumentar niños"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
+                                                    <select id="child_seats" name="child_seats" class="d-none">
+                                                        <option value="0" selected>0</option>
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                        <option value="6">6</option>
+                                                        <option value="7">7</option>
+                                                        <option value="8">8</option>
+                                                        <option value="9">9</option>
+                                                        <option value="10">10</option>
+                                                        <option value="11">11</option>
+                                                        <option value="12">12</option>
+                                                        <option value="13">13</option>
+                                                        <option value="14">14</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="trip-note" id="passengerCapHint">
+                                            <span aria-hidden="true"><%- include('partials/icon', { name: 'info', size: 14 }) %></span>
+                                            <span>Hasta <%= rvMaxPax %> viajeros por reserva. Cada niño de <%= rvKidMin %> a <%= rvKidMax %> años ocupa un lugar y paga tarifa infantil.</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
                             <section class="trip-section trip-section-route">
                                 <h3 class="trip-section-title">Ruta</h3>
                                 <div class="route-grid">
@@ -149,84 +261,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <span class="form-label">Servicio</span>
-                                        <select id="type" name="type" class="visually-hidden" required tabindex="-1">
-                                            <option value="PASSENGER" selected>Pasaje</option>
-                                            <option value="PACKAGE">Paquetería</option>
-                                        </select>
-                                        <div class="seg-pills" role="group" aria-label="Tipo de servicio">
-                                            <button type="button" class="seg-pill is-on" data-set-type="PASSENGER">
-                                                <%- include('partials/icon', { name: 'users', size: 14 }) %>
-                                                Pasaje
-                                            </button>
-                                            <button type="button" class="seg-pill" data-set-type="PACKAGE">
-                                                <%- include('partials/icon', { name: 'package', size: 14 }) %>
-                                                Paquetería
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="trip-pax" id="passengerGroup">
-                                        <div class="traveler-grid">
-                                            <div class="stepper-field" id="seatsWrap">
-                                                <label class="form-label">Adultos</label>
-                                                <div class="stepper">
-                                                    <button id="minusBtn" type="button" class="btn-step" aria-label="Disminuir adultos"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
-                                                    <div class="count"><span id="seatsText">1</span></div>
-                                                    <button id="plusBtn" type="button" class="btn-step" aria-label="Aumentar adultos"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
-                                                    <select id="seats" name="seats" class="d-none">
-                                                        <option value="0">0</option>
-                                                        <option value="1" selected>1</option>
-                                                        <option value="2">2</option>
-                                                        <option value="3">3</option>
-                                                        <option value="4">4</option>
-                                                        <option value="5">5</option>
-                                                        <option value="6">6</option>
-                                                        <option value="7">7</option>
-                                                        <option value="8">8</option>
-                                                        <option value="9">9</option>
-                                                        <option value="10">10</option>
-                                                        <option value="11">11</option>
-                                                        <option value="12">12</option>
-                                                        <option value="13">13</option>
-                                                        <option value="14">14</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="stepper-field" id="childSeatsWrap">
-                                                <label class="form-label">Niños 6-10 años</label>
-                                                <div class="stepper">
-                                                    <button id="childMinusBtn" type="button" class="btn-step" aria-label="Disminuir niños"><%- include('partials/icon', { name: 'minus', size: 16 }) %></button>
-                                                    <div class="count"><span id="childSeatsText">0</span></div>
-                                                    <button id="childPlusBtn" type="button" class="btn-step" aria-label="Aumentar niños"><%- include('partials/icon', { name: 'plus', size: 16 }) %></button>
-                                                    <select id="child_seats" name="child_seats" class="d-none">
-                                                        <option value="0" selected>0</option>
-                                                        <option value="1">1</option>
-                                                        <option value="2">2</option>
-                                                        <option value="3">3</option>
-                                                        <option value="4">4</option>
-                                                        <option value="5">5</option>
-                                                        <option value="6">6</option>
-                                                        <option value="7">7</option>
-                                                        <option value="8">8</option>
-                                                        <option value="9">9</option>
-                                                        <option value="10">10</option>
-                                                        <option value="11">11</option>
-                                                        <option value="12">12</option>
-                                                        <option value="13">13</option>
-                                                        <option value="14">14</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="trip-note" id="passengerCapHint">
-                                            <span aria-hidden="true"><%- include('partials/icon', { name: 'info', size: 14 }) %></span>
-                                            <span>Cada adulto y cada niño ocupa un lugar en el horario.</span>
-                                        </div>
-                                    </div>
-
                                     <div class="trip-pkg" id="packageWrap">
                                         <label class="form-label" for="package_details">Detalle paquetería</label>
                                         <input id="package_details" name="package_details" class="form-control"
@@ -267,34 +301,65 @@
 
                 <div class="form-step" data-step="2">
                     <div class="step-card">
-                        <h2 class="step-title">Datos de contacto</h2>
-                        <div class="reserve-panel">
-                            <div class="choice-grid">
-                                <div id="contactNameWrap">
+                        <header class="rv-step-head">
+                            <span class="rv-step-ico" aria-hidden="true"><%- include('partials/icon', { name: 'user-round', size: 22 }) %></span>
+                            <div>
+                                <h2 class="step-title">Datos de contacto</h2>
+                                <p class="rv-step-sub">Con estos datos te identificamos y podrás consultar tu boleto.</p>
+                            </div>
+                        </header>
+
+                        <div class="reserve-panel rv-card">
+                            <h3 class="rv-card-title"><%- include('partials/icon', { name: 'user-round', size: 16 }) %> Contacto</h3>
+                            <div class="rv-fields">
+                                <div class="rv-field" id="contactNameWrap">
                                     <label class="form-label" for="customer_name">Nombre de contacto</label>
-                                    <input id="customer_name" name="customer_name" class="form-control" required
-                                           placeholder="Ej: Juan Martínez">
+                                    <div class="rv-input">
+                                        <span class="rv-input-ico" aria-hidden="true"><%- include('partials/icon', { name: 'user', size: 18 }) %></span>
+                                        <input id="customer_name" name="customer_name" class="form-control" required
+                                               autocomplete="name" placeholder="Ej: Juan Martínez">
+                                        <span class="rv-input-ok" aria-hidden="true"><%- include('partials/icon', { name: 'circle-check', size: 18 }) %></span>
+                                    </div>
+                                    <small class="field-help">Así aparecerá en tu boleto.</small>
                                 </div>
-                                <div>
+                                <div class="rv-field">
                                     <label class="form-label" for="phone">Teléfono</label>
-                                    <input id="phone" name="phone" class="form-control" required
-                                           inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376">
+                                    <div class="rv-input">
+                                        <span class="rv-input-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 18 }) %></span>
+                                        <input id="phone" name="phone" class="form-control" required
+                                               autocomplete="tel-national" inputmode="numeric" pattern="[0-9]{10}" placeholder="Ej: 8344756376">
+                                        <span class="rv-input-ok" aria-hidden="true"><%- include('partials/icon', { name: 'circle-check', size: 18 }) %></span>
+                                    </div>
+                                    <small class="field-help">10 dígitos. Con él consultas tu boleto en Mis boletos.</small>
                                     <div class="invalid-feedback">Ingresa un teléfono válido (10 dígitos).</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="reserve-panel" id="passengerNamesWrap">
-                            <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
-                                <input class="form-check-input" type="checkbox" id="namesToggle">
-                                <label class="form-check-label" for="namesToggle">Capturar nombres de pasajeros</label>
+                        <div class="reserve-panel rv-card rv-names" id="passengerNamesWrap">
+                            <div class="rv-names-row">
+                                <span class="rv-names-ico" aria-hidden="true"><%- include('partials/icon', { name: 'users', size: 20 }) %></span>
+                                <div class="rv-names-copy">
+                                    <label class="rv-names-title" for="namesToggle">Capturar nombres de pasajeros</label>
+                                    <div class="form-text mt-0">Opcional. Puedes dejarlo apagado y usar solo el contacto.</div>
+                                </div>
+                                <div class="form-check form-switch m-0 names-toggle" id="namesToggleWrap">
+                                    <input class="form-check-input" type="checkbox" id="namesToggle" role="switch">
+                                </div>
                             </div>
-                            <div class="form-text mt-1">Puedes omitir los nombres y solo usar el contacto.</div>
-                            <div id="passengerNamesBox" class="mt-2 d-none">
-                                <div id="passengerNames" class="row g-2"></div>
-                                <div class="form-text">Si activas esta opción, capturamos un nombre por asiento.</div>
+                            <div id="passengerNamesBox" class="rv-pax-box d-none">
+                                <div class="rv-pax-head">
+                                    <span class="rv-pax-count" id="rvPaxCount"></span>
+                                    <button type="button" class="rv-link" id="usePaxName">
+                                        <%- include('partials/icon', { name: 'copy', size: 14 }) %> Usar mi nombre en el pasajero 1
+                                    </button>
+                                </div>
+                                <div id="passengerNames" class="rv-pax-list"></div>
+                                <p class="rv-pax-note">Un nombre por cada asiento. Cada nombre aparece en su boleto.</p>
                             </div>
                         </div>
+
+                        <p class="rv-privacy"><%- include('partials/icon', { name: 'lock', size: 14 }) %> Usamos tus datos solo para tu reserva y para que puedas encontrar tu boleto.</p>
 
                         <div class="step-actions">
                             <button type="button" class="btn btn-ghost" data-prev-step>
@@ -310,7 +375,13 @@
 
                 <div class="form-step" data-step="3">
                     <div class="step-card">
-                        <h2 class="step-title">Pago</h2>
+                        <header class="rv-step-head">
+                            <span class="rv-step-ico" aria-hidden="true"><%- include('partials/icon', { name: 'wallet', size: 22 }) %></span>
+                            <div>
+                                <h2 class="step-title">Pago</h2>
+                                <p class="rv-step-sub">Elige cómo quieres pagar. El total no cambia.</p>
+                            </div>
+                        </header>
                         <div class="reserve-panel">
                             <span class="form-label">Método de pago</span>
                             <select id="payment_method" name="payment_method" class="visually-hidden" required tabindex="-1">
@@ -390,50 +461,59 @@
 
                 <div class="form-step" data-step="4">
                     <div class="step-card">
-                        <div class="confirm-head">
-                            <h2 class="step-title mb-0">Confirmación</h2>
-                            <span class="confirm-pill">Revisa antes de enviar</span>
-                        </div>
-                        <div class="reserve-panel">
-                            <div class="confirm-grid">
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'map', size: 14 }) %> Ruta</span>
-                                    <span class="confirm-v" id="sumRoute">-</span>
+                        <header class="rv-step-head">
+                            <span class="rv-step-ico" aria-hidden="true"><%- include('partials/icon', { name: 'clipboard-check', size: 22 }) %></span>
+                            <div>
+                                <h2 class="step-title">Revisa y confirma</h2>
+                                <p class="rv-step-sub">Verifica que todo esté bien antes de enviar tu reserva.</p>
+                            </div>
+                        </header>
+
+                        <div class="rv-pass">
+                            <div class="rv-pass-head">
+                                <div class="rv-pass-route">
+                                    <small>Ruta</small>
+                                    <b id="sumRoute">-</b>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'calendar', size: 14 }) %> Fecha</span>
-                                    <span class="confirm-v" id="sumDate">-</span>
+                                <div class="rv-pass-total">
+                                    <small>Total</small>
+                                    <b id="sumTotal">-</b>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'clock', size: 14 }) %> Hora</span>
-                                    <span class="confirm-v" id="sumTime">-</span>
+                            </div>
+                            <div class="rv-pass-grid">
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'calendar', size: 15 }) %> Fecha</span>
+                                    <span class="rv-item-v" id="sumDate">-</span>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'ticket', size: 14 }) %> Tipo</span>
-                                    <span class="confirm-v" id="sumType">-</span>
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'clock', size: 15 }) %> Hora de salida</span>
+                                    <span class="rv-item-v" id="sumTime">-</span>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'users', size: 14 }) %> Pasajeros</span>
-                                    <span class="confirm-v" id="sumSeats">-</span>
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'ticket', size: 15 }) %> Tipo</span>
+                                    <span class="rv-item-v" id="sumType">-</span>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'credit-card', size: 14 }) %> Pago</span>
-                                    <span class="confirm-v" id="sumPayment">-</span>
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'users', size: 15 }) %> Pasajeros</span>
+                                    <span class="rv-item-v" id="sumSeats">-</span>
                                 </div>
-                                <div class="confirm-item total-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'dollar-sign', size: 14 }) %> Total</span>
-                                    <span class="confirm-v total-value" id="sumTotal">-</span>
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'credit-card', size: 15 }) %> Pago</span>
+                                    <span class="rv-item-v" id="sumPayment">-</span>
                                 </div>
-                                <div class="confirm-item">
-                                    <span class="confirm-k"><%- include('partials/icon', { name: 'user', size: 14 }) %> Contacto</span>
-                                    <span class="confirm-v" id="sumContact">-</span>
+                                <div class="rv-item">
+                                    <span class="rv-item-k"><%- include('partials/icon', { name: 'user', size: 15 }) %> Contacto</span>
+                                    <span class="rv-item-v" id="sumContact">-</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="cancel-policy">
-                            <p class="cancel-title"><%- include('partials/icon', { name: 'info', size: 14 }) %> Política de cancelación</p>
-                            <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar devolución.</p>
+                            <span class="cancel-ico" aria-hidden="true"><%- include('partials/icon', { name: 'shield-check', size: 20 }) %></span>
+                            <div>
+                                <p class="cancel-title">Política de cancelación</p>
+                                <p class="cancel-text">Envía tu ticket con al menos 1 hora de anticipación para solicitar devolución.</p>
+                            </div>
                         </div>
 
                         <div class="step-actions reserve-actions">
@@ -453,16 +533,31 @@
             </div>
 
             <aside class="reserve-summary" aria-live="polite" aria-label="Resumen de tu viaje">
-                <h2 class="reserve-summary-title">Tu viaje</h2>
-                <p class="rs-route" id="tripQuoteRoute">Ciudad Victoria → Llera</p>
+                <h2 class="reserve-summary-title"><%- include('partials/icon', { name: 'ticket', size: 15 }) %> Tu viaje</h2>
+
+                <div class="rs-trip">
+                    <small>Ruta</small>
+                    <p class="rs-route" id="tripQuoteRoute">Ciudad Victoria → Llera</p>
+                </div>
+
+                <div class="rs-when">
+                    <div class="rs-when-item">
+                        <small><%- include('partials/icon', { name: 'calendar', size: 13 }) %> Fecha</small>
+                        <b id="rsDate">-</b>
+                    </div>
+                    <div class="rs-when-item">
+                        <small><%- include('partials/icon', { name: 'clock', size: 13 }) %> Salida</small>
+                        <b id="rsTime">Sin elegir</b>
+                    </div>
+                </div>
+
                 <ul class="rs-list">
-                    <li><span>Fecha</span><b id="rsDate">-</b></li>
-                    <li><span>Hora</span><b id="rsTime">Sin elegir</b></li>
-                    <li><span>Viajeros</span><b id="rsPax">-</b></li>
-                    <li><span>Pago</span><b id="rsPay">-</b></li>
+                    <li><span><%- include('partials/icon', { name: 'users', size: 14 }) %> Viajeros</span><b id="rsPax">-</b></li>
+                    <li><span><%- include('partials/icon', { name: 'wallet', size: 14 }) %> Pago</span><b id="rsPay">-</b></li>
                 </ul>
+
                 <div class="rs-break" id="tripQuoteBreakdown"></div>
-                <div class="rs-total"><span>Total</span><b id="tripQuoteTotal">$0</b></div>
+                <div class="rs-total"><span>Total a pagar</span><b id="tripQuoteTotal">$0</b></div>
             </aside>
             </div>
         </form>
@@ -497,7 +592,7 @@
     const childPlusBtn = document.getElementById("childPlusBtn");
     const childMinusBtn = document.getElementById("childMinusBtn");
     const childPriceHint = document.getElementById("childPriceHint");
-    const MAX_PASSENGERS = 14;
+    const MAX_PASSENGERS = <%= rvMaxPax %>;
 
     const customerName = document.getElementById("customer_name");
 
@@ -556,10 +651,11 @@
             return {
                 passenger_price_mxn: Number(obj?.passenger_price_mxn ?? 120),
                 package_price_mxn: Number(obj?.package_price_mxn ?? 120),
+                local_package_price_mxn: Number(obj?.local_package_price_mxn ?? 30),
                 child_price_mxn: Number(obj?.child_price_mxn ?? 60),
             };
         } catch {
-            return {passenger_price_mxn: 120, package_price_mxn: 120, child_price_mxn: 60};
+            return {passenger_price_mxn: 120, package_price_mxn: 120, local_package_price_mxn: 30, child_price_mxn: 60};
         }
     }
 
@@ -646,7 +742,13 @@
         return {direction: "", vic_location: null};
     }
 
+    // Paquetería local en Llera: tipo propio en la pantalla, se envía al servidor como PACKAGE_LOCAL
+    function isLocalType() {
+        return typeSel.value === "PACKAGE_LOCAL";
+    }
+
     function routeLabelFromStops(from, to) {
+        if (isLocalType()) return `Paquetería local en ${CITY_LABELS.LLE || "Llera"}`;
         const fromKey = String(from || "").trim().toUpperCase();
         const toKey = String(to || "").trim().toUpperCase();
         if (!fromKey || !toKey || fromKey === toKey) return "-";
@@ -654,6 +756,9 @@
     }
 
     function getEffectivePricing() {
+        if (isLocalType()) {
+            return {...PRICING, package_price_mxn: Number(PRICING.local_package_price_mxn ?? 30)};
+        }
         const fromKey = String(fromCity.value || "").trim().toUpperCase();
         const toKey = String(toCity.value || "").trim().toUpperCase();
         const locCode = isStop(fromKey) ? fromKey : (isStop(toKey) ? toKey : "");
@@ -787,6 +892,7 @@
                 PRICING = {
                     passenger_price_mxn: Number(data.passenger_price_mxn ?? PRICING.passenger_price_mxn ?? 120),
                     package_price_mxn: Number(data.package_price_mxn ?? PRICING.package_price_mxn ?? 120),
+                    local_package_price_mxn: Number(data.local_package_price_mxn ?? PRICING.local_package_price_mxn ?? 30),
                     child_price_mxn: Number(data.child_price_mxn ?? PRICING.child_price_mxn ?? 60),
                 };
                 PRICING_OK = true;
@@ -933,6 +1039,7 @@
             // Hora preferida para seleccionar al renderizar slots
             if (time) {
                 PREFERRED_TIME = time; // ya viene en HH:MM
+                restoredStep = 1; // venir de un horario = reserva nueva, empiezo en el paso 1
             }
 
             // ✅ Limpio URL (solo estética) sin recargar
@@ -961,8 +1068,29 @@
         return !!namesToggle?.checked;
     }
 
+    let routeBeforeLocal = null;
+
     function updateUIByType() {
         const isPassenger = typeSel.value === "PASSENGER";
+        const isLocal = isLocalType();
+
+        // En la paquetería local la ruta es fija (sale de Llera): oculto origen y destino y uso los horarios de Llera.
+        const routeSection = document.querySelector(".trip-section-route");
+        if (isLocal) {
+            if (!routeBeforeLocal) routeBeforeLocal = { from: fromCity.value, to: toCity.value };
+            fromCity.value = "LLE";
+            toCity.value = "VIC";
+            syncDirection("from");
+        } else if (routeBeforeLocal) {
+            fromCity.value = routeBeforeLocal.from;
+            toCity.value = routeBeforeLocal.to;
+            routeBeforeLocal = null;
+            syncDirection("from");
+        }
+        if (routeSection) routeSection.style.display = isLocal ? "none" : "";
+        // Las tarjetas de tipo de envío solo se ofrecen en paquetería
+        const scopeWrap = document.getElementById("pkgScopeWrap");
+        if (scopeWrap) scopeWrap.style.display = isPassenger ? "none" : "";
 
         seatsWrap.style.display = isPassenger ? "" : "none";
         if (childSeatsWrap) childSeatsWrap.style.display = isPassenger ? "" : "none";
@@ -999,8 +1127,24 @@
 
     function syncTypePills() {
         document.querySelectorAll("[data-set-type]").forEach((btn) => {
-            btn.classList.toggle("is-on", btn.getAttribute("data-set-type") === typeSel.value);
+            const t = btn.getAttribute("data-set-type");
+            let on = t === typeSel.value;
+            // El botón principal "Paquetería" queda activo también en la variante local
+            if (btn.classList.contains("seg-pill") && t === "PACKAGE") {
+                on = typeSel.value === "PACKAGE" || typeSel.value === "PACKAGE_LOCAL";
+            }
+            btn.classList.toggle("is-on", on);
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
         });
+        renderScopePrices();
+    }
+
+    // Precio de cada tipo de envío en las tarjetas
+    function renderScopePrices() {
+        const city = document.getElementById("scopePriceCity");
+        const local = document.getElementById("scopePriceLocal");
+        if (city) city.textContent = formatMXNShort(Number(PRICING.package_price_mxn ?? 120));
+        if (local) local.textContent = formatMXNShort(Number(PRICING.local_package_price_mxn ?? 30));
     }
 
     function syncPaymentPills() {
@@ -1035,18 +1179,27 @@
 
         passengerNamesBox.classList.remove("d-none");
 
+        const adults = getAdultSeats();
+        const countEl = document.getElementById("rvPaxCount");
+        if (countEl) countEl.textContent = seats === 1 ? "1 pasajero" : `${seats} pasajeros`;
+
         for (let i = 1; i <= seats; i++) {
-            const col = document.createElement("div");
-            col.className = "col-md-4";
+            const isChild = i > adults;
+            const row = document.createElement("label");
+            row.className = "rv-pax";
+            row.innerHTML = `<span class="rv-pax-num" aria-hidden="true">${i}</span>` +
+                `<span class="rv-pax-body"><span class="rv-pax-label">Pasajero ${i} <em>${isChild ? "Niño" : "Adulto"}</em></span></span>`;
             const input = document.createElement("input");
             input.className = "form-control";
             input.name = "passenger_names[]";
             input.required = true;
-            input.placeholder = `Pasajero ${i} (Nombre completo)`;
+            input.autocomplete = "off";
+            input.placeholder = "Nombre completo";
+            input.setAttribute("aria-label", `Nombre del pasajero ${i}`);
             input.value = restoredPassengerNames[i - 1] || "";
             input.addEventListener("input", writeDraft);
-            col.appendChild(input);
-            passengerNames.appendChild(col);
+            row.querySelector(".rv-pax-body").appendChild(input);
+            passengerNames.appendChild(row);
         }
 
         restoredPassengerNames = [];
@@ -1209,7 +1362,7 @@
         const dir = routeLabelFromStops(fromCity.value, toCity.value).replace(" → ", " - ");
         const date = tripDate.value || "-";
         const time = departTimeHidden.value || "(sin horario aún)";
-        const type = (typeSel.value === "PASSENGER") ? "Pasaje" : "Paquetería";
+        const type = (typeSel.value === "PASSENGER") ? "Pasaje" : (isLocalType() ? "Paquetería local en Llera" : "Paquetería");
         const adults = getAdultSeats();
         const children = getChildSeats();
         const totalPax = adults + children;
@@ -1392,23 +1545,30 @@
         if (isPassenger) {
             const parts = [];
             if (adults > 0) {
-                parts.push(`<span class="price-breakdown-item"><span class="mini-tag">${adults} adulto${adults === 1 ? "" : "s"}</span><span>${formatMXN(adultUnit)} c/u</span></span>`);
+                parts.push(breakdownRow(`${adults} adulto${adults === 1 ? "" : "s"}`, `${formatMXNShort(adultUnit)} c/u`, adultUnit * adults));
             }
             if (children > 0) {
-                parts.push(`<span class="price-breakdown-item"><span class="mini-tag">${children} niño${children === 1 ? "" : "s"}</span><span>${formatMXN(childUnit)} c/u</span></span>`);
+                parts.push(breakdownRow(`${children} niño${children === 1 ? "" : "s"}`, `${formatMXNShort(childUnit)} c/u`, childUnit * children));
             }
             const breakdownHtml = parts.length ? parts.join("") : '<span class="help">Selecciona viajeros para ver el desglose.</span>';
             priceBreakdown.innerHTML = breakdownHtml;
             if (quoteBreakdown) quoteBreakdown.innerHTML = breakdownHtml;
             priceHint.textContent = PRICING_OK ? "Pasaje (precio actual)" : "Pasaje (estimado)";
         } else {
-            const pkgHtml = `<span class="price-breakdown-item"><span class="mini-tag">Fijo</span><span>${formatMXN(packageUnit)}</span></span>`;
+            const pkgHtml = breakdownRow("1 paquete", isLocalType() ? "Tarifa local" : "Tarifa fija", packageUnit);
             priceBreakdown.innerHTML = pkgHtml;
             if (quoteBreakdown) quoteBreakdown.innerHTML = pkgHtml;
             priceHint.textContent = PRICING_OK ? "Paquetería (precio actual)" : "Paquetería (estimado)";
         }
 
         updateSummary();
+    }
+
+    // Fila del desglose: "2 adultos", "$120 c/u" debajo y el subtotal a la derecha
+    function breakdownRow(label, detail, amount) {
+        return `<span class="price-breakdown-item pb-row">` +
+            `<span class="pb-label"><b>${label}</b><small>${detail}</small></span>` +
+            `<span class="pb-amount">${formatMXNShort(amount)}</span></span>`;
     }
 
     function fieldLabel(el) {
@@ -1472,7 +1632,7 @@
     function paymentLabel(v) {
         if (v === "TAQUILLA") return "Taquilla";
         if (v === "TRANSFERENCIA") return "Transferencia";
-        if (v === "ONLINE") return "Pago en linea";
+        if (v === "ONLINE") return "Pago en línea";
         return "-";
     }
 
@@ -1529,7 +1689,10 @@
         if (!rsDate) return;
         const d = dateFromISO(tripDate.value);
         rsDate.textContent = d ? `${WD_SHORT[d.getUTCDay()]} ${d.getUTCDate()} ${MO_SHORT[d.getUTCMonth()]}` : "-";
-        document.getElementById("rsTime").textContent = departTimeHidden.value || "Sin elegir";
+        const rsTimeEl = document.getElementById("rsTime");
+        const rsTimeTxt = prettyTime12(departTimeHidden.value);
+        rsTimeEl.textContent = rsTimeTxt || "Sin elegir";
+        rsTimeEl.classList.toggle("is-empty", !rsTimeTxt);
         const isPassenger = typeSel.value === "PASSENGER";
         let pax = "1 paquete";
         if (isPassenger) {
@@ -1540,6 +1703,25 @@
         }
         document.getElementById("rsPax").textContent = pax;
         document.getElementById("rsPay").textContent = paymentLabel(paymentMethod.value);
+    }
+
+    // "lun, 16 de nov de 2026" a partir de YYYY-MM-DD
+    function prettyLongDate(iso) {
+        const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) return "-";
+        try {
+            return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]))
+                .toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+                .replace(/\./g, "");
+        } catch (e) { return iso; }
+    }
+
+    // "6:30 a. m." a partir de HH:MM
+    function prettyTime12(hhmm) {
+        const m = String(hhmm || "").match(/^(\d{1,2}):(\d{2})/);
+        if (!m) return "";
+        const h = Number(m[1]);
+        return `${h % 12 || 12}:${m[2]} ${h < 12 ? "a. m." : "p. m."}`;
     }
 
     function updateSummary() {
@@ -1560,17 +1742,18 @@
 
         const isPassenger = typeSel.value === "PASSENGER";
         sumRoute.textContent = routeLabelFromStops(fromCity.value, toCity.value);
-        sumDate.textContent = tripDate.value || "-";
-        sumTime.textContent = departTimeHidden.value || "Sin seleccionar";
-        sumType.textContent = isPassenger ? "Pasajero" : "Paqueteria";
+        sumDate.textContent = prettyLongDate(tripDate.value);
+        sumTime.textContent = prettyTime12(departTimeHidden.value) || "Sin seleccionar";
+        sumType.textContent = isPassenger ? "Pasaje" : (isLocalType() ? "Paquetería local" : "Paquetería");
         if (isPassenger) {
             const adults = getAdultSeats();
             const children = getChildSeats();
-            sumSeats.textContent = children > 0
-                ? `${adults + children} (${adults} adulto(s), ${children} niño(s) 6-10)`
-                : String(adults + children);
+            const parts = [];
+            if (adults > 0) parts.push(`${adults} ${adults === 1 ? "adulto" : "adultos"}`);
+            if (children > 0) parts.push(`${children} ${children === 1 ? "niño" : "niños"}`);
+            sumSeats.textContent = parts.join(", ") || "-";
         } else {
-            sumSeats.textContent = "N/A";
+            sumSeats.textContent = "No aplica";
         }
         sumPayment.textContent = paymentLabel(paymentMethod.value);
         sumTotal.textContent = priceTotal.textContent || "-";
@@ -1672,7 +1855,10 @@
         const typeBtn = e.target.closest("[data-set-type]");
         if (typeBtn) {
             e.preventDefault();
-            typeSel.value = typeBtn.getAttribute("data-set-type") || "PASSENGER";
+            const wanted = typeBtn.getAttribute("data-set-type") || "PASSENGER";
+            // Tocar "Paquetería" estando en la variante local conserva la variante
+            const keepLocal = wanted === "PACKAGE" && typeBtn.classList.contains("seg-pill") && typeSel.value === "PACKAGE_LOCAL";
+            typeSel.value = keepLocal ? "PACKAGE_LOCAL" : wanted;
             updateUIByType();
             loadAvailability();
             return;
@@ -1839,6 +2025,44 @@
     // horarios
     loadAvailability();
     updateSummary();
+</script>
+
+
+<script>
+    /* Datos de contacto: marca como válidos el nombre y el teléfono mientras se escriben */
+    (function () {
+        const name = document.getElementById("customer_name");
+        const phone = document.getElementById("phone");
+        function mark(el, ok) {
+            const box = el && el.closest(".rv-input");
+            if (box) box.classList.toggle("is-valid", !!ok);
+        }
+        function check() {
+            if (name) mark(name, name.value.trim().length >= 3);
+            if (phone) mark(phone, /^\d{10}$/.test(phone.value.replace(/\s+/g, "")));
+        }
+        [name, phone].forEach((el) => { if (el) el.addEventListener("input", check); });
+        // El borrador puede rellenar los campos después de cargar: reviso también al entrar al paso
+        document.addEventListener("click", (e) => { if (e.target.closest("[data-next-step],[data-step-target]")) setTimeout(check, 50); });
+        setTimeout(check, 300);
+    })();
+</script>
+
+
+<script>
+    /* Nombres de pasajeros: copia el nombre de contacto al primer pasajero */
+    (function () {
+        const btn = document.getElementById("usePaxName");
+        if (!btn) return;
+        btn.addEventListener("click", () => {
+            const first = document.querySelector("#passengerNames input[name='passenger_names[]']");
+            const contact = document.getElementById("customer_name");
+            if (!first || !contact) return;
+            first.value = (contact.value || "").trim();
+            first.dispatchEvent(new Event("input", { bubbles: true }));
+            first.focus();
+        });
+    })();
 </script>
 
 </body>

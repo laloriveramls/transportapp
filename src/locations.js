@@ -1,6 +1,9 @@
 'use strict';
 
 const LLERA_CODE = 'LLE';
+
+// Paquetería que se recibe y entrega dentro de Llera (origen y destino = Llera). Tarifa por omisión.
+const LOCAL_PACKAGE_DEFAULT_MXN = 30;
 const VIC_CENTER_CODE = 'VIC';
 
 const DEFAULT_CITY_LABELS = Object.freeze({
@@ -180,6 +183,11 @@ function formatRouteEndpoint(direction, vicLocation, side, fromStop, toStop) {
     return isV2L ? cityLabelsCache.LLE : vicLabel;
 }
 
+function isLocalLlera(fromStop, toStop) {
+    return String(fromStop || '').trim().toUpperCase() === LLERA_CODE
+        && String(toStop || '').trim().toUpperCase() === LLERA_CODE;
+}
+
 function routeEndpoints(direction, vicLocation, fromStop, toStop) {
     return {
         fromLabel: formatRouteEndpoint(direction, vicLocation, 'from', fromStop, toStop),
@@ -188,6 +196,7 @@ function routeEndpoints(direction, vicLocation, fromStop, toStop) {
 }
 
 function formatRouteLabel(direction, vicLocation, separator = ' → ', fromStop, toStop) {
+    if (isLocalLlera(fromStop, toStop)) return `Paquetería local en ${cityLabelsCache.LLE}`;
     const {fromLabel, toLabel} = routeEndpoints(direction, vicLocation, fromStop, toStop);
     if (!direction && !(String(fromStop || '').trim() && String(toStop || '').trim())) return '-';
     return `${fromLabel}${separator}${toLabel}`;
@@ -214,6 +223,7 @@ function pricingForVicLocation(basePricing, locationCode, counterpartCode) {
     const base = {
         passenger_price_mxn: Number(basePricing?.passenger_price_mxn ?? 120),
         package_price_mxn: Number(basePricing?.package_price_mxn ?? 120),
+        local_package_price_mxn: Number(basePricing?.local_package_price_mxn ?? LOCAL_PACKAGE_DEFAULT_MXN),
         child_price_mxn:
             basePricing?.child_price_mxn != null && basePricing?.child_price_mxn !== ''
                 ? Number(basePricing.child_price_mxn)
@@ -229,6 +239,7 @@ function pricingForVicLocation(basePricing, locationCode, counterpartCode) {
     return {
         passenger_price_mxn: adult,
         package_price_mxn: adult,
+        local_package_price_mxn: base.local_package_price_mxn,
         child_price_mxn: adult / 2,
         vic_location: loc.code,
         vic_location_label: loc.label,
@@ -236,6 +247,10 @@ function pricingForVicLocation(basePricing, locationCode, counterpartCode) {
 }
 
 function pricingForStops(basePricing, fromStop, toStop) {
+    if (isLocalLlera(fromStop, toStop)) {
+        const base = pricingForVicLocation(basePricing, null);
+        return {...base, package_price_mxn: base.local_package_price_mxn};
+    }
     const from = String(fromStop || '').trim().toUpperCase();
     const to = String(toStop || '').trim().toUpperCase();
     const locCode = vicLocationFromStops(from, to);
@@ -297,6 +312,8 @@ const VIC_LOCATIONS = DEFAULT_VIC_LOCATIONS.map((loc) => ({...loc}));
 
 module.exports = {
     LLERA_CODE,
+    LOCAL_PACKAGE_DEFAULT_MXN,
+    isLocalLlera,
     VIC_CENTER_CODE,
     DEFAULT_CITY_LABELS,
     DEFAULT_VIC_LOCATIONS,
