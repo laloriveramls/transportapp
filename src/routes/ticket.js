@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const { pool, hasDb } = require("../db");
 const { requireDb } = require("../middleware/requireDb");
-const { formatRouteLabel, routeEndpoints } = require("../locations");
+const { formatRouteLabel, routeEndpoints, isLocalLlera } = require("../locations");
 const specialEvents = require("../specialEvents");
 
 const router = express.Router();
@@ -291,7 +291,7 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     const folio = folioFrom(row.trip_date, row.reservation_id, row.daily_seq);
 
     // I generate a tight QR for crisp thermal print.
-    const qrPng = await QRCode.toBuffer(url, { margin: 0, scale: 10 });
+    const qrPng = await QRCode.toBuffer(url, { margin: 1, scale: 10, errorCorrectionLevel: "M" });
 
     // Logo path (this file is in src/routes, so I go up to project root)
     const logoPath = path.join(__dirname, "..", "..", "public", "assets", "logoticket.png");
@@ -302,72 +302,56 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
     const BRAND_LINE_2 = "Comodidad, seguridad y WiFi gratis";
     const BRAND_LINE_3 = "WhatsApp: (834) 475-63-76";
 
-    // Page sizing
+    // ===== Ticket térmico de 48 mm: solo blanco y negro, una página por pasajero =====
     const PAGE_W_MM = 48;
-    const PAD_MM = 0.7;
+    const PAD_MM = 1.6;
 
-    // ✅ Smaller everything + bigger logo
-    const S = {
-        top: 0.0,
-        bottom: 1.0,
-        gap: 0.45,
-        lineGap: 0.75,
+    const mmToPt = (n) => (Number(n) * 72) / 25.4;
+    const ptToMm = (pt) => (Number(pt) * 25.4) / 72;
 
-        // ✅ Bigger logo (mm)
-        logoW: 48,
-        logoH: 25,
-
-        // ✅ Smaller business lines
-        tagline: 7.0,
-        whatsapp: 7.5,
-
-        // ✅ Smaller chip text
-        title: 7.8,
-
-        // ✅ Smaller overall text
-        big: 9.4,
-        label: 7.2,
-        value: 7.6,
-        small: 6.6,
-
-        // QR smaller (mm)
-        qr: 14,
-    };
+    const PAGE_W = mmToPt(PAGE_W_MM);
+    const X = mmToPt(PAD_MM);
+    const W = PAGE_W - X * 2;
 
     const hhmm = pickHHMM(row.depart_time);
-    const ruta = formatRouteLabel(row.direction, row.vic_location, " - ", row.from_stop, row.to_stop);
+    const [hh, mi] = hhmm.split(":").map(Number);
+    const hora12 = Number.isFinite(hh) ? `${hh % 12 || 12}:${String(mi || 0).padStart(2, "0")}` : hhmm;
+    const horaSufijo = Number.isFinite(hh) ? (hh < 12 ? "a. m." : "p. m.") : "";
 
-    const pay = String(row.payment_method || "-").toUpperCase();
-    const payNice =
-        pay === "CASH" || pay === "EFECTIVO" ? "EFECTIVO" :
-            pay === "TRANSFER" || pay === "TRANSFERENCIA" ? "TRANSFER" :
-                pay === "ONLINE" ? "ONLINE" :
-                    (row.payment_method || "-");
+    // "lun, 9 de feb de 2026" -> semana y día/mes por un lado, año aparte
+    const fechaLarga = formatTripDate(row.trip_date).replace(/,/g, "").replace(/\bde\b/g, "").replace(/\s+/g, " ").trim();
+    const fechaPartes = fechaLarga.split(" ");
+    const fechaCorta = fechaPartes.length >= 4 ? fechaPartes.slice(0, 3).join(" ") : fechaLarga;
+    const fechaAnio = fechaPartes.length >= 4 ? fechaPartes[3] : "";
+
+    const rawStatus = String(row.status || "").toUpperCase();
+    const STATUS_VIEW = {
+        PAID: { text: "PAGADO", solid: true },
+        PAY_AT_BOARDING: { text: "PAGO AL ABORDAR", solid: true },
+        PENDING_PAYMENT: { text: "PENDIENTE DE PAGO", solid: false },
+        CANCELLED: { text: "CANCELADO", solid: false },
+        EXPIRED: { text: "EXPIRADO", solid: false },
+    };
+    const statusView = STATUS_VIEW[rawStatus] || { text: "TICKET", solid: true };
+    const isVoid = rawStatus === "CANCELLED" || rawStatus === "EXPIRED" || rawStatus === "PENDING_PAYMENT";
+
+    const isLocal = isLocalLlera(row.from_stop, row.to_stop);
+    const ends = routeEndpoints(row.direction, row.vic_location, row.from_stop, row.to_stop);
+    const typeIsPassenger = String(row.type || "").toUpperCase() === "PASSENGER";
 
     const totalNum =
         row.amount_total_mxn != null && row.amount_total_mxn !== "" && !Number.isNaN(Number(row.amount_total_mxn))
             ? Number(row.amount_total_mxn)
             : null;
 
-    // 1 page per passenger
+    // 1 página por pasajero
     let passengerNames = [];
-
-    if (row.type === "PASSENGER") {
+    if (typeIsPassenger) {
         const [ps] = await pool.query(
-            `
-                SELECT passenger_name
-                FROM transporte_reservation_passengers
-                WHERE reservation_id = ?
-                ORDER BY id
-            `,
+            `SELECT passenger_name FROM transporte_reservation_passengers WHERE reservation_id = ? ORDER BY id`,
             [row.reservation_id]
         );
-
-        passengerNames = (ps || [])
-            .map((p) => String(p.passenger_name || "").trim())
-            .filter(Boolean);
-
-        // ✅ If no passengers were captured, I print generic labels: Pasajero 1..N
+        passengerNames = (ps || []).map((p) => String(p.passenger_name || "").trim()).filter(Boolean);
         if (passengerNames.length === 0) {
             const n = Math.max(1, Number(row.seats || 1));
             passengerNames = Array.from({ length: n }, (_, i) => `Pasajero ${i + 1}`);
@@ -376,303 +360,216 @@ router.get("/ticket/:code/pdf", requireDb, async (req, res) => {
         passengerNames = [null];
     }
 
-    const paxCount = row.type === "PASSENGER" ? Math.max(1, passengerNames.length) : 1;
-
-    // Total per page
-    const totalPerPageNum =
-        row.type === "PASSENGER" && totalNum != null ? (totalNum / paxCount) : totalNum;
-
+    const paxCount = typeIsPassenger ? Math.max(1, passengerNames.length) : 1;
+    const totalPerPageNum = typeIsPassenger && totalNum != null ? totalNum / paxCount : totalNum;
     const totalPerPageTxt = totalPerPageNum != null ? money(totalPerPageNum) : null;
-    const totalLabel = row.type === "PASSENGER" ? "TOTAL (1 PASAJERO)" : "TOTAL";
+    const totalLabel = typeIsPassenger && paxCount > 1 ? "TOTAL (1 PASAJERO)" : "TOTAL";
 
-    // Auto-trim height
-    const mmToPt = (n) => (Number(n) * 72) / 25.4;
-    const ptToMm = (pt) => (Number(pt) * 25.4) / 72;
+    // Dirección para quien no puede escanear el QR
+    const hostTxt = baseUrl.replace(/^https?:\/\//, "").replace(/\/+$/, "");
 
-    const PAGE_W = mmToPt(PAGE_W_MM);
-    const x = mmToPt(PAD_MM);
-    const w = PAGE_W - mmToPt(PAD_MM) * 2;
+    /**
+     * Dibuja un ticket completo en `doc` y devuelve la altura usada (mm).
+     * Se usa dos veces: primero en un documento de medición para ajustar el alto de la página,
+     * y luego para imprimir de verdad. Así el diseño y la medida nunca se desfasan.
+     */
+    const drawTicket = (doc, passengerName, idx, total) => {
+        let y = mmToPt(1.2);
+        const BLACK = "#000";
+        const WHITE = "#fff";
 
-    const measureDoc = new PDFDocument({
-        size: [PAGE_W, mmToPt(300)],
-        margins: { top: 0, left: 0, right: 0, bottom: 0 },
-    });
+        const textBlock = (txt, o = {}) => {
+            const font = o.font || "Helvetica";
+            const size = o.size || 7.4;
+            const x0 = o.x != null ? o.x : X;
+            const w0 = o.w != null ? o.w : W;
+            const opts = { width: w0, align: o.align || "left", characterSpacing: o.spacing || 0 };
+            const t = String(txt == null ? "" : txt);
+            doc.font(font).fontSize(size).fillColor(o.color || BLACK);
+            const h = doc.heightOfString(t, opts);
+            doc.text(t, x0, o.y != null ? o.y : y, opts);
+            if (o.y == null) y += h + mmToPt(o.gap != null ? o.gap : 0.5);
+            return h;
+        };
 
-    const hTextMm = (font, size, text, widthPt, opts = {}) => {
-        measureDoc.font(font).fontSize(size);
-        const h = measureDoc.heightOfString(String(text || ""), {
-            width: widthPt,
-            align: opts.align || "left",
-        });
-        return ptToMm(h);
-    };
+        const rule = (dashed, gapMm = 1.1) => {
+            y += mmToPt(gapMm / 2);
+            doc.save().strokeColor(BLACK).lineWidth(dashed ? 0.9 : 0.4);
+            if (dashed) doc.lineCap("round").dash(1, { space: 2.4 });
+            doc.moveTo(X, y).lineTo(X + W, y).stroke();
+            if (dashed) doc.undash();
+            doc.restore();
+            y += mmToPt(gapMm / 2);
+        };
 
-    const hKVmm = (k, v) => {
-        const leftW = w * 0.55;
-        const rightW = w * 0.45;
-        const hl = hTextMm("Helvetica-Bold", S.label, k, leftW);
-        const hr = hTextMm("Helvetica", S.value, v, rightW, { align: "right" });
-        return Math.max(hl, hr) + S.gap + S.lineGap;
-    };
-
-    const calcNeedMmForPage = (passengerName, idx, total) => {
-        let need = 0;
-        need += S.top;
-
-        // Header: logo + business lines (no frame)
-        need += S.logoH + 0.35;
-        need += hTextMm("Helvetica", S.tagline, BRAND_LINE_1, w, { align: "center" }) + 0.05;
-        need += hTextMm("Helvetica", S.tagline, BRAND_LINE_2, w, { align: "center" }) + 0.05;
-        need += hTextMm("Helvetica-Bold", S.whatsapp, BRAND_LINE_3, w, { align: "center" }) + 0.35;
-
-        // Chip
-        const chipTextH = hTextMm("Helvetica-Bold", S.title, "TICKET PAGADO", w, { align: "center" });
-        need += chipTextH + 1.2 + 0.35;
-
-        need += S.lineGap;
-
-        // Folio + code + pax
-        need += hTextMm("Helvetica-Bold", S.big, folio, w, { align: "center" }) + 0.30;
-        need += hTextMm("Helvetica", S.value, `CÓDIGO: ${row.code}`, w, { align: "center" }) + 0.10;
-
-        if (row.type === "PASSENGER") {
-            need += hTextMm("Helvetica", S.small, `PASAJERO ${idx}/${total}`, w, { align: "center" }) + 0.35;
+        // --- Encabezado
+        if (hasLogo) {
+            const logoW = mmToPt(40);
+            const logoH = logoW * (705 / 1152);
+            doc.image(logoPath, X + (W - logoW) / 2, y, { fit: [logoW, logoH] });
+            y += logoH + mmToPt(0.8);
         } else {
-            need += 0.35;
+            textBlock("TransportApp", { font: "Helvetica-Bold", size: 12, align: "center", gap: 0.6 });
+        }
+        textBlock(BRAND_LINE_2, { size: 6.4, align: "center", gap: 0.2 });
+        textBlock(BRAND_LINE_3, { font: "Helvetica-Bold", size: 7, align: "center", gap: 1.0 });
+
+        // --- Estado del ticket (relleno si es válido, solo borde si no)
+        {
+            let fs = 7.6;
+            doc.font("Helvetica-Bold").fontSize(fs);
+            const padX = mmToPt(1.6);
+            const maxTextW = W - padX * 2;
+            while (fs > 6 && doc.widthOfString(statusView.text, { characterSpacing: 0.6 }) > maxTextW) { fs -= 0.2; doc.fontSize(fs); }
+            const lineH = doc.currentLineHeight(true);
+            const chipH = lineH + mmToPt(1.4);
+            doc.save();
+            if (statusView.solid) {
+                doc.roundedRect(X, y, W, chipH, 2.4).fill(BLACK);
+            } else {
+                doc.roundedRect(X + 0.5, y + 0.5, W - 1, chipH - 1, 2.4).lineWidth(1).stroke(BLACK);
+            }
+            doc.restore();
+            doc.font("Helvetica-Bold").fontSize(fs).fillColor(statusView.solid ? WHITE : BLACK);
+            doc.text(statusView.text, X, y + (chipH - lineH) / 2 + mmToPt(0.1), { width: W, align: "center", characterSpacing: 0.6, lineBreak: false });
+            y += chipH + mmToPt(0.6);
+            if (isVoid) {
+                textBlock(rawStatus === "PENDING_PAYMENT" ? "AUN NO ES VALIDO PARA ABORDAR" : "NO VALIDO PARA ABORDAR", {
+                    font: "Helvetica-Bold", size: 5.8, align: "center", gap: 0.4,
+                });
+            }
         }
 
-        need += S.lineGap;
-
-        // Fields
-        need += hKVmm("RUTA", ruta);
-        need += hKVmm("FECHA", row.trip_date);
-        need += hKVmm("HORA", hhmm);
-        need += hKVmm("CONTACTO", row.customer_name || "-");
-        need += hKVmm("TEL", row.phone || "-");
-        need += hKVmm("PAGO", payNice);
-        if (totalPerPageTxt) need += hKVmm(totalLabel, totalPerPageTxt);
-
-        if (row.type === "PASSENGER") {
-            need += hKVmm("PASAJERO", passengerName || "-");
+        // --- Folio y pasajero
+        textBlock(folio, { font: "Helvetica-Bold", size: 9.2, align: "center", gap: 0.2 });
+        if (typeIsPassenger && total > 1) {
+            textBlock(`PASAJERO ${idx} DE ${total}`, { size: 6.2, align: "center", gap: 0.4 });
         } else {
-            need += hTextMm("Helvetica-Bold", S.label, "DETALLE", w) + 0.25;
-            need += hTextMm("Helvetica", S.value, row.package_details || "-", w) + 0.8;
-            need += S.lineGap;
+            y += mmToPt(0.3);
+        }
+        rule(true);
+
+        // --- Ruta
+        if (isLocal) {
+            textBlock("PAQUETERIA LOCAL", { font: "Helvetica-Bold", size: 9.6, align: "center", gap: 0.1 });
+            textBlock(`en ${String(ends.fromLabel || "Llera")}`, { size: 7.4, align: "center", gap: 0.5 });
+        } else {
+            textBlock("ORIGEN", { size: 5.6, align: "center", spacing: 0.8, gap: 0.05 });
+            textBlock(String(ends.fromLabel || "").toUpperCase(), { font: "Helvetica-Bold", size: 9.4, align: "center", gap: 0.35 });
+            // flecha hacia abajo
+            {
+                const cx = X + W / 2;
+                doc.save().fillColor(BLACK).strokeColor(BLACK).lineWidth(1);
+                doc.moveTo(cx, y).lineTo(cx, y + mmToPt(2.0)).stroke();
+                doc.moveTo(cx - mmToPt(1.1), y + mmToPt(1.2)).lineTo(cx + mmToPt(1.1), y + mmToPt(1.2)).lineTo(cx, y + mmToPt(2.5)).closePath().fill();
+                doc.restore();
+                y += mmToPt(2.9);
+            }
+            textBlock("DESTINO", { size: 5.6, align: "center", spacing: 0.8, gap: 0.05 });
+            textBlock(String(ends.toLabel || "").toUpperCase(), { font: "Helvetica-Bold", size: 9.4, align: "center", gap: 0.7 });
         }
 
-        if (String(row.transfer_ref || "").trim()) {
-            need += hTextMm("Helvetica-Bold", S.label, "REFERENCIA", w) + 0.25;
-            need += hTextMm("Helvetica", S.value, row.transfer_ref, w) + 0.55;
-            need += S.lineGap;
+        // --- Fecha y hora en dos celdas
+        {
+            const boxH = mmToPt(11.2);
+            doc.save().lineWidth(0.9).strokeColor(BLACK).roundedRect(X, y, W, boxH, 2.4).stroke();
+            doc.moveTo(X + W * 0.5, y + mmToPt(1.2)).lineTo(X + W * 0.5, y + boxH - mmToPt(1.2)).lineWidth(0.5).stroke();
+            doc.restore();
+
+            const cw = W * 0.5 - mmToPt(1.4);
+            textBlock("FECHA", { y: y + mmToPt(1.3), x: X + mmToPt(0.7), w: cw, size: 5.6, spacing: 0.8, align: "center" });
+            textBlock(fechaCorta, { y: y + mmToPt(3.5), x: X + mmToPt(0.7), w: cw, font: "Helvetica-Bold", size: 8.6, align: "center" });
+            if (fechaAnio) textBlock(fechaAnio, { y: y + mmToPt(7.2), x: X + mmToPt(0.7), w: cw, size: 6.4, align: "center" });
+
+            const rx = X + W * 0.5 + mmToPt(0.7);
+            textBlock("SALIDA", { y: y + mmToPt(1.3), x: rx, w: cw, size: 5.6, spacing: 0.8, align: "center" });
+            textBlock(hora12, { y: y + mmToPt(3.0), x: rx, w: cw, font: "Helvetica-Bold", size: 13, align: "center" });
+            if (horaSufijo) textBlock(horaSufijo, { y: y + mmToPt(8.0), x: rx, w: cw, size: 6.4, align: "center" });
+            y += boxH + mmToPt(1.0);
         }
 
-        // QR + footer
-        need += S.qr + 2.6;
-        need += hTextMm("Helvetica-Bold", S.value, "ESCANEA PARA VALIDAR", w, { align: "center" }) + 0.35;
-        need += hTextMm("Helvetica", S.small, url, w, { align: "center" }) + 0.75;
+        // --- Detalles
+        const row2 = (k, v) => {
+            const leftW = W * 0.34;
+            const rightW = W * 0.66;
+            const val = String(v == null || v === "" ? "-" : v);
+            doc.font("Helvetica-Bold").fontSize(5.8);
+            const hl = doc.heightOfString(k, { width: leftW, characterSpacing: 0.4 });
+            doc.font("Helvetica").fontSize(7.4);
+            const hr = doc.heightOfString(val, { width: rightW, align: "right" });
+            doc.font("Helvetica-Bold").fontSize(5.8).fillColor(BLACK).text(k, X, y + mmToPt(0.25), { width: leftW, characterSpacing: 0.4 });
+            doc.font("Helvetica").fontSize(7.4).fillColor(BLACK).text(val, X + leftW, y, { width: rightW, align: "right" });
+            y += Math.max(hl, hr) + mmToPt(0.6);
+            rule(false, 0.7);
+        };
 
-        need += S.bottom;
-        return need;
+        if (typeIsPassenger) {
+            row2("PASAJERO", passengerName || "-");
+        } else {
+            textBlock("DETALLE", { font: "Helvetica-Bold", size: 5.8, spacing: 0.4, gap: 0.2 });
+            textBlock(row.package_details || "-", { size: 7.4, gap: 0.6 });
+            rule(false, 0.7);
+        }
+        row2("CONTACTO", row.customer_name || "-");
+        row2("TEL.", row.phone || "-");
+        row2("PAGO", paymentLabel(row.payment_method));
+        if (String(row.transfer_ref || "").trim()) row2("REF.", String(row.transfer_ref).trim());
+
+        // --- Total en barra negra
+        if (totalPerPageTxt) {
+            const barH = mmToPt(7.2);
+            doc.save().roundedRect(X, y + mmToPt(0.4), W, barH, 2.4).fill(BLACK).restore();
+            doc.font("Helvetica-Bold").fontSize(5.8).fillColor(WHITE).text(totalLabel, X + mmToPt(1.6), y + mmToPt(0.4) + (barH - 5.8) / 2, { width: W * 0.42, characterSpacing: 0.4, lineBreak: false });
+            doc.font("Helvetica-Bold").fontSize(11.5).fillColor(WHITE).text(totalPerPageTxt, X + W * 0.35, y + mmToPt(0.4) + (barH - 11.5) / 2 + 0.5, { width: W * 0.65 - mmToPt(1.6), align: "right", lineBreak: false });
+            y += barH + mmToPt(1.4);
+        }
+
+        // --- Corte y validación
+        rule(true, 1.6);
+        {
+            const qrSize = mmToPt(26);
+            const qx = X + (W - qrSize) / 2;
+            doc.image(qrPng, qx, y, { fit: [qrSize, qrSize] });
+            y += qrSize + mmToPt(1.2);
+        }
+        textBlock("ESCANEA PARA VALIDAR", { font: "Helvetica-Bold", size: 6.6, align: "center", spacing: 0.4, gap: 1.0 });
+
+        // --- Código para consultar el boleto
+        {
+            const boxH = mmToPt(10.2);
+            doc.save().lineWidth(1).strokeColor(BLACK).roundedRect(X, y, W, boxH, 2.4).stroke().restore();
+            textBlock("CODIGO DEL BOLETO", { y: y + mmToPt(1.0), size: 5.4, spacing: 0.8, align: "center" });
+            textBlock(row.code, { y: y + mmToPt(3.2), font: "Courier-Bold", size: 13, spacing: 1.6, align: "center" });
+            y += boxH + mmToPt(1.0);
+        }
+        textBlock("Consulta tu boleto en", { size: 5.8, align: "center", gap: 0.1 });
+        textBlock(`${hostTxt}/mis-boletos`, { font: "Helvetica-Bold", size: 6.2, align: "center", gap: 0.9 });
+        textBlock("Gracias por viajar con nosotros", { size: 5.8, align: "center", gap: 0 });
+
+        return ptToMm(y) + 2.4;
     };
 
+    // Primera pasada: mido el alto máximo entre todas las páginas
+    const measureDoc = new PDFDocument({ size: [PAGE_W, mmToPt(400)], margins: { top: 0, left: 0, right: 0, bottom: 0 } });
     const maxNeedMm = passengerNames.reduce((acc, pName, i) => {
-        const need = calcNeedMmForPage(pName, i + 1, passengerNames.length);
-        return Math.max(acc, need);
+        if (i > 0) measureDoc.addPage({ size: [PAGE_W, mmToPt(400)], margins: { top: 0, left: 0, right: 0, bottom: 0 } });
+        return Math.max(acc, drawTicket(measureDoc, pName, i + 1, passengerNames.length));
     }, 0);
+    measureDoc.on("data", () => {});
+    measureDoc.end();
 
-    const PAGE_H_MM = Math.max(58, Math.min(120, Math.ceil(maxNeedMm)));
+    const PAGE_H_MM = Math.max(80, Math.min(200, Math.ceil(maxNeedMm)));
     const PAGE_H = mmToPt(PAGE_H_MM);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${folio}.pdf"`);
 
-    const doc = new PDFDocument({
-        size: [PAGE_W, PAGE_H],
-        margins: { top: 0, left: 0, right: 0, bottom: 0 },
-    });
-
+    const doc = new PDFDocument({ size: [PAGE_W, PAGE_H], margins: { top: 0, left: 0, right: 0, bottom: 0 } });
     doc.pipe(res);
 
-    const dotsLine = (state) => {
-        doc.save();
-        doc.strokeColor("#000").lineWidth(1).lineCap("round").dash(1, { space: 2.2 });
-        doc.moveTo(state.x, state.y).lineTo(state.x + state.w, state.y).stroke();
-        doc.undash();
-        doc.restore();
-        state.y += mmToPt(S.lineGap);
-    };
-
-    const centerText = (state, font, size, txt, extraGapMm = S.gap) => {
-        doc.font(font).fontSize(size).fillColor("#000");
-        doc.text(String(txt || ""), state.x, state.y, { width: state.w, align: "center" });
-        const h = doc.heightOfString(String(txt || ""), { width: state.w, align: "center" });
-        state.y += h + mmToPt(extraGapMm);
-    };
-
-    const drawBlackChip = (state, text) => {
-        const chipW = state.w * 0.55;
-        const chipX = state.x + (state.w - chipW) / 2;
-
-        const padX = mmToPt(1.2);
-        const padY = mmToPt(0.35);
-
-        // font base
-        let fs = Math.max(7.2, (S.title || 9.2) - 1.6);
-
-        doc.font("Helvetica-Bold").fontSize(fs);
-
-        // I shrink-to-fit so it never wraps (height stays stable).
-        const maxTextW = chipW - padX * 2;
-        while (fs > 6.4 && doc.widthOfString(text) > maxTextW) {
-            fs -= 0.2;
-            doc.fontSize(fs);
-        }
-
-        // I use single-line height for consistent vertical centering.
-        const lineH = doc.currentLineHeight(true);
-        const chipH = lineH + padY * 2;
-
-        const chipY = state.y;
-
-        // chip
-        doc.save();
-        doc.fillColor("#000");
-        doc.roundedRect(chipX, chipY, chipW, chipH, 2.2).fill();
-
-        // Real vertical center (+ tiny optical nudge)
-        const optical = mmToPt(0.55);
-        const textY = chipY + (chipH - lineH) / 2 + optical;
-
-        doc.fillColor("#fff");
-        doc.text(text, chipX + padX, textY, {
-            width: chipW - padX * 2,
-            align: "center",
-            lineBreak: false,
-        });
-
-        doc.restore();
-
-        state.y += chipH + mmToPt(0.25);
-    };
-
-    const drawCenteredLogo = (state) => {
-        const logoW = mmToPt(S.logoW);
-        const logoH = mmToPt(S.logoH);
-        const lx = state.x + (state.w - logoW) / 2;
-
-        if (hasLogo) {
-            doc.image(logoPath, lx, state.y, { fit: [logoW, logoH], align: "center", valign: "center" });
-            state.y += logoH + mmToPt(0.35);
-            return;
-        }
-
-        // fallback
-        centerText(state, "Helvetica-Bold", 12, "TransportApp", 0.35);
-    };
-
-    const kv = (state, k, v) => {
-        const leftW = state.w * 0.55;
-        const rightW = state.w * 0.45;
-
-        doc.font("Helvetica-Bold").fontSize(S.label).fillColor("#000");
-        doc.text(k, state.x, state.y, { width: leftW });
-
-        doc.font("Helvetica").fontSize(S.value).fillColor("#000");
-        doc.text(String(v ?? "-"), state.x + leftW, state.y, { width: rightW, align: "right" });
-
-        const hl = doc.heightOfString(k, { width: leftW });
-        const hr = doc.heightOfString(String(v ?? "-"), { width: rightW, align: "right" });
-
-        state.y += Math.max(hl, hr) + mmToPt(S.gap);
-        dotsLine(state);
-    };
-
-    const renderPage = (passengerName, idx, total) => {
-        const state = { x, w, y: mmToPt(S.top) };
-
-        // Header (no frame)
-        drawCenteredLogo(state);
-        centerText(state, "Helvetica", S.tagline, BRAND_LINE_1, 0.05);
-        centerText(state, "Helvetica", S.tagline, BRAND_LINE_2, 0.05);
-        centerText(state, "Helvetica-Bold", S.whatsapp, BRAND_LINE_3, 0.35);
-
-        // Chip title smaller
-        drawBlackChip(state, "TICKET PAGADO");
-        state.y += mmToPt(0.8);
-        dotsLine(state);
-
-        // Folio + code
-        centerText(state, "Helvetica-Bold", S.big, folio, 0.35);
-        centerText(state, "Helvetica", S.value, `CÓDIGO: ${row.code}`, 0.10);
-
-        if (row.type === "PASSENGER") {
-            centerText(state, "Helvetica", S.small, `PASAJERO ${idx}/${total}`, 0.35);
-        } else {
-            state.y += mmToPt(0.35);
-        }
-
-        dotsLine(state);
-
-        // Fields smaller
-        kv(state, "RUTA", ruta);
-        kv(state, "FECHA", row.trip_date);
-        kv(state, "HORA", hhmm);
-        kv(state, "CONTACTO", row.customer_name || "-");
-        kv(state, "TEL", row.phone || "-");
-        kv(state, "PAGO", payNice);
-
-        if (totalPerPageTxt) kv(state, totalLabel, totalPerPageTxt);
-
-        if (row.type === "PASSENGER") {
-            kv(state, "PASAJERO", passengerName || "-");
-        } else {
-            doc.font("Helvetica-Bold").fontSize(S.label).fillColor("#000");
-            doc.text("DETALLE", state.x, state.y, { width: state.w });
-            state.y += mmToPt(3.3);
-
-            doc.font("Helvetica").fontSize(S.value).fillColor("#000");
-            doc.text(String(row.package_details || "-"), state.x, state.y, { width: state.w });
-            state.y += mmToPt(3.7);
-
-            dotsLine(state);
-        }
-
-        if (String(row.transfer_ref || "").trim()) {
-            doc.font("Helvetica-Bold").fontSize(S.label).fillColor("#000");
-            doc.text("REFERENCIA", state.x, state.y, { width: state.w });
-            state.y += mmToPt(3.3);
-
-            doc.font("Helvetica").fontSize(S.value).fillColor("#000");
-            doc.text(String(row.transfer_ref), state.x, state.y, { width: state.w });
-            state.y += mmToPt(3.7);
-
-            dotsLine(state);
-        }
-
-        // QR smaller
-        const qrSize = mmToPt(S.qr);
-        const qrX = state.x + (state.w - qrSize) / 2;
-
-        doc.save();
-        doc.strokeColor("#000").lineWidth(0.9);
-        doc.roundedRect(qrX - mmToPt(0.55), state.y, qrSize + mmToPt(1.1), qrSize + mmToPt(1.1), 3).stroke();
-        doc.restore();
-
-        doc.image(qrPng, qrX, state.y + mmToPt(0.55), { fit: [qrSize, qrSize] });
-        state.y += qrSize + mmToPt(2.1);
-
-        doc.font("Helvetica-Bold").fontSize(S.value).fillColor("#000");
-        doc.text("ESCANEA PARA VALIDAR", state.x, state.y, { width: state.w, align: "center" });
-        state.y += mmToPt(3.4);
-
-        doc.font("Helvetica").fontSize(S.small).fillColor("#000");
-        doc.text(url, state.x, state.y, { width: state.w, align: "center" });
-    };
-
-    // Render each passenger as its own page.
     for (let i = 0; i < passengerNames.length; i++) {
         if (i > 0) doc.addPage({ size: [PAGE_W, PAGE_H], margins: { top: 0, left: 0, right: 0, bottom: 0 } });
-        renderPage(passengerNames[i], i + 1, passengerNames.length);
+        drawTicket(doc, passengerNames[i], i + 1, passengerNames.length);
     }
 
     doc.end();
