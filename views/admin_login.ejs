@@ -10,97 +10,98 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="/css/home.css" rel="stylesheet">
     <link href="/css/login.css" rel="stylesheet">
 </head>
 
-<body class="home-page page-login">
+<body class="page-login">
 <%- include('partials/body-open') %>
-<%- include('partials/navbar') %>
 
-<main class="home-hero login-stage">
-    <div class="home-hero-media" role="img" aria-label="Carretera hacia el destino"></div>
-    <div class="home-hero-veil" aria-hidden="true"></div>
+<main class="login-split">
+    <aside class="login-brand">
+        <a class="login-brand-link" href="/" aria-label="Ir al inicio">
+            <img class="login-logo-img" src="/assets/logo-hero.png" alt="Servicio de Transporte" width="308" height="348" decoding="async">
+            <span class="login-brand-name">Servicio de Transporte</span>
+        </a>
+        <div class="login-brand-copy">
+            <h2>Administra salidas, reservas y paquetería.</h2>
+            <p>Panel interno para gestionar tu operación de transporte.</p>
+            <ul class="login-features" aria-label="Qué puedes administrar">
+                <li><%- include('partials/icon', { name: 'calendar', size: 16 }) %> Salidas</li>
+                <li><%- include('partials/icon', { name: 'ticket', size: 16 }) %> Reservas</li>
+                <li><%- include('partials/icon', { name: 'package', size: 16 }) %> Paquetería</li>
+            </ul>
+        </div>
+        <p class="login-brand-meta">Contacto · <a href="tel:+528344756376">834 475 6376</a></p>
+    </aside>
 
-    <div class="container login-stage-inner">
-        <section class="login-shell home-reveal" aria-labelledby="admin-login-title">
-            <a class="login-logo" href="/" aria-label="Ir al inicio">
-                <img class="login-logo-img" src="/assets/logo-hero.png" alt="Servicio de Transporte" width="308" height="348" decoding="async">
-            </a>
+    <section class="login-pane" aria-labelledby="admin-login-title">
+        <div class="login-card">
+            <header class="login-card-head">
+                <p class="login-eyebrow">Acceso administrador</p>
+                <h1 id="admin-login-title" class="login-title">Iniciar sesión</h1>
+            </header>
 
-            <div class="login-card">
-                <header class="login-card-head">
-                    <h1 id="admin-login-title" class="login-title">Iniciar sesión</h1>
-                    <p class="login-lead">Acceso al panel de administración.</p>
-                </header>
+            <% if (error) { %>
+                <div class="login-alert" role="alert">
+                    <span class="login-alert-ico" aria-hidden="true"><%- include('partials/icon', { name: 'triangle-alert', size: 18 }) %></span>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
 
-                <% if (error) { %>
-                    <div class="login-alert" role="alert">
-                        <span class="login-alert-ico" aria-hidden="true"><%- include('partials/icon', { name: 'triangle-alert', size: 18 }) %></span>
-                        <span><%= error %></span>
+            <form method="POST" action="/admin/login" class="login-form" autocomplete="on">
+                <div class="login-field">
+                    <label for="user" class="form-label">Usuario</label>
+                    <div class="field-ico-wrap">
+                        <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'user', size: 18 }) %></span>
+                        <input
+                                id="user"
+                                name="user"
+                                class="form-control"
+                                placeholder="Usuario"
+                                required
+                                autocomplete="username"
+                                inputmode="text"
+                                autocapitalize="none"
+                                spellcheck="false"
+                        />
                     </div>
-                <% } %>
+                </div>
 
-                <form method="POST" action="/admin/login" class="login-form" autocomplete="on">
-                    <div class="login-field">
-                        <label for="user" class="form-label">Usuario</label>
-                        <div class="field-ico-wrap">
-                            <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'user', size: 18 }) %></span>
-                            <input
-                                    id="user"
-                                    name="user"
-                                    class="form-control"
-                                    placeholder="Usuario"
-                                    required
-                                    autofocus
-                                    autocomplete="username"
-                                    inputmode="text"
-                                    autocapitalize="none"
-                                    spellcheck="false"
-                            />
-                        </div>
+                <div class="login-field">
+                    <label for="pass" class="form-label">Contraseña</label>
+                    <div class="field-ico-wrap">
+                        <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'lock', size: 18 }) %></span>
+                        <input
+                                id="pass"
+                                name="pass"
+                                type="password"
+                                class="form-control has-toggle"
+                                placeholder="Contraseña"
+                                required
+                                autocomplete="current-password"
+                        />
+                        <button type="button" class="pass-toggle" id="togglePass" aria-label="Mostrar contraseña"
+                                aria-pressed="false">
+                            <%- include('partials/icon', { name: 'eye', size: 18, iconId: 'eyeOn' }) %>
+                            <%- include('partials/icon', { name: 'eye-off', size: 18, iconId: 'eyeOff' }) %>
+                        </button>
                     </div>
+                    <p class="login-caps" id="capsWarn" hidden role="status">
+                        <%- include('partials/icon', { name: 'triangle-alert', size: 14 }) %> Bloq Mayús activado
+                    </p>
+                </div>
 
-                    <div class="login-field">
-                        <label for="pass" class="form-label">Contraseña</label>
-                        <div class="field-ico-wrap">
-                            <span class="field-ico" aria-hidden="true"><%- include('partials/icon', { name: 'lock', size: 18 }) %></span>
-                            <input
-                                    id="pass"
-                                    name="pass"
-                                    type="password"
-                                    class="form-control has-toggle"
-                                    placeholder="Contraseña"
-                                    required
-                                    autocomplete="current-password"
-                            />
-                            <button type="button" class="pass-toggle" id="togglePass" aria-label="Mostrar contraseña"
-                                    aria-pressed="false">
-                                <%- include('partials/icon', { name: 'eye', size: 18, iconId: 'eyeOn' }) %>
-                                <%- include('partials/icon', { name: 'eye-off', size: 18, iconId: 'eyeOff' }) %>
-                            </button>
-                        </div>
-                    </div>
+                <button class="btn btn-wine login-submit" type="submit" id="loginSubmit">
+                    <span class="btn-ico"><%- include('partials/icon', { name: 'log-in', size: 18 }) %></span>
+                    <span id="loginSubmitText">Entrar</span>
+                </button>
+            </form>
 
-                    <button class="btn btn-wine login-submit" type="submit">
-                        <span class="btn-ico"><%- include('partials/icon', { name: 'log-in', size: 18 }) %></span>
-                        Entrar
-                    </button>
-                </form>
-
-                <p class="login-back">
-                    <a href="/">Volver al inicio</a>
-                </p>
-            </div>
-        </section>
-
-        <footer class="home-footer login-footer">
-            <div class="home-footer-inner">
-                <p class="home-footer-brand">Servicio de Transporte</p>
-                <p class="home-footer-meta">Victoria - Llera | <a href="tel:+528344756376">834 475 6376</a></p>
-            </div>
-        </footer>
-    </div>
+            <p class="login-back">
+                <a href="/">Volver al inicio</a>
+            </p>
+        </div>
+    </section>
 </main>
 
 <script src="/js/theme.js"></script>
@@ -111,6 +112,30 @@
         const eyeOn = document.getElementById("eyeOn");
         const eyeOff = document.getElementById("eyeOff");
         if (!pass || !btn) return;
+
+        const user = document.getElementById("user");
+        if (user && window.matchMedia("(hover: hover) and (pointer: fine)").matches) user.focus();
+
+        const caps = document.getElementById("capsWarn");
+        const checkCaps = function (e) {
+            if (caps && e.getModifierState) caps.hidden = !e.getModifierState("CapsLock");
+        };
+        pass.addEventListener("keydown", checkCaps);
+        pass.addEventListener("keyup", checkCaps);
+        pass.addEventListener("blur", function () { if (caps) caps.hidden = true; });
+
+        const submit = document.getElementById("loginSubmit");
+        const text = document.getElementById("loginSubmitText");
+        if (pass.form) {
+            pass.form.addEventListener("submit", function () {
+                if (submit) submit.disabled = true;
+                if (text) text.textContent = "Entrando...";
+            });
+            window.addEventListener("pageshow", function () {
+                if (submit) submit.disabled = false;
+                if (text) text.textContent = "Entrar";
+            });
+        }
 
         btn.addEventListener("click", function () {
             const show = pass.type === "password";

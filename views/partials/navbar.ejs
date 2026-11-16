@@ -11,10 +11,10 @@
                 <%- include('icon', { name: 'house', size: 16 }) %> <span>Inicio</span>
             </a>
             <% if (typeof myTicketsLink !== 'undefined' && myTicketsLink) { %>
-            <a class="app-nav-link d-none d-sm-inline-flex" href="/mis-boletos">Mis boletos</a>
+            <a class="app-nav-link" href="/mis-boletos" aria-label="Mis boletos"><%- include('icon', { name: 'ticket', size: 16 }) %> <span>Mis boletos</span></a>
             <% } %>
-            <% } else { %>
-            <a class="app-nav-link d-none d-sm-inline-flex" href="/mis-boletos">Mis boletos</a>
+            <% } else if (typeof hideMyTickets === 'undefined' || !hideMyTickets) { %>
+            <a class="app-nav-link" href="/mis-boletos" aria-label="Mis boletos"><%- include('icon', { name: 'ticket', size: 16 }) %> <span>Mis boletos</span></a>
             <% } %>
             <% if (typeof navLinks !== 'undefined' && navLinks) { %>
             <a class="app-nav-cta d-none d-sm-inline-flex" href="/reserve">Reservar</a>

@@ -133,6 +133,9 @@ a:active {
 }
 
 .app-nav-link {
+    display: inline-flex;
+    gap: 0.4rem;
+    white-space: nowrap;
     align-items: center;
     padding: 0.35rem 0.8rem;
     border-radius: 999px;
