@@ -4680,3 +4680,172 @@ body.admin-app .admin-title-sub {
 @media (min-width: 680px) and (max-width: 900px) {
     body.page-recent .recent-table tbody { grid-template-columns: 1fr 1fr; }
 }
+
+/* ===== Detalle de salida: búsqueda, filtros, lista de abordaje ===== */
+body.page-trip [hidden] { display: none !important; }
+
+body.page-trip .trip-head-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+body.page-trip button.trip-chip {
+    gap: 0.4rem;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+body.page-trip .trip-toolbar {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0 0 0.8rem;
+}
+
+body.page-trip .trip-search {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0 0.85rem;
+    border-radius: 12px;
+    color: var(--muted);
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 80%, transparent);
+    transition: box-shadow 0.2s ease;
+}
+
+body.page-trip .trip-search:focus-within {
+    color: var(--text);
+    box-shadow: 0 0 0 2px var(--wine);
+}
+
+body.page-trip .trip-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+body.page-trip .trip-filters {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+
+body.page-trip .trip-filters::-webkit-scrollbar { display: none; }
+
+body.page-trip .trip-fchip {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 38px;
+    padding: 0 0.8rem;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 650;
+    color: var(--text);
+    background: transparent;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+body.page-trip .trip-fchip b {
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+body.page-trip .trip-fchip:hover { background: color-mix(in srgb, var(--wine) 8%, var(--card)); }
+
+body.page-trip .trip-fchip:focus-visible,
+body.page-trip button.trip-chip:focus-visible {
+    outline: 2px solid var(--wine);
+    outline-offset: 2px;
+}
+
+body.page-trip .trip-fchip.is-on {
+    color: #fff;
+    background: linear-gradient(90deg, var(--wine), var(--wine-2));
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--wine) 28%, transparent);
+}
+
+body.page-trip .trip-fchip.is-on b { color: rgba(255, 255, 255, 0.85); }
+
+body.page-trip .trip-nomatch {
+    padding: 1.4rem 1rem;
+    text-align: center;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--muted) 4%, var(--card));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.page-trip .trip-res-actions .btn-wa .ico { color: #1fa855; }
+
+body.page-trip .trip-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.2rem;
+    z-index: 50;
+    transform: translateX(-50%);
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 650;
+    color: #fff;
+    background: #1f2937;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+body.page-trip .trip-toast.is-error { background: #b42334; }
+
+/* Lista de abordaje: solo existe al imprimir */
+.trip-manifest { display: none; }
+
+@media print {
+    body.page-trip > *:not(.trip-manifest) { display: none !important; }
+    body.page-trip { background: #fff !important; }
+    body.page-trip .trip-manifest {
+        display: block;
+        padding: 0;
+        color: #000;
+        font-family: system-ui, sans-serif;
+        font-size: 12pt;
+    }
+    .trip-manifest h1 { margin: 0 0 0.2rem; font-size: 20pt; }
+    .trip-manifest h2 { margin: 1.2rem 0 0.4rem; font-size: 13pt; }
+    .trip-manifest p { margin: 0; }
+    .trip-manifest table { width: 100%; border-collapse: collapse; }
+    .trip-manifest th,
+    .trip-manifest td {
+        padding: 0.4rem 0.5rem;
+        border-bottom: 1px solid #999;
+        text-align: left;
+        vertical-align: top;
+    }
+    .trip-manifest tr { break-inside: avoid; }
+    .trip-manifest-box {
+        display: inline-block;
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 1.5px solid #000;
+    }
+}
+
+@media (min-width: 768px) {
+    body.page-trip .trip-toolbar {
+        grid-template-columns: minmax(16rem, 22rem) 1fr;
+        align-items: center;
+    }
+    body.page-trip .trip-filters { justify-content: flex-end; }
+}

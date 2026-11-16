@@ -116,6 +116,37 @@
         if (stU === 'PAY_AT_BOARDING') return { cls: 'b-board', icon: 'banknote', label: 'Taquilla', tone: 'board' };
         return { cls: '', icon: '', label: stU || '—', tone: 'other' };
     }
+
+    // Conteos para los filtros y datos para la lista de abordaje.
+    const up = (x) => String(x.status || '').toUpperCase();
+    const isDue = (x) => up(x) === 'PENDING_PAYMENT' || up(x) === 'PAY_AT_BOARDING';
+    const counts = {
+        active: rows.filter((x) => up(x) !== 'CANCELLED').length,
+        paid: rows.filter((x) => up(x) === 'PAID').length,
+        due: rows.filter(isDue).length,
+        package: rows.filter((x) => x.type === 'PACKAGE' && up(x) !== 'CANCELLED').length,
+        cancel: rows.filter((x) => up(x) === 'CANCELLED').length,
+        all: rows.length,
+    };
+    const passengerRows = rows.filter((x) => x.type === 'PASSENGER' && up(x) !== 'CANCELLED');
+    const packageRows = rows.filter((x) => x.type === 'PACKAGE' && up(x) !== 'CANCELLED');
+    const namesOf = (x) => {
+        const n = countPassengers(x);
+        const raw = String(x.passenger_names || '').trim();
+        return raw || Array.from({ length: n }, (_, i) => 'Pasajero ' + (i + 1)).join(', ');
+    };
+    const payShort = (x) => {
+        if (up(x) === 'PAID') return 'PAGADO';
+        return 'COBRAR ' + mxn(x.amount_total_mxn);
+    };
+    const manifestText = [
+        (fromLabel + ' > ' + toLabel + ' ' + hhmm + ', ' + datePretty),
+        used + ' de ' + cap + ' lugares ocupados',
+        '',
+        'PASAJEROS',
+        ...passengerRows.map((x) => '- ' + namesOf(x) + ' (' + countPassengers(x) + ')' + (x.phone ? ', ' + x.phone : '') + ', ' + payShort(x)),
+        ...(packageRows.length ? ['', 'PAQUETERIA', ...packageRows.map((x) => '- ' + (x.customer_name || '') + ': ' + (x.package_details || '') + ', ' + payShort(x))] : []),
+    ].join('\n');
     %>
 
     <div class="tabs-card home-tabs admin-shell">
@@ -152,15 +183,12 @@
                 <% } %>
             </div>
             <div class="trip-head-tools">
-                <div class="admin-filter-seg" role="group" aria-label="Filtro de reservas">
-                    <% if (onlyPending) { %>
-                        <a href="/admin/trip/<%= trip.trip_id %>">Todas</a>
-                        <a class="is-on" href="/admin/trip/<%= trip.trip_id %>?onlyPending=1" aria-current="true">Pendientes</a>
-                    <% } else { %>
-                        <a class="is-on" href="/admin/trip/<%= trip.trip_id %>" aria-current="true">Todas</a>
-                        <a href="/admin/trip/<%= trip.trip_id %>?onlyPending=1">Pendientes</a>
-                    <% } %>
-                </div>
+                <button type="button" class="trip-chip" id="tripCopyList" data-copy="<%= manifestText %>">
+                    <%- include('partials/icon', { name: 'clipboard-list', size: 15 }) %> Copiar lista
+                </button>
+                <button type="button" class="trip-chip" id="tripPrint">
+                    <%- include('partials/icon', { name: 'printer', size: 15 }) %> Imprimir
+                </button>
             </div>
         </div>
 
@@ -212,7 +240,29 @@
 
     <div class="trip-list-head">
         <h3 class="trip-list-title">Reservaciones</h3>
-        <span class="trip-list-count"><%= rows.length %> reserva<%= rows.length === 1 ? '' : 's' %><% if (!onlyPending && pendingCount) { %>, <%= pendingCount %> pendiente<%= pendingCount === 1 ? '' : 's' %><% } %><% if (onlyPending) { %> pendiente<%= rows.length === 1 ? '' : 's' %><% } %></span>
+        <span class="trip-list-count" id="tripListCount" aria-live="polite"></span>
+    </div>
+
+    <% if (rows.length) { %>
+    <div class="trip-toolbar">
+        <label class="trip-search">
+            <%- include('partials/icon', { name: 'search', size: 16 }) %>
+            <input type="search" id="tripSearch" placeholder="Buscar por nombre, teléfono o boleto" autocomplete="off" aria-label="Buscar reservaciones">
+        </label>
+        <div class="trip-filters" role="group" aria-label="Filtrar reservaciones">
+            <button type="button" class="trip-fchip is-on" data-filter="active" aria-pressed="true">Activas <b><%= counts.active %></b></button>
+            <button type="button" class="trip-fchip" data-filter="paid" aria-pressed="false">Pagadas <b><%= counts.paid %></b></button>
+            <button type="button" class="trip-fchip" data-filter="due" aria-pressed="false">Por cobrar <b><%= counts.due %></b></button>
+            <button type="button" class="trip-fchip" data-filter="package" aria-pressed="false">Paquetería <b><%= counts.package %></b></button>
+            <button type="button" class="trip-fchip" data-filter="cancel" aria-pressed="false">Canceladas <b><%= counts.cancel %></b></button>
+            <button type="button" class="trip-fchip" data-filter="all" aria-pressed="false">Todas <b><%= counts.all %></b></button>
+        </div>
+    </div>
+    <% } %>
+
+    <div class="trip-nomatch" id="tripNoMatch" hidden>
+        <div class="h6 mb-1">Sin resultados</div>
+        <div class="subtle">Cambia el filtro o borra la búsqueda.</div>
     </div>
 
     <% if (!rows.length) { %>
@@ -241,7 +291,10 @@
                 const pm = pmLabelOf(r.payment_method);
                 const returnTo = encodeURIComponent('/admin/trip/' + trip.trip_id);
             %>
-            <article class="trip-res is-<%= st.tone %>">
+            <article class="trip-res is-<%= st.tone %>"
+                     data-status="<%= st.tone %>"
+                     data-type="<%= r.type === 'PASSENGER' ? 'passenger' : 'package' %>"
+                     data-search="<%= [r.customer_name, r.phone, digits, r.ticket_code, rawNames, r.package_details].join(' ').toLowerCase() %>">
                 <div class="trip-res-top">
                     <div class="trip-res-who">
                         <div class="trip-res-name"><%= r.customer_name %></div>
@@ -293,8 +346,14 @@
                 <%
                 const canPay = !r.ticket_code && stU !== 'CANCELLED';
                 const showRefund = stU !== 'CANCELLED' && isPaidOnline;
-                const showCancel = stU !== 'CANCELLED' && !isPaidOnline && !isPaid;
-                const hasActions = canPay || !!r.ticket_code || showRefund || showCancel;
+                const showCancel = stU !== 'CANCELLED' && !isPaidOnline;
+                const cancelAmount = Number(r.amount_total_mxn || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+                const canRemind = canPay && digits.length >= 10;
+                const canNotifyCancel = stU === 'CANCELLED' && digits.length >= 10;
+                const routeTxt = fromLabel + ' > ' + toLabel + ' ' + hhmm + ', ' + datePretty;
+                const remindMsg = 'Hola ' + (r.customer_name || '') + ', te escribimos por tu reserva de ' + routeTxt + '. Tienes un pago pendiente de ' + cancelAmount + '. ¿Nos confirmas tu pago para emitir tu boleto?';
+                const cancelMsg = 'Hola ' + (r.customer_name || '') + ', tu reserva de ' + routeTxt + ' fue cancelada.' + (pmU === 'ONLINE' ? ' Tu reembolso de ' + cancelAmount + ' se procesa en tu método de pago original.' : '');
+                const hasActions = canPay || !!r.ticket_code || showRefund || showCancel || canNotifyCancel;
                 %>
                 <% if (hasActions) { %>
                 <div class="trip-res-actions">
@@ -314,7 +373,16 @@
                                 <input type="hidden" name="method" value="TRANSFER">
                                 <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'landmark', size: 14 }) %> Transferencia</button>
                             </form>
+                            <% if (canRemind) { %>
+                                <a class="btn btn-wa btn-xs" target="_blank" rel="noopener"
+                                   href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(remindMsg) %>"><%- include('partials/icon', { name: 'message-circle', size: 14 }) %> Recordar pago</a>
+                            <% } %>
                         </div>
+                    <% } %>
+
+                    <% if (canNotifyCancel) { %>
+                        <a class="btn btn-wa btn-xs" target="_blank" rel="noopener"
+                           href="https://wa.me/52<%= digits %>?text=<%= encodeURIComponent(cancelMsg) %>"><%- include('partials/icon', { name: 'message-circle', size: 14 }) %> Avisar cancelación</a>
                     <% } %>
 
                     <% if (r.ticket_code) { %>
@@ -334,31 +402,31 @@
                         <details class="trip-res-more">
                             <summary>
                                 <%- include('partials/icon', { name: 'ellipsis', size: 14 }) %>
-                                <span><%= showRefund ? 'Cancelar o reembolsar' : 'Cancelar' %></span>
+                                <span><%= showRefund ? 'Reembolsar y cancelar' : (isPaid ? 'Cancelar reserva pagada' : 'Cancelar') %></span>
                                 <span class="trip-res-more-chev" aria-hidden="true"><%- include('partials/icon', { name: 'chevron-down', size: 14 }) %></span>
                             </summary>
                             <div class="trip-res-more-menu">
                             <% if (showRefund) { %>
-                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel"
-                                      class="m-0"
-                                      data-confirm="Esta reserva fue pagada en línea. Te llevaré a Stripe para reembolsar. Después regresa y presiona “Ya reembolsé”."
-                                      data-confirm-title="Cancelar reserva pagada"
-                                      data-confirm-ok="Continuar"
-                                      data-confirm-tone="danger">
-                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> 1. Cancelar</button>
-                                </form>
                                 <a class="btn btn-outline-danger btn-xs"
                                    href="/admin/reservation/<%= r.id %>/stripe-refund"
                                    target="_blank" rel="noopener">
-                                    <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> 2. Reembolsar en Stripe
+                                    <%- include('partials/icon', { name: 'undo-2', size: 14 }) %> 1. Reembolsar en Stripe
                                 </a>
                                 <form method="POST" action="/admin/reservation/<%= r.id %>/refund-done"
                                       class="m-0"
-                                      data-confirm="Esto marcará la reserva como cancelada y liberará el cupo. Confírmalo solo si ya hiciste el reembolso en Stripe."
+                                      data-confirm="Se cancelará la reserva de <%= r.customer_name || 'este cliente' %> y se liberará el cupo. Su boleto quedará como cancelado. Confírmalo solo si ya hiciste el reembolso de <%= cancelAmount %> en Stripe."
                                       data-confirm-title="¿Ya reembolsaste en Stripe?"
                                       data-confirm-ok="Sí, ya reembolsé"
                                       data-confirm-tone="danger">
-                                    <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> 3. Ya reembolsé</button>
+                                    <button class="btn btn-ghost btn-xs" type="submit"><%- include('partials/icon', { name: 'check', size: 14 }) %> 2. Ya reembolsé y cancelar</button>
+                                </form>
+                            <% } else if (isPaid) { %>
+                                <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
+                                      data-confirm="Esta reserva ya estaba pagada (<%= pm.text %>, <%= cancelAmount %>). Se cancelará, se liberará el cupo y su boleto quedará como cancelado. Devuelve el dinero a <%= r.customer_name || 'el cliente' %> por tu cuenta."
+                                      data-confirm-title="Cancelar reserva pagada"
+                                      data-confirm-ok="Sí, cancelar y devolver"
+                                      data-confirm-tone="danger">
+                                    <button class="btn btn-outline-danger btn-xs" type="submit"><%- include('partials/icon', { name: 'ban', size: 14 }) %> Cancelar reserva pagada</button>
                                 </form>
                             <% } else { %>
                                 <form method="POST" action="/admin/reservation/<%= r.id %>/cancel" class="m-0"
@@ -384,7 +452,119 @@
 </section>
 </main>
 
+<section class="trip-manifest" aria-hidden="true">
+    <h1><%= fromLabel %> a <%= toLabel %>, <%= hhmm %></h1>
+    <p><%= datePretty %>. <%= used %> de <%= cap %> lugares ocupados.</p>
+    <h2>Pasajeros</h2>
+    <% if (!passengerRows.length) { %><p>Sin pasajeros.</p><% } else { %>
+    <table>
+        <thead><tr><th>Abordó</th><th>Nombre</th><th>Lugares</th><th>Teléfono</th><th>Pago</th></tr></thead>
+        <tbody>
+        <% passengerRows.forEach((x) => { %>
+            <tr>
+                <td><span class="trip-manifest-box"></span></td>
+                <td><%= namesOf(x) %></td>
+                <td><%= countPassengers(x) %></td>
+                <td><%= x.phone || '' %></td>
+                <td><%= payShort(x) %></td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <% } %>
+    <% if (packageRows.length) { %>
+    <h2>Paquetería</h2>
+    <table>
+        <thead><tr><th>Entregado</th><th>Cliente</th><th>Detalle</th><th>Teléfono</th><th>Pago</th></tr></thead>
+        <tbody>
+        <% packageRows.forEach((x) => { %>
+            <tr>
+                <td><span class="trip-manifest-box"></span></td>
+                <td><%= x.customer_name || '' %></td>
+                <td><%= x.package_details || '' %></td>
+                <td><%= x.phone || '' %></td>
+                <td><%= payShort(x) %></td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <% } %>
+</section>
+
+<div class="trip-toast" id="tripToast" role="status" aria-live="polite" hidden></div>
+
 <%- include('partials/admin-footer') %>
+<script src="/js/copy.js"></script>
+<script>
+(function () {
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.trip-res'));
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.trip-fchip'));
+    var search = document.getElementById('tripSearch');
+    var countEl = document.getElementById('tripListCount');
+    var noMatch = document.getElementById('tripNoMatch');
+    var toast = document.getElementById('tripToast');
+    var filter = 'active';
+    var KEY = 'trip-filter';
+    try { var saved = sessionStorage.getItem(KEY); if (saved && document.querySelector('.trip-fchip[data-filter="' + saved + '"]')) filter = saved; } catch (e) {}
+
+    function matches(c) {
+        var s = c.dataset.status, t = c.dataset.type;
+        if (filter === 'active') return s !== 'cancel';
+        if (filter === 'paid') return s === 'paid';
+        if (filter === 'due') return s === 'pending' || s === 'board';
+        if (filter === 'package') return t === 'package' && s !== 'cancel';
+        if (filter === 'cancel') return s === 'cancel';
+        return true;
+    }
+
+    function apply() {
+        var q = (search ? search.value : '').trim().toLowerCase();
+        var shown = 0;
+        cards.forEach(function (c) {
+            var ok = matches(c) && (!q || c.dataset.search.indexOf(q) !== -1);
+            c.hidden = !ok;
+            if (ok) shown++;
+        });
+        chips.forEach(function (b) {
+            var on = b.dataset.filter === filter;
+            b.classList.toggle('is-on', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        if (countEl) countEl.textContent = shown + ' de ' + cards.length + ' reserva' + (cards.length === 1 ? '' : 's');
+        if (noMatch) noMatch.hidden = shown > 0 || !cards.length;
+    }
+
+    chips.forEach(function (b) {
+        b.addEventListener('click', function () {
+            filter = b.dataset.filter;
+            try { sessionStorage.setItem(KEY, filter); } catch (e) {}
+            apply();
+        });
+    });
+    if (search) search.addEventListener('input', apply);
+
+    function say(msg, bad) {
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.toggle('is-error', !!bad);
+        toast.hidden = false;
+        clearTimeout(say.t);
+        say.t = setTimeout(function () { toast.hidden = true; }, 2200);
+    }
+
+    var copyBtn = document.getElementById('tripCopyList');
+    if (copyBtn) copyBtn.addEventListener('click', function () {
+        window.copyText(copyBtn.dataset.copy, {}).then(function (ok) {
+            say(ok ? 'Lista copiada' : 'No se pudo copiar la lista', !ok);
+        });
+    });
+
+    var printBtn = document.getElementById('tripPrint');
+    if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
+
+    apply();
+})();
+</script>
 <script src="/js/theme.js"></script>
 </body>
 </html>
