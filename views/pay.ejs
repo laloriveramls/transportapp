@@ -261,8 +261,15 @@
 
 </main>
 
+<%- include('partials/site-footer') %>
+
 <script src="/js/theme.js"></script>
 <script src="/js/copy.js"></script>
+<%# Guarda el boleto en este dispositivo para que aparezca en Mis boletos %>
+<% if (hasTicket) { %>
+<script src="/js/my-tickets.js"></script>
+<script>window.TicketStore && window.TicketStore.add(<%- JSON.stringify(tkCode) %>);</script>
+<% } %>
 
 <script type="application/json" id="reservationData">
 <%- JSON.stringify({

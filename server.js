@@ -38,6 +38,7 @@ const seo = require("./src/seo");
 const telegramWebhookRouter = require("./src/routes/telegramWebhook");
 const seoRoutes = require("./src/routes/seo");
 const ticketRoutes = require("./src/routes/ticket");
+const myTicketsRoutes = require("./src/routes/myTickets");
 const publicRoutes = require("./src/routes/public");
 const adminRoutes = require("./src/routes/admin");
 
@@ -128,6 +129,7 @@ app.use(seoRoutes);
 
 // I keep ticket routes early so /ticket/... doesn't get shadowed by other routers.
 app.use(ticketRoutes);
+app.use(myTicketsRoutes);
 
 app.use("/", publicRoutes);
 app.use("/admin", adminRoutes);

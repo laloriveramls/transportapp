@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="es-MX" data-theme="light">
+<head>
+    <%- include('partials/head', {
+    title: 'Mis boletos | Servicio de Transporte',
+    description: 'Consulta tus boletos de Servicio de Transporte con el código de tu boleto y tu teléfono.',
+    noindex: true
+    }) %>
+
+    <link rel="preload" as="image" href="/assets/logo-hero.png">
+    <link rel="preload" as="image" href="/assets/hero-road.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/home.css" rel="stylesheet">
+    <link href="/css/my-tickets.css" rel="stylesheet">
+</head>
+
+<%# home-index + page-scroll: mismo hero, tarjeta y pie que la portada, pero con scroll normal de página %>
+<body class="home-page home-index page-scroll page-my-tickets">
+<%- include('partials/body-open') %>
+<%- include('partials/navbar', { backHome: true }) %>
+
+<section class="home-hero" aria-label="Mis boletos">
+    <div class="home-hero-media" aria-hidden="true"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
+
+    <div class="container home-hero-inner">
+        <div class="home-hero-copy home-reveal">
+            <div class="home-brand">
+                <div class="logo-wrap">
+                    <img class="home-brand-logo" src="/assets/logo-hero.png" alt="Servicio de Transporte Victoria Llera" width="308" height="348" decoding="async" fetchpriority="high">
+                </div>
+                <div class="home-brand-body">
+                    <h1 class="home-brand-name">Mis boletos</h1>
+                    <p class="home-brand-tag">Consulta tu boleto sin crear una cuenta. Solo necesitas tu código y el teléfono con el que reservaste.</p>
+
+                    <div class="hero-actions">
+                        <a class="btn btn-wine home-cta-primary" href="/reserve">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'calendar', size: 20 }) %></span>
+                            Reservar
+                        </a>
+                        <a class="btn home-cta-ghost" href="/">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'clock', size: 20 }) %></span>
+                            Ver horarios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="home-next home-reveal home-reveal-delay" aria-label="Ayuda para recuperar tu boleto">
+            <p class="home-next-title"><span class="home-next-pulse" aria-hidden="true"></span>¿No encuentras tu boleto?</p>
+            <a class="home-next-row mt-help-row" target="_blank" rel="noopener noreferrer"
+               href="https://wa.me/528344756376?text=<%= encodeURIComponent('Hola, necesito recuperar mi boleto.') %>">
+                <span class="mt-help-ico" aria-hidden="true"><%- include('partials/icon', { name: 'message-circle', size: 20 }) %></span>
+                <span class="mt-help-copy">
+                    <strong>Escríbenos por WhatsApp</strong>
+                    <small>Te lo recuperamos con tu nombre y la fecha del viaje.</small>
+                </span>
+                <span class="mt-help-go" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 18 }) %></span>
+            </a>
+            <a class="home-next-row mt-help-row" href="tel:+528344756376">
+                <span class="mt-help-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 20 }) %></span>
+                <span class="mt-help-copy">
+                    <strong>Llama al 834 475 6376</strong>
+                    <small>Atención por teléfono.</small>
+                </span>
+                <span class="mt-help-go" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 18 }) %></span>
+            </a>
+        </aside>
+    </div>
+</section>
+
+<main class="home-main">
+    <section class="home-section container" aria-label="Consulta de boletos">
+        <div class="tabs-card home-tabs">
+            <div class="home-tabs-head">
+                <h2 class="home-section-title">Consulta tu boleto</h2>
+                <div class="home-tabs-tools">
+                    <ul class="nav nav-tabs home-seg" id="mtTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-buscar" type="button" role="tab"
+                                    data-mt-tab="buscar" aria-controls="pane-buscar" aria-selected="true"><%- include('partials/icon', { name: 'search', size: 15 }) %><span>Buscar boleto</span></button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-guardados" type="button" role="tab"
+                                    data-mt-tab="guardados" aria-controls="pane-guardados" aria-selected="false"><%- include('partials/icon', { name: 'smartphone', size: 15 }) %><span>En este dispositivo</span><b class="mt-count" id="mtCount" hidden></b></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="home-tabs-body">
+                <div class="home-pane is-active" id="pane-buscar" role="tabpanel" aria-labelledby="tab-buscar">
+                    <div class="mt-find">
+                        <div class="mt-find-form">
+                            <header class="mt-form-head">
+                                <h3>Busca tu boleto</h3>
+                                <p>Con tu código y teléfono puedes ver tu boleto o reservar el mismo viaje otra vez.</p>
+                            </header>
+
+                            <% if (error) { %>
+                                <div class="mt-alert" role="alert" id="mtError"><%- include('partials/icon', { name: 'triangle-alert', size: 18 }) %><span><%= error %></span></div>
+                            <% } %>
+
+                            <form method="post" action="/mis-boletos/buscar" class="mt-form" autocomplete="off">
+                                <div class="mt-fields">
+                                <div class="mt-field">
+                                    <label for="mtCode">Código del boleto</label>
+                                    <div class="mt-inputwrap" data-wrap="code">
+                                        <span class="mt-input-ico" aria-hidden="true"><%- include('partials/icon', { name: 'ticket', size: 18 }) %></span>
+                                        <input id="mtCode" name="code" type="text" class="mt-input mt-mono" inputmode="text" autocapitalize="characters"
+                                               spellcheck="false" maxlength="24" placeholder="Ej. 3F9A1C77" required
+                                               aria-describedby="mtCodeHint" value="<%= values.code || '' %>">
+                                        <span class="mt-input-ok" aria-hidden="true"><%- include('partials/icon', { name: 'circle-check', size: 18 }) %></span>
+                                    </div>
+                                    <small id="mtCodeHint">De 8 a 12 caracteres. Puedes pegar tu enlace.</small>
+                                </div>
+
+                                <div class="mt-field">
+                                    <label for="mtPhone">Teléfono de la reserva</label>
+                                    <div class="mt-inputwrap" data-wrap="phone">
+                                        <span class="mt-input-ico" aria-hidden="true"><%- include('partials/icon', { name: 'phone', size: 18 }) %></span>
+                                        <input id="mtPhone" name="phone" type="tel" class="mt-input" inputmode="tel" autocomplete="tel"
+                                               maxlength="24" placeholder="834 123 4567" required value="<%= values.phone || '' %>">
+                                        <span class="mt-input-ok" aria-hidden="true"><%- include('partials/icon', { name: 'circle-check', size: 18 }) %></span>
+                                    </div>
+                                    <small>10 dígitos.</small>
+                                </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-wine mt-submit">
+                                    <%- include('partials/icon', { name: 'search', size: 16 }) %> Buscar mi boleto
+                                </button>
+                                <p class="mt-privacy"><%- include('partials/icon', { name: 'lock', size: 13 }) %> Usamos tus datos solo para encontrar tu boleto.</p>
+                            </form>
+                        </div>
+
+                        <div class="mt-where" aria-labelledby="mtWhereTitle">
+                            <svg class="mt-qr-defs" width="0" height="0" aria-hidden="true" focusable="false"><symbol id="mt-qr" viewBox="-1 -1 23 23"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#161216"><rect x="0" y="0" width="7" height="1"/><rect x="8" y="0" width="2" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="14" y="0" width="7" height="1"/><rect x="0" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="8" y="1" width="2" height="1"/><rect x="11" y="1" width="2" height="1"/><rect x="14" y="1" width="1" height="1"/><rect x="20" y="1" width="1" height="1"/><rect x="0" y="2" width="1" height="1"/><rect x="2" y="2" width="3" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="8" y="2" width="3" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="14" y="2" width="1" height="1"/><rect x="16" y="2" width="3" height="1"/><rect x="20" y="2" width="1" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="2" y="3" width="3" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="14" y="3" width="1" height="1"/><rect x="16" y="3" width="3" height="1"/><rect x="20" y="3" width="1" height="1"/><rect x="0" y="4" width="1" height="1"/><rect x="2" y="4" width="3" height="1"/><rect x="6" y="4" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/><rect x="11" y="4" width="2" height="1"/><rect x="14" y="4" width="1" height="1"/><rect x="16" y="4" width="3" height="1"/><rect x="20" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="2" height="1"/><rect x="11" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="20" y="5" width="1" height="1"/><rect x="0" y="6" width="7" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="14" y="6" width="7" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="10" y="7" width="2" height="1"/><rect x="0" y="8" width="2" height="1"/><rect x="4" y="8" width="1" height="1"/><rect x="6" y="8" width="1" height="1"/><rect x="9" y="8" width="1" height="1"/><rect x="11" y="8" width="2" height="1"/><rect x="14" y="8" width="3" height="1"/><rect x="0" y="9" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/><rect x="14" y="9" width="2" height="1"/><rect x="17" y="9" width="4" height="1"/><rect x="0" y="10" width="1" height="1"/><rect x="2" y="10" width="3" height="1"/><rect x="6" y="10" width="2" height="1"/><rect x="12" y="10" width="3" height="1"/><rect x="17" y="10" width="4" height="1"/><rect x="0" y="11" width="1" height="1"/><rect x="2" y="11" width="4" height="1"/><rect x="12" y="11" width="1" height="1"/><rect x="17" y="11" width="3" height="1"/><rect x="0" y="12" width="11" height="1"/><rect x="12" y="12" width="5" height="1"/><rect x="18" y="12" width="3" height="1"/><rect x="8" y="13" width="2" height="1"/><rect x="12" y="13" width="1" height="1"/><rect x="16" y="13" width="5" height="1"/><rect x="0" y="14" width="7" height="1"/><rect x="8" y="14" width="2" height="1"/><rect x="11" y="14" width="2" height="1"/><rect x="14" y="14" width="1" height="1"/><rect x="16" y="14" width="2" height="1"/><rect x="20" y="14" width="1" height="1"/><rect x="0" y="15" width="1" height="1"/><rect x="6" y="15" width="1" height="1"/><rect x="9" y="15" width="1" height="1"/><rect x="12" y="15" width="1" height="1"/><rect x="16" y="15" width="1" height="1"/><rect x="19" y="15" width="2" height="1"/><rect x="0" y="16" width="1" height="1"/><rect x="2" y="16" width="3" height="1"/><rect x="6" y="16" width="1" height="1"/><rect x="8" y="16" width="1" height="1"/><rect x="12" y="16" width="7" height="1"/><rect x="0" y="17" width="1" height="1"/><rect x="2" y="17" width="3" height="1"/><rect x="6" y="17" width="1" height="1"/><rect x="12" y="17" width="1" height="1"/><rect x="14" y="17" width="5" height="1"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="18" width="3" height="1"/><rect x="6" y="18" width="1" height="1"/><rect x="8" y="18" width="1" height="1"/><rect x="12" y="18" width="5" height="1"/><rect x="20" y="18" width="1" height="1"/><rect x="0" y="19" width="1" height="1"/><rect x="6" y="19" width="1" height="1"/><rect x="10" y="19" width="1" height="1"/><rect x="15" y="19" width="2" height="1"/><rect x="18" y="19" width="1" height="1"/><rect x="0" y="20" width="7" height="1"/><rect x="8" y="20" width="2" height="1"/><rect x="12" y="20" width="3" height="1"/><rect x="17" y="20" width="1" height="1"/></g></symbol></svg>
+                            <h3 id="mtWhereTitle"><%- include('partials/icon', { name: 'circle-help', size: 16 }) %> ¿Dónde está mi código?</h3>
+                            <div class="mt-mocks">
+                                <figure class="mt-fig">
+                                    <div class="mt-mock mt-mock--print" role="img" aria-label="Ticket impreso: el código aparece arriba, después del folio">
+                                        <span class="mt-print-brand">Servicio de Transporte</span>
+                                        <span class="mt-print-folio">RES-20261115-003</span>
+                                        <span class="mt-mock-code">CÓDIGO: 3F9A1C77</span>
+                                        <span class="mt-print-lines" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                                        <svg class="mt-qr mt-qr--print" viewBox="0 0 23 23" aria-hidden="true"><use href="#mt-qr"/></svg>
+                                    </div>
+                                    <figcaption><b>En el ticket impreso</b><span>Arriba, después del folio</span></figcaption>
+                                </figure>
+                                <figure class="mt-fig">
+                                    <div class="mt-mock" role="img" aria-label="Pantalla del boleto: el código aparece debajo del QR">
+                                        <div class="mt-mock-brand">
+                                            <span class="mt-mock-logo" aria-hidden="true"></span>
+                                            <span><b>Servicio de Transporte</b><small>Victoria - Llera</small></span>
+                                        </div>
+                                        <div class="mt-mock-main">
+                                            <div class="mt-mock-lines" aria-hidden="true">
+                                                <span class="w70"></span><span class="w50"></span><span class="w60"></span><span class="w40"></span>
+                                            </div>
+                                            <div class="mt-mock-qr">
+                                                <svg class="mt-qr" viewBox="0 0 23 23" aria-hidden="true"><use href="#mt-qr"/></svg>
+                                                <span class="mt-mock-code">3F9A1C77</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <figcaption><b>En la pantalla del boleto</b><span>Debajo del código QR</span></figcaption>
+                                </figure>
+                            </div>
+                            <p class="mt-note">Ejemplo ilustrativo. Tu código es distinto.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="home-pane" id="pane-guardados" role="tabpanel" aria-labelledby="tab-guardados" hidden>
+                    <div class="mt-saved-head">
+                        <p class="mt-sub">Los boletos que abres o reservas desde este navegador se guardan aquí. Nadie más los ve.</p>
+                        <button type="button" id="mtForget" class="mt-forget" hidden>
+                            <%- include('partials/icon', { name: 'trash-2', size: 14 }) %> Quitar de este dispositivo
+                        </button>
+                    </div>
+                    <div id="mtSaved" class="mt-saved" aria-live="polite">
+                        <p class="mt-empty">Cargando…</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<%- include('partials/site-footer') %>
+
+<script src="/js/theme.js"></script>
+<script src="/js/my-tickets.js"></script>
+</body>
+</html>

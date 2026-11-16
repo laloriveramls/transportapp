@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <%- include('partials/head', {
-    title: 'Ticket ' + folio + ' | Servicio de Transporte',
+    title: 'Tu boleto ' + folio + ' | Servicio de Transporte',
     description: 'Ticket de reserva y verificación.',
     noindex: true
     }) %>
@@ -43,8 +43,15 @@
             .pass-actions,
             .pass-copy,
             .copy-toast,
+            .home-hero,
+            .road-scene,
             .home-footer {
                 display: none !important;
+            }
+
+            .home-main {
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
             main.container {
@@ -165,9 +172,9 @@
     </style>
 </head>
 
-<body class="page-ticket home-page">
+<body class="page-ticket home-page home-index page-scroll">
 <%- include('partials/body-open') %>
-<%- include('partials/navbar') %>
+<%- include('partials/navbar', { backHome: true, myTicketsLink: true }) %>
 
 <%
 const loc = (typeof locals !== "undefined" && locals) ? locals : {};
@@ -268,32 +275,70 @@ const waLines = [
     `Código: ${ticketCode}`,
     ticketUrl,
 ].filter(Boolean).join("\n");
+const rebookHref = (() => {
+    const q = new URLSearchParams();
+    if (ticketRow.from_stop && ticketRow.to_stop) {
+        q.set("from", String(ticketRow.from_stop).toUpperCase());
+        q.set("to", String(ticketRow.to_stop).toUpperCase());
+    } else if (ticketRow.direction) {
+        q.set("dir", ticketRow.direction);
+    }
+    if (departTimeView) q.set("time", String(departTimeView).slice(0, 5));
+    return "/reserve" + (q.toString() ? "?" + q.toString() : "");
+})();
 const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
 %>
 
-<main class="container ticket-stage">
-    <header class="ticket-toolbar">
-        <div class="ticket-toolbar-copy">
-            <p class="ticket-kicker">Validación</p>
-            <h1 class="ticket-page-title">Tu ticket</h1>
+<section class="home-hero tk-hero" aria-label="Tu boleto">
+    <div class="home-hero-media" aria-hidden="true"></div>
+    <div class="home-hero-veil" aria-hidden="true"></div>
+
+    <div class="container home-hero-inner">
+        <div class="home-hero-copy home-reveal">
+            <div class="home-brand">
+                <div class="logo-wrap">
+                    <img class="home-brand-logo" src="/assets/logo-hero.png" alt="Servicio de Transporte Victoria Llera" width="308" height="348" decoding="async" fetchpriority="high">
+                </div>
+                <div class="home-brand-body">
+                    <h1 class="home-brand-name">Tu boleto</h1>
+                    <p class="home-brand-tag"><%= routeLabelView %>, <%= tripDateLabelView %>, <%= timeParts.main %> <%= timeParts.suffix %></p>
+                    <div class="hero-actions">
+                        <a class="btn btn-wine home-cta-primary" href="<%= rebookHref %>">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'repeat', size: 20 }) %></span>
+                            Reservar de nuevo
+                        </a>
+                        <a class="btn home-cta-ghost" href="<%= backHref %>">
+                            <span class="btn-ico"><%- include('partials/icon', { name: 'arrow-left', size: 20 }) %></span>
+                            Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="ticket-toolbar-actions">
-            <a class="btn btn-ghost btn-xs" href="<%= backHref %>" aria-label="Volver">
-                <%- include('partials/icon', { name: 'arrow-left', size: 16 }) %> Volver
+        <aside class="home-next home-reveal home-reveal-delay" aria-label="Opciones del boleto">
+            <p class="home-next-title"><span class="home-next-pulse" aria-hidden="true"></span>Llévalo contigo</p>
+            <a class="home-next-row tk-opt" href="<%= pdfHref %>">
+                <span class="tk-opt-ico" aria-hidden="true"><%- include('partials/icon', { name: 'file-text', size: 20 }) %></span>
+                <span class="tk-opt-copy"><strong>Abrir en PDF</strong><small>Para guardarlo o enviarlo.</small></span>
+                <span class="tk-opt-go" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 18 }) %></span>
             </a>
-            <a class="btn btn-pdf btn-xs" href="<%= pdfHref %>" aria-label="Abrir PDF">
-                <%- include('partials/icon', { name: 'file-text', size: 16 }) %> PDF
+            <a class="home-next-row tk-opt" href="<%= printHref %>" target="_blank" rel="noopener">
+                <span class="tk-opt-ico" aria-hidden="true"><%- include('partials/icon', { name: 'printer', size: 20 }) %></span>
+                <span class="tk-opt-copy"><strong>Imprimir</strong><small>Formato de ticket de taquilla.</small></span>
+                <span class="tk-opt-go" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 18 }) %></span>
             </a>
-            <a class="btn btn-ghost btn-xs" href="<%= printHref %>" target="_blank" rel="noopener" aria-label="Imprimir ticket">
-                <%- include('partials/icon', { name: 'printer', size: 16 }) %> Imprimir
+            <a class="home-next-row tk-opt" href="<%= waHref %>" target="_blank" rel="noopener">
+                <span class="tk-opt-ico" aria-hidden="true"><%- include('partials/icon', { name: 'message-circle', size: 20 }) %></span>
+                <span class="tk-opt-copy"><strong>Compartir por WhatsApp</strong><small>Manda el enlace de tu boleto.</small></span>
+                <span class="tk-opt-go" aria-hidden="true"><%- include('partials/icon', { name: 'arrow-right', size: 18 }) %></span>
             </a>
-            <a class="btn btn-wa btn-xs" href="<%= waHref %>" target="_blank" rel="noopener" aria-label="Compartir por WhatsApp">
-                <%- include('partials/icon', { name: 'message-circle', size: 16 }) %> WhatsApp
-            </a>
-        </div>
-    </header>
+        </aside>
+    </div>
+</section>
 
+<main class="home-main">
+<div class="container ticket-stage">
     <article class="ticket-pass" aria-label="Ticket <%= ticketFolio %>">
         <div class="pass-brand">
             <div class="pass-brand-left">
@@ -455,12 +500,15 @@ const waHref = `https://wa.me/528344756376?text=${encodeURIComponent(waLines)}`;
             </div>
         </div>
     </article>
+</div>
 </main>
 
 <%- include('partials/site-footer') %>
 
 <script src="/js/theme.js"></script>
 <script src="/js/copy.js"></script>
+<script src="/js/my-tickets.js"></script>
+<script>window.TicketStore && window.TicketStore.add(<%- JSON.stringify(ticketCode) %>);</script>
 <script>
     const btn = document.getElementById('copyBtn');
     const toast = document.getElementById('copyToast');
