@@ -1,13 +1,28 @@
-<nav class="navbar navbar-dark app-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
+<nav class="navbar navbar-dark app-navbar" aria-label="Principal">
+    <div class="container d-flex justify-content-between align-items-center gap-3">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
             <span class="brand-dot"></span>
-            <span class="fw-bold">TransportApp</span>
+            <span class="brand-name">TransportApp</span>
         </a>
 
-        <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
-            <%- include('theme-icons') %>
-            <span class="d-none d-sm-inline">Tema</span>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <% if (typeof backHome !== 'undefined' && backHome) { %>
+            <a class="app-nav-link app-nav-home" href="/" aria-label="Ir al inicio">
+                <%- include('icon', { name: 'house', size: 16 }) %> <span>Inicio</span>
+            </a>
+            <% if (typeof myTicketsLink !== 'undefined' && myTicketsLink) { %>
+            <a class="app-nav-link d-none d-sm-inline-flex" href="/mis-boletos">Mis boletos</a>
+            <% } %>
+            <% } else { %>
+            <a class="app-nav-link d-none d-sm-inline-flex" href="/mis-boletos">Mis boletos</a>
+            <% } %>
+            <% if (typeof navLinks !== 'undefined' && navLinks) { %>
+            <a class="app-nav-cta d-none d-sm-inline-flex" href="/reserve">Reservar</a>
+            <% } %>
+            <button id="themeToggle" class="theme-btn" type="button" aria-label="Cambiar tema">
+                <%- include('theme-icons') %>
+                <span class="d-none d-sm-inline">Tema</span>
+            </button>
+        </div>
     </div>
 </nav>

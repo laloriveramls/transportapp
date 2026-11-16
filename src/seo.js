@@ -1,6 +1,7 @@
 "use strict";
 
-const {getVicLocations} = require("./locations");
+const {getVicLocations, getCityLabels} = require("./locations");
+const {MAX_PASSENGERS_PER_BOOKING, CHILD_AGE_MIN, CHILD_AGE_MAX} = require("./capacity");
 
 const SITE_NAME = "Servicio de Transporte";
 const APP_NAME = "TransportApp";
@@ -17,7 +18,7 @@ const DEFAULT_DESCRIPTION =
 const OG_IMAGE_PATH = "/assets/logo-wide.png";
 const OG_IMAGE_WIDTH = 960;
 const OG_IMAGE_HEIGHT = 360;
-const OG_IMAGE_ALT = "Servicio de Transporte Victoria ↔ Llera";
+const OG_IMAGE_ALT = "Servicio de Transporte Victoria - Llera";
 
 const VICTORIA = {
     name: "Ciudad Victoria",
@@ -77,42 +78,121 @@ function serializeJsonLd(data) {
     return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-function homeFaqs(pricing, vicLocations) {
+/** "6:30 a. m." */
+function time12(value) {
+    const [h, m] = hhmm(value).split(":").map(Number);
+    if (!Number.isFinite(h)) return "";
+    return `${h % 12 || 12}:${String(m || 0).padStart(2, "0")} ${h < 12 ? "a. m." : "p. m."}`;
+}
+
+/** Cierra una frase con punto solo si no termina ya en uno ("a. m." no lleva otro). */
+function sentence(text) {
+    const t = String(text || "").trim();
+    return !t || /[.!?]$/.test(t) ? t : `${t}.`;
+}
+
+/** "Ej. Sisal" pasa a "Sisal" para usarlo dentro de una frase. */
+function plainStopName(label) {
+    return String(label || "").replace(/^Ej\.\s*/i, "").trim();
+}
+
+/** "Sisal, Ébano y Tres Mesas" */
+function joinList(items) {
+    const list = (items || []).filter(Boolean);
+    if (list.length <= 1) return list.join("");
+    return `${list.slice(0, -1).join(", ")} y ${list[list.length - 1]}`;
+}
+
+/** Rango de tarifas de las paradas en ejidos, en ambas direcciones: "de $30 a $120 MXN". */
+function stopPriceRange(locations) {
+    const prices = [];
+    (locations || []).forEach((loc) => {
+        [loc.price_to_victoria_mxn, loc.price_to_llera_mxn].forEach((p) => {
+            const n = Number(p);
+            if (Number.isFinite(n) && n > 0) prices.push(n);
+        });
+    });
+    if (!prices.length) return "";
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return min === max ? formatMxn(min) : `de $${min.toFixed(0)} a ${formatMxn(max)}`;
+}
+
+/** "3 salidas al día, de 6:30 a. m. a 4:00 p. m." (vacío si no hay horarios) */
+function dailyDepartures(templates, direction) {
+    const times = uniqueTimes(templates, direction).sort();
+    if (!times.length) return "";
+    const count = times.length === 1 ? "1 salida al día" : `${times.length} salidas al día`;
+    return times.length === 1
+        ? `${count}, a las ${time12(times[0])}`
+        : `${count}, de ${time12(times[0])} a ${time12(times[times.length - 1])}`;
+}
+
+/**
+ * Preguntas frecuentes de la portada. Todo dato que puede cambiar sale de su fuente:
+ * tarifas (settings), paradas (vicLocations), ciudades (etiquetas), horarios (plantillas),
+ * teléfono y límites (constantes compartidas). Si falta un dato, la respuesta lo omite en lugar de inventarlo.
+ */
+function homeFaqs(pricing, vicLocations, {templates, cityLabels} = {}) {
     const adult = formatMxn(pricing?.passenger_price_mxn ?? 120);
     const child = formatMxn(pricing?.child_price_mxn ?? 60);
     const pack = formatMxn(pricing?.package_price_mxn ?? 120);
-    const stops = (vicLocations || getVicLocations())
-        .map((loc) => loc.label)
-        .filter(Boolean);
-    const stopList = stops.length
-        ? stops.join(", ")
-        : "ejidos del tramo Victoria";
+    const labels = cityLabels || getCityLabels();
+    const vic = labels.VIC;
+    const lle = labels.LLE;
+    const stops = (vicLocations || getVicLocations()).filter((loc) => loc && loc.label && Number(loc.active ?? 1) !== 0);
+    const range = stopPriceRange(stops);
+    const v2l = dailyDepartures(templates, "VIC_TO_LLE");
+    const l2v = dailyDepartures(templates, "LLE_TO_VIC");
 
-    return [
+    const faqs = [
         {
-            question: "¿Cómo reservo un viaje de Victoria a Llera?",
-            answer:
-                "Entra a Reservar, elige origen, destino, fecha y horario con cupo. Captura tus datos y paga en taquilla, por transferencia o en línea. También puedes escribir por WhatsApp al 834 475 6376.",
+            question: "¿Cómo reservo mi lugar?",
+            answer: `Toca Reservar, elige tu ruta, la fecha y un horario con lugares disponibles, captura tus datos y paga en taquilla, por transferencia o en línea. Si prefieres, escríbenos por WhatsApp al ${PHONE_DISPLAY}.`,
         },
         {
-            question: "¿Cuánto cuesta el pasaje y la paquetería?",
-            answer: `El pasaje adulto entre Ciudad Victoria y Llera es de ${adult}, niños de ${child} y paquetería de ${pack}. Las paradas en ejidos tienen tarifa distinta según vayas a Victoria o a Llera.`,
-        },
-        {
-            question: "¿Dónde salen las unidades?",
+            question: "¿Cuánto cuesta el viaje?",
             answer:
-                "Hay punto de salida en Ciudad Victoria y en Llera de Canales. En la pestaña Mapa de la página de inicio puedes abrir la ubicación o cómo llegar.",
+                `Entre ${vic} y ${lle} el pasaje cuesta ${adult} por adulto y ${child} por niño. ` +
+                `Las paradas en ejidos tienen su propia tarifa${range ? ` (${range})` : ""}, que cambia según el ejido y la dirección del viaje. ` +
+                "Puedes estimar tu total con la calculadora.",
+        },
+    ];
+
+    if (v2l || l2v) {
+        const parts = [];
+        if (v2l) parts.push(sentence(`De ${vic} a ${lle}: ${v2l}`));
+        if (l2v) parts.push(sentence(`De ${lle} a ${vic}: ${l2v}`));
+        faqs.push({
+            question: "¿A qué hora salen las unidades?",
+            answer: `${parts.join(" ")} En la pestaña Horarios ves la lista completa y cuáles ya salieron hoy.`,
+        });
+    }
+
+    faqs.push(
+        {
+            question: "¿Dónde abordo?",
+            answer: `Hay un punto de salida en ${vic} y otro en ${lle}. En la pestaña Mapa ves la ubicación y puedes abrir la ruta en Google Maps.`,
         },
         {
             question: "¿Hacen paradas en ejidos?",
-            answer: `Sí. Hay paradas en ${stopList}. Al reservar elige origen y destino para ver el precio de ese tramo (a Victoria o a Llera).`,
+            answer: stops.length
+                ? `Sí. Hacemos parada en ${joinList(stops.map((loc) => plainStopName(loc.label)))}. Al reservar elige tu ejido como origen o destino y el precio se ajusta solo.`
+                : "Sí, hay paradas en ejidos del camino. Al reservar elige tu ejido como origen o destino y el precio se ajusta solo.",
         },
         {
-            question: "¿Cuántos pasajeros caben y cómo se cobra el niño?",
+            question: "¿Cuántas personas puedo reservar y cuánto pagan los niños?",
             answer:
-                "Máximo 14 personas por reserva. El adulto paga tarifa completa y el niño de 6 a 10 años paga la tarifa infantil. Al reservar elige cuántos asientos de cada tipo.",
+                `Puedes reservar hasta ${MAX_PASSENGERS_PER_BOOKING} personas en una misma reserva. ` +
+                `Los niños de ${CHILD_AGE_MIN} a ${CHILD_AGE_MAX} años pagan ${child}; a partir de los ${CHILD_AGE_MAX + 1} años se paga tarifa de adulto (${adult}).`,
         },
-    ];
+        {
+            question: "¿Puedo enviar un paquete?",
+            answer: `Sí. Un paquete cuesta ${pack} por envío. Al reservar elige la opción de paquete, el origen y el destino.`,
+        },
+    );
+
+    return faqs;
 }
 
 function scheduleSummary(templates) {
@@ -213,11 +293,11 @@ function offerCatalog(baseUrl, pricing) {
 
     return {
         "@type": "OfferCatalog",
-        name: "Pasaje y paquetería Victoria ↔ Llera",
+        name: "Pasaje y paquetería Victoria - Llera",
         itemListElement: [
             {
                 "@type": "Offer",
-                name: "Pasaje adulto Ciudad Victoria ↔ Llera",
+                name: "Pasaje adulto Ciudad Victoria - Llera",
                 price: String(adult),
                 priceCurrency: "MXN",
                 availability: "https://schema.org/InStock",
@@ -225,14 +305,14 @@ function offerCatalog(baseUrl, pricing) {
             },
             {
                 "@type": "Offer",
-                name: "Pasaje niño Ciudad Victoria ↔ Llera",
+                name: "Pasaje niño Ciudad Victoria - Llera",
                 price: String(child),
                 priceCurrency: "MXN",
                 availability: "https://schema.org/InStock",
             },
             {
                 "@type": "Offer",
-                name: "Paquetería Ciudad Victoria ↔ Llera",
+                name: "Paquetería Ciudad Victoria - Llera",
                 price: String(pack),
                 priceCurrency: "MXN",
                 availability: "https://schema.org/InStock",
@@ -243,7 +323,7 @@ function offerCatalog(baseUrl, pricing) {
 
 function homeJsonLd({baseUrl, templates, pricing, vicLocations} = {}) {
     const site = cleanBaseUrl(baseUrl);
-    const faqs = homeFaqs(pricing, vicLocations);
+    const faqs = homeFaqs(pricing, vicLocations, {templates});
     const graph = [
         localBusinessNode(site, {templates, pricing}),
         websiteNode(site),
@@ -289,7 +369,7 @@ function reserveJsonLd({baseUrl, pricing} = {}) {
             "@type": "WebPage",
             "@id": `${absoluteUrl(site, "/reserve")}#reserva`,
             url: absoluteUrl(site, "/reserve"),
-            name: "Reservar viaje Victoria ↔ Llera",
+            name: "Reservar viaje Victoria - Llera",
             description:
                 "Reserva pasaje o paquetería entre Ciudad Victoria y Llera. Elige ruta, fecha y horario con cupo.",
             inLanguage: "es-MX",
@@ -307,7 +387,7 @@ function reserveJsonLd({baseUrl, pricing} = {}) {
             provider: {"@id": orgId(site)},
             object: {
                 "@type": "TaxiService",
-                name: "Servicio de Transporte Victoria ↔ Llera",
+                name: "Servicio de Transporte Victoria - Llera",
                 hasOfferCatalog: offerCatalog(site, pricing),
             },
         },

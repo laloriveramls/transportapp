@@ -1,6 +1,11 @@
-<footer class="home-footer" id="contacto">
-    <div class="container home-footer-inner">
-        <p class="home-footer-brand">Servicio de Transporte</p>
-        <p class="home-footer-meta">Victoria - Llera | <a href="tel:+528344756376">834 475 6376</a></p>
+<%# Carretera animada y pie del sitio. Va en todas las páginas públicas; el admin no lo usa. %>
+<link rel="stylesheet" href="/css/road.css">
+<%- include('road-scene') %>
+
+<footer class="home-footer home-footer-rich" id="contacto">
+    <div class="container hf-bottom">
+        <span>© <%= new Date().getFullYear() %> Servicio de Transporte</span>
+        <span>Ciudad Victoria y Llera de Canales, Tamaulipas</span>
     </div>
 </footer>
+<script src="/js/road-scene.js"></script>

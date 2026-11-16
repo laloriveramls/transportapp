@@ -529,6 +529,7 @@ html[data-theme="dark"] .home-tabs .nav-tabs .nav-link.active {
 }
 
 .chip-time.is-past:hover { opacity: 1; text-decoration: none; }
+.chip-time.is-past { pointer-events: none; cursor: default; }
 
 .chip-time.is-next {
     color: #fff;
@@ -2662,7 +2663,10 @@ body.home-index .chip-time.is-past {
     border: 1px dashed color-mix(in srgb, var(--text) 16%, transparent);
     background: transparent;
     box-shadow: none;
-    color: color-mix(in srgb, var(--muted) 85%, transparent);
+    color: var(--muted);
+    text-decoration: line-through;
+    pointer-events: none;
+    cursor: default;
 }
 
 body.home-index .chip-time.is-past .chip-time-t {
@@ -2766,6 +2770,42 @@ body.home-index .chip-time-m {
 /* ===== Mapa: tarjeta de encabezado, mapa y acciones ===== */
 body.home-index .map-grid {
     gap: 0.9rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+body.home-index .map-card {
+    min-width: 0;
+}
+
+body.home-index .map-frame-wrap {
+    position: relative;
+    background: color-mix(in srgb, var(--text) 6%, var(--card));
+}
+
+body.home-index .map-frame-wrap::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    border: 3px solid color-mix(in srgb, var(--text) 18%, transparent);
+    border-top-color: var(--wine);
+    border-radius: 50%;
+    animation: map-spin 0.8s linear infinite;
+}
+
+@keyframes map-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    body.home-index .map-frame-wrap::before { animation: none; }
+}
+
+body.home-index .map-frame-wrap .map-frame {
+    position: relative;
+    width: 100%;
 }
 
 body.home-index .map-card {
@@ -3855,6 +3895,54 @@ html:not([data-theme="dark"]) body.home-index .road-sign-board {
     body.home-index .home-tabs-head { padding-block: 0.4rem; }
     body.home-index .home-tabs-body { padding-top: 0.45rem; padding-bottom: 0.5rem; }
     body.home-index .schedule-board { gap: 0.55rem; }
+
+    /* Horarios más compactos para que quepan sin tanto scroll interno */
+    body.home-index .schedule-legend { margin-bottom: 0.4rem; }
+    body.home-index .schedule-row { padding: 0.6rem 1rem 0.7rem; }
+    body.home-index .schedule-row-head { margin-bottom: 0.5rem; padding-bottom: 0.45rem; }
+    body.home-index .schedule-groups { gap: 0.5rem; }
+    body.home-index .schedule-group-label { padding-top: 0.55rem; }
+    body.home-index .chip-time { min-height: 36px; }
+
+    /* Carretera y portada algo más bajas */
+    body.home-index .road-scene { height: clamp(82px, 13vh, 172px); }
+    body.home-index .home-brand-logo { max-height: clamp(84px, 15vh, 210px); }
+    body.home-index .road-car { width: clamp(84px, 14vh, 160px); }
+    body.home-index .road-hills.is-far { height: clamp(46px, 8vh, 112px); }
+    body.home-index .road-hills.is-near { height: clamp(28px, 5vh, 66px); }
+    body.home-index .home-hero { padding-bottom: clamp(2.6rem, 6vh, 3.3rem); }
+}
+
+/* Escritorio con contenido alto (Mapa, Info): la página hace scroll normal */
+@media (min-width: 901px) and (min-height: 540px) {
+    html:has(body.home-index.page-scroll) {
+        height: auto;
+        overflow: auto;
+    }
+
+    body.home-index.page-scroll {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    body.home-index.page-scroll .home-tabs-body {
+        overflow: visible;
+    }
+
+    body.home-index.page-scroll .home-main,
+    body.home-index.page-scroll .home-section,
+    body.home-index.page-scroll .home-tabs.tabs-card {
+        flex: 0 0 auto;
+    }
+
+    body.home-index.page-scroll .road-scene { margin-top: 1rem; }
+}
+
+/* Mapa: dos columnas en escritorio */
+@media (min-width: 900px) {
+    body.home-index .map-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.home-index .map-frame { height: 260px; }
 }
 
 /* ===== Tablet vertical (600 a 900 px): aprovecha el ancho en lugar de estirar el diseño de celular ===== */
@@ -3929,3 +4017,150 @@ body.home-index .hf-bottom {
 /* Vegetación más ligera: la capa lejana se funde con el cielo y la banda de pasto es sutil */
 body.home-index .road-flora.is-far { opacity: 0.7; }
 body.home-index .road-verge { opacity: 0.55; }
+
+body.home-index .schedule-day-note {
+    margin-left: auto;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--wine);
+    background: color-mix(in srgb, var(--wine) 12%, transparent);
+}
+
+body.home-index .schedule-day-note[hidden] { display: none; }
+
+/* Reloj "Ahora": una sola línea, hora destacada y a. m./p. m. más pequeño */
+body.home-index .schedule-now {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem 0.3rem 0.65rem;
+}
+
+body.home-index .schedule-now-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+body.home-index .schedule-now b {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+body.home-index .schedule-now b small {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+/* Tabs con icono */
+body.home-index .home-seg .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+@media (max-width: 420px) {
+    body.home-index .home-seg .nav-link:not(.home-tab-special) svg { display: none; }
+}
+
+/* Info: total con aclaración y botón de reservar */
+body.home-index .home-quote-total-copy {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+body.home-index .home-quote-total-copy small {
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.3;
+}
+
+body.home-index .home-quote-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 100%;
+    margin-top: 0.75rem;
+    min-height: var(--home-control-h);
+}
+
+/* ===== Info en tres columnas: tarifas, calculadora y cómo reservar con dudas ===== */
+body.home-index .home-info-layout.is-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    align-items: start;
+}
+
+body.home-index .home-info-aside {
+    display: grid;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+body.home-index .home-howto {
+    padding: 0.8rem 0.9rem 0.5rem;
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+body.home-index .home-howto .home-block-title { margin: 0 0 0.6rem; }
+
+body.home-index .home-howto-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.home-index .home-howto-list li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 0.65rem;
+    padding-bottom: 0.7rem;
+}
+
+body.home-index .home-howto-list li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 30px;
+    bottom: 2px;
+    width: 2px;
+    background: color-mix(in srgb, var(--border) 90%, transparent);
+}
+
+body.home-index .home-howto-list .home-step-num {
+    width: 28px;
+    height: 28px;
+}
+
+/* Cuando el ancho no da para tres columnas, dos y luego una */
+@media (min-width: 921px) and (max-width: 1100px) {
+    body.home-index .home-info-layout.is-three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "stops quote"
+            "howto quote"
+            "faq faq";
+    }
+    body.home-index .home-info-layout.is-three .home-info-aside { display: contents; }
+    body.home-index .home-info-layout.is-three .home-info-stops { grid-area: stops; }
+    body.home-index .home-info-layout.is-three .home-quote { grid-area: quote; }
+    body.home-index .home-info-layout.is-three .home-howto { grid-area: howto; }
+    body.home-index .home-info-layout.is-three .home-faq { grid-area: faq; }
+}
+
+@media (max-width: 920px) {
+    body.home-index .home-info-layout.is-three { grid-template-columns: 1fr; }
+}
