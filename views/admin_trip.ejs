@@ -133,7 +133,10 @@
     const namesOf = (x) => {
         const n = countPassengers(x);
         const raw = String(x.passenger_names || '').trim();
-        return raw || Array.from({ length: n }, (_, i) => 'Pasajero ' + (i + 1)).join(', ');
+        if (raw) return raw;
+        // Sin nombres capturados: el primer lugar usa el nombre de contacto de la reserva.
+        const contact = String(x.customer_name || '').trim();
+        return Array.from({ length: n }, (_, i) => (i === 0 && contact) ? contact : 'Pasajero ' + (i + 1)).join(', ');
     };
     const payShort = (x) => {
         if (up(x) === 'PAID') return 'PAGADO';
@@ -281,7 +284,8 @@
             <% rows.forEach((r) => {
                 const shown = (Number(r.passenger_count || 0) || Number(r.seats || 0) || 1);
                 const rawNames = String(r.passenger_names || '').trim();
-                const displayNames = rawNames ? rawNames : Array.from({ length: shown }, (_, i) => `Pasajero ${i + 1}`).join(', ');
+                const contactName = String(r.customer_name || '').trim();
+                const displayNames = rawNames ? rawNames : Array.from({ length: shown }, (_, i) => (i === 0 && contactName) ? contactName : `Pasajero ${i + 1}`).join(', ');
                 const digits = (r.phone || '').replace(/\D/g, '');
                 const stU = String(r.status || '').toUpperCase();
                 const pmU = String(r.payment_method || '').toUpperCase();
